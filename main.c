@@ -26,10 +26,6 @@
 #include "host/voices/gpio_7620.h"
 
 
-void test_git(void)
-{
-
-}
 
 void test_v2()
 {
