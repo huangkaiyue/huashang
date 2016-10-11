@@ -31,6 +31,11 @@ void test_git(void)
 
 }
 
+void test_v2()
+{
+
+}
+
 #define MAIN_DOWN
 #ifdef MAIN_DOWN
 static WorkQueue *DownEvent=NULL;
