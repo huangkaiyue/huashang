@@ -25,6 +25,12 @@
 #include "host/StreamPlay/StreamFile.h"
 #include "host/voices/gpio_7620.h"
 
+
+void test_git(void)
+{
+
+}
+
 #define MAIN_DOWN
 #ifdef MAIN_DOWN
 static WorkQueue *DownEvent=NULL;
