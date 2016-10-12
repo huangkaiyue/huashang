@@ -12,7 +12,7 @@
 
 //----------------------功能类-----------------------------------
 
-#define SPEEK			//会话
+//#define SPEEK			//会话
 
 #define PALY_URL_SD		//下载保存到本地
 
@@ -30,7 +30,7 @@
 
 #define SELECT_UDP		//将udp添加到select 当中
 
-//#define SPEEK_VOICES	//开启对讲功能
+#define SPEEK_VOICES	//开启对讲功能
 
 //#define VOICS_CH		//播音人选择功能添加
 

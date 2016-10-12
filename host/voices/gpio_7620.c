@@ -273,7 +273,7 @@ void enable_gpio(void)
 		close(gpio.fd);
 		return ;
 	}
-		info.pid = getpid();
+	info.pid = getpid();
 	info.irq = RIGHTLED_KEY;
 	if (ioctl(gpio.fd, RALINK_GPIO_REG_IRQ, &info) < 0) {
 		perror("ioctl");
@@ -295,7 +295,7 @@ void init_7620_gpio(void)
 		return ;
 	}
 	uart_open();
-	//open_sys_led();
+	close_sys_led();
 	enable_gpio();
 }
 //去使能按键
@@ -310,7 +310,7 @@ void disable_gpio(void)
 //清除GPIO
 void clean_7620_gpio(void)
 {
-	close_sys_led();
+	open_sys_led();
 	disable_gpio();
 	close(gpio.fd);
 }

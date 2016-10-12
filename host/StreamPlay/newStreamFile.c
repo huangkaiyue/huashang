@@ -233,9 +233,19 @@ void NetStreamExitFile(void)
 
 //拷贝推送过来的信息
 static void CopyUrlMessage(Player_t *App,Player_t *Dev){
-	snprintf(Dev->playfilename,128,"%s",App->playfilename);		
-	snprintf(Dev->musicname,64,"%s",App->musicname);
-	Dev->musicTime = App->musicTime;
+	if(strlen(App->playfilename)==0){
+		
+	}
+	else{
+		snprintf(Dev->playfilename,128,"%s",App->playfilename);	
+	}
+	if(strlen(App->musicname)==0){
+		
+	}
+	else{
+		snprintf(Dev->musicname,64,"%s",App->musicname);
+		Dev->musicTime = App->musicTime;
+	}
 }
 //开始边下边播放 
 int NetStreamDownFilePlay(const void *data)
