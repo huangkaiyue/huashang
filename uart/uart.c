@@ -201,11 +201,12 @@ static int handle_uartMsg(int fd ,unsigned char buf,int size)
 		DEBUG_UART("===data ===%x==\n",data.data);
 		switch(data.head){
 			case SMCLOSE://开关机
+#if 0
 				DEBUG_UART("handle_uartMsg close \n");
 				uartCtr->voicesEvent(1);
 				SocSendMenu(5,0);
 				break;
-				
+#endif				
 			case SMCLOSETIME://MCU定时定时到关机信号发送
 				DEBUG_UART("handle_uartMsg SMCLOSETIME \n");
 				uartCtr->voicesEvent(1);
@@ -213,6 +214,7 @@ static int handle_uartMsg(int fd ,unsigned char buf,int size)
 				break;
 				
 			case SMBATTERY://电池电量 100，75，50，25，10
+#if 0
 				if((data.data&0x80)==0x80){//充电
 					DEBUG_UART("handle_uartMsg  smbattery OK \n");
 					uartCtr->charge=1;
@@ -227,7 +229,7 @@ static int handle_uartMsg(int fd ,unsigned char buf,int size)
 				uartCtr->Ack_batteryCtr(get_battery(),uartCtr->charge);
 				SocSendMenu(5,0);
 				break;
-				
+#endif				
 			case SMBATTYPE://充电状态
 				if((data.data&0x80)==0x80){//充电
 					DEBUG_UART("handle_uartMsg  SMBATTYPE OK \n");

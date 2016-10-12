@@ -337,7 +337,9 @@ void handle_event_system_voices(int sys_voices)
 	else if(sys_voices==CONNECT_OK)				//连接成功
 	{
 		//play_sys_tices_voices(LINK_SUCCESS);
+		usleep(100);
 		char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
+		usleep(100);
 		char buf[128]={0};
 		snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
 		//DEBUG_EVENT("wifi = %s\n",wifi);

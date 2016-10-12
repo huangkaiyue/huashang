@@ -4,7 +4,7 @@
 
 #define VERSION "\n10.9-15:00\n"	//版本号
 
-//#define TEST_SDK					//测试SDK
+#define TEST_SDK					//测试SDK
 
 #ifdef TEST_SDK						//使能命令输入行
 	#define WORK_INTER
@@ -12,7 +12,7 @@
 
 //----------------------功能类-----------------------------------
 
-//#define SPEEK			//会话
+#define SPEEK_VOICES	//开启对讲功能
 
 #define PALY_URL_SD		//下载保存到本地
 
@@ -20,7 +20,7 @@
 
 #define	LED_LR			//LED左右灯以及多按键
 
-#define  UART			//串口开关
+#define UART			//串口开关
 
 #define CLOSE_VOICE		//不工作处于关闭音频状态
 
@@ -28,13 +28,11 @@
 
 #define TULIN_WINT_MUSIC//图灵过渡音位音乐
 
-#define SELECT_UDP		//将udp添加到select 当中
-
-#define SPEEK_VOICES	//开启对讲功能
+#define SELECT_UDP		//将udp添加到select当中
 
 //#define VOICS_CH		//播音人选择功能添加
 
-#define HEAD_JSON		//发送加头数据
+#define WAVTOAMR		//将wav格式文件转换成amr格式
 
 //----------------------测试类-----------------------------------
 

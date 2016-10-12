@@ -60,7 +60,7 @@ static int check_text_cmd(char *text)
 	}
 	else if(strstr(text,"图灵")){
 		//play_sys_tices_voices(TULING_HAHAXIONG);
-		PlayQttsText("我叫火火兔，聪明又可爱的火火兔。",0);
+		PlayQttsText("我叫大头，聪明又可爱的大头。",0);
 		//PlayQttsText("我就是风流倜傥，玉树临风，人见人爱，花见花开，车见爆胎，聪明又可爱的糍粑糖，你也可以叫我糖糖，我们做好朋友吧。",0);
 		return 1;
 	}

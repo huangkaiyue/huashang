@@ -114,16 +114,12 @@ static void delete_socket(Server *ser,int sockfd)
 static int __send_ctrl_ack(Server *ser,int sockfd,char *data,int size)
 {
 	int ret=0;
-#ifdef HEAD_JSON
 	char *cachedata = (char *)calloc(1,size+16);
 	snprintf(cachedata,16,"%s%d%s","head:",size,":");
 	memcpy(cachedata+16,data,size);
 	ServerLog("-------------------------__send_ctrl_ack(%d)-------------------------\n",sockfd);
 	ret = send(sockfd,cachedata,size+16,0);
 	free(cachedata);
-#else
-	ret = send(sockfd,data,size,0);
-#endif
 	ServerLog("--------------------------\n%s\n----------------------------\n",data);
 	if(ret==0)
 	{
@@ -161,16 +157,12 @@ int sendAll_Ack(char *data,int size)
 static int SendUdp_Ack(Server *ser,struct sockaddr_in *addr,char *data,int size)
 {
 	int ret=0;
-#ifdef HEAD_JSON
 	char *cachedata = (char *)calloc(1,size+16);
 	snprintf(cachedata,16,"%s%d%s","head:",size,":");
 	memcpy(cachedata+16,data,size);
 	ServerLog("----------------------------SendUdp_Ack(%s)--------------------------\n",inet_ntoa(addr->sin_addr));
 	ret = sendto(ser->broSock,cachedata,size+16,0,addr,sizeof(struct sockaddr));
 	free(cachedata);
-#else
-	ret = sendto(ser->broSock,cachedata,size+16,0,addr,sizeof(struct sockaddr));
-#endif
 	ServerLog("%s\n---------------------------------------------------------\n",data);
 	return ret;
 }

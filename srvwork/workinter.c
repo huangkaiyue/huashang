@@ -197,6 +197,8 @@ void pasreInputCmd(const char *com)
 			test_quikSeekTo();
 		}else if(!strcmp(com,"prev")){
 			test_backSeekTo();
+		}else if(!strcmp(com,"amr")){
+			WavtoAmrfile("/mnt/qtts/");
 		}
 		else if (!strcmp(com, "quit") ||
              		!strcmp(com, "q"))

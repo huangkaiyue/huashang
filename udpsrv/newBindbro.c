@@ -13,15 +13,11 @@
 #ifdef SELECT_UDP
 int SendTo(int sockfd,char *data,int size,struct sockaddr_in *peer)
 {
-#ifdef HEAD_JSON
 	char *cachedata = (char *)calloc(1,size+16);
 	snprintf(cachedata,16,"%s%d%s","head:",size,":");
 	memcpy(cachedata+16,data,size);
 	sendto(sockfd, (char *)cachedata, size+16, 0,(struct sockaddr*)peer, sizeof(struct sockaddr));
 	free(cachedata);
-#else
-	sendto(sockfd, (char *)data, size, 0,(struct sockaddr*)peer, sizeof(struct sockaddr));
-#endif
 	return 0;
 }
 void recv_brocastCtr(int sockfd,struct sockaddr_in *peer,char *recvdata)

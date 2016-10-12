@@ -96,7 +96,7 @@ static void signal_handler(int signum)
 	if (signum == GPIO_UP){
 		switch(gpio.mount){
 			case SPEEK_KEY:
-#ifdef	SPEEK
+#ifndef	SPEEK_VOICES
 				end_event_std();
 #else
 				create_event_voices_key(1);
@@ -122,7 +122,7 @@ static void signal_handler(int signum)
 				break;
 				
 			case SPEEK_KEY://»á»°¼ü
-#ifdef	SPEEK
+#ifndef	SPEEK_VOICES
 				down_voices_sign();
 #else
 				create_event_voices_key(0);

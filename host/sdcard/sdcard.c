@@ -14,6 +14,7 @@
 #define HOUR		60*MIN
 #define DAY			24*HOUR
 #define MONTH		30*DAY
+#define FILETIME	1*MONTH
 #define REMOVE_MP3_NUM 10
 
 #define SD_MIN		50
@@ -76,11 +77,9 @@ void DelSdcardMp3file(char * sdpath)
 {
 	char filepath[128]={0};
 	int delmp3Num=0;
-	int ret;
 	struct stat Mp3info;
 	DIR *dirptr = NULL;  
-	struct dirent *entry;  
-	unsigned char mount=0;
+	struct dirent *entry;
 	time_t timep;
 	
 	time(&timep);
@@ -107,7 +106,7 @@ void DelSdcardMp3file(char * sdpath)
 		if( stat(filepath, &Mp3info) != 0 ){
 			break;
 		}
-		if((timep-Mp3info.st_ctime)<7*MIN){
+		if((timep-Mp3info.st_ctime)<FILETIME){
 			usleep(1000);
 			continue;
 		}else{			//删除长时间不用的文件
@@ -126,7 +125,55 @@ void DelSdcardMp3file(char * sdpath)
 	}
 	printf("del file end ... \n");
 }
+#ifdef WAVTOAMR
+void WavtoAmrfile(char * sdpath)
+{
+	char filepath[128]={0};
+	char wavfilepath[128]={0};
+	char amrfilepath[128]={0};
+	DIR *dirptr = NULL;  
+	struct dirent *entry;  
 
+#ifdef LOG_DELMP3
+	writeLog("/home/mp3filename.txt",sdpath);
+#endif
+	if((dirptr = opendir(sdpath)) == NULL)	
+	{  
+		printf("open dir !\n"); 
+		return ;	
+	}
+	sleep(1);
+	while (entry = readdir(dirptr))  
+	{  
+		//去除当前目录和上一级目录
+		if( !strcmp(entry->d_name,".")||!strcmp(entry->d_name,"..") ){
+			usleep(1000);
+			continue;
+		}
+#ifdef LOG_DELMP3
+		writeLog("/home/mp3filename.txt",entry->d_name);
+#endif
+		printf("filename: %s\n",entry->d_name);
+		if(!strstr(entry->d_name,".wav")){
+			usleep(1000);
+		}
+		sscanf(entry->d_name,"%[^.].%*s",filepath);
+		printf("filepath : %s\n",filepath);
+		snprintf(wavfilepath,128,"%s%s",sdpath,entry->d_name);
+		//snprintf(wavfilepath,128,"%s","/home/qtts/start_internet_8K.wav");
+		snprintf(amrfilepath,128,"%s%s%s","/mnt/amr/",filepath,".amr");
+		//snprintf(amrfilepath,128,"%s","/mnt/amr/start_internet_8K.amr");
+		printf("wavfilepath : %s amrfilepath : %s \n",wavfilepath,amrfilepath);
+		printf("\n");
+		//WavToAmr8kFile(wavfilepath,amrfilepath);
+		playspeekVoices(amrfilepath);
+		memset(wavfilepath,0,128);
+		memset(amrfilepath,0,128);
+		usleep(10000);
+	}
+	printf("wav to amr file end ... \n");
+}
+#endif
 #if 0
 int main(int argc,char **argv){
 	int Capacity =0;
