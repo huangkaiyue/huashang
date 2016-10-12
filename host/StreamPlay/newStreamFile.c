@@ -56,6 +56,22 @@ static void cleanStreamData(Mp3Stream *st)
 #endif
 	st->player.playState=MAD_EXIT;
 }
+static void ack_progress(void){
+	st->player.progress= (st->playSize*100)/st->streamLen;
+	if(st->player.progress>0&&st->player.progress<10&&st->player.proflag==0){
+		st->player.proflag=10;
+		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
+	}else if(st->player.progress>23&&st->player.progress<28&&st->player.proflag==10){
+		st->player.proflag=25;
+		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
+	}else if(st->player.progress>48&&st->player.progress<53&&st->player.proflag==25){
+		st->player.proflag=50;
+		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
+	}else if(st->player.progress>73&&st->player.progress<78&&st->player.proflag==50){
+		st->player.proflag=75;
+		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
+	}
+}
 //实现写入音频流的接口, 需要输入的数据内存存放位置 inputMsg  inputSize 输入的数据流大小
 static void InputNetStream(char * inputMsg,int inputSize)
 {
@@ -73,9 +89,16 @@ static void InputNetStream(char * inputMsg,int inputSize)
 			DecodeExit();
 			return ;
 		}
-		usleep(100);//下载比较慢，睡眠等待下载
+		if(st->wait==0){
+			st->wait=1;
+			st->ack_playCtr(TCP_ACK,&st->player,MAD_PAUSE);
+		}
+		usleep(100);//下载比较慢，睡眠等待下载 ,发送停止状态,下载到一定程度，唤醒  (app等到下一个时刻再自动唤醒)
 	}
-	
+	if(st->wait==1){
+		st->wait=0;
+		st->ack_playCtr(TCP_ACK,&st->player,MAD_PLAY);
+	}
 #ifdef SEEK_TO
 	if(st->streamLen != 0)
 	{
@@ -83,6 +106,7 @@ static void InputNetStream(char * inputMsg,int inputSize)
 		float getPercent=0;
 		progressBar(st->playSize,st->streamLen,&getPercent);
 #endif		
+#if 0
 		st->player.progress = (st->playSize*100)/st->streamLen;
 		if((st->player.progress>23&&st->player.progress<28)||(st->player.progress>48&&st->player.progress<53)\
 			||(st->player.progress>73&&st->player.progress<78)||st->player.progress>90)
@@ -92,7 +116,9 @@ static void InputNetStream(char * inputMsg,int inputSize)
 		else{
 			st->ack_playCtr(UDP_ACK,&st->player,st->player.playState);	//回应播放进度
 		}
-		//DEBUG_STREAM("ack_playCtr  progress ok \n");
+#else
+		ack_progress();
+#endif
 	}
 	else{
 		DEBUG_STREAM("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n ");
@@ -224,6 +250,9 @@ void NetStreamExitFile(void)
 	//DEBUG_STREAM("NetStreamExitFile getDownState (%d)...\n",st->player.playState);
 	pthread_mutex_lock(&st->mutex);
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//退出播放
+		st->player.progress=0;
+		st->player.musicTime=0;
+		memset(st->player.musicname,0,64);
 		DecodeExit();
 		usleep(100);
 	}
@@ -233,19 +262,9 @@ void NetStreamExitFile(void)
 
 //拷贝推送过来的信息
 static void CopyUrlMessage(Player_t *App,Player_t *Dev){
-	if(strlen(App->playfilename)==0){
-		
-	}
-	else{
-		snprintf(Dev->playfilename,128,"%s",App->playfilename);	
-	}
-	if(strlen(App->musicname)==0){
-		
-	}
-	else{
-		snprintf(Dev->musicname,64,"%s",App->musicname);
-		Dev->musicTime = App->musicTime;
-	}
+	snprintf(Dev->playfilename,128,"%s",App->playfilename);	
+	snprintf(Dev->musicname,64,"%s",App->musicname);
+	Dev->musicTime = App->musicTime;
 }
 //开始边下边播放 
 int NetStreamDownFilePlay(const void *data)
@@ -305,6 +324,8 @@ void seekToStream(int progress)
 	if(st->player.playState==MAD_PLAY){
 		pthread_mutex_lock(&st->mutex);
 		st->playSize=st->streamLen*progress/100;//计算出当前播放长度	
+		st->player.progress = progress;
+		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 		pthread_mutex_unlock(&st->mutex);
 	}
 #endif
@@ -324,9 +345,13 @@ static void InputlocalStream(char * inputMsg,int inputSize)
 #ifdef SHOW_progressBar		
 		float getPercent=0;
 		progressBar(st->playSize,st->streamLen,&getPercent);
-#endif		
+#endif	
+#if 0
 		st->player.progress = (st->playSize*100)/st->streamLen;
 		st->ack_playCtr(UDP_ACK,&st->player,st->player.playState);	//回应播放进度
+#else
+		ack_progress();
+#endif
 	}
 	else{
 		DEBUG_STREAM(" InputNetStream : streamLen == %d \n ");
