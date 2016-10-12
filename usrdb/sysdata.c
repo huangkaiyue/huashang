@@ -5,6 +5,7 @@
 #include "sysdata.h"
 #include "config.h"
 #include "nvram.h"
+#include "host/voices/callvoices.h"
 
 HOST host;
 static int NvramGetCamlist(char *camlist,char *passwd)
@@ -40,11 +41,6 @@ int updateSysList(char *list,char *passwd)
 //----------------------------播放记录-------------------------------------
 #ifdef LOCAL_MP3
 //获取播放记录
-static enum{
-	mp3=1,
-	story,
-	english,
-};
 void get_paly_num(int *size,unsigned char str)
 {
 	char *NUM;

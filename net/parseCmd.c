@@ -356,7 +356,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 					snprintf(player->musicname,64,"%s",musicname);
 					player->musicTime = cJSON_GetObjectItem(pJson, "time")->valueint;
 				}
-				createPlayEvent(player);
+				createPlayEvent(player,0);
 			}
 		}else if (!strcmp(pSub->valuestring,"pause")){
 			mute_recorde_vol(MUTE);

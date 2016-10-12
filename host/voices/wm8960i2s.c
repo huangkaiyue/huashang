@@ -163,10 +163,10 @@ int GetVol(void){
 
 void mute_recorde_vol(int change)
 {
-	if(change==MUTE){
-		SET_TX_VOL(I2S.i2s_fd,0);
-	}else{
+	if(change==UNMUTE){
 		SET_TX_VOL(I2S.i2s_fd,I2S.tx_vol);
+	}else{
+		SET_TX_VOL(I2S.i2s_fd,change);
 	}
 	usleep(1000);
 }

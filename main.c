@@ -75,6 +75,7 @@ int main(int argc, char **argv)
 	DownEvent = initQueue();
 
 	sysMes.network_timeout=0;
+	sysMes.localplayname=0;		//本地播放目录
 #ifdef WORK_INTER
 	init_interface(pasreInputCmd);
 #endif	//end WORK_INTER
@@ -104,16 +105,36 @@ int main(int argc, char **argv)
 			playLocalMp3((const char *)msg);
 			usleep(100*1000);
 			if(getWorkMsgNum(DownEvent)==0){
+#if 0
 				if(strstr(msg,TF_STORY_PATH))
-					createPlayEvent((const void *)"story");
+					createPlayEvent((const void *)"story",PLAY_NEXT);
 				if(strstr(msg,TF_MP3_PATH))
-					createPlayEvent((const void *)"mp3");
+					createPlayEvent((const void *)"mp3",PLAY_NEXT);
 				if(strstr(msg,TF_TEST_PATH))
-					createPlayEvent((const void *)"testmp3");
+					createPlayEvent((const void *)"testmp3",PLAY_NEXT);
 #ifdef	LED_LR
 				if(strstr(msg,TF_ENGLISH_PATH))
-					createPlayEvent((const void *)"english");
+					createPlayEvent((const void *)"english",PLAY_NEXT);
 #endif
+#else
+				switch(sysMes.localplayname){
+					case mp3:
+						createPlayEvent((const void *)"mp3",PLAY_NEXT);
+						break;
+					case story:
+						createPlayEvent((const void *)"story",PLAY_NEXT);
+						break;
+					case english:
+						createPlayEvent((const void *)"english",PLAY_NEXT);
+						break;
+					case testmp3:
+						createPlayEvent((const void *)"testmp3",PLAY_NEXT);
+						break;
+					default:
+						sysMes.localplayname=0;
+						break;
+#endif
+				}
 			}
 			free((void *)msg);
 		}				//end LOCAL_MP3_EVENT

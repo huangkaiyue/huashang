@@ -7,8 +7,8 @@
 #include <sys/ioctl.h>
 #include <linux/autoconf.h>
 
-#include "ralink_gpio.h"
 #include "host/voices/callvoices.h"
+#include "ralink_gpio.h"
 #include "gpio_7620.h"
 #include "config.h"
 //#define MAIN
@@ -102,6 +102,38 @@ static void signal_handler(int signum)
 				create_event_voices_key(1);
 #endif
 				break;
+
+			case ADDVOL_KEY:	//play last
+				switch(sysMes.localplayname){
+					case mp3:
+						createPlayEvent((const void *)"mp3",PLAY_LAST);
+						break;
+					case story:
+						createPlayEvent((const void *)"story",PLAY_LAST);
+						break;
+					case english:
+						createPlayEvent((const void *)"english",PLAY_LAST);
+						break;
+					default:
+						break;
+				}
+				break;
+				
+			case SUBVOL_KEY:	//play next
+				switch(sysMes.localplayname){
+					case mp3:
+						createPlayEvent((const void *)"mp3",PLAY_NEXT);
+						break;
+					case story:
+						createPlayEvent((const void *)"story",PLAY_NEXT);
+						break;
+					case english:
+						createPlayEvent((const void *)"english",PLAY_NEXT);
+						break;
+					default:
+						break;
+				}
+				break;
 		}
 		DEBUG_GPIO("signal up (%d) !!!\n",gpio.mount);
 	}// end gpio_up
@@ -114,11 +146,11 @@ static void signal_handler(int signum)
 					
 			case RESERVE_KEY2://Ô¤Áô¼ü
 				exitqttsPlay();
-				createPlayEvent((const void *)"mp3");
+				createPlayEvent((const void *)"mp3",PLAY_NEXT);
 				break;
 				
 			case NETWORK_KEY://ÅäÍø¼ü
-				Net_work();
+				//Net_work();
 				break;
 				
 			case SPEEK_KEY://»á»°¼ü
@@ -131,12 +163,12 @@ static void signal_handler(int signum)
 			
 			case RESERVE_KEY1://Ô¤Áô¼ü
 				exitqttsPlay();
-				createPlayEvent((const void *)"story");
+				createPlayEvent((const void *)"story",PLAY_NEXT);
 				break;
 #ifdef LED_LR
 			case RESERVE_KEY3:	//Ä¿Â¼
 				exitqttsPlay();
-				createPlayEvent((const void *)"english");
+				createPlayEvent((const void *)"english",PLAY_NEXT);
 				break;
 			case ADDVOL_KEY:	//vol +
 				SetVol(1,0);
@@ -152,15 +184,16 @@ static void signal_handler(int signum)
 					ledletf=1;
 					led_left_right(left,openled);
 				}
-				break;
-			case RIGHTLED_KEY:	//right led
-				if(ledright==1){
+				if(ledright==1){	//right led
 					ledright=0;
 					led_left_right(right,closeled);
 				}else{
 					ledright=1;
 					led_left_right(right,openled);
 				}
+				break;
+			case RIGHTLED_KEY:
+				Net_work();
 				break;
 #endif
 		}// end gpio_down

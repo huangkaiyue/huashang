@@ -53,6 +53,9 @@ void play_sys_tices_voices(char *filePath)
 	mute_recorde_vol(UNMUTE);
 #endif
 #endif
+	if(strstr(path,"TuLin_Wint_8K")||strstr(path,"TuLin_Di_8K")){
+		mute_recorde_vol(100);
+	}
 	playLocalVoices(path);
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	write_pcm(play_buf);
@@ -91,7 +94,9 @@ void PlayQttsText(char *text,unsigned char type)
 	mute_recorde_vol(UNMUTE);
 #endif
 #endif
-	Qtts_voices_text(text,type);
+	char *textbuf= (char *)calloc(1,strlen(text)+2);
+	sprintf(textbuf,"%s%s",text,",");
+	Qtts_voices_text(textbuf,type);
 	if(I2S.qttspos!=0)
 	{
 		memset(play_buf+I2S.qttspos,0,I2S_PAGE_SIZE-I2S.qttspos);
@@ -108,6 +113,7 @@ void PlayQttsText(char *text,unsigned char type)
 	close_wm8960_voices();
 	//SET_MUTE_DISABLE();
 #endif
+	free(textbuf);
 }
 #ifdef SPEEK_VOICES
 void playspeekVoices(const char *filename){

@@ -78,15 +78,22 @@ static void CreateLocalMp3(char *localpath)
 	add_event_msg(URL,0,LOCAL_MP3_EVENT);
 }
 #ifdef LOCAL_MP3
-static void PlayLocal(unsigned char str,char *path)
+static void PlayLocal(unsigned char str,char *path, unsigned char Mute)
 {
 	static int playMp3Num=0;
 	char buf[64]={0};
 	char filename[64]={0};
 	int ret=0;
 	get_paly_num(&playMp3Num,str);
+	
 	if(++playMp3Num>127)
 		playMp3Num=0;
+	if(Mute==PLAY_LAST){
+		playMp3Num -=2;
+		if(playMp3Num<0){
+			playMp3Num=0;
+		}
+	}
 	snprintf(buf,64,"%s%s",TF_SYS_PATH,path);
 	ret=get_mp3filenmae(buf,filename,playMp3Num);
 	if(ret == -1){
@@ -97,6 +104,7 @@ static void PlayLocal(unsigned char str,char *path)
 	snprintf(buf,64,"%s%s%s",TF_SYS_PATH,path,filename);
 	CreateLocalMp3(buf);
 	set_paly_num(playMp3Num,str);
+	sysMes.localplayname=str;
 }
 #endif
 /*******************************************************
@@ -104,19 +112,8 @@ static void PlayLocal(unsigned char str,char *path)
 参数: play 本地MP3播放命令 或 URL地址
 返回值: 无
 ********************************************************/
-static enum{
-	mp3=1,
-	story,
-	english,
-};
-void createPlayEvent(const void *play)
+void createPlayEvent(const void *play,unsigned char Mute)
 {
-#if 0
-#ifdef LOCAL_MP3
-	static int playMp3Num=0;
-	static int playStoryNum=0;
-#endif
-#endif
 	char buf[64]={0};
 	char filename[64]={0};
 	int ret=0;
@@ -132,48 +129,17 @@ void createPlayEvent(const void *play)
 		}
 		snprintf(buf,64,"%s%s%s",TF_SYS_PATH,TF_TEST_PATH,filename);
 		CreateLocalMp3(buf);
+		sysMes.localplayname=testmp3;
 	}
 #ifdef LOCAL_MP3
 	else if(!strcmp((const char *)play,"mp3")){
-#if 0
-		get_paly_num(&playMp3Num,mp3);
-		if(++playMp3Num>127)
-			playMp3Num=0;
-		snprintf(buf,64,"%s%s",TF_SYS_PATH,TF_MP3_PATH);
-		ret=get_mp3filenmae(buf,filename,playMp3Num);
-		if(ret == -1){
-			playMp3Num=1;
-		}else if(ret == -2){
-			return;
-		}
-		snprintf(buf,64,"%s%s%s",TF_SYS_PATH,TF_MP3_PATH,filename);
-		CreateLocalMp3(buf);
-		set_paly_num(playMp3Num,mp3);
-#else
-		PlayLocal(mp3,TF_MP3_PATH);
-#endif
+		PlayLocal(mp3,TF_MP3_PATH,Mute);
 	}
 	else if(!strcmp((const char *)play,"story")){
-#if 0
-		get_paly_num(&playStoryNum,story);
-		if(++playStoryNum>127)
-			playStoryNum=0;
-		snprintf(buf,64,"%s%s",TF_SYS_PATH,TF_STORY_PATH);
-		ret=get_mp3filenmae(buf,filename,playStoryNum);
-		if(ret == -1){
-			playStoryNum=1;
-		}else if(ret == -2){
-			return;
-		}
-		snprintf(buf,64,"%s%s%s",TF_SYS_PATH,TF_STORY_PATH,filename);
-		CreateLocalMp3(buf);
-		set_paly_num(playStoryNum,story);
-#else
-		PlayLocal(story,TF_STORY_PATH);
-#endif
+		PlayLocal(story,TF_STORY_PATH,Mute);
 	}
 	else if(!strcmp((const char *)play,"english")){
-		PlayLocal(english,TF_ENGLISH_PATH);
+		PlayLocal(english,TF_ENGLISH_PATH,Mute);
 	}
 #endif
 	else{

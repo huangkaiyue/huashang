@@ -12,8 +12,9 @@
 
 //----------------------功能类-----------------------------------
 
-#define SPEEK_VOICES	//开启对讲功能
+//#define SPEEK_VOICES	//开启对讲功能
 
+//#define WAVTOAMR		//将wav格式文件转换成amr格式
 
 #define PALY_URL_SD		//下载保存到本地
 
@@ -31,10 +32,7 @@
 
 #define SELECT_UDP		//将udp添加到select 当中
 
-
 //#define VOICS_CH		//播音人选择功能添加
-
-#define WAVTOAMR		//将wav格式文件转换成amr格式
 
 //----------------------测试类-----------------------------------
 

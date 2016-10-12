@@ -98,7 +98,7 @@ void pasreInputCmd(const char *com)
 			PlayQttsText(buf,0);
 		}else if(!strcmp(com,"testmp3"))
 		{
-			createPlayEvent((const void *)"testmp3");
+			createPlayEvent((const void *)"testmp3",PLAY_NEXT);
 		}
 #ifdef TEXT_UP
 		else if(!strcmp(com,"up"))
@@ -171,7 +171,7 @@ void pasreInputCmd(const char *com)
 			ReadWifi();
 		}
 		else if(!strcmp(com,"url")){
-			createPlayEvent((const void *)"http://fdfs.xmcdn.com/group7/M01/A3/8D/wKgDX1d2Rr6w3CegABHDHZzUiUs448.mp3");
+			createPlayEvent((const void *)"http://fdfs.xmcdn.com/group7/M01/A3/8D/wKgDX1d2Rr6w3CegABHDHZzUiUs448.mp3",PLAY_NEXT);
 		}
 		else if(!strcmp(com,"qurl")){
 			CleanUrlEvent();
@@ -198,7 +198,8 @@ void pasreInputCmd(const char *com)
 		}else if(!strcmp(com,"prev")){
 			test_backSeekTo();
 		}else if(!strcmp(com,"amr")){
-			WavtoAmrfile("/mnt/qtts/");
+			//WavtoAmrfile("/mnt/qtts/");
+			createPlayEvent((const void *)"story",PLAY_NEXT);
 		}
 		else if (!strcmp(com, "quit") ||
              		!strcmp(com, "q"))

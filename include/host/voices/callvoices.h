@@ -43,8 +43,20 @@ typedef struct sys_message
 	char Play_sign:4;//ֹͣ��־λ
 	char sd_path[20];
 	int Starttime;
+	unsigned char localplayname;
 }SysMessage;
 extern SysMessage sysMes;
+//--------------------eventVoices.c----------------------------------------
+
+#define PLAY_LAST 1
+#define PLAY_NEXT 0
+static enum{
+	mp3=1,
+	story,
+	english,
+	testmp3,
+};
+
 //--------------------callvoices.c-----------------------------------------
 extern void start_event_std(void);
 extern void end_event_std(void);
@@ -60,7 +72,7 @@ extern void keep_recorde_live(int change);
 extern void init_record_pthread(void);
 extern void exit_record_pthread(void);
 //--------------------eventVoices.c-----------------------------------------------
-extern void createPlayEvent(const void *play);
+extern void createPlayEvent(const void *play,unsigned char Mute);
 extern void CleanUrlEvent(void);
 extern void QttsPlayEvent(char *txt,int type);
 extern void down_voices_sign(void);
