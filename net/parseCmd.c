@@ -172,6 +172,7 @@ void ack_allplayerCtr(void *data,Player_t *player)
 	cJSON_AddStringToObject(pItem, "url",player->playfilename);
 	cJSON_AddNumberToObject(pItem, "lock",gpio_look);
 	cJSON_AddNumberToObject(pItem, "vol",VOL_DATA(player->vol));
+	cJSON_AddStringToObject(pItem, "name",player->musicname);
 	cJSON_AddNumberToObject(pItem, "time",(int)player->musicTime);
 	cJSON_AddNumberToObject(pItem, "progress",player->progress);
 	cJSON_AddStringToObject(pItem, "status","ok");
@@ -351,7 +352,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			}
 			if(player){					//新增加json协议，用于同步界面 2016-10-11 14:00
 				snprintf(player->playfilename,128,"%s",cJSON_GetObjectItem(pJson, "url")->valuestring);
-				if(musicname){
+				if(musicname!=NULL){
 					snprintf(player->musicname,64,"%s",musicname);
 					player->musicTime = cJSON_GetObjectItem(pJson, "time")->valueint;
 				}

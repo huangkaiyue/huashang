@@ -2,7 +2,7 @@
 #define _CONFIG_H_
 //----------------------版本类-----------------------------------
 
-#define VERSION "\n10.9-15:00\n"	//版本号
+#define VERSION "\n10.12-15:00\n"	//版本号
 
 //#define TEST_SDK					//测试SDK
 
@@ -12,7 +12,7 @@
 
 //----------------------功能类-----------------------------------
 
-//#define SPEEK			//会话
+#define SPEEK			//会话
 
 #define PALY_URL_SD		//下载保存到本地
 
@@ -30,7 +30,7 @@
 
 #define SELECT_UDP		//将udp添加到select 当中
 
-#define SPEEK_VOICES	//开启对讲功能
+//#define SPEEK_VOICES	//开启对讲功能
 
 //#define VOICS_CH		//播音人选择功能添加
 

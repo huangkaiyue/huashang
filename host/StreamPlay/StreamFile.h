@@ -26,6 +26,7 @@ typedef struct{
 	unsigned char playState;
 	unsigned char vol;			//音量大小	
 	short progress;				//播放进度
+	short proflag;				//播放进度标记
 	unsigned short musicTime;	//音乐总时长
 	char playfilename[128];		//当前播放的url地址
 	char musicname[64];			//当前播放的歌曲名字		
@@ -33,6 +34,7 @@ typedef struct{
 
 typedef struct{
 	char channel;					//采样通道
+	unsigned char wait;
 	unsigned short rate;			//采样率	
 	int bitrate;					//播放比特率
 	int playSize;					//当前播放大小
