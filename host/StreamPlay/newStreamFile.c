@@ -58,8 +58,9 @@ static void cleanStreamData(Mp3Stream *st)
 }
 static void ack_progress(void){
 	st->player.progress= (st->playSize*100)/st->streamLen;
+#if 0
 	if(st->player.progress>0&&st->player.progress<10&&st->player.proflag==0){
-		st->player.proflag=10;
+		st->player.proflagproflag=10;
 		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	}else if(st->player.progress>23&&st->player.progress<28&&st->player.proflag==10){
 		st->player.proflag=25;
@@ -71,6 +72,18 @@ static void ack_progress(void){
 		st->player.proflag=75;
 		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	}
+#else
+	if(st->player.progress>23&&st->player.proflag==0){
+		st->player.proflag=25;
+		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
+	}else if(st->player.progress>48&&st->player.proflag==25){
+		st->player.proflag=50;
+		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
+	}else if(st->player.progress>73&&st->player.proflag==50){
+		st->player.proflag=75;
+		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
+	}
+#endif
 }
 //实现写入音频流的接口, 需要输入的数据内存存放位置 inputMsg  inputSize 输入的数据流大小
 static void InputNetStream(char * inputMsg,int inputSize)
@@ -86,6 +99,7 @@ static void InputNetStream(char * inputMsg,int inputSize)
 				__safe_fread(inputMsg,st->cacheSize-st->playSize);
 				memset(inputMsg+st->cacheSize-st->playSize,0,st->playSize+inputSize-st->cacheSize);
 			}
+			st->player.proflag=0;
 			DecodeExit();
 			return ;
 		}
@@ -252,6 +266,7 @@ void NetStreamExitFile(void)
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//退出播放
 		st->player.progress=0;
 		st->player.musicTime=0;
+		st->player.proflag=0;
 		memset(st->player.musicname,0,64);
 		DecodeExit();
 		usleep(100);
