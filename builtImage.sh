@@ -20,5 +20,5 @@ if [ "$1" = "source" ];then
 fi
 
 cp $TAR $SDK_PATH
-
+rm $TAR
 echo .................. cp $TAR $SDK_PATH ok .................

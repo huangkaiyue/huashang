@@ -79,8 +79,6 @@ static int check_lock_msgEv(void)
 	return 0;
 }
 //按键处理事件
-unsigned char ledletf=0;
-unsigned char ledright=0;
 static void signal_handler(int signum)
 {
 	//拿到底层按键事件号码
@@ -95,11 +93,20 @@ static void signal_handler(int signum)
 	lock_msgEv();
 	if (signum == GPIO_UP){
 		switch(gpio.mount){
+			case RESERVE_KEY2:
+#ifdef SPEEK_VOICES
+				gpio.speek_tolk=TOLK;
+#endif
+				break;
 			case SPEEK_KEY:
-#ifndef	SPEEK_VOICES
-				end_event_std();
+#ifdef SPEEK_VOICES
+				if(gpio.speek_tolk==SPEEK){
+					end_event_std();
+				}else{
+					create_event_voices_key(1);
+				}
 #else
-				create_event_voices_key(1);
+				end_event_std();
 #endif
 				break;
 
@@ -144,9 +151,13 @@ static void signal_handler(int signum)
 				ResetDefaultRouter();
 				break;
 					
-			case RESERVE_KEY2://预留键
+			case RESERVE_KEY2://会话对讲开关键
+#ifdef SPEEK_VOICES
+				gpio.speek_tolk=SPEEK;
+#else
 				exitqttsPlay();
 				createPlayEvent((const void *)"mp3",PLAY_NEXT);
+#endif
 				break;
 				
 			case NETWORK_KEY://配网键
@@ -154,11 +165,16 @@ static void signal_handler(int signum)
 				break;
 				
 			case SPEEK_KEY://会话键
-#ifndef	SPEEK_VOICES
-				down_voices_sign();
+#ifdef SPEEK_VOICES
+				if(gpio.speek_tolk==SPEEK){
+					down_voices_sign();
+				}else{
+					create_event_voices_key(0);
+				}
 #else
-				create_event_voices_key(0);
+					down_voices_sign();
 #endif
+
 				break;
 			
 			case RESERVE_KEY1://预留键
@@ -177,18 +193,18 @@ static void signal_handler(int signum)
 				SetVol(0,0);
 				break;
 			case LETFLED_KEY:	//left led
-				if(ledletf==1){
-					ledletf=0;
+				if(gpio.ledletf==1){
+					gpio.ledletf=0;
 					led_left_right(left,closeled);
 				}else{
-					ledletf=1;
+					gpio.ledletf=1;
 					led_left_right(left,openled);
 				}
-				if(ledright==1){	//right led
-					ledright=0;
+				if(gpio.ledright==1){	//right led
+					gpio.ledright=0;
 					led_left_right(right,closeled);
 				}else{
-					ledright=1;
+					gpio.ledright=1;
 					led_left_right(right,openled);
 				}
 				break;
@@ -329,6 +345,18 @@ void init_7620_gpio(void)
 	}
 	uart_open();
 	close_sys_led();
+#ifdef SPEEK_VOICES
+	if (ioctl(gpio.fd,TANG_GET_DATA_3264,&gpio.data) < 0){
+		perror("ioctl");
+		close(gpio.fd);
+		return ;
+	}
+	if((0x01&(gpio.data>>7))==1){
+		gpio.speek_tolk=TOLK;
+	}else{
+		gpio.speek_tolk=SPEEK;
+	}
+#endif
 	enable_gpio();
 }
 //去使能按键

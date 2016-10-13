@@ -2,7 +2,7 @@
 #define _CONFIG_H_
 //----------------------版本类-----------------------------------
 
-#define VERSION "\n10.12-15:00\n"	//版本号
+#define VERSION "\n10.13-23:40\n"	//版本号
 
 //#define TEST_SDK					//测试SDK
 
@@ -12,7 +12,7 @@
 
 //----------------------功能类-----------------------------------
 
-//#define SPEEK_VOICES	//开启对讲功能
+#define SPEEK_VOICES	//开启对讲功能
 
 //#define WAVTOAMR		//将wav格式文件转换成amr格式
 

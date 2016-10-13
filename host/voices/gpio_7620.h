@@ -14,7 +14,7 @@
 #define GPIO_DOWN	SIGUSR2	//按下事件
 
 #define	RESET_KEY		38	//恢复出厂设置键
-#define RESERVE_KEY2	39	//预留键
+#define RESERVE_KEY2	39	//会话对讲开关键
 #define	NETWORK_KEY		40	//配网键
 #define	SPEEK_KEY		41	//会话键
 #define	RESERVE_KEY1	42	//预留键
@@ -26,7 +26,8 @@
 #define RIGHTLED_KEY	21	//右灯
 
 #define GPIO_DEV	"/dev/gpio"
-
+#define SPEEK	0
+#define TOLK	1
 #ifdef LED_LR
 enum{
 	left=0,
@@ -45,8 +46,12 @@ enum{
 };
 typedef struct {
 	int fd;
-	unsigned char mount;//中断gpio口
-	unsigned char sig_lock:1;//锁
+	unsigned int mount;//中断gpio口
+	unsigned char sig_lock:2,//锁
+			speek_tolk:2,
+			ledletf:2,
+			ledright:2;
+	unsigned int data;
 }Gpio;
 
 extern void open_wm8960_voices(void);
