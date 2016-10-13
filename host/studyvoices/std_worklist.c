@@ -129,10 +129,10 @@ static int parseJson_string(char * pMsg,void handle_jsion(char *textString))
 		case 302000:
 		case 200000:
 		case 40002:
-			if(++sysMes.error_400002>2){
+			//if(++sysMes.error_400002>2){
 				sysMes.error_400002=0;
 				play_sys_tices_voices(ERROR_40002);
-			}
+			//}
 			goto exit;
 			break;
 	}
@@ -161,12 +161,6 @@ void send_voices_server(const char *voicesdata,int len,char *voices_type)
 	char *result=NULL, *text=NULL, *audio=NULL;
 	
 	starttime=time(&t);
-#if 0
-	pool_add_task(play_sys_tices_voices,TULING_WINT);
-	usleep(1000*1000);
-#else
-	create_event_system_voices(2);
-#endif
 	start_event_play_wav();//暂停录音
 	audio = base64_encode(voicesdata, len);
 	if(!audio){
@@ -226,7 +220,7 @@ static void runJsonEvent(const char *data)
 {
 	parseJson_string(data,handle_text);
 	free(data);
-	play_sys_tices_voices(TULING_DIDI);
+	//play_sys_tices_voices(TULING_DIDI);
 }
 int event_lock=0;
 /*******************************************************
@@ -263,7 +257,7 @@ static void handle_event_msg(const char *data,int msgSize)
 	switch(cur->type){
 		case STUDY_WAV_EVENT:		//会话事件
 			runJsonEvent(data);
-			pause_record_audio();
+			//pause_record_audio();
 			break;
 			
 		case SYS_VOICES_EVENT:		//系统音事件
@@ -305,7 +299,7 @@ static void handle_event_msg(const char *data,int msgSize)
 		case QTTS_PLAY_EVENT:		//QTTS事件
 			start_event_play_wav();
 			PlayQttsText(data,cur->len);
-			pause_record_audio();
+			//pause_record_audio();
 			free((void *)data);
 			break;
 			

@@ -154,6 +154,12 @@ static void voices_packt(const char *data,int size)
 	}
 	else if(len_voices > VOICES_MIN)//“Ù∆µ…œ¥´
 	{
+#if 0
+		pool_add_task(play_sys_tices_voices,TULING_WINT);
+		usleep(1000*1000);
+#else
+		create_event_system_voices(2);
+#endif
 		pcmwavhdr.size_8 = (len_voices+36);
 		pcmwavhdr.data_size = len_voices;
 		memcpy(buf_voices,&pcmwavhdr,WAV_HEAD);				//–¥“Ù∆µÕ∑

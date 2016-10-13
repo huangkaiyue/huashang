@@ -50,12 +50,13 @@ void play_sys_tices_voices(char *filePath)
 	open_wm8960_voices();
 	//SET_MUTE_ENABLE();
 #ifdef MUTE_TX
-	mute_recorde_vol(UNMUTE);
-#endif
-#endif
 	if(strstr(path,"TuLin_Wint_8K")||strstr(path,"TuLin_Di_8K")){
 		mute_recorde_vol(100);
+	}else{
+		mute_recorde_vol(UNMUTE);
 	}
+#endif
+#endif
 	playLocalVoices(path);
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	write_pcm(play_buf);
@@ -63,7 +64,10 @@ void play_sys_tices_voices(char *filePath)
 	if(!strcmp(filePath,"qtts/yes_reavwifi_8K.wav")){
 		return;
 	}
-	sleep(2);
+	if(strstr(filePath,"40002_8k.wav")){
+		pause_record_audio();	//退出播放
+	}
+	usleep(1800*1000);
 #ifdef MUTE_TX
 	mute_recorde_vol(MUTE);
 #endif
@@ -105,8 +109,10 @@ void PlayQttsText(char *text,unsigned char type)
 	}
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	write_pcm(play_buf);
+	usleep(800*1000);
+	pause_record_audio();	//退出播放
 #ifdef CLOSE_VOICE
-	sleep(2);
+	usleep(1000*1000);
 #ifdef MUTE_TX
 	mute_recorde_vol(MUTE);
 #endif

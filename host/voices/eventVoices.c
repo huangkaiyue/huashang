@@ -72,6 +72,7 @@ static void CreateLocalMp3(char *localpath)
 	}
 	if(GetRecordeLive() == PLAY_WAV_E){
 		exitqttsPlay();
+		return;
 	}
 	char *URL= (char *)calloc(1,strlen(localpath)+1);
 	sprintf(URL,"%s",localpath);
@@ -155,6 +156,7 @@ void createPlayEvent(const void *play,unsigned char Mute)
 ********************************************************/
 void CleanUrlEvent(void)
 {
+	sysMes.localplayname=0;
 	add_event_msg(NULL,0,SET_RATE_EVENT);
 }
 /*******************************************************
@@ -302,6 +304,7 @@ void handle_event_system_voices(int sys_voices)
 	}
 	else if(sys_voices==CONNECT_OK)				//连接成功
 	{
+		enable_gpio();
 		//play_sys_tices_voices(LINK_SUCCESS);
 		usleep(100);
 		char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
@@ -315,7 +318,6 @@ void handle_event_system_voices(int sys_voices)
 		urlLogEnd("\n",3);
 #endif
 		PlayQttsText(buf,0);
-		enable_gpio();
 	}
 	else if(sys_voices==START_SMARTCONFIG)		//启动配网
 	{
@@ -335,10 +337,12 @@ void handle_event_system_voices(int sys_voices)
 	}
 	else if(sys_voices==NOT_NETWORK)			//没有连接成功
 	{
+		enable_gpio();
 		play_sys_tices_voices(NO_NETWORK_VOICES);
 	}
 	else if(sys_voices==CONNET_CHECK)			//检查网络是否可用
 	{
+		enable_gpio();
 		play_sys_tices_voices(CHECK_INTERNET);
 	}
 	usleep(1000);
@@ -538,7 +542,6 @@ void init_wm8960_voices(void)
 	initStream(ack_playCtr,WritePcmData,i2s_start_play,GetVol);
 	init_stdvoices_pthread();
 	init_record_pthread();
-	enable_gpio();
 }
 void clean_main_voices(void)
 {

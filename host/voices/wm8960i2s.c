@@ -166,6 +166,7 @@ void mute_recorde_vol(int change)
 	if(change==UNMUTE){
 		SET_TX_VOL(I2S.i2s_fd,I2S.tx_vol);
 	}else{
+		change=(change>I2S.tx_vol?I2S.tx_vol:change);
 		SET_TX_VOL(I2S.i2s_fd,change);
 	}
 	usleep(1000);
@@ -288,19 +289,19 @@ void SET_MUTE_ENABLE(void){
 static void clean_i2s_play(void){
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	write_pcm(play_buf);
-	usleep(100*1000);
+	usleep(1*100);
 	
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	write_pcm(play_buf);
-	usleep(100*1000);
+	usleep(1*100);
 	
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	write_pcm(play_buf);
-	usleep(100*1000);
+	usleep(1*100);
 	
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	write_pcm(play_buf);
-	usleep(100*1000);
+	usleep(1*100);
 }
 int i2s_start_play(unsigned short rate)
 {

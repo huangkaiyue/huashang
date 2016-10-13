@@ -106,13 +106,13 @@ static void signal_handler(int signum)
 			case ADDVOL_KEY:	//play last
 				switch(sysMes.localplayname){
 					case mp3:
-						createPlayEvent((const void *)"mp3",PLAY_LAST);
+						createPlayEvent((const void *)"mp3",PLAY_NEXT);
 						break;
 					case story:
-						createPlayEvent((const void *)"story",PLAY_LAST);
+						createPlayEvent((const void *)"story",PLAY_NEXT);
 						break;
 					case english:
-						createPlayEvent((const void *)"english",PLAY_LAST);
+						createPlayEvent((const void *)"english",PLAY_NEXT);
 						break;
 					default:
 						break;
@@ -122,13 +122,13 @@ static void signal_handler(int signum)
 			case SUBVOL_KEY:	//play next
 				switch(sysMes.localplayname){
 					case mp3:
-						createPlayEvent((const void *)"mp3",PLAY_NEXT);
+						createPlayEvent((const void *)"mp3",PLAY_LAST);
 						break;
 					case story:
-						createPlayEvent((const void *)"story",PLAY_NEXT);
+						createPlayEvent((const void *)"story",PLAY_LAST);
 						break;
 					case english:
-						createPlayEvent((const void *)"english",PLAY_NEXT);
+						createPlayEvent((const void *)"english",PLAY_LAST);
 						break;
 					default:
 						break;
@@ -150,7 +150,7 @@ static void signal_handler(int signum)
 				break;
 				
 			case NETWORK_KEY://ÅäÍø¼ü
-				//Net_work();
+				Net_work();
 				break;
 				
 			case SPEEK_KEY://»á»°¼ü
