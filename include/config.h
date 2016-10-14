@@ -14,19 +14,13 @@
 
 #define SPEEK_VOICES	//开启对讲功能
 
-//#define WAVTOAMR		//将wav格式文件转换成amr格式
-
 #define PALY_URL_SD		//下载保存到本地
 
 #define LOCAL_MP3		//MP3本地播放
 
 #define	LED_LR			//LED左右灯以及多按键
 
-#define UART			//串口开关
-
 #define CLOSE_VOICE		//不工作处于关闭音频状态
-
-#define MUTE_TX			//关闭音频设置关掉音量
 
 #define TULIN_WINT_MUSIC//图灵过渡音位音乐
 
@@ -69,6 +63,7 @@
 #else
 #define TF_MP3_PATH 		"mp3/"						//本地音乐路径
 #define TF_STORY_PATH 		"story/"					//本地故事路径
+#define TF_ENGLISH_PATH		"english/"					//本地英语路径
 #endif
 #endif
 #ifdef PALY_URL_SD

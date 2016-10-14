@@ -1,23 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <limits.h>
-
-#include <signal.h>
-#include <getopt.h>
-#include <memory.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <linux/tcp.h>
-#include <fcntl.h>
-#include <unistd.h>
-
-#include <assert.h>
-#include <linux/netfilter_ipv4.h>
+#include "comshead.h"
 #include "base/demo_tcp.h"
 #include "network.h"
 #include "sysdata.h"

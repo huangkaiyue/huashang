@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include <string.h>
+#include "comshead.h"
 
 int WriteMp3Data(char *filename,char *data,int size)
 {

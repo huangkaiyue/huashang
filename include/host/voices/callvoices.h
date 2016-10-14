@@ -15,7 +15,7 @@
 #define RECODE_STOP 			10  //录音停止,退出整个录音线程
 #define RECODE_EXIT_FINNISH		11	//录音正常退出
 
-//#define DBG_VOICES
+#define DBG_VOICES
 #ifdef DBG_VOICES
 #define DEBUG_VOICES(fmt, args...) printf("Call voices: " fmt, ## args) 
 #else

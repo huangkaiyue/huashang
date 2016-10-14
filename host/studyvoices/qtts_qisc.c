@@ -1,14 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <utime.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-#include <pthread.h>
-//#include <iconv.h>
-
+#include "comshead.h"
 #include "qtts.h"
 #include "msp_cmn.h"
 #include "msp_errors.h"

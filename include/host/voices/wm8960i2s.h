@@ -46,8 +46,8 @@ typedef struct {
 
 extern I2SST I2S;
 
-#define MUTE 	1
-#define UNMUTE 	2
+#define MUTE 	0
+#define UNMUTE 	1
 
 #define SET_RATE(i2s_fd,rate) 	ioctl(i2s_fd, I2S_SRATE, rate)//采样率设置
 #define SET_RX_VOL(i2s_fd,vol) 	ioctl(i2s_fd, I2S_RX_VOL, vol)//录音音量

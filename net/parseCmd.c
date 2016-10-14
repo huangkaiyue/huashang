@@ -1,10 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-
+#include "comshead.h"
 #include "base/pool.h"
 #include "base/cJSON.h"
 #include "network.h"
@@ -143,14 +137,6 @@ static void CreateState(cJSON* pItem,unsigned char playState)
 {
 	if(playState==STREAM_EXIT){
 		cJSON_AddStringToObject(pItem, "state","stop");
-		DEBUG_TCP("========================stop mp3 !!!================================\n");
-#ifdef CLOSE_VOICE
-#ifdef MUTE_TX
-		mute_recorde_vol(1);
-#endif
-		close_wm8960_voices();
-		//SET_MUTE_DISABLE();
-#endif
 	}else if(playState==STREAM_PLAY){
 		cJSON_AddStringToObject(pItem, "state","play");
 	}else if(playState==STREAM_PAUSE){
@@ -209,6 +195,13 @@ void ack_playCtr(int nettype,Player_t *play,unsigned char playState)
 	pItem = cJSON_CreateObject();
 	cJSON_AddStringToObject(pItem, "handler", "mplayer");
 	CreateState(pItem,playState);
+#ifdef CLOSE_VOICE
+	if(playState==STREAM_EXIT){
+		mute_recorde_vol(MUTE);
+		close_wm8960_voices();
+		//SET_MUTE_DISABLE();
+	}
+#endif
 	cJSON_AddStringToObject(pItem, "url",play->playfilename);
 	cJSON_AddStringToObject(pItem, "name",play->musicname);
 	cJSON_AddNumberToObject(pItem, "time",(int)play->musicTime);
@@ -385,12 +378,11 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			DEBUG_TCP("stropenTime = %s\n",stropenTime);
 			set_host_time(1,stropenTime);
 			ack_hostCtr(sockfd,stropenTime,"open");
-#ifdef UART
+			
 			SocSendMenu(3,0);
 			usleep(100*1000);
 			SocSendMenu(1,stropenTime);//----------->定时开机
 			usleep(100*1000);
-#endif
 		}else if (!strcmp(pSub->valuestring,"close")){
 			//定时关机
 			char *strcloseTime = cJSON_GetObjectItem(pJson, "time")->valuestring;
@@ -398,12 +390,10 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			set_host_time(0,strcloseTime);
 			ack_hostCtr(sockfd,strcloseTime,"close");
 			
-#ifdef UART
 			SocSendMenu(3,0);
 			usleep(100*1000);
 			SocSendMenu(2,strcloseTime);//----------->定时关机
 			usleep(100*1000);
-#endif
 		}
 	}//end host 定时开关机
 	

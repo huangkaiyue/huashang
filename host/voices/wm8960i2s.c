@@ -1,15 +1,4 @@
-#include <sys/mman.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-#include <string.h>
-
+#include "comshead.h"
 #include "linux/autoconf.h" //kernel config
 #include "host/voices/wm8960i2s.h"
 #include "config.h"
@@ -249,7 +238,7 @@ void __init_wm8960_voices(void)
 		perror("i2scmd init");
 		return -1;
 	}
-#ifdef MUTE_TX
+#ifdef CLOSE_VOICE
 	mute_recorde_vol(MUTE);
 #endif	
 	close_wm8960_voices();//----------------------
@@ -274,7 +263,7 @@ void __init_wm8960_voices(void)
 	I2S.execute_mode = EXTERNAL_LBK2;
 	SET_TX_VOL(I2S.i2s_fd, I2S.tx_vol);
 	open_wm8960_voices();//----------------------
-#ifdef MUTE_TX
+#ifdef CLOSE_VOICE
 	mute_recorde_vol(UNMUTE);
 #endif
 }
@@ -294,7 +283,7 @@ static void clean_i2s_play(void){
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	write_pcm(play_buf);
 	usleep(1*100);
-	
+#if 0	
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	write_pcm(play_buf);
 	usleep(1*100);
@@ -302,10 +291,11 @@ static void clean_i2s_play(void){
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	write_pcm(play_buf);
 	usleep(1*100);
+#endif
 }
 int i2s_start_play(unsigned short rate)
 {
-#ifdef MUTE_TX
+#ifdef CLOSE_VOICE
 	mute_recorde_vol(MUTE);
 #endif
 	close_wm8960_voices();
@@ -316,7 +306,7 @@ int i2s_start_play(unsigned short rate)
 		printf("start play rate = %d\n",rate);
 		//SET_MUTE_ENABLE();
 		open_wm8960_voices();
-#ifdef MUTE_TX
+#ifdef CLOSE_VOICE
 		mute_recorde_vol(UNMUTE);
 #endif
 		return -1;
@@ -332,7 +322,7 @@ int i2s_start_play(unsigned short rate)
 	
 	//SET_MUTE_ENABLE();
 	open_wm8960_voices();
-#ifdef MUTE_TX
+#ifdef CLOSE_VOICE
 	mute_recorde_vol(UNMUTE);
 #endif
 	return 0;

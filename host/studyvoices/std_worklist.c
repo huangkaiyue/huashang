@@ -1,12 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <pthread.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
+#include "comshead.h"
 #include "host/studyvoices/std_worklist.h"
 #include "host/studyvoices/prompt_tone.h"
 #include "base/cJSON.h"

@@ -1,12 +1,4 @@
-#include <stdio.h>             
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <sys/ioctl.h>
-#include <linux/autoconf.h>
-
+#include "comshead.h"
 #include "host/voices/callvoices.h"
 #include "ralink_gpio.h"
 #include "gpio_7620.h"

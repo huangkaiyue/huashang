@@ -1,17 +1,7 @@
 #include "config.h"
 
 #ifdef WORK_INTER
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <signal.h>
-#include <unistd.h>
-
+#include "comshead.h"
 #include "base/pool.h"
 #include "base/tools.h"
 #include "workinter.h"
@@ -198,8 +188,8 @@ void pasreInputCmd(const char *com)
 		}else if(!strcmp(com,"prev")){
 			test_backSeekTo();
 		}else if(!strcmp(com,"amr")){
-			//WavtoAmrfile("/mnt/qtts/");
-			createPlayEvent((const void *)"story",PLAY_NEXT);
+			WavtoAmrfile("/mnt/qtts/");
+			//createPlayEvent((const void *)"story",PLAY_NEXT);
 		}
 		else if (!strcmp(com, "quit") ||
              		!strcmp(com, "q"))

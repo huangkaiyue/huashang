@@ -160,6 +160,7 @@ static void voices_packt(const char *data,int size)
 #else
 		create_event_system_voices(2);
 #endif
+		DEBUG_VOICES("len_voices = %d enc failed \n",len_voices);
 		pcmwavhdr.size_8 = (len_voices+36);
 		pcmwavhdr.data_size = len_voices;
 		memcpy(buf_voices,&pcmwavhdr,WAV_HEAD);				//–¥“Ù∆µÕ∑
@@ -176,6 +177,7 @@ static void voices_packt(const char *data,int size)
 	else
 	{
 		if(sysMes.recorde_live !=PLAY_WAV){
+			i2s_start_play(8000);
 			play_sys_tices_voices(NO_VOICES);
 		}
 		goto exit1;

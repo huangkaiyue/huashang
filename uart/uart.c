@@ -1,19 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-#include <strings.h>
-#include <termios.h>
-#include <pthread.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <strings.h>
-#include <pthread.h>
-#include <linux/input.h>
-#include <time.h>
-
+#include "comshead.h"
 #include "base/tools.h"
 #include "uart.h"
 #include "config.h"

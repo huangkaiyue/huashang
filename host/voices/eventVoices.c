@@ -1,12 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <dirent.h>
-#include <sys/types.h>
-
+#include "comshead.h"
 #include "host/voices/wm8960i2s.h"
 #include "host/voices/message_wav.h"
 #include "host/studyvoices/std_worklist.h"
@@ -144,8 +136,6 @@ void createPlayEvent(const void *play,unsigned char Mute)
 	}
 #endif
 	else{
-		//char *URL= (char *)calloc(1,strlen(url)+1);
-		//sprintf(URL,"%s",url);
 		CreateUrlEvent(play);
 	}
 }
@@ -289,6 +279,9 @@ void handle_event_system_voices(int sys_voices)
 	}
 	else if(sys_voices==6){
 		play_sys_tices_voices(UPDATA_END);		//更新固件结束
+		clean_resources();
+		system("sleep 8 && reboot &");
+		//exit(0);
 	}
 	else if(sys_voices==7){
 		play_sys_tices_voices(REQUEST_FAILED);
@@ -306,17 +299,9 @@ void handle_event_system_voices(int sys_voices)
 	{
 		enable_gpio();
 		//play_sys_tices_voices(LINK_SUCCESS);
-		usleep(100);
 		char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
-		usleep(100);
 		char buf[128]={0};
 		snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
-		//DEBUG_EVENT("wifi = %s\n",wifi);
-#ifdef LOG_MP3PLAY
-		urlLogEnd("wifi = ",8);
-		urlLogEnd(wifi,32);
-		urlLogEnd("\n",3);
-#endif
 		PlayQttsText(buf,0);
 	}
 	else if(sys_voices==START_SMARTCONFIG)		//启动配网
@@ -542,6 +527,9 @@ void init_wm8960_voices(void)
 	initStream(ack_playCtr,WritePcmData,i2s_start_play,GetVol);
 	init_stdvoices_pthread();
 	init_record_pthread();
+#ifdef TEST_SDK
+	enable_gpio();
+#endif
 }
 void clean_main_voices(void)
 {

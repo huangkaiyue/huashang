@@ -1,11 +1,4 @@
-#include <stdio.h>
-#include <sys/vfs.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <bits/types.h>
-#include <dirent.h>
-
+#include "comshead.h"
 #include "config.h"
 #include "systools.h"
 
@@ -125,7 +118,7 @@ void DelSdcardMp3file(char * sdpath)
 	}
 	printf("del file end ... \n");
 }
-#ifdef WAVTOAMR
+#ifdef TEST_SDK
 void WavtoAmrfile(char * sdpath)
 {
 	char filepath[128]={0};
@@ -134,9 +127,6 @@ void WavtoAmrfile(char * sdpath)
 	DIR *dirptr = NULL;  
 	struct dirent *entry;  
 
-#ifdef LOG_DELMP3
-	writeLog("/home/mp3filename.txt",sdpath);
-#endif
 	if((dirptr = opendir(sdpath)) == NULL)	
 	{  
 		printf("open dir !\n"); 
@@ -150,23 +140,15 @@ void WavtoAmrfile(char * sdpath)
 			usleep(1000);
 			continue;
 		}
-#ifdef LOG_DELMP3
-		writeLog("/home/mp3filename.txt",entry->d_name);
-#endif
 		printf("filename: %s\n",entry->d_name);
 		if(!strstr(entry->d_name,".wav")){
 			usleep(1000);
 		}
 		sscanf(entry->d_name,"%[^.].%*s",filepath);
-		printf("filepath : %s\n",filepath);
 		snprintf(wavfilepath,128,"%s%s",sdpath,entry->d_name);
-		//snprintf(wavfilepath,128,"%s","/home/qtts/start_internet_8K.wav");
 		snprintf(amrfilepath,128,"%s%s%s","/mnt/amr/",filepath,".amr");
-		//snprintf(amrfilepath,128,"%s","/mnt/amr/start_internet_8K.amr");
-		printf("wavfilepath : %s amrfilepath : %s \n",wavfilepath,amrfilepath);
-		printf("\n");
-		//WavToAmr8kFile(wavfilepath,amrfilepath);
-		playspeekVoices(amrfilepath);
+		WavToAmr8kFile(wavfilepath,amrfilepath);
+		//playspeekVoices(amrfilepath);
 		memset(wavfilepath,0,128);
 		memset(amrfilepath,0,128);
 		usleep(10000);

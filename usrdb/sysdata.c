@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
+#include "comshead.h"
 #include "sysdata.h"
 #include "config.h"
 #include "nvram.h"

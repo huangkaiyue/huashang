@@ -1,15 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <netdb.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-
+#include "comshead.h"
 #include "base/pool.h"
 #include "base/head_mp3.h"
 #include "StreamFile.h"

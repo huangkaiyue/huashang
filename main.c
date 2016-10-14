@@ -1,17 +1,4 @@
-#include <stdio.h>
-#include <netinet/in.h>    
-#include <arpa/inet.h>
-#include <semaphore.h>
-#include <string.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <signal.h>
-
+#include "comshead.h"
 #include "config.h"
 #include "udpsrv/broadcast.h"
 #include "base/pool.h"
@@ -80,10 +67,7 @@ int main(int argc, char **argv)
 	init_interface(pasreInputCmd);
 #endif	//end WORK_INTER
 	init_videoServer();
-
-#ifdef UART
-	init_Uart(create_event_system_voices,ack_batteryCtr);//tang : 2016.6.30 change for uart init
-#endif	//end UART
+	init_Uart(create_event_system_voices,ack_batteryCtr);	//³õÊ¼»¯´®¿Ú
 #ifdef	LED_LR
 	led_left_right(left,closeled);
 	led_left_right(right,closeled);
@@ -105,18 +89,6 @@ int main(int argc, char **argv)
 			playLocalMp3((const char *)msg);
 			usleep(100*1000);
 			if(getWorkMsgNum(DownEvent)==0){
-#if 0
-				if(strstr(msg,TF_STORY_PATH))
-					createPlayEvent((const void *)"story",PLAY_NEXT);
-				if(strstr(msg,TF_MP3_PATH))
-					createPlayEvent((const void *)"mp3",PLAY_NEXT);
-				if(strstr(msg,TF_TEST_PATH))
-					createPlayEvent((const void *)"testmp3",PLAY_NEXT);
-#ifdef	LED_LR
-				if(strstr(msg,TF_ENGLISH_PATH))
-					createPlayEvent((const void *)"english",PLAY_NEXT);
-#endif
-#else
 				switch(sysMes.localplayname){
 					case mp3:
 						createPlayEvent((const void *)"mp3",PLAY_NEXT);
@@ -133,7 +105,6 @@ int main(int argc, char **argv)
 					default:
 						sysMes.localplayname=0;
 						break;
-#endif
 				}
 			}
 			free((void *)msg);
