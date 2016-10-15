@@ -139,6 +139,13 @@ exit:
 	cJSON_Delete(pJson);
 	return err;
  }
+jmp_buf env; 
+
+void recvSignal(int sig) {  
+    printf("received signal %d !!!\n",sig);  
+	siglongjmp(env,1); 
+} 
+
 /*******************************************************
 @函数功能:	上传数据到服务器并获取到回复
 @参数:	voicesdata 上传数据
@@ -151,7 +158,6 @@ void send_voices_server(const char *voicesdata,int len,char *voices_type)
 	int endtime=0,starttime=0;
 	int resSize = 0, textSize=0, err=0;
 	char *result=NULL, *text=NULL, *audio=NULL;
-	
 	starttime=time(&t);
 	start_event_play_wav();//暂停录音
 	audio = base64_encode(voicesdata, len);
@@ -160,35 +166,46 @@ void send_voices_server(const char *voicesdata,int len,char *voices_type)
 		goto exit1;
 	}
 	DEBUG_STD_MSG("up voices data ...(len=%d)\n",len);
-	if((err=tl_req_voice(audio, len, RECODE_RATE, voices_type,\
+	
+	int r = sigsetjmp(env,1);  //保存一下上下文  
+	if(  r	== 0){
+		signal(SIGSEGV, recvSignal);  //出现段错误回调函数
+		DEBUG_STD_MSG("set signal ok \n");
+		///图灵服务器上，内部可能会发生错误的代码 
+		if((err=tl_req_voice(audio, len, RECODE_RATE, voices_type,\
 								key, &result,&resSize,&text,&textSize)))
-	{
-		if(err==5||err==6){
-			endtime=time(&t);
-			if((endtime-starttime)<15)//重连，语音播报
-			{
-				if((err=tl_req_voice(audio, len, RECODE_RATE, voices_type,\
+		{
+			if(err==5||err==6){
+				endtime=time(&t);
+				if((endtime-starttime)<15)//重连，语音播报
+				{
+					if((err=tl_req_voice(audio, len, RECODE_RATE, voices_type,\
 								key, &result,&resSize,&text,&textSize))){
-					DEBUG_STD_MSG("up voices data failed err =%d\n",err);
-					if(err==5||err==6){
-						create_event_system_voices(5);
-						sleep(2);
-						startServiceWifi();
-						sleep(2);
-						free(audio);
-						goto exit1;
+						DEBUG_STD_MSG("up voices data failed err =%d\n",err);
+						if(err==5||err==6){
+							create_event_system_voices(5);
+							sleep(2);
+							startServiceWifi();
+							sleep(2);
+							free(audio);
+							goto exit1;
+						}
 					}
+				}else{
+					create_event_system_voices(5);
+					//DEBUG_STD_MSG("startServiceWifi ...\n");
+					sleep(2);
+					startServiceWifi();
+					sleep(2);
+					free(audio);
+					goto exit1;
 				}
-			}else{
-				create_event_system_voices(5);
-				//DEBUG_STD_MSG("startServiceWifi ...\n");
-				sleep(2);
-				startServiceWifi();
-				sleep(2);
-				free(audio);
-				goto exit1;
 			}
 		}
+	}
+	else{
+		 DEBUG_STD_MSG("jump this code bug!!\n");
+		 create_event_system_voices(5);
 	}
 	free(audio);
 	audio=NULL;
@@ -323,6 +340,8 @@ static void clean_event_msg(const char *data,int msgSize)
 
 	}
 }
+
+
 void init_stdvoices_pthread(void)
 {
 	evMsg = InitCondWorkPthread(handle_event_msg);

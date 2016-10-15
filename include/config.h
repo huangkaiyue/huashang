@@ -18,7 +18,7 @@
 
 #define LOCAL_MP3		//MP3本地播放
 
-#define	LED_LR			//LED左右灯以及多按键
+//#define	LED_LR			//LED左右灯以及多按键
 
 #define CLOSE_VOICE		//不工作处于关闭音频状态
 

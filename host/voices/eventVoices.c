@@ -71,6 +71,7 @@ static void CreateLocalMp3(char *localpath)
 	add_event_msg(URL,0,LOCAL_MP3_EVENT);
 }
 #ifdef LOCAL_MP3
+static int playMp3LastNum;
 static void PlayLocal(unsigned char str,char *path, unsigned char Mute)
 {
 	static int playMp3Num=0;
@@ -78,15 +79,22 @@ static void PlayLocal(unsigned char str,char *path, unsigned char Mute)
 	char filename[64]={0};
 	int ret=0;
 	get_paly_num(&playMp3Num,str);
-	
-	if(++playMp3Num>127)
+	if(Mute==PLAY_LAST){
+		playMp3Num=playMp3LastNum;
+	}else{
+		playMp3LastNum=playMp3Num;
+		++playMp3Num;
+	}
+	if(playMp3Num>127)
 		playMp3Num=0;
+#if 0
 	if(Mute==PLAY_LAST){
 		playMp3Num -=2;
 		if(playMp3Num<0){
 			playMp3Num=0;
 		}
 	}
+#endif
 	snprintf(buf,64,"%s%s",TF_SYS_PATH,path);
 	ret=get_mp3filenmae(buf,filename,playMp3Num);
 	if(ret == -1){
@@ -279,9 +287,8 @@ void handle_event_system_voices(int sys_voices)
 	}
 	else if(sys_voices==6){
 		play_sys_tices_voices(UPDATA_END);		//更新固件结束
-		clean_resources();
 		system("sleep 8 && reboot &");
-		//exit(0);
+		clean_resources();
 	}
 	else if(sys_voices==7){
 		play_sys_tices_voices(REQUEST_FAILED);

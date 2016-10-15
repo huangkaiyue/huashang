@@ -19,11 +19,11 @@ void close_wm8960_voices(void)
 //系统灯开关
 void open_sys_led(void)
 {
-	ioctl(gpio.fd, TANG_LED_OPEN);
+	ioctl(gpio.fd, TANG_LED_CLOSE);
 }
 void close_sys_led(void)
 {
-	ioctl(gpio.fd, TANG_LED_CLOSE);
+	ioctl(gpio.fd, TANG_LED_OPEN);
 }
 
 #ifdef LED_LR
@@ -336,7 +336,7 @@ void init_7620_gpio(void)
 		return ;
 	}
 	uart_open();
-	close_sys_led();
+	open_sys_led();
 #ifdef SPEEK_VOICES
 	if (ioctl(gpio.fd,TANG_GET_DATA_3264,&gpio.data) < 0){
 		perror("ioctl");
@@ -345,6 +345,7 @@ void init_7620_gpio(void)
 	}
 	if((0x01&(gpio.data>>7))==1){
 		gpio.speek_tolk=TOLK;
+		//gpio.speek_tolk=SPEEK;
 	}else{
 		gpio.speek_tolk=SPEEK;
 	}
@@ -363,7 +364,7 @@ void disable_gpio(void)
 //清除GPIO
 void clean_7620_gpio(void)
 {
-	open_sys_led();
+	//close_sys_led();
 	disable_gpio();
 	close(gpio.fd);
 }
