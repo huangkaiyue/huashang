@@ -267,15 +267,17 @@ void __init_wm8960_voices(void)
 	mute_recorde_vol(UNMUTE);
 #endif
 }
-#if 0
+#if 1
 void SET_MUTE_DISABLE(void){
 	ioctl(I2S.i2s_fd, I2S_MUTE_DISABLE, 0);
+	usleep(100);
 }
 void SET_MUTE_ENABLE(void){
 	ioctl(I2S.i2s_fd, I2S_MUTE_ENABLE, 0);
+	usleep(100);
 }
 #endif
-static void clean_i2s_play(void){
+void clean_i2s_play(unsigned short rate){
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	write_pcm(play_buf);
 	usleep(1*100);
@@ -283,47 +285,54 @@ static void clean_i2s_play(void){
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	write_pcm(play_buf);
 	usleep(1*100);
-#if 0	
-	memset(play_buf,0,I2S_PAGE_SIZE);
-	write_pcm(play_buf);
-	usleep(1*100);
-	
-	memset(play_buf,0,I2S_PAGE_SIZE);
-	write_pcm(play_buf);
-	usleep(1*100);
-#endif
+	if(rate!=8000){	
+		memset(play_buf,0,I2S_PAGE_SIZE);
+		write_pcm(play_buf);
+		usleep(1*100);
+		
+		memset(play_buf,0,I2S_PAGE_SIZE);
+		write_pcm(play_buf);
+		usleep(1*100);
+	}
 }
 int i2s_start_play(unsigned short rate)
 {
 #ifdef CLOSE_VOICE
+#ifdef MUTE_8960
+	SET_MUTE_DISABLE();
+#endif
 	mute_recorde_vol(MUTE);
 #endif
 	close_wm8960_voices();
-	clean_i2s_play();
+	clean_i2s_play(rate);
 	I2S.play_size=0;
 	if(rate==I2S.tx_rate)  //播放的采样率等于录音采样率，不需要切换
 	{
 		printf("start play rate = %d\n",rate);
-		//SET_MUTE_ENABLE();
 		open_wm8960_voices();
 #ifdef CLOSE_VOICE
 		mute_recorde_vol(UNMUTE);
+#ifdef MUTE_8960
+		SET_MUTE_ENABLE();
+#endif
 #endif
 		return -1;
 	}
 	set_rx_state(I2S.i2s_fd,0);		//先关闭发送和接收，切换采样率
 	set_tx_state(I2S.i2s_fd,0);
-	SET_RATE(I2S.i2s_fd,rate);	//设置采样率
+	SET_RATE(I2S.i2s_fd,rate);		//设置采样率
 	I2S.tx_rate=rate;	//生效采样率
 	I2S.tx_enable=0;
 	set_rx_state(I2S.i2s_fd,1);
 	set_tx_state(I2S.i2s_fd,1);
 	I2S.execute_mode = PLAY_MODE;
 	
-	//SET_MUTE_ENABLE();
 	open_wm8960_voices();
 #ifdef CLOSE_VOICE
 	mute_recorde_vol(UNMUTE);
+#ifdef MUTE_8960
+	SET_MUTE_ENABLE();
+#endif
 #endif
 	return 0;
 }

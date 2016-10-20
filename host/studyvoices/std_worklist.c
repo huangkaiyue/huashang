@@ -46,13 +46,13 @@ static  void test_save_mp3file(char *mp3_data,int size)
 static int check_text_cmd(char *text)
 {
 	if(strstr(text,"音乐")){
-		//play_sys_tices_voices(NO_MUSIC);
-		PlayQttsText("此版本不支持音乐播放。",0);
+		play_sys_tices_voices(NO_MUSIC);
+		//PlayQttsText("小朋友，我还不会唱歌，你教我唱吧。",0);
 		return 1;
 	}
 	else if(strstr(text,"图灵")){
-		//play_sys_tices_voices(TULING_HAHAXIONG);
-		PlayQttsText("我叫大头，聪明又可爱的大头。",0);
+		play_sys_tices_voices(TULING_HAHAXIONG);
+		//PlayQttsText("我叫大头，聪明又可爱的大头。",0);
 		//PlayQttsText("我就是风流倜傥，玉树临风，人见人爱，花见花开，车见爆胎，聪明又可爱的糍粑糖，你也可以叫我糖糖，我们做好朋友吧。",0);
 		return 1;
 	}
@@ -295,14 +295,14 @@ static void handle_event_msg(const char *data,int msgSize)
 			urlLogEnd("NetStreamExitFile\n",20);
 #endif
 			AddDownEvent(data,URL_VOICES_EVENT);
-			sleep(5);
+			sleep(3);
 			break;
 
 		case LOCAL_MP3_EVENT:		//本地音乐播放事件
 			start_event_play_url();
 			NetStreamExitFile();
 			AddDownEvent(data,LOCAL_MP3_EVENT);
-			sleep(5);
+			sleep(1);
 			break;
 			
 		case QTTS_PLAY_EVENT:		//QTTS事件

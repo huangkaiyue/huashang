@@ -160,12 +160,12 @@ static void voices_packt(const char *data,int size)
 #else
 		create_event_system_voices(2);
 #endif
-		DEBUG_VOICES("len_voices = %d enc failed \n",len_voices);
+		DEBUG_VOICES("len_voices = %d  \n",len_voices);
 		pcmwavhdr.size_8 = (len_voices+36);
 		pcmwavhdr.data_size = len_voices;
 		memcpy(buf_voices,&pcmwavhdr,WAV_HEAD);				//写音频头
 		if(WavToAmr8k((const char *)buf_voices,amr_data,&amr_size)){		//转换成amr格式
-			DEBUG_VOICES("enc failed \n");
+			DEBUG_VOICES_ERROR("enc failed \n");
 		}
 		send_voices_server((const char *)amr_data,amr_size,"amr");
 		goto exit0;

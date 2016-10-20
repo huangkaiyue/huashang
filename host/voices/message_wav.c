@@ -5,7 +5,7 @@
 #include "host/voices/WavAmrCon.h"
 #include "config.h"
 
-#ifndef SPEEK_VOICES
+#if 0
 void playWavVoices(char *path)
 {
 	int size=0;
@@ -90,16 +90,20 @@ void playspeekVoices(const char *filename){
 #else
 #ifdef CLOSE_VOICE
 	open_wm8960_voices();
-	//SET_MUTE_ENABLE();
 	mute_recorde_vol(UNMUTE);
+#ifdef MUTE_8960
+	SET_MUTE_ENABLE();
+#endif
 #endif
 #endif
 	playAmrVoices(filename);
 #ifdef CLOSE_VOICE
 	sleep(2);
+#ifdef MUTE_8960
+	SET_MUTE_DISABLE();
+#endif
 	mute_recorde_vol(MUTE);
 	close_wm8960_voices();
-	//SET_MUTE_DISABLE();
 #endif	//end CLOSE_VOICE
 }
 #endif
@@ -107,17 +111,31 @@ void play_sys_tices_voices(char *filePath)
 {
 	char path[128];
 	snprintf(path,128,"%s%s",sysMes.sd_path,filePath);
-	//i2s_start_play(8000);
-#ifdef CLOSE_VOICE
+#if 0
+	i2s_start_play(8000);
+
+//	if(strstr(path,"TuLin_Wint_8K")||strstr(path,"TuLin_Di_8K")){
+//		mute_recorde_vol(UNMUTE);
+//	}
+#else
 	open_wm8960_voices();
-	//SET_MUTE_ENABLE();
+#if 0
 	if(strstr(path,"TuLin_Wint_8K")||strstr(path,"TuLin_Di_8K")){
-		mute_recorde_vol(100);
+		mute_recorde_vol(107);
 	}else{
 		mute_recorde_vol(UNMUTE);
 	}
+#ifdef MUTE_8960
+	SET_MUTE_ENABLE();
 #endif
-#ifdef SPEEK_VOICES
+#else
+	mute_recorde_vol(UNMUTE);
+#ifdef MUTE_8960
+	SET_MUTE_ENABLE();
+#endif
+#endif
+#endif
+#if 1
 	playAmrVoices(path);
 #else
 	playWavVoices(path);
@@ -126,13 +144,16 @@ void play_sys_tices_voices(char *filePath)
 	if(!strcmp(filePath,"qtts/yes_reavwifi_8K")){
 		return;
 	}
+	usleep(800*1000);
 	if(strstr(filePath,"40002_8k")){
 		pause_record_audio();	//退出播放
 	}
-	usleep(1800*1000);
+	usleep(1000*1000);
+#ifdef MUTE_8960
+	SET_MUTE_DISABLE();
+#endif
 	mute_recorde_vol(MUTE);
 	close_wm8960_voices();
-	//SET_MUTE_DISABLE();
 #endif
 }
 #if 0
@@ -156,8 +177,10 @@ void PlayQttsText(char *text,unsigned char type)
 #else
 #ifdef CLOSE_VOICE
 	open_wm8960_voices();
-	//SET_MUTE_ENABLE();	//音频开关
 	mute_recorde_vol(UNMUTE);
+#ifdef MUTE_8960
+	SET_MUTE_ENABLE();
+#endif
 #endif
 #endif
 	char *textbuf= (char *)calloc(1,strlen(text)+2);
@@ -175,9 +198,11 @@ void PlayQttsText(char *text,unsigned char type)
 	pause_record_audio();	//退出播放
 #ifdef CLOSE_VOICE
 	usleep(1000*1000);
+#ifdef MUTE_8960
+	SET_MUTE_DISABLE();
+#endif
 	mute_recorde_vol(MUTE);
 	close_wm8960_voices();
-	//SET_MUTE_DISABLE();
 #endif
 	free(textbuf);
 }

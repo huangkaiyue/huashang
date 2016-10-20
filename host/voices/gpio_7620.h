@@ -39,6 +39,9 @@ enum{
 };
 #endif
 
+#define	LED_VIGUE_OPEN	1
+#define LED_VIGUE_CLOSE	0
+
 enum{
 	gpio3200,
 	gpio6332,
@@ -61,4 +64,7 @@ extern void enable_gpio(void);
 extern void init_7620_gpio(void);
 extern void disable_gpio(void);
 extern void clean_7620_gpio(void);
+extern void Led_vigue_open(void);
+extern void Led_vigue_close(void);
+
 #endif

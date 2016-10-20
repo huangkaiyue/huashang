@@ -146,9 +146,11 @@ void WavtoAmrfile(char * sdpath)
 		}
 		sscanf(entry->d_name,"%[^.].%*s",filepath);
 		snprintf(wavfilepath,128,"%s%s",sdpath,entry->d_name);
-		snprintf(amrfilepath,128,"%s%s%s","/mnt/amr/",filepath,".amr");
-		WavToAmr8kFile(wavfilepath,amrfilepath);
-		//playspeekVoices(amrfilepath);
+		snprintf(amrfilepath,128,"%s%s%s","/mnt/tang/",filepath,".amr");
+		//WavToAmr8kFile(wavfilepath,amrfilepath);
+#ifdef	SPEEK_VOICES
+		playspeekVoices(amrfilepath);
+#endif
 		memset(wavfilepath,0,128);
 		memset(amrfilepath,0,128);
 		usleep(10000);

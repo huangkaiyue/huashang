@@ -68,10 +68,7 @@ int main(int argc, char **argv)
 #endif	//end WORK_INTER
 	init_videoServer();
 	init_Uart(create_event_system_voices,ack_batteryCtr);	//³õÊ¼»¯´®¿Ú
-#ifdef	LED_LR
-	led_left_right(left,closeled);
-	led_left_right(right,closeled);
-#endif
+	//system("aliyun &");
 #ifdef MAIN_DOWN
 	char *msg=NULL;
 	int event=0;

@@ -10,6 +10,7 @@
 #include "../../net/network.h"
 #include "host/voices/WavAmrCon.h"
 #include "systools.h"
+#include "gpio_7620.h"
 
 #include "config.h"
 
@@ -37,6 +38,10 @@ static int playTextNum=0;
 返回值: 无
 ********************************************************/
 static void CreateUrlEvent(const void *data){
+#ifdef LOG_MP3PLAY
+		urlLogEnd(VERSION,15);	//版本时间
+		urlLogEnd("add stait\n",10);
+#endif
 	if(getEventNum()>0){
 		DEBUG_EVENT("CreateUrlEvent num =%d \n",getEventNum());
 		return;
@@ -79,6 +84,7 @@ static void PlayLocal(unsigned char str,char *path, unsigned char Mute)
 	char filename[64]={0};
 	int ret=0;
 	get_paly_num(&playMp3Num,str);
+#if 0
 	if(Mute==PLAY_LAST){
 		playMp3Num=playMp3LastNum;
 	}else{
@@ -87,17 +93,21 @@ static void PlayLocal(unsigned char str,char *path, unsigned char Mute)
 	}
 	if(playMp3Num>127)
 		playMp3Num=0;
-#if 0
+#endif
+#if 1
+	if(++playMp3Num>127)
+		playMp3Num=1;
 	if(Mute==PLAY_LAST){
 		playMp3Num -=2;
-		if(playMp3Num<0){
-			playMp3Num=0;
+		if(playMp3Num<=0){
+			playMp3Num=playMp3LastNum;
 		}
 	}
 #endif
 	snprintf(buf,64,"%s%s",TF_SYS_PATH,path);
 	ret=get_mp3filenmae(buf,filename,playMp3Num);
 	if(ret == -1){
+		playMp3LastNum=playMp3Num-1;
 		playMp3Num=1;
 	}else if(ret == -2){
 		return;
@@ -144,6 +154,7 @@ void createPlayEvent(const void *play,unsigned char Mute)
 	}
 #endif
 	else{
+		urlLogEnd("play event\n",13);
 		CreateUrlEvent(play);
 	}
 }
@@ -287,8 +298,8 @@ void handle_event_system_voices(int sys_voices)
 	}
 	else if(sys_voices==6){
 		play_sys_tices_voices(UPDATA_END);		//更新固件结束
-		system("sleep 8 && reboot &");
-		clean_resources();
+		//system("sleep 8 && reboot &");
+		//clean_resources();
 	}
 	else if(sys_voices==7){
 		play_sys_tices_voices(REQUEST_FAILED);
@@ -310,9 +321,15 @@ void handle_event_system_voices(int sys_voices)
 		char buf[128]={0};
 		snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
 		PlayQttsText(buf,0);
+#ifdef	LED_LR
+		led_left_right(left,closeled);
+		led_left_right(right,closeled);
+#endif
+		Led_vigue_close();
 	}
 	else if(sys_voices==START_SMARTCONFIG)		//启动配网
 	{
+		pool_add_task(Led_vigue_open,NULL);
 		play_sys_tices_voices(START_INTERNET);
 	}
 	else if(sys_voices==SMART_CONFIG_OK)		//接受密码成功
@@ -322,20 +339,32 @@ void handle_event_system_voices(int sys_voices)
 	else if(sys_voices==NOT_FIND_WIFI)			//没有扫描到wifi
 	{
 		play_sys_tices_voices(NO_WIFI);
+		Led_vigue_close();
 	}
 	else if(sys_voices==SMART_CONFIG_FAILED)	//没有收到用户发送的wifi
 	{	
 		play_sys_tices_voices(NOT_REAVWIFI);
+		Led_vigue_close();
 	}
 	else if(sys_voices==NOT_NETWORK)			//没有连接成功
 	{
 		enable_gpio();
 		play_sys_tices_voices(NO_NETWORK_VOICES);
+#ifdef	LED_LR
+		led_left_right(left,closeled);
+		led_left_right(right,closeled);
+#endif
+		Led_vigue_close();
 	}
 	else if(sys_voices==CONNET_CHECK)			//检查网络是否可用
 	{
 		enable_gpio();
 		play_sys_tices_voices(CHECK_INTERNET);
+#ifdef	LED_LR
+		led_left_right(left,closeled);
+		led_left_right(right,closeled);
+#endif
+		Led_vigue_close();
 	}
 	usleep(1000);
 }
@@ -451,7 +480,7 @@ static void stop_recorder_tosend_file(void)
 		printf("enc_wav_amr_file failed");
 		return;
 	}
-	printf("start send file \n");
+	DEBUG_EVENT("start send file \n");
 	//send_file_touser((unsigned int)t,filepath);
 	uploadVoicesToaliyun(filepath);
 	//remove(SAVE_WAV_VOICES_DATA);
@@ -467,7 +496,7 @@ void handle_voices_key_event(unsigned int state)
 	int i;
 	if(state==0)
 	{
-		printf("handle_voices_key_event : state(%d)...\n",state);
+		DEBUG_EVENT("handle_voices_key_event : state(%d)...\n",state);
 		if(create_recorder_file())		//创建音频文件节点，将插入到链表当中
 		{
 			pause_record_audio();
@@ -477,7 +506,7 @@ void handle_voices_key_event(unsigned int state)
 		注 :需要写文件头信息 
 		*********************************************/	
 	}else {
-		printf("handle_voices_key_event : state(%d)\n",state);
+		DEBUG_EVENT("handle_voices_key_event : state(%d)\n",state);
 		pause_record_audio();
 		usleep(500000);		//tang : 2015-12-3 for yan chang shi jian
 		stop_recorder_tosend_file();
@@ -504,7 +533,7 @@ void save_recorder_voices(const char *voices_data,int size)
 #if 0	//右声道
 		for(i=2; i<size; i+=4)		//双声道数据转成单声道数据
 		{
-			fwrite(voices_data+i,2,1,savefilefp);	
+			fwrite(voices_data+i,2,1,savefilefp);
 		}
 #else	//左声道
 		for(i=0; i<size; i+=4){
@@ -525,7 +554,7 @@ void save_recorder_voices(const char *voices_data,int size)
 *******************************************************************/
 void init_wm8960_voices(void)
 {
-	init_7620_gpio();	
+	init_7620_gpio();
 	__init_wm8960_voices();
 	disable_gpio();
 #ifndef TEST_SDK

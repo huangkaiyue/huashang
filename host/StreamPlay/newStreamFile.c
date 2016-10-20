@@ -159,7 +159,7 @@ static void *NetplayStreamMusic(void *arg)
 	get_mp3head(st->rfp,&st->rate,&st->channel);
 #ifdef SAFE_READ_WRITER
 	fclose(st->rfp);
-	st->rfp=NULL;	
+	st->rfp=NULL;
 #else
 	fseek(st->rfp,0,SEEK_SET);
 #endif

@@ -7,6 +7,7 @@
 #include "workinter.h"
 #include "host/voices/callvoices.h"
 #include "../udpsrv/broadcast.h"
+#include "../host/voices/gpio_7620.h"
 
 #define IMHELP    \
   "Commands: poolnum(pn)\n"\
@@ -59,16 +60,26 @@ void pasreInputCmd(const char *com)
 		else if(!strcmp(com,"c"))
 		{
 			//disable_gpio();
-			close_sys_led();
-			//SET_MUTE_DISABLE();
-			//close_wm8960_voices();
+			//close_sys_led();
+#ifdef MUTE_8960
+			SET_MUTE_DISABLE();
+#endif
+			enable_gpio();
+			Led_vigue_close();
+			usleep(100);
+			close_wm8960_voices();
 		}
 		else if(!strcmp(com,"o"))
 		{
 			//enable_gpio();
-			open_sys_led();
-			//SET_MUTE_ENABLE();
-			//open_wm8960_voices();
+			disable_gpio();
+			pool_add_task(Led_vigue_open,NULL);
+			//open_sys_led();
+			open_wm8960_voices();
+#ifdef MUTE_8960
+			SET_MUTE_ENABLE();
+#endif
+			usleep(100);
 		}
 #ifdef VOICS_CH
 		else if(!strcmp(com,"volch0"))
@@ -188,7 +199,7 @@ void pasreInputCmd(const char *com)
 		}else if(!strcmp(com,"prev")){
 			test_backSeekTo();
 		}else if(!strcmp(com,"amr")){
-			WavtoAmrfile("/mnt/qtts/");
+			WavtoAmrfile("/mnt/tang/");
 			//createPlayEvent((const void *)"story",PLAY_NEXT);
 		}
 		else if (!strcmp(com, "quit") ||

@@ -30,10 +30,10 @@ _MspLogin login_config;
 #define PLAY_QTTS_EXIT	2
 
 //#define VINN_GBK	"vcn=vinn,aue = speex-wb,auf=audio/L16;rate=8000,spd=7,vol = 8,rdn = 3,tte = gbk"
-#define VINN_GBK	"voice_name=vinn,text_encoding=gbk,sample_rate=8000,speed=50,volume=50,pitch=40,rdn =2"
-#define VINN_UTF8	"voice_name=vinn,text_encoding=utf8,sample_rate=8000,speed=50,volume=50,pitch=40,rdn =2"
+#define VINN_GBK	"voice_name=vinn,text_encoding=gbk,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =2"
+#define VINN_UTF8	"voice_name=vinn,text_encoding=utf8,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =2"
 #ifdef VOICS_CH
-#define VIMM_GBK	"voice_name=vixx,text_encoding=gbk,sample_rate=8000,speed=90,volume=50,pitch=40,rdn =2"
+#define VIMM_GBK	"voice_name=vixx,text_encoding=gbk,sample_rate=8000,speed=50,volume=50,pitch=40,rdn =2"
 #endif
 
 #define QTTS_SYS	0

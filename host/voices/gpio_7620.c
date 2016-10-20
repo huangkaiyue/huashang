@@ -7,6 +7,8 @@
 
 static Gpio gpio;
 
+static int led_type;
+
 //¿ª¹ØÒôÆµÇý¶¯º¯Êý
 void open_wm8960_voices(void)
 {
@@ -24,6 +26,19 @@ void open_sys_led(void)
 void close_sys_led(void)
 {
 	ioctl(gpio.fd, TANG_LED_OPEN);
+}
+void Led_vigue_open(void){
+	led_type=LED_VIGUE_OPEN;
+	while(led_type==LED_VIGUE_OPEN){
+		close_sys_led();
+		sleep(1);
+		open_sys_led();
+		sleep(1);
+	}
+	open_sys_led();
+}
+void Led_vigue_close(void){
+	led_type=LED_VIGUE_CLOSE;
 }
 
 #ifdef LED_LR
@@ -166,7 +181,6 @@ static void signal_handler(int signum)
 #else
 					down_voices_sign();
 #endif
-
 				break;
 			
 			case RESERVE_KEY1://Ô¤Áô¼ü
@@ -336,19 +350,26 @@ void init_7620_gpio(void)
 		return ;
 	}
 	uart_open();
-	open_sys_led();
+#if 0
+	close_sys_led();
+#else
+	pool_add_task(Led_vigue_open,NULL);
+#endif
 #ifdef SPEEK_VOICES
 	if (ioctl(gpio.fd,TANG_GET_DATA_3264,&gpio.data) < 0){
 		perror("ioctl");
 		close(gpio.fd);
 		return ;
 	}
+#if 1
 	if((0x01&(gpio.data>>7))==1){
 		gpio.speek_tolk=TOLK;
-		//gpio.speek_tolk=SPEEK;
 	}else{
 		gpio.speek_tolk=SPEEK;
 	}
+#else
+	gpio.speek_tolk=TOLK;
+#endif
 #endif
 	enable_gpio();
 }

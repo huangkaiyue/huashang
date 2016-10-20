@@ -197,9 +197,12 @@ void ack_playCtr(int nettype,Player_t *play,unsigned char playState)
 	CreateState(pItem,playState);
 #ifdef CLOSE_VOICE
 	if(playState==STREAM_EXIT){
+#ifdef MUTE_8960
+		SET_MUTE_DISABLE();
+#endif
 		mute_recorde_vol(MUTE);
 		close_wm8960_voices();
-		//SET_MUTE_DISABLE();
+		clean_i2s_play(8000);
 	}
 #endif
 	cJSON_AddStringToObject(pItem, "url",play->playfilename);
@@ -338,6 +341,9 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			getStreamState(&sockfd,ack_allplayerCtr);//----------->app登陆获取播放器信息
 		}else if(!strcmp(pSub->valuestring,"switch")){
 			mute_recorde_vol(UNMUTE);
+			
+			urlLogStart("json stait\n",13);
+			
 			Player_t *player = (Player_t *)calloc(1,sizeof(Player_t));
 			char *musicname=NULL;
 			if(cJSON_GetObjectItem(pJson, "name")!=NULL){
@@ -349,6 +355,8 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 					snprintf(player->musicname,64,"%s",musicname);
 					player->musicTime = cJSON_GetObjectItem(pJson, "time")->valueint;
 				}
+				urlLogEnd("json end\n",11);
+				
 				createPlayEvent(player,0);
 			}
 		}else if (!strcmp(pSub->valuestring,"pause")){
@@ -414,31 +422,31 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	else if(!strcmp(pSub->valuestring,"updateHost")){	//----------->由版本监测进程发送过来
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(!strcmp(pSub->valuestring,"newversion")){	//有新版本，需要更新
-			QttsPlayEvent("有新版本，需要更新",QTTS_SYS);//send to app
+			QttsPlayEvent("有新版本，需要更新。",QTTS_SYS);//send to app
 		}else if(!strcmp(pSub->valuestring,"start")){	//正在下载固件
-			QttsPlayEvent("正在下载固件",QTTS_SYS);
+			QttsPlayEvent("正在下载固件。",QTTS_SYS);
 		}else if(!strcmp(pSub->valuestring,"error")){	//下载固件错误
-			QttsPlayEvent("下载固件错误",QTTS_SYS);
+			QttsPlayEvent("下载固件错误。",QTTS_SYS);
 		}else if(!strcmp(pSub->valuestring,"end")){ 	//下载固件结束
-			QttsPlayEvent("下载固件结束",QTTS_SYS);
+			QttsPlayEvent("下载固件结束。",QTTS_SYS);
 		}else if(!strcmp(pSub->valuestring,"progress")){		//下载进度
 			pSub = cJSON_GetObjectItem(pJson, "value");
 			if(pSub->valueint==25)
-				QttsPlayEvent("下载到百分之二十五",QTTS_SYS);			
+				QttsPlayEvent("下载到百分之二十五。",QTTS_SYS);			
 			else if(pSub->valueint==50)
-				QttsPlayEvent("下载到百分之五十",QTTS_SYS);		
+				QttsPlayEvent("下载到百分之五十。",QTTS_SYS);		
 			else if(pSub->valueint==75)
-				QttsPlayEvent("下载到百分之七十五",QTTS_SYS);
+				QttsPlayEvent("下载到百分之七十五。",QTTS_SYS);
 		}
 	}//  end updateHost
 	else if(!strcmp(pSub->valuestring,"updateImage")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(!strcmp(pSub->valuestring,"start")){ 		//开始更新固件
-			QttsPlayEvent("开始更新固件",QTTS_SYS);
+			QttsPlayEvent("开始更新固件。",QTTS_SYS);
 		}else if(!strcmp(pSub->valuestring,"error")){	//更新固件错误
-			QttsPlayEvent("更新固件错误",QTTS_SYS);
+			QttsPlayEvent("更新固件错误。",QTTS_SYS);
 		}else if(!strcmp(pSub->valuestring,"end")){ 	//更新固件结束
-			//QttsPlayEvent("更新固件结束",QTTS_SYS);
+			//QttsPlayEvent("更新固件结束。",QTTS_SYS);
 			create_event_system_voices(6);
 		}
 	}//  end updateImage                // end----------->由版本监测进程发送过来

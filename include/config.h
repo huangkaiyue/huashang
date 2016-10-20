@@ -2,7 +2,7 @@
 #define _CONFIG_H_
 //----------------------版本类-----------------------------------
 
-#define VERSION "\n10.13-23:40\n"	//版本号
+#define VERSION "\n10.19-18:00\n"	//版本号
 
 //#define TEST_SDK					//测试SDK
 
@@ -14,11 +14,13 @@
 
 #define SPEEK_VOICES	//开启对讲功能
 
+#define MUTE_8960		//mute 8960 
+
 #define PALY_URL_SD		//下载保存到本地
 
 #define LOCAL_MP3		//MP3本地播放
 
-//#define	LED_LR			//LED左右灯以及多按键
+#define	LED_LR			//LED左右灯以及多按键
 
 #define CLOSE_VOICE		//不工作处于关闭音频状态
 
