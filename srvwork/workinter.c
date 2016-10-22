@@ -61,10 +61,6 @@ void pasreInputCmd(const char *com)
 		{
 			//disable_gpio();
 			//close_sys_led();
-#ifdef MUTE_8960
-			SET_MUTE_DISABLE();
-#endif
-			enable_gpio();
 			Led_vigue_close();
 			usleep(100);
 			close_wm8960_voices();
@@ -72,13 +68,9 @@ void pasreInputCmd(const char *com)
 		else if(!strcmp(com,"o"))
 		{
 			//enable_gpio();
-			disable_gpio();
 			pool_add_task(Led_vigue_open,NULL);
 			//open_sys_led();
 			open_wm8960_voices();
-#ifdef MUTE_8960
-			SET_MUTE_ENABLE();
-#endif
 			usleep(100);
 		}
 #ifdef VOICS_CH

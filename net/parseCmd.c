@@ -6,13 +6,12 @@
 #include "madplay.h"
 #include "StreamFile.h"
 #include "host/voices/wm8960i2s.h"
+#include "../host/studyvoices/qtts_qisc.h"
 
 #define STREAM_EXIT				MAD_EXIT	//Í£Ö¹	
 #define STREAM_PLAY 			MAD_PLAY	//²¥·Å
 #define STREAM_PAUSE			MAD_PAUSE	//ÔİÍ£
 #define STREAM_NEXT				MAD_NEXT
-#define QTTS_SYS	0
-#define QTTS_APP	1
 
 #define 	GET_NET_STATE	29	//»ñÈ¡ÍøÂç×´Ì¬
 
@@ -197,12 +196,9 @@ void ack_playCtr(int nettype,Player_t *play,unsigned char playState)
 	CreateState(pItem,playState);
 #ifdef CLOSE_VOICE
 	if(playState==STREAM_EXIT){
-#ifdef MUTE_8960
-		SET_MUTE_DISABLE();
-#endif
-		mute_recorde_vol(MUTE);
-		close_wm8960_voices();
-		clean_i2s_play(8000);
+		Mute_voices(MUTE);
+		//clean_i2s_play(8000);
+		clean_play_cache();
 	}
 #endif
 	cJSON_AddStringToObject(pItem, "url",play->playfilename);
@@ -341,9 +337,6 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			getStreamState(&sockfd,ack_allplayerCtr);//----------->appµÇÂ½»ñÈ¡²¥·ÅÆ÷ĞÅÏ¢
 		}else if(!strcmp(pSub->valuestring,"switch")){
 			mute_recorde_vol(UNMUTE);
-			
-			urlLogStart("json stait\n",13);
-			
 			Player_t *player = (Player_t *)calloc(1,sizeof(Player_t));
 			char *musicname=NULL;
 			if(cJSON_GetObjectItem(pJson, "name")!=NULL){
@@ -355,8 +348,6 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 					snprintf(player->musicname,64,"%s",musicname);
 					player->musicTime = cJSON_GetObjectItem(pJson, "time")->valueint;
 				}
-				urlLogEnd("json end\n",11);
-				
 				createPlayEvent(player,0);
 			}
 		}else if (!strcmp(pSub->valuestring,"pause")){

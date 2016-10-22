@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 {   
 	checkConnectFile();
 #ifndef TEST_SDK
-	sleep(7);
+	//sleep(7);
 #endif	//end TEST_SDK
 	memset(&sysMes,0,sizeof(SysMessage));
 
@@ -68,7 +68,10 @@ int main(int argc, char **argv)
 #endif	//end WORK_INTER
 	init_videoServer();
 	init_Uart(create_event_system_voices,ack_batteryCtr);	//³õÊ¼»¯´®¿Ú
-	//system("aliyun &");
+#ifdef	LED_LR
+	led_left_right(left,closeled);
+	led_left_right(right,closeled);
+#endif
 #ifdef MAIN_DOWN
 	char *msg=NULL;
 	int event=0;

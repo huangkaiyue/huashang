@@ -14,8 +14,6 @@
 
 #define SPEEK_VOICES	//开启对讲功能
 
-#define MUTE_8960		//mute 8960 
-
 #define PALY_URL_SD		//下载保存到本地
 
 #define LOCAL_MP3		//MP3本地播放

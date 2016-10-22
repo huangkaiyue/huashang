@@ -11,6 +11,7 @@
 #include "host/voices/WavAmrCon.h"
 #include "systools.h"
 #include "gpio_7620.h"
+#include "../host/studyvoices/qtts_qisc.h"
 
 #include "config.h"
 
@@ -39,8 +40,8 @@ static int playTextNum=0;
 ********************************************************/
 static void CreateUrlEvent(const void *data){
 #ifdef LOG_MP3PLAY
-		urlLogEnd(VERSION,15);	//版本时间
-		urlLogEnd("add stait\n",10);
+	urlLogEnd(VERSION,15);	//版本时间
+	urlLogEnd("add stait\n",11);
 #endif
 	if(getEventNum()>0){
 		DEBUG_EVENT("CreateUrlEvent num =%d \n",getEventNum());
@@ -51,8 +52,7 @@ static void CreateUrlEvent(const void *data){
 	}
 	add_event_msg(data,0,URL_VOICES_EVENT);
 #ifdef LOG_MP3PLAY
-	urlLogEnd(VERSION,15);	//版本时间
-	urlLogEnd("add ok\n",7);
+	urlLogEnd("add ok\n",8);
 #endif
 }
 /*******************************************************
@@ -154,7 +154,6 @@ void createPlayEvent(const void *play,unsigned char Mute)
 	}
 #endif
 	else{
-		urlLogEnd("play event\n",13);
 		CreateUrlEvent(play);
 	}
 }
@@ -190,8 +189,12 @@ void QttsPlayEvent(char *txt,int type)
 参数: 无
 返回值: 无
 ********************************************************/
+static int staittime=0;
 void down_voices_sign(void)
 {
+	time_t t;
+	if(time(&t)-staittime<1)
+		return;
 	if(GetRecordeLive() ==START_SPEEK_VOICES||GetRecordeLive() ==END_SPEEK_VOICES){
 		DEBUG_EVENT("check_recorde_state ...\n");
 		return;
@@ -203,6 +206,7 @@ void down_voices_sign(void)
 	}else{
 		start_event_std();
 	}
+	staittime=time(&t);
 }
 /*******************************************************
 函数功能: 检查配网文件
@@ -241,13 +245,16 @@ void Net_work(void)
 		system("NetManger &");
 		sleep(1);
 	}
+	smartConifgLog("smart_start\n");
 	if(!checkInternetFile()){
+		smartConifgLog("startSmartConfig checkInternetFile failed\n");
 		return;
 	}
 	if(GetRecordeLive()==PAUSE_E){
 		disable_gpio();
 		startSmartConfig(create_event_system_voices,enable_gpio);
 	}
+	smartConifgLog("startSmartConfig Net_work ok\n");
 }
 /*******************************************************
 函数功能: 创建一个系统声音事件，播放系统声音
@@ -313,20 +320,6 @@ void handle_event_system_voices(int sys_voices)
 	{
 		play_sys_tices_voices(CHANGE_NETWORK);
 	}
-	else if(sys_voices==CONNECT_OK)				//连接成功
-	{
-		enable_gpio();
-		//play_sys_tices_voices(LINK_SUCCESS);
-		char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
-		char buf[128]={0};
-		snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
-		PlayQttsText(buf,0);
-#ifdef	LED_LR
-		led_left_right(left,closeled);
-		led_left_right(right,closeled);
-#endif
-		Led_vigue_close();
-	}
 	else if(sys_voices==START_SMARTCONFIG)		//启动配网
 	{
 		pool_add_task(Led_vigue_open,NULL);
@@ -336,35 +329,37 @@ void handle_event_system_voices(int sys_voices)
 	{
 		play_sys_tices_voices(YES_REAVWIFI);
 	}
+	else if(sys_voices==CONNECT_OK)			//连接成功
+	{
+		enable_gpio();
+		play_sys_tices_voices(LINK_SUCCESS);
+		char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
+		char buf[128]={0};
+		snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
+		PlayQttsText(buf,0);
+		Led_vigue_close();
+	}
 	else if(sys_voices==NOT_FIND_WIFI)			//没有扫描到wifi
 	{
+		enable_gpio();
 		play_sys_tices_voices(NO_WIFI);
-		Led_vigue_close();
+		//Led_vigue_close();
 	}
 	else if(sys_voices==SMART_CONFIG_FAILED)	//没有收到用户发送的wifi
 	{	
 		play_sys_tices_voices(NOT_REAVWIFI);
-		Led_vigue_close();
+		//Led_vigue_close();
 	}
 	else if(sys_voices==NOT_NETWORK)			//没有连接成功
 	{
 		enable_gpio();
 		play_sys_tices_voices(NO_NETWORK_VOICES);
-#ifdef	LED_LR
-		led_left_right(left,closeled);
-		led_left_right(right,closeled);
-#endif
-		Led_vigue_close();
+		pool_add_task(Led_vigue_open,NULL);
 	}
 	else if(sys_voices==CONNET_CHECK)			//检查网络是否可用
 	{
 		enable_gpio();
 		play_sys_tices_voices(CHECK_INTERNET);
-#ifdef	LED_LR
-		led_left_right(left,closeled);
-		led_left_right(right,closeled);
-#endif
-		Led_vigue_close();
 	}
 	usleep(1000);
 }
@@ -483,6 +478,7 @@ static void stop_recorder_tosend_file(void)
 	DEBUG_EVENT("start send file \n");
 	//send_file_touser((unsigned int)t,filepath);
 	uploadVoicesToaliyun(filepath);
+	QttsPlayEvent("发送成功。",QTTS_SYS);
 	//remove(SAVE_WAV_VOICES_DATA);
 }
 

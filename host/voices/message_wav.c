@@ -77,110 +77,99 @@ void playAmrVoices(const char *filename)
 		}
 	}
 	fclose(fp);
-	memset(play_buf,0,I2S_PAGE_SIZE);
-	write_pcm(play_buf);
+	clean_play_cache();
+	//memset(play_buf,0,I2S_PAGE_SIZE);
+	//write_pcm(play_buf);
 	remove(outfile);
 }
 
 #endif
 #ifdef SPEEK_VOICES
+void Mute_voices(unsigned char stat){
+	switch(stat){
+		case MUTE:
+			SET_MUTE_DISABLE();
+			mute_recorde_vol(MUTE);
+			close_wm8960_voices();
+			break;
+		case UNMUTE:
+			open_wm8960_voices();
+			SET_MUTE_ENABLE();
+			mute_recorde_vol(UNMUTE);
+			break;
+	}
+}
+/********************************************************
+@ 播放接收到手机发送的对讲消息
+@ filename:缓存到本地的wav数据的文件路径 	
+@
+*********************************************************/
 void playspeekVoices(const char *filename){
 #if 1
 	i2s_start_play(8000);
 #else
 #ifdef CLOSE_VOICE
-	open_wm8960_voices();
-	mute_recorde_vol(UNMUTE);
-#ifdef MUTE_8960
-	SET_MUTE_ENABLE();
-#endif
+	Mute_voices(UNMUTE);
 #endif
 #endif
 	playAmrVoices(filename);
 #ifdef CLOSE_VOICE
 	sleep(2);
-#ifdef MUTE_8960
-	SET_MUTE_DISABLE();
-#endif
-	mute_recorde_vol(MUTE);
-	close_wm8960_voices();
+	Mute_voices(MUTE);
 #endif	//end CLOSE_VOICE
 }
 #endif
+/********************************************************
+@ 函数功能:	播放系统音
+@ filePath:	路径
+@ 返回值: 无
+*********************************************************/
 void play_sys_tices_voices(char *filePath)
 {
 	char path[128];
 	snprintf(path,128,"%s%s",sysMes.sd_path,filePath);
-#if 0
-	i2s_start_play(8000);
-
-//	if(strstr(path,"TuLin_Wint_8K")||strstr(path,"TuLin_Di_8K")){
-//		mute_recorde_vol(UNMUTE);
-//	}
-#else
+#ifdef CLOSE_VOICE
 	open_wm8960_voices();
 #if 0
-	if(strstr(path,"TuLin_Wint_8K")||strstr(path,"TuLin_Di_8K")){
+	if(strstr(path,"TuLin_Wint_8K")){
 		mute_recorde_vol(107);
 	}else{
 		mute_recorde_vol(UNMUTE);
 	}
-#ifdef MUTE_8960
 	SET_MUTE_ENABLE();
-#endif
 #else
 	mute_recorde_vol(UNMUTE);
-#ifdef MUTE_8960
 	SET_MUTE_ENABLE();
 #endif
-#endif
-#endif
+#endif	//end CLOSE_VOICE
+
 #if 1
 	playAmrVoices(path);
 #else
 	playWavVoices(path);
 #endif
-#ifdef CLOSE_VOICE
-	if(!strcmp(filePath,"qtts/yes_reavwifi_8K")){
-		return;
-	}
+
 	usleep(800*1000);
 	if(strstr(filePath,"40002_8k")){
-		pause_record_audio();	//退出播放
+		pause_record_audio();	//退出播放状态
 	}
+#ifdef CLOSE_VOICE
 	usleep(1000*1000);
-#ifdef MUTE_8960
-	SET_MUTE_DISABLE();
-#endif
-	mute_recorde_vol(MUTE);
-	close_wm8960_voices();
+	Mute_voices(MUTE);
 #endif
 }
-#if 0
 /********************************************************
-@ 播放接收到手机发送的对讲消息
-@ filePath:缓存到本地的wav数据的文件路径 	
-@
+@ 函数功能:	播放QTTS数据
+@ text:文本		type:文本类型
+@ 返回值: 无
 *********************************************************/
-void playRecvVoices(char *filePath)
-{
-	play_sys_tices_voices(MSG_VOICES);//播放提示音
-	playLocalVoices(filePath);//播放接收到语音
-	sleep(2);//睡眠2s等待播放完
-	remove(filePath);//删除缓存语音
-}
-#endif
 void PlayQttsText(char *text,unsigned char type)
 {
 #if 1
 	i2s_start_play(8000);
 #else
 #ifdef CLOSE_VOICE
-	open_wm8960_voices();
-	mute_recorde_vol(UNMUTE);
-#ifdef MUTE_8960
-	SET_MUTE_ENABLE();
-#endif
+	Mute_voices(UNMUTE);
 #endif
 #endif
 	char *textbuf= (char *)calloc(1,strlen(text)+2);
@@ -192,17 +181,17 @@ void PlayQttsText(char *text,unsigned char type)
 		write_pcm(play_buf);
 		I2S.qttspos =0;
 	}
-	memset(play_buf,0,I2S_PAGE_SIZE);
-	write_pcm(play_buf);
+	clean_play_cache();
+	//memset(play_buf,0,I2S_PAGE_SIZE);
+	//write_pcm(play_buf);
 	usleep(800*1000);
-	pause_record_audio();	//退出播放
+	pause_record_audio();	//退出播放状态
+	free(textbuf);
+	if(I2S.qttsend==1){
+		return;
+	}
 #ifdef CLOSE_VOICE
 	usleep(1000*1000);
-#ifdef MUTE_8960
-	SET_MUTE_DISABLE();
+	Mute_voices(MUTE);
 #endif
-	mute_recorde_vol(MUTE);
-	close_wm8960_voices();
-#endif
-	free(textbuf);
 }

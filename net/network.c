@@ -324,6 +324,13 @@ int SendtoaliyunServices(const void *msg,int size)
 }
 
 #endif
+static void checkNetFile(void)
+{
+	if(access("/var/startNet.lock",0) < 0){
+		fopen("/var/startNet.lock","w+");
+	}
+}
+
 /*
 @ 初始化视频服务器 ,消息控制、视频数据服务
 @ 
@@ -348,7 +355,8 @@ void init_videoServer(void)
 			return ;
 	}
 	init_addr(&ctrSer->wifiAddr, IP,  20003);
-	GetNetState();
+	//GetNetState();
+	checkNetFile();
 #endif
 #ifdef SPEEK_VOICES
 	init_addr(&ctrSer->speekAddr, IP,  SPEEK_PORT);

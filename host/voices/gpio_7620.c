@@ -28,6 +28,11 @@ void close_sys_led(void)
 	ioctl(gpio.fd, TANG_LED_OPEN);
 }
 void Led_vigue_open(void){
+	Led_vigue_close();
+	close_sys_led();
+	sleep(1);
+	open_sys_led();
+	sleep(1);
 	led_type=LED_VIGUE_OPEN;
 	while(led_type==LED_VIGUE_OPEN){
 		close_sys_led();
