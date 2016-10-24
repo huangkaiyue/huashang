@@ -16,5 +16,6 @@
 extern int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void));//Ò»¼üÅäÍø
 extern void startServiceWifi(void);
 extern void checkConnectFile(void);
+extern int checkInternetFile(void);
 
 #endif

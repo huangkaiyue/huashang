@@ -146,9 +146,11 @@ void DecodePlayMusic(void InputMusicStream(char *msg,int size))
 	Mad->playstate = MAD_PLAY;
 	//开始播放需要读入8k数据
 	usleep(200);
+#if 0
 	if(Mad->playstate == MAD_EXIT){
 		return;
 	}
+#endif
 	Mad->InputMusicStream((char *)Mad->fbuf,BUFSIZE);
 	/* configure input, output, and error functions */
     mad_decoder_init(&decoder, Mad,NewInput, 0 /* header */, 0 /* filter */, output,error, 0 /* message */);

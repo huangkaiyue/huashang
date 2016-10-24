@@ -37,40 +37,74 @@ int updateSysList(char *list,char *passwd)
 }
 //----------------------------播放记录-------------------------------------
 #ifdef LOCAL_MP3
-//获取播放记录
+static int playMp3Num = 0;
+static int playStoryNum = 0;
+static int playEnglishNum = 0;
+static unsigned char play_get_num=0;
 void get_paly_num(int *size,unsigned char str)
 {
-	char *NUM;
 	switch(str){
 		case mp3:
-			NUM = nvram_bufget(RT2860_NVRAM, "playMp3Num");
+			*size = playMp3Num;
 			break;
 		case story:
-			NUM= nvram_bufget(RT2860_NVRAM, "playStoryNum");
+			*size = playStoryNum;
 			break;
 		case english:
-			NUM= nvram_bufget(RT2860_NVRAM, "playEnglishNum");
+			*size = playEnglishNum;
 			break;
 	}
-	*size = (unsigned char)atoi(NUM);
+}
+void set_paly_num(int size,unsigned char str)
+{
+	switch(str){
+		case mp3:
+			playMp3Num = size;
+			play_get_num++;
+			break;
+		case story:
+			playStoryNum = size;
+			play_get_num++;
+			break;
+		case english:
+			playEnglishNum = size;
+			play_get_num++;
+			break;
+	}
+	if(play_get_num>20){
+		pool_add_task(set_paly_sys_num,NULL);
+		play_get_num=0;
+	}
+}
+
+//获取播放记录
+void get_paly_sys_num(void)
+{
+	char *NUM;
+	NUM = nvram_bufget(RT2860_NVRAM, "playMp3Num");
+	playMp3Num = (unsigned char)atoi(NUM);
+	usleep(100);
+	NUM= nvram_bufget(RT2860_NVRAM, "playStoryNum");
+	playStoryNum = (unsigned char)atoi(NUM);
+	usleep(100);
+	NUM= nvram_bufget(RT2860_NVRAM, "playEnglishNum");
+	playEnglishNum = (unsigned char)atoi(NUM);
+	usleep(100);
 }
 
 //设置播放记录
-void set_paly_num(int size,unsigned char str)
+void set_paly_sys_num(void)
 {
 	char buf_s[64]={0};
-	switch(str){
-		case mp3:
-			sprintf(buf_s,"%s %d", "nvram_set 2860 playMp3Num", size);
-			break;
-		case story:
-			sprintf(buf_s,"%s %d", "nvram_set 2860 playStoryNum", size);
-			break;
-		case english:
-			sprintf(buf_s,"%s %d", "nvram_set 2860 playEnglishNum", size);
-			break;
-	}
+	sprintf(buf_s,"%s %d", "nvram_set 2860 playMp3Num", playMp3Num);
 	system(buf_s);
+	usleep(100);
+	sprintf(buf_s,"%s %d", "nvram_set 2860 playStoryNum", playStoryNum);
+	system(buf_s);
+	usleep(100);
+	sprintf(buf_s,"%s %d", "nvram_set 2860 playEnglishNum", playEnglishNum);
+	system(buf_s);
+	usleep(100);
 	//nvram_bufset(RT2860_NVRAM, "VoiceSIZE",buf_s);
 }
 #endif

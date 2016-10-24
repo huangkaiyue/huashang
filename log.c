@@ -11,29 +11,24 @@ int WriteMp3Data(char *filename,char *data,int size)
 	fclose(fp);
 	return 0;
 }
-void urlLogStart(char *data,int size)
-{
-	FILE *fp = fopen("/home/url.log","w+");
+void playurlLog(const char *data){
+	FILE *fp = NULL;
+	if(!strcmp(data,"url_start\n")){
+		fp =fopen("/home/url.log","w+");
+	}else{
+		fp =fopen("/home/url.log","a+");
+	}
+	
 	if(NULL == fp ){
 		return ;
     }
+	int size = strlen(data);
     fwrite(data,1,size,fp);
   	fflush(fp);
 	fclose(fp);
 	return ;
 }
 
-void urlLogEnd(char *data,int size)
-{
-	FILE *fp = fopen("/home/url.log","a+");
-	if(NULL == fp ){
-		return ;
-    }
-    fwrite(data,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-	return ;
-}
 void smartConifgLog(const char *data){
 	FILE *fp = NULL;
 	if(!strcmp(data,"smart_start\n")){
@@ -50,5 +45,21 @@ void smartConifgLog(const char *data){
   	fflush(fp);
 	fclose(fp);
 	return ;
-
+}
+void playsysvoicesLog(const char *data){
+	FILE *fp = NULL;
+	if(!strcmp(data,"playsys_start\n")){
+		fp =fopen("/home/playsysvoices.log","w+");
+	}else{
+		fp =fopen("/home/playsysvoices.log","a+");
+	}
+	
+	if(NULL == fp ){
+		return ;
+    }
+	int size = strlen(data);
+    fwrite(data,1,size,fp);
+  	fflush(fp);
+	fclose(fp);
+	return ;
 }

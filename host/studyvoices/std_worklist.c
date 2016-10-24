@@ -272,9 +272,7 @@ static void handle_event_msg(const char *data,int msgSize)
 		case SYS_VOICES_EVENT:		//系统音事件
 			start_event_play_wav();
 			handle_event_system_voices(cur->len);
-			if(cur->len!=2){
-				pause_record_audio();
-			}
+			pause_record_audio();
 			break;
 			
 		case SET_RATE_EVENT:		//URL清理事件
@@ -287,12 +285,12 @@ static void handle_event_msg(const char *data,int msgSize)
 			
 		case URL_VOICES_EVENT:		//URL网络播放事件
 #ifdef LOG_MP3PLAY
-			urlLogEnd("url play\n",10);
+			playurlLog("url play\n");
 #endif
 			start_event_play_url();
 			NetStreamExitFile();
 #ifdef LOG_MP3PLAY
-			urlLogEnd("NetStreamExitFile\n",20);
+			playurlLog("NetStreamExitFile\n");
 #endif
 			AddDownEvent(data,URL_VOICES_EVENT);
 			sleep(3);
