@@ -51,7 +51,18 @@ static int sendSsidPasswd(char *ssid,char *passwd)
 	cJSON_Delete(pItem);
 	return ret ;
 }
-
+/*******************************************************
+函数功能: 检查配网文件
+参数: 无
+返回值: 无
+********************************************************/
+int checkInternetFile(void)
+{
+	if(access("/var/internet.lock",0) < 0){
+		return -1;
+	}
+	return 0;
+}
 static int smartGetSsid(char *smartData,char *ssid,char *passwd)
 {
 	char getssid[64]={0},getpwd[64]={0};
@@ -89,8 +100,7 @@ static int SmartConfig(void *arg)
 		return ret ;
 	}	
 	system("iwpriv apcli0 elian start");
-	while (++timeout<280) 
-	{	
+	while (++timeout<280){	
 		//必须实时打开管道，才能读取到更新的数据
 		if((fp = popen("iwpriv apcli0 elian result", "r"))==NULL){
 			fprintf(stderr, "%s: iwpriv apcli0 elian result failed !\n", __func__);
@@ -108,16 +118,23 @@ static int SmartConfig(void *arg)
 		memset(ssid,0,64);
 		memset(pwd,0,64);
 		pclose(fp);
-	 }
-	 system("iwpriv apcli0 elian stop");
-	 system("iwpriv apcli0 elian clear");
+	}
+	timeout=0;
+	system("iwpriv apcli0 elian stop");
+	system("iwpriv apcli0 elian clear");
 	if(ret==0)
 	{
 		snprintf(wifi->ssid,64,"%s",ssid);
 		snprintf(wifi->passwd,64,"%s",pwd);
 		wifi->connetEvent(SMART_CONFIG_OK);	//已经接收到ssid 和 passwd
 		sendSsidPasswd(ssid,pwd);
-		sleep(40);	//等待配网成功后，使能按键
+		sleep(5);
+		while(++timeout<35){	//等待配网成功后，使能按键
+			sleep(1);
+			if(checkInternetFile()){
+				break;
+			}
+		}
 	}else{
 		wifi->connetEvent(SMART_CONFIG_FAILED); //没有收到app发送过来的ssid和passwd
 	}

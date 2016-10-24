@@ -376,7 +376,7 @@ void init_7620_gpio(void)
 	gpio.speek_tolk=TOLK;
 #endif
 #endif
-	enable_gpio();
+	//enable_gpio();
 }
 //去使能按键
 void disable_gpio(void)

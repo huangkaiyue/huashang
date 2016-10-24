@@ -40,8 +40,13 @@ static int playTextNum=0;
 ********************************************************/
 static void CreateUrlEvent(const void *data){
 #ifdef LOG_MP3PLAY
+<<<<<<< HEAD
 	urlLogEnd(VERSION,15);	//版本时间
 	urlLogEnd("add stait\n",11);
+=======
+	playurlLog("url_start\n");
+	playurlLog(VERSION);	//版本时间
+>>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 #endif
 	if(getEventNum()>0){
 		DEBUG_EVENT("CreateUrlEvent num =%d \n",getEventNum());
@@ -52,7 +57,11 @@ static void CreateUrlEvent(const void *data){
 	}
 	add_event_msg(data,0,URL_VOICES_EVENT);
 #ifdef LOG_MP3PLAY
+<<<<<<< HEAD
 	urlLogEnd("add ok\n",8);
+=======
+	playurlLog("add ok\n");
+>>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 #endif
 }
 /*******************************************************
@@ -72,6 +81,10 @@ static void CreateLocalMp3(char *localpath)
 		return;
 	}
 	char *URL= (char *)calloc(1,strlen(localpath)+1);
+	if(URL==NULL){
+		perror("calloc error !!!");
+		return;
+	}
 	sprintf(URL,"%s",localpath);
 	add_event_msg(URL,0,LOCAL_MP3_EVENT);
 }
@@ -207,6 +220,7 @@ void down_voices_sign(void)
 		start_event_std();
 	}
 	staittime=time(&t);
+<<<<<<< HEAD
 }
 /*******************************************************
 函数功能: 检查配网文件
@@ -219,6 +233,8 @@ static int checkInternetFile(void)
 		return -1;
 	}
 	return 0;
+=======
+>>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 }
 /*******************************************************
 函数功能: 查看NetManger进程是否存在pid号
@@ -263,10 +279,12 @@ void Net_work(void)
 ********************************************************/
 void create_event_system_voices(int sys_voices)
 {
+	playsysvoicesLog("playsys_start\n");
 	if(GetRecordeLive() ==PLAY_URL_E){
 		CleanUrlEvent();
 	}
 	add_event_msg(NULL,sys_voices,SYS_VOICES_EVENT);
+	playsysvoicesLog("playsys voices end \n");
 }
 /*******************************************************
 函数功能: 系统音事件处理函数
@@ -275,6 +293,7 @@ void create_event_system_voices(int sys_voices)
 ********************************************************/
 void handle_event_system_voices(int sys_voices)
 {
+	playsysvoicesLog("playsys voices handle \n");
 //----------------------系统有关-----------------------------------------------------
 	if(sys_voices==1)							//结束音
 	{
@@ -282,6 +301,7 @@ void handle_event_system_voices(int sys_voices)
 		pool_add_task(DelSdcardMp3file,MP3_SDPATH);//关机删除，长时间不用的文件
 #endif
 		play_sys_tices_voices(END_SYS_VOICES);
+		set_paly_sys_num();
 	}
 	else if(sys_voices==2)						//请稍等
 	{
@@ -293,6 +313,7 @@ void handle_event_system_voices(int sys_voices)
 		pool_add_task(DelSdcardMp3file,MP3_SDPATH);//关机删除，长时间不用的文件
 #endif
 		play_sys_tices_voices(LOW_BATTERY);
+		set_paly_sys_num();
 	}
 	else if(sys_voices==4)						//恢复出厂设置
 	{
@@ -331,6 +352,7 @@ void handle_event_system_voices(int sys_voices)
 	}
 	else if(sys_voices==CONNECT_OK)			//连接成功
 	{
+<<<<<<< HEAD
 		enable_gpio();
 		play_sys_tices_voices(LINK_SUCCESS);
 		char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
@@ -338,11 +360,26 @@ void handle_event_system_voices(int sys_voices)
 		snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
 		PlayQttsText(buf,0);
 		Led_vigue_close();
+=======
+		char buf[128]={0};
+		play_sys_tices_voices(LINK_SUCCESS);
+		char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
+		if(strlen(wifi)>0){
+			snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
+			PlayQttsText(buf,0);
+		}
+		Led_vigue_close();
+		enable_gpio();
+>>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 	}
 	else if(sys_voices==NOT_FIND_WIFI)			//没有扫描到wifi
 	{
 		enable_gpio();
 		play_sys_tices_voices(NO_WIFI);
+<<<<<<< HEAD
+=======
+		enable_gpio();
+>>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 		//Led_vigue_close();
 	}
 	else if(sys_voices==SMART_CONFIG_FAILED)	//没有收到用户发送的wifi
@@ -352,14 +389,20 @@ void handle_event_system_voices(int sys_voices)
 	}
 	else if(sys_voices==NOT_NETWORK)			//没有连接成功
 	{
-		enable_gpio();
 		play_sys_tices_voices(NO_NETWORK_VOICES);
 		pool_add_task(Led_vigue_open,NULL);
+<<<<<<< HEAD
+=======
+		enable_gpio();
+>>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 	}
 	else if(sys_voices==CONNET_CHECK)			//检查网络是否可用
 	{
-		enable_gpio();
 		play_sys_tices_voices(CHECK_INTERNET);
+<<<<<<< HEAD
+=======
+		//enable_gpio();
+>>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 	}
 	usleep(1000);
 }
@@ -445,7 +488,6 @@ static int create_recorder_file(void)
 ********************************************************/
 static void stop_recorder_tosend_file(void)
 {
-	printf("==========stop_recorder_tosend_file=========\n");
 	char filepath[64];
 	pcmwavhdr.size_8 = (file_len+36);
 	pcmwavhdr.data_size = file_len;
@@ -454,7 +496,6 @@ static void stop_recorder_tosend_file(void)
 		return;
 	}
 	fseek(savefilefp,0,SEEK_SET);
-	printf("==========stop_recorder_tosend_file=========\n");
 	fwrite(&pcmwavhdr,1,WAV_HEAD,savefilefp);
 	
 	shortVoicesClean();
@@ -468,15 +509,14 @@ static void stop_recorder_tosend_file(void)
 	sprintf(filepath,"%s%d%s",CACHE_WAV_PATH,(unsigned int)t,".amr");
 #endif	
 	
-	printf("stop save file \n");
+	DEBUG_EVENT("stop save file \n");
 		
 	if(WavToAmr8kFile(SAVE_WAV_VOICES_DATA,filepath))
 	{
-		printf("enc_wav_amr_file failed");
+		DEBUG_EVENT("enc_wav_amr_file failed");
 		return;
 	}
 	DEBUG_EVENT("start send file \n");
-	//send_file_touser((unsigned int)t,filepath);
 	uploadVoicesToaliyun(filepath);
 	QttsPlayEvent("发送成功。",QTTS_SYS);
 	//remove(SAVE_WAV_VOICES_DATA);
@@ -504,7 +544,8 @@ void handle_voices_key_event(unsigned int state)
 	}else {
 		DEBUG_EVENT("handle_voices_key_event : state(%d)\n",state);
 		pause_record_audio();
-		usleep(500000);		//tang : 2015-12-3 for yan chang shi jian
+		//usleep(500000);		//tang : 2015-12-3 for yan chang shi jian
+		usleep(100);
 		stop_recorder_tosend_file();
 	}
 }
@@ -552,7 +593,7 @@ void init_wm8960_voices(void)
 {
 	init_7620_gpio();
 	__init_wm8960_voices();
-	disable_gpio();
+	//disable_gpio();
 #ifndef TEST_SDK
 	play_sys_tices_voices(START_SYS_VOICES);//开机启动音
 #endif

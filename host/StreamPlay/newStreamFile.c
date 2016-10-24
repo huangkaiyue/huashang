@@ -250,16 +250,20 @@ void NetStreamExitFile(void)
 		quitDownFile();
 	}
 	//DEBUG_STREAM("=================NetStreamExitFile getDownState (%d)...\n",st->player.playState);
+<<<<<<< HEAD
 	pthread_mutex_lock(&st->mutex);
+=======
+>>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//退出播放
+		pthread_mutex_lock(&st->mutex);
 		st->player.progress=0;
 		st->player.musicTime=0;
 		st->player.proflag=0;
 		memset(st->player.musicname,0,64);
 		DecodeExit();
+		pthread_mutex_unlock(&st->mutex);
 		usleep(100);
 	}
-	pthread_mutex_unlock(&st->mutex);
 	DEBUG_STREAM("NetStreamExitFile end ...\n");
 }
 
@@ -420,9 +424,8 @@ void PlayUrl(const void *data)
 	if(buf){
 		snprintf(buf,200,"%s%s",MP3_SDPATH,filename);	//更新文件播放时间
 		if(!access(buf,F_OK)){
-			snprintf(filecmd,128,"%s%s","chmod 777 ",buf);
-			system(filecmd);
-			usleep(1*1000);
+			//snprintf(filecmd,128,"%s%s","chmod 777 ",buf);
+			//system(filecmd);
 			DEBUG_STREAM("PlayUrl playLocalMp3(%s) ... \n",filename);
 			playLocalMp3(buf);
 		}else{
