@@ -67,7 +67,8 @@ void start_event_std(void)
 *****************************************************/
 void end_event_std(void)
 {
-	sysMes.recorde_live=END_SPEEK_VOICES;
+	if(GetRecordeLive() ==START_SPEEK_VOICES)
+		sysMes.recorde_live=END_SPEEK_VOICES;
 }
 /*****************************************************
 *进入播放wav原始数据状态

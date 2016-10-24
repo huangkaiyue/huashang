@@ -3,6 +3,7 @@
 #include "msp_cmn.h"
 #include "msp_errors.h"
 #include "base/queWorkCond.h"
+#include "qtts_qisc.h"
 
 //#define DBG_QTTS
 #ifdef 	DBG_QTTS 
@@ -35,9 +36,6 @@ _MspLogin login_config;
 #ifdef VOICS_CH
 #define VIMM_GBK	"voice_name=vixx,text_encoding=gbk,sample_rate=8000,speed=50,volume=50,pitch=40,rdn =2"
 #endif
-
-#define QTTS_SYS	0
-#define QTTS_APP	1
 
 typedef struct{
 		unsigned char downState:4,playState:4;
@@ -126,6 +124,7 @@ void exitqttsPlay(void)
 	char *msg;
 	int msgSize;
 	Qstream->playState=PLAY_QTTS_EXIT;
+	clean_qtts_cache();
 	while(getWorkMsgNum(Qstream->qttsList)){
 		getMsgQueue(Qstream->qttsList,&msg,&msgSize);
 		free(msg);
@@ -202,6 +201,7 @@ static int text_to_speech(const char* src_text  ,const char* params)
 			Qstream->cacheSize +=audio_len;
 			if(Qstream->playState==PLAY_QTTS_QUIT&&Qstream->cacheSize>QTTS_PLAY_SIZE){
 				Qstream->playState=PLAY_QTTS_ING;
+				stait_qtts_cache();
 				pool_add_task(play_qtts_data,(void *)Qstream);		//启动播放线程
 			}
 		}
@@ -209,6 +209,7 @@ static int text_to_speech(const char* src_text  ,const char* params)
 			Qstream->downState=DOWN_QTTS_QUIT;
 			if(Qstream->playState==PLAY_QTTS_QUIT){		//退出时还没有启动播放线程，则启动
 				Qstream->playState=PLAY_QTTS_ING;
+				stait_qtts_cache();
 				pool_add_task(play_qtts_data,(void *)Qstream);
 			}
 			break;
@@ -222,7 +223,6 @@ static int text_to_speech(const char* src_text  ,const char* params)
 	}
 	DEBUG_QTTS("text_to_speech :TTS end(ret=%d)...\n\n",ret);
 	ret = QTTSSessionEnd(sess_id, NULL);
-	usleep(100*1000);
 	return ret;
 }
 /****************************************

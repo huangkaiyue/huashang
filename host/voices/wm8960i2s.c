@@ -111,7 +111,9 @@ static void __clean_play_cache_data(void)
 			break;
 	}	
 }
-
+void clean_play_cache(void){
+	__clean_play_cache_data();
+}
 void SetVol(int dir,int vol)
 {
 	if(I2S.tx_vol<=77){
@@ -189,6 +191,12 @@ void WritePcmData(char *data,int size)
 	memcpy(play_buf+I2S.play_size,data,size);
 	I2S.play_size +=size;
 }
+void clean_qtts_cache(void){
+	I2S.qttsend=1;
+}
+void stait_qtts_cache(void){
+	I2S.qttsend=0;
+}
 void WriteqttsPcmData(char *data,int len)
 {
 	int i=0;
@@ -197,6 +205,10 @@ void WriteqttsPcmData(char *data,int len)
 		I2S.qttspos += 2;
 		memcpy(play_buf+I2S.qttspos,data+i,2);
 		I2S.qttspos += 2;
+		if(I2S.qttsend==1){
+			I2S.qttspos=0;
+			break;
+		}
 		if(I2S.qttspos==I2S_PAGE_SIZE){
 			write_pcm(play_buf);
 			I2S.qttspos=0;
@@ -258,7 +270,7 @@ void __init_wm8960_voices(void)
 	i2s_rxbuffer_mmap(I2S.i2s_fd);
 #endif	//end  defined(CONFIG_I2S_MMAP)
 
-	set_rx_state(I2S.i2s_fd,  1);
+	set_rx_state(I2S.i2s_fd, 1);
 	set_tx_state(I2S.i2s_fd, 1);
 	I2S.execute_mode = EXTERNAL_LBK2;
 	SET_TX_VOL(I2S.i2s_fd, I2S.tx_vol);
@@ -298,13 +310,11 @@ void clean_i2s_play(unsigned short rate){
 int i2s_start_play(unsigned short rate)
 {
 #ifdef CLOSE_VOICE
-#ifdef MUTE_8960
 	SET_MUTE_DISABLE();
-#endif
 	mute_recorde_vol(MUTE);
 #endif
 	close_wm8960_voices();
-	clean_i2s_play(rate);
+	//clean_i2s_play(rate);
 	I2S.play_size=0;
 	if(rate==I2S.tx_rate)  //播放的采样率等于录音采样率，不需要切换
 	{
@@ -312,9 +322,7 @@ int i2s_start_play(unsigned short rate)
 		open_wm8960_voices();
 #ifdef CLOSE_VOICE
 		mute_recorde_vol(UNMUTE);
-#ifdef MUTE_8960
 		SET_MUTE_ENABLE();
-#endif
 #endif
 		return -1;
 	}
@@ -330,9 +338,7 @@ int i2s_start_play(unsigned short rate)
 	open_wm8960_voices();
 #ifdef CLOSE_VOICE
 	mute_recorde_vol(UNMUTE);
-#ifdef MUTE_8960
 	SET_MUTE_ENABLE();
-#endif
 #endif
 	return 0;
 }

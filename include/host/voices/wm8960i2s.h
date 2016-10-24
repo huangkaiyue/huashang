@@ -41,6 +41,7 @@ typedef struct {
 	unsigned short tx_rate;			//当前播放采样率
 	unsigned short play_size;
 	unsigned short qttspos;
+	unsigned char qttsend;
 	unsigned char old_vol:7,cache_vol:1;//tang : change 2015-12-2 for save vol
 }I2SST;
 

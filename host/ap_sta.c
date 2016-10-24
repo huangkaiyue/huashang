@@ -131,8 +131,11 @@ static int SmartConfig(void *arg)
 int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void))
 {
 	DEBUG_AP_STA("startSmartConfig...\n");
-	if(connetState)
+	smartConifgLog("startSmartConfig start \n");
+	if(connetState){
+		smartConifgLog("startSmartConfig failed \n");
 		return -1;
+	}
 	ConnetEvent(START_SMARTCONFIG);	//通知用户输入wifi 密码，进行配网
 	int ret=0;
 	connetState=1;
@@ -146,6 +149,7 @@ int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void))
 	}
 	wifi->connetEvent=ConnetEvent;
 	wifi->enableGpio=EnableGpio;
+	smartConifgLog("startSmartConfig pool_add_task ok\n");
 	pool_add_task(SmartConfig, wifi);
 exit0:
 	return ret;

@@ -128,9 +128,8 @@ static void InputNetStream(char * inputMsg,int inputSize)
 		DEBUG_STREAM(" InputNetStream : streamLen == %d \n ",st->streamLen);
 		DEBUG_STREAM(" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n");
 	}
-	#endif	
+#endif
 	pthread_mutex_lock(&st->mutex);
-	//DEBUG_STREAM(" inputSize =%d \n",inputSize);
 #ifdef SAFE_READ_WRITER
 	if(!__safe_fread(inputMsg,inputSize))
 		st->playSize +=inputSize;
@@ -246,11 +245,11 @@ static void NetEndDown(int downLen)
 //退出当前流下载和播放
 void NetStreamExitFile(void)
 {
-	DEBUG_STREAM("NetStreamExitFile start (%d)...\n",getDownState());
+	//DEBUG_STREAM("NetStreamExitFile start (%d)...\n",getDownState());
 	if(getDownState()==DOWN_ING){		//退出下载
 		quitDownFile();
 	}
-	//DEBUG_STREAM("NetStreamExitFile getDownState (%d)...\n",st->player.playState);
+	//DEBUG_STREAM("=================NetStreamExitFile getDownState (%d)...\n",st->player.playState);
 	pthread_mutex_lock(&st->mutex);
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//退出播放
 		st->player.progress=0;
