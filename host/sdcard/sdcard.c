@@ -35,7 +35,7 @@ int get_mp3filenmae(char *cache_path,char *filename,int playMp3Num){
 			continue;
 		}
 		if(mount==0){
-			strcpy(tmp,entry->d_name);
+			strcpy(filename,entry->d_name);
 		}
 		mount++;
 		if(mount==playMp3Num)

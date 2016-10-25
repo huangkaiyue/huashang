@@ -250,10 +250,6 @@ void NetStreamExitFile(void)
 		quitDownFile();
 	}
 	//DEBUG_STREAM("=================NetStreamExitFile getDownState (%d)...\n",st->player.playState);
-<<<<<<< HEAD
-	pthread_mutex_lock(&st->mutex);
-=======
->>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//ÍË³ö²¥·Å
 		pthread_mutex_lock(&st->mutex);
 		st->player.progress=0;

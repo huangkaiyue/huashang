@@ -285,11 +285,7 @@ static void handle_event_msg(const char *data,int msgSize)
 			
 		case URL_VOICES_EVENT:		//URLÍøÂç²¥·ÅÊÂ¼ş
 #ifdef LOG_MP3PLAY
-<<<<<<< HEAD
-			urlLogEnd("url play\n",10);
-=======
 			playurlLog("url play\n");
->>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 #endif
 			start_event_play_url();
 			NetStreamExitFile();

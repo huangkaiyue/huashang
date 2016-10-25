@@ -9,10 +9,10 @@ KERNEL_PATH =$(SDK_PATH)/linux-2.6.36.x
 
 OTHEN_LIB=-lmsc463 -lTLRobot342
 SYSTEM_LIB=-lpthread -ldl -lrt  $(SDK_PATH)/lib/libnvram/libnvram-0.9.28.so
-OPEN_LIB= -lz -lcurl -lssl -lcrypto -lmad  -lopencore-amrnb 
+OPEN_LIB= -lz -lcurl -lssl -lcrypto -lmad  -lopencore-amrnb -lsqlite3
 MY_LIB=-lbase463 -lmtkwifi -ldownFile463 -ldemoquick463 -lsystools463
 
-OPEN_INC=-I /home/yue/work0615/demolib/libcurl/curl-7.50.1/output/mips/include/
+OPEN_INC=-I /home/yue/work0615/demolib/libcurl/curl-7.50.1/output/mips/include/ -I /home/yue/work0615/demolib/sqlite3/sqlite-3.6.17/output/x86/include/
 OTHEN_INC= -I ./host/StreamPlay/
 KERNEL_INC=-I $(KERNEL_PATH)/drivers/char/i2s/ -I $(KERNEL_PATH)/include/ -I $(KERNEL_PATH)/drivers/char/
 SDK_INC=-I $(SDK_PATH)/lib/libnvram/ 
@@ -40,6 +40,8 @@ all +=host/voices/eventVoices.o
 all +=host/voices/gpio_7620.o
 
 all +=host/sdcard/sdcard.o
+all +=host/sdcard/sqlite.o
+all +=host/sdcard/MusicListDb.o
 all +=host/studyvoices/std_worklist.o
 all +=host/studyvoices/qtts_qisc.o
 all +=host/ap_sta.o

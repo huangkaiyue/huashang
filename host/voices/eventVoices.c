@@ -40,13 +40,8 @@ static int playTextNum=0;
 ********************************************************/
 static void CreateUrlEvent(const void *data){
 #ifdef LOG_MP3PLAY
-<<<<<<< HEAD
-	urlLogEnd(VERSION,15);	//版本时间
-	urlLogEnd("add stait\n",11);
-=======
 	playurlLog("url_start\n");
 	playurlLog(VERSION);	//版本时间
->>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 #endif
 	if(getEventNum()>0){
 		DEBUG_EVENT("CreateUrlEvent num =%d \n",getEventNum());
@@ -57,11 +52,7 @@ static void CreateUrlEvent(const void *data){
 	}
 	add_event_msg(data,0,URL_VOICES_EVENT);
 #ifdef LOG_MP3PLAY
-<<<<<<< HEAD
-	urlLogEnd("add ok\n",8);
-=======
 	playurlLog("add ok\n");
->>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 #endif
 }
 /*******************************************************
@@ -220,21 +211,6 @@ void down_voices_sign(void)
 		start_event_std();
 	}
 	staittime=time(&t);
-<<<<<<< HEAD
-}
-/*******************************************************
-函数功能: 检查配网文件
-参数: 无
-返回值: 无
-********************************************************/
-static int checkInternetFile(void)
-{
-	if(access("/var/internet.lock",0) < 0){
-		return -1;
-	}
-	return 0;
-=======
->>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 }
 /*******************************************************
 函数功能: 查看NetManger进程是否存在pid号
@@ -352,15 +328,6 @@ void handle_event_system_voices(int sys_voices)
 	}
 	else if(sys_voices==CONNECT_OK)			//连接成功
 	{
-<<<<<<< HEAD
-		enable_gpio();
-		play_sys_tices_voices(LINK_SUCCESS);
-		char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
-		char buf[128]={0};
-		snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
-		PlayQttsText(buf,0);
-		Led_vigue_close();
-=======
 		char buf[128]={0};
 		play_sys_tices_voices(LINK_SUCCESS);
 		char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
@@ -370,16 +337,11 @@ void handle_event_system_voices(int sys_voices)
 		}
 		Led_vigue_close();
 		enable_gpio();
->>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 	}
 	else if(sys_voices==NOT_FIND_WIFI)			//没有扫描到wifi
 	{
-		enable_gpio();
 		play_sys_tices_voices(NO_WIFI);
-<<<<<<< HEAD
-=======
 		enable_gpio();
->>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 		//Led_vigue_close();
 	}
 	else if(sys_voices==SMART_CONFIG_FAILED)	//没有收到用户发送的wifi
@@ -391,18 +353,12 @@ void handle_event_system_voices(int sys_voices)
 	{
 		play_sys_tices_voices(NO_NETWORK_VOICES);
 		pool_add_task(Led_vigue_open,NULL);
-<<<<<<< HEAD
-=======
 		enable_gpio();
->>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 	}
 	else if(sys_voices==CONNET_CHECK)			//检查网络是否可用
 	{
 		play_sys_tices_voices(CHECK_INTERNET);
-<<<<<<< HEAD
-=======
 		//enable_gpio();
->>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
 	}
 	usleep(1000);
 }

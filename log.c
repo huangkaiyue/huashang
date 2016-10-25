@@ -63,24 +63,3 @@ void playsysvoicesLog(const char *data){
 	fclose(fp);
 	return ;
 }
-<<<<<<< HEAD
-void smartConifgLog(const char *data){
-	FILE *fp = NULL;
-	if(!strcmp(data,"smart_start\n")){
-		fp =fopen("/home/smartconfig.log","w+");
-	}else{
-		fp =fopen("/home/smartconfig.log","a+");
-	}
-	
-	if(NULL == fp ){
-		return ;
-    }
-	int size = strlen(data);
-    fwrite(data,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-	return ;
-
-}
-=======
->>>>>>> be58c7e32576b08eab37d9eae9fae9c8fa632526
