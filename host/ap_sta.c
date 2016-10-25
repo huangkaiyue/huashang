@@ -1,10 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-
+#include "comshead.h"
 #include "host/ap_sta.h"
 #include "host/mtkwifi.h"
 #include "nvram.h"

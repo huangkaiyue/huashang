@@ -84,6 +84,7 @@ static void PlayLocal(unsigned char menu,const char *path, unsigned char Mode){
 	char filename[64]={0};
 	GetSdcardMusic((const char *)TF_SYS_PATH,path,filename, Mode);
 	snprintf(buf,128,"%s%s%s",TF_SYS_PATH,path,filename);
+	printf("filepath = %s",buf);
 	CreateLocalMp3(buf);
 	sysMes.localplayname=menu;
 }
@@ -488,7 +489,7 @@ void save_recorder_voices(const char *voices_data,int size)
 
 #ifdef LOCAL_MP3
 static void *waitLoadMusicList(void *arg){
-	sleep(5);
+	sleep(15);
 	SysOnloadMusicList((const char *)TF_SYS_PATH,(const char *)TF_MP3_PATH,(const char *)TF_STORY_PATH,(const char *)TF_ENGLISH_PATH);
 } 
 #endif

@@ -41,6 +41,14 @@ static void checkpath(const char *path,char *getPath){
 		strncat(getPath,"/",1);
 	}
 }
+static void GetTableName(const char *path,char *destPath){
+	int len = strlen(path);
+	if(*(path+len-1)=='/'){
+		strncat(destPath,path,len-1);
+	}else{
+		strncat(destPath,path,len);
+	}
+}
 static int onloadSdcardFile(const char *sdcard,List_t *list){
 	DIR *dirptr = NULL;  
 	char getPath[128]={0};
@@ -69,6 +77,7 @@ static int onloadSdcardFile(const char *sdcard,List_t *list){
 		if(!strcmp(entry->d_name,".")||!strcmp(entry->d_name,"..")){
 			continue;
 		}
+		printf("list->listname = %s\n",list->listname);
 		InsertSql(list->listname,entry->d_name);
 		fileNum++;			
 	}
@@ -83,14 +92,16 @@ int SysOnloadMusicList(const char *sdcard,const char *mp3Music,const char *story
 	strcat(sqlPath,DATABASE_NAME);
 	if(OpenSql(sqlPath) != 0)
 		return -1;
-	snprintf(Mlist->list[0].listname,24,"%s",mp3Music);
-	snprintf(Mlist->list[1].listname,24,"%s",story);
-	snprintf(Mlist->list[2].listname,24,"%s",english);
+	
+	GetTableName(mp3Music,Mlist->list[0].listname);
+	GetTableName(story,Mlist->list[1].listname);
+	GetTableName(english,Mlist->list[2].listname);
 	int i=0;
 	CreateMusicListMesage(MESSAGE_TABLE);
 	for(i=0;i<MUSIC_LIST;i++){
 		GetMusicMessageSQL(MESSAGE_TABLE,&(Mlist->list[i]));
 		CreateMusicTable(Mlist->list[i].listname);
+		//printf("Mlist->list[0].listname =%s\n",Mlist->list[i].listname);
 		if(!onloadSdcardFile(sdcard,&(Mlist->list[i]))){
 			if(InsertMusicMessageSQL(MESSAGE_TABLE,Mlist->list[i].listname,Mlist->list[i].Nums,Mlist->list[i].DirTime)){
 				UpdateSqlByMessage(MESSAGE_TABLE,Mlist->list[i].listname,Mlist->list[i].Nums,Mlist->list[i].DirTime);
@@ -106,12 +117,13 @@ int SysOnloadMusicList(const char *sdcard,const char *mp3Music,const char *story
 int GetSdcardMusic(const char *sdcard,const char *musicDir,char *getMusicname,unsigned char Mode){
 	int i=0;
 	for(i=0;i<MUSIC_LIST;i++){
-		if(!strcmp(musicDir,Mlist->list[i].listname)){
+		if(!strncmp(Mlist->list[i].listname,musicDir,strlen(Mlist->list[i].listname))){
 			break;
 		}
 		//printf("musicDir = %s Mlist->list[i].listname=%s\n",musicDir,Mlist->list[i].listname);
 	}
 	if(i>=MUSIC_LIST){
+		printf("warning is GetSdcardMusic \n");
 		return -1;
 	}
 	switch(Mode){
@@ -130,7 +142,7 @@ int GetSdcardMusic(const char *sdcard,const char *musicDir,char *getMusicname,un
 		default:
 			return -1;
 	}
-	GetTableSqlById(musicDir,Mlist->list[i].playindex,getMusicname);
+	GetTableSqlById(Mlist->list[i].listname,Mlist->list[i].playindex,getMusicname);
 	return 0;
 }
 
@@ -152,22 +164,22 @@ void CleanMusicList(void){
 int checkMusicDb(const char *sdcard,const char *musicDir){
 
 }
-
 //#define MAIN_TEST
+	
 #ifdef MAIN_TEST
 void testPlayList(void){
 	char musicname[128]={0};
 	int i=0;
 	for(i=0;i<12;i++)	{
 		//GetSdcardMusic((const char *)"sdcard",(const char *)"keji",musicname,PLAY_NEXT);
-		GetSdcardMusic((const char *)"sdcard",(const char *)"keji",musicname,PLAY_PREV);
+		GetSdcardMusic((const char *)"sdcard/",(const char *)"why/",musicname,PLAY_PREV);
 		printf("musicname[%d] = %s\n",i,musicname);
 		memset(musicname,0,128);
 	}
 }
 int main(void){
 	InitMusicList();
-	SysOnloadMusicList((const char *)"sdcard",(const char *)"keji",(const char *)"why",(const char *)"english");
+	SysOnloadMusicList((const char *)"sdcard/",(const char *)"keji/",(const char *)"why/",(const char *)"english/");
 	testPlayList();
 	CleanMusicList();
 	return 0;

@@ -46,13 +46,13 @@ static  void test_save_mp3file(char *mp3_data,int size)
 static int check_text_cmd(char *text)
 {
 	if(strstr(text,"音乐")){
-		play_sys_tices_voices(NO_MUSIC);
-		//PlayQttsText("小朋友，我还不会唱歌，你教我唱吧。",0);
+		//play_sys_tices_voices(NO_MUSIC);
+		PlayQttsText("小朋友，我还不会唱歌，你教我唱吧。",0);
 		return 1;
 	}
 	else if(strstr(text,"图灵")){
-		play_sys_tices_voices(TULING_HAHAXIONG);
-		//PlayQttsText("我叫大头，聪明又可爱的大头。",0);
+		//play_sys_tices_voices(TULING_HAHAXIONG);
+		PlayQttsText("我叫大头，聪明又可爱的大头。",0);
 		//PlayQttsText("我就是风流倜傥，玉树临风，人见人爱，花见花开，车见爆胎，聪明又可爱的糍粑糖，你也可以叫我糖糖，我们做好朋友吧。",0);
 		return 1;
 	}
@@ -76,8 +76,10 @@ static void handle_text(char *text)
 	tolkLog("tolk_start\n");
 	int ret=0;
 	//检查关键词，做出相应的回答
-	if(check_text_cmd(text))
+	if(check_text_cmd(text)){
+		//pause_record_audio();
 		return ;
+	}
 	tolkLog("tolk handle qtts start\n");
 	ret = PlayQttsText(text,0);
 	if(ret == 10202){

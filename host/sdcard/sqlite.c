@@ -50,7 +50,7 @@ void CloseSql(void){
 ****************************************/
 int CreateTable(const char *sql){
 	if(sqlite3_exec(db,sql,0,0,&errmsg) != SQLITE_OK){
-		perror("create table failed!\n");
+		printf("create table failed! =%s\n",sql);
 		return -1;
 	}
 	return 0;

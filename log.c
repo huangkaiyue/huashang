@@ -132,5 +132,23 @@ void tolkLog(const char *data){
 	fclose(fp);
 	return ;
 }
+void musicdbLog(const char *data,const char *filename){
+	FILE *fp = NULL;
+	char buf[128];
+	if(!strcmp(data,"musicdb_start\n")){
+		fp =fopen("/home/musicdb.log","w+");
+	}else{
+		fp =fopen("/home/musicdb.log","a+");
+	}
+	sprintf(buf,"%s%s %s\n","name:",data,filename);
+	if(NULL == fp ){
+		return ;
+    }
+	int size = strlen(buf);
+    fwrite(buf,1,size,fp);
+  	fflush(fp);
+	fclose(fp);
+	return ;
+}
 
 

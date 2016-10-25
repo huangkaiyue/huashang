@@ -120,12 +120,11 @@ static void cleanState(void)
 	Qstream->playState=PLAY_QTTS_EXIT;
 	//Qstream->cacheSize=0;
 }
-void exitqttsPlay(void)
+void __exitqttsPlay(void)
 {
 	char *msg;
 	int msgSize;
 	Qstream->playState=PLAY_QTTS_QUIT;
-	clean_qtts_cache();
 	while(getWorkMsgNum(Qstream->qttsList)){
 		getMsgQueue(Qstream->qttsList,&msg,&msgSize);
 		free(msg);
@@ -189,7 +188,6 @@ static int text_to_speech(const char* src_text  ,const char* params)
 		QTTSSessionEnd(sess_id, "TextPutError");
 		return ret;
 	}
-	stait_qtts_cache();
 	//Qstream->cacheSize=0;
 	Qstream->downState=DOWN_QTTS_ING;
 	//Qstream->playState=PLAY_QTTS_START;

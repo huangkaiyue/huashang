@@ -150,13 +150,17 @@ void play_sys_tices_voices(char *filePath)
 #endif
 
 	usleep(800*1000);
-	if(strstr(filePath,"40002_8k")){
+	if(strstr(filePath,"40002_8k")||strstr(filePath,"no_music_8K")||strstr(filePath,"TuLin_Hahaxiong_8K")){
 		pause_record_audio();	//退出播放状态
 	}
 #ifdef CLOSE_VOICE
 	usleep(1000*1000);
 	Mute_voices(MUTE);
 #endif
+}
+void exitqttsPlay(void){
+	clean_qtts_cache();
+	__exitqttsPlay();
 }
 /********************************************************
 @ 函数功能:	播放QTTS数据
@@ -175,6 +179,7 @@ void PlayQttsText(char *text,unsigned char type)
 	char *textbuf= (char *)calloc(1,strlen(text)+2);
 	sprintf(textbuf,"%s%s",text,",");
 	tolkLog("tolk qtts start\n");
+	stait_qtts_cache();
 	Qtts_voices_text(textbuf,type);
 	tolkLog("tolk qtts end\n");
 	printf("qttspos = %d qttsend = %d\n",I2S.qttspos,I2S.qttsend);
