@@ -246,7 +246,6 @@ void __init_wm8960_voices(void)
 {
 	memset(&I2S,0,sizeof(I2SST));
 	get_vol_size(&(I2S.tx_vol));//获取路由音量和播音人
-	get_paly_sys_num();
 #ifdef VOICS_CH
 	get_vol_ch(&(I2S.vol_ch));
 #endif //end VOICS_CH

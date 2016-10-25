@@ -11,7 +11,7 @@
 #include "host/ap_sta.h"
 #include "host/StreamPlay/StreamFile.h"
 #include "host/voices/gpio_7620.h"
-
+#include "host/sdcard/musicList.h"
 
 
 #define MAIN_DOWN
