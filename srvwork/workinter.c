@@ -44,6 +44,14 @@ void pasreInputCmd(const char *com)
 		else if(!strcmp(com,"addvol"))
 		{	
 			SetVol(1,0);
+		}else if(!strcmp(com,"10"))
+		{
+			int i=0;
+			for(i;i<10;i++){
+				disable_gpio();
+				create_event_system_voices(10);
+				sleep(15);
+			}
 		}
 		else if(!strcmp(com,"subvol"))
 		{
@@ -87,6 +95,7 @@ void pasreInputCmd(const char *com)
 		{
 			static char buf[566];
 			memset(buf,0,566);
+			start_event_play_wav();
 			memcpy(buf,"互联网+”代表一种新的经济形态，即充分发挥互联网在生产要素配置中的优化和集成作用，将互联网的创新成果深度融合于经济社会各领域之中，提升实体经济的创新力和生产力，形成更广泛的以互联网为基础设施和实现工具的经济发展新形态。“ 互联网+”行动计划将重点促进以云计算、物联网、大数据为代表的新一代信息技术与现代制造业、生产性服务业等的融合创新，发展壮大新兴业态，打造新的产业增长点，为大众创业、万众创新提供环境，为产业智能化提供支撑，增强新的经济发展动力，促进国民经济提质增效升级。 2015年3月5日十二届全国人大三次会议上，李克强总理在政府工作报告中首次提出“互联网+”行动计划。",566);
 			PlayQttsText(buf,0);
 		}else if(!strcmp(com,"testmp3"))

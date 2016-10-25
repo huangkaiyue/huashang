@@ -102,6 +102,7 @@ static void __clean_play_cache_data(void)
 {
 	char *pBuf=NULL;
 	int i = 0;
+	cleanplayLog("cleanplay_start\n");
 	while(1)   //Çå³ýÒôÆµDMAÊý¾Ý
 	{
 		ioctl(I2S.i2s_fd, I2S_PUT_AUDIO, &i);
@@ -109,7 +110,9 @@ static void __clean_play_cache_data(void)
 		memset(pBuf, 0, I2S_PAGE_SIZE); 
 		if (i==play_index)
 			break;
-	}	
+		cleanplayLog("cleanplay while\n");
+	}
+	cleanplayLog("cleanplay end\n");
 }
 void clean_play_cache(void){
 	__clean_play_cache_data();
@@ -196,6 +199,9 @@ void clean_qtts_cache(void){
 }
 void stait_qtts_cache(void){
 	I2S.qttsend=0;
+}
+int get_qtts_cache(void){
+	return I2S.qttsend;
 }
 void WriteqttsPcmData(char *data,int len)
 {

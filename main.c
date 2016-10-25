@@ -87,9 +87,9 @@ int main(int argc, char **argv)
 		}
 		else if(LOCAL_MP3_EVENT==event){
 			playLocalMp3((const char *)msg);
-			usleep(1000);
 			free((void *)msg);
-			if(getWorkMsgNum(DownEvent)==0){
+			usleep(1000);
+			if(getEventNum()==0&&getWorkMsgNum(DownEvent)==0){
 				switch(sysMes.localplayname){
 					case mp3:
 						createPlayEvent((const void *)"mp3",PLAY_NEXT);
