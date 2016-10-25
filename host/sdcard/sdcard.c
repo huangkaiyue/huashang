@@ -22,34 +22,33 @@ int get_mp3filenmae(char *cache_path,char *filename,int playMp3Num){
 	struct dirent *entry;  
 	unsigned char mount=0;
 	int ret = 0;
-	char tmp[64]={0};
-	if((dirptr = opendir(cache_path)) == NULL)  
-	{  
+	if((dirptr = opendir(cache_path)) == NULL){
 		printf("open dir !\n"); 
 		return -2;  
 	}
-	while (entry = readdir(dirptr))  
-	{  
+	while (entry = readdir(dirptr)){  
 		if(!strcmp(entry->d_name,".")||!strcmp(entry->d_name,"..")){
-			usleep(1000);
 			continue;
 		}
 		if(mount==0){
+<<<<<<< HEAD
 			strcpy(filename,entry->d_name);
+=======
+			sprintf(filename,"%s",entry->d_name);
+			if(playMp3Num==0){
+				break;
+			}
+>>>>>>> 9a3b59153f1391ff6ed474b0ecb4b5eaeafb669b
 		}
 		mount++;
-		if(mount==playMp3Num)
-		{
-			strcpy(filename,entry->d_name);
+		if(mount==playMp3Num){
+			sprintf(filename,"%s",entry->d_name);
 			break;
 		}
-		usleep(100);
 	}
-	printf("mount = %d playMp3Num=%d\n",mount,playMp3Num);
-	if(mount<playMp3Num)
-	{
+	//printf("mount = %d playMp3Num=%d\n",mount,playMp3Num);
+	if(mount<playMp3Num){
 		ret = -1;
-		strcpy(filename,tmp);
 	}
 	closedir(dirptr);   
 	return ret;

@@ -248,6 +248,7 @@ void NetStreamExitFile(void)
 	//DEBUG_STREAM("NetStreamExitFile start (%d)...\n",getDownState());
 	if(getDownState()==DOWN_ING){		//退出下载
 		quitDownFile();
+		eventlockLog("eventlock exit down\n",5);
 	}
 	//DEBUG_STREAM("=================NetStreamExitFile getDownState (%d)...\n",st->player.playState);
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//退出播放
@@ -258,9 +259,11 @@ void NetStreamExitFile(void)
 		memset(st->player.musicname,0,64);
 		DecodeExit();
 		pthread_mutex_unlock(&st->mutex);
+		eventlockLog("eventlock exit mp3\n",5);
 		usleep(100);
 	}
 	DEBUG_STREAM("NetStreamExitFile end ...\n");
+	eventlockLog("eventlock exit end\n",5);
 }
 
 //拷贝推送过来的信息

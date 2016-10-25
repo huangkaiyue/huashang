@@ -5,7 +5,7 @@
 #include "base/queWorkCond.h"
 #include "qtts_qisc.h"
 
-//#define DBG_QTTS
+#define DBG_QTTS
 #ifdef 	DBG_QTTS 
 #define DEBUG_QTTS(fmt, args...) printf("QTTS: " fmt, ## args)
 #else   
@@ -28,7 +28,8 @@ _MspLogin login_config;
 #define DOWN_QTTS_ING	1
 #define PLAY_QTTS_QUIT	0
 #define PLAY_QTTS_ING	1
-#define PLAY_QTTS_EXIT	2
+#define PLAY_QTTS_START	2
+#define PLAY_QTTS_EXIT	3
 
 //#define VINN_GBK	"vcn=vinn,aue = speex-wb,auf=audio/L16;rate=8000,spd=7,vol = 8,rdn = 3,tte = gbk"
 #define VINN_GBK	"voice_name=vinn,text_encoding=gbk,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =2"
@@ -116,20 +117,22 @@ static void single_to_stereo(char *src,int srclen,char *tar,int *tarlen)
 *****************************************************/
 static void cleanState(void)
 {
-	Qstream->playState=PLAY_QTTS_QUIT;
-	Qstream->cacheSize=0;
+	Qstream->playState=PLAY_QTTS_EXIT;
+	//Qstream->cacheSize=0;
 }
 void exitqttsPlay(void)
 {
 	char *msg;
 	int msgSize;
-	Qstream->playState=PLAY_QTTS_EXIT;
+	Qstream->playState=PLAY_QTTS_QUIT;
 	clean_qtts_cache();
 	while(getWorkMsgNum(Qstream->qttsList)){
 		getMsgQueue(Qstream->qttsList,&msg,&msgSize);
 		free(msg);
+		DEBUG_QTTS("exitqttsPlay: while ...\n");
 		usleep(100);
 	}
+	DEBUG_QTTS("exitqttsPlay: end (%d) ...\n",getWorkMsgNum(Qstream->qttsList));
  }
  static void *play_qtts_data(void *arg)
  {
@@ -144,20 +147,20 @@ void exitqttsPlay(void)
 			usleep(100);
 			continue;
 		}
-		if(Qstream->playState==PLAY_QTTS_EXIT){
-			if(getWorkMsgNum(Qstream->qttsList)){
-				getMsgQueue(Qstream->qttsList,&data,&len);
-				free(data);
-			}
+#if 0
+		if(Qstream->playState==PLAY_QTTS_QUIT){
 			usleep(100);
 			continue;
 		}
+#endif
+		DEBUG_QTTS("play_qtts_data: while ...\n");
 		getMsgQueue(Qstream->qttsList,&data,&len);
 		Qstream->WritePcm(data,len);
 		free(data);
-	 }
-	 cleanState();
-	 return NULL;
+	}
+	cleanState();
+	DEBUG_QTTS("play_qtts_data: end (%d) ...\n",getWorkMsgNum(Qstream->qttsList));
+	return NULL;
  }
 /***************************************************************************
 @函数功能:	文本转换语音
@@ -173,7 +176,6 @@ static int text_to_speech(const char* src_text  ,const char* params)
 	unsigned int text_len = 0;
 	unsigned int audio_len = 0;
 	int synth_status = 1;
-
 	DEBUG_QTTS("\ntext_to_speech :begin to synth...\n");
 	text_len = (unsigned int)strlen(src_text);
 	sess_id = QTTSSessionBegin(params, &ret);
@@ -187,9 +189,13 @@ static int text_to_speech(const char* src_text  ,const char* params)
 		QTTSSessionEnd(sess_id, "TextPutError");
 		return ret;
 	}
+	stait_qtts_cache();
+	//Qstream->cacheSize=0;
 	Qstream->downState=DOWN_QTTS_ING;
-	Qstream->playState=PLAY_QTTS_QUIT;
-	while(1){
+	//Qstream->playState=PLAY_QTTS_START;
+	Qstream->playState=PLAY_QTTS_ING;
+	pool_add_task(play_qtts_data,(void *)Qstream);		//启动播放线程
+	while(Qstream->playState){
 		const void *data = QTTSAudioGet(sess_id, &audio_len, &synth_status, &ret);
 		if (NULL != data){
 			char *getdata = (char *)malloc(audio_len+1);
@@ -197,30 +203,31 @@ static int text_to_speech(const char* src_text  ,const char* params)
 				continue;
 			}
 			memcpy(getdata,data,audio_len);
+			DEBUG_QTTS("putMsgQueue: start (%d) ...\n",getWorkMsgNum(Qstream->qttsList));
 			putMsgQueue(Qstream->qttsList,getdata,audio_len);	//添加到播放队列
-			Qstream->cacheSize +=audio_len;
-			if(Qstream->playState==PLAY_QTTS_QUIT&&Qstream->cacheSize>QTTS_PLAY_SIZE){
+#if 0
+			//Qstream->cacheSize +=audio_len;
+			if(Qstream->playState==PLAY_QTTS_START){
 				Qstream->playState=PLAY_QTTS_ING;
-				stait_qtts_cache();
+				//DEBUG_QTTS("play_qtts_data=====%d=====\n",Qstream->cacheSize);
 				pool_add_task(play_qtts_data,(void *)Qstream);		//启动播放线程
 			}
+#endif
 		}
-		if (synth_status==2|| ret!= 0||Qstream->playState==PLAY_QTTS_EXIT){
+		usleep(100*1000);
+		if (synth_status==2|| ret!= 0){		//退出
+			DEBUG_QTTS("synth_status(%d)ret(%d)\n",synth_status,ret);
 			Qstream->downState=DOWN_QTTS_QUIT;
-			if(Qstream->playState==PLAY_QTTS_QUIT){		//退出时还没有启动播放线程，则启动
-				Qstream->playState=PLAY_QTTS_ING;
-				stait_qtts_cache();
-				pool_add_task(play_qtts_data,(void *)Qstream);
-			}
 			break;
 		}
-		usleep(150*1000);
 	}
+	DEBUG_QTTS("text_to_speech :while end(ret=%d)...\n",Qstream->playState);
 	while(Qstream->downState==DOWN_QTTS_QUIT){		//等待播放线程退出
-		if(Qstream->playState==PLAY_QTTS_QUIT)
+		if(Qstream->playState!=PLAY_QTTS_ING)
 			break;
 		usleep(100*1000);
 	}
+	Qstream->playState=PLAY_QTTS_QUIT;
 	DEBUG_QTTS("text_to_speech :TTS end(ret=%d)...\n\n",ret);
 	ret = QTTSSessionEnd(sess_id, NULL);
 	return ret;

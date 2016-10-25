@@ -174,17 +174,22 @@ void PlayQttsText(char *text,unsigned char type)
 #endif
 	char *textbuf= (char *)calloc(1,strlen(text)+2);
 	sprintf(textbuf,"%s%s",text,",");
+	tolkLog("tolk qtts start\n");
 	Qtts_voices_text(textbuf,type);
-	if(I2S.qttspos!=0)
+	tolkLog("tolk qtts end\n");
+	printf("qttspos = %d qttsend = %d\n",I2S.qttspos,I2S.qttsend);
+	if(I2S.qttspos!=0&&I2S.qttsend==0)
 	{
 		memset(play_buf+I2S.qttspos,0,I2S_PAGE_SIZE-I2S.qttspos);
 		write_pcm(play_buf);
 		I2S.qttspos =0;
 	}
+	tolkLog("tolk qtts clean\n");
 	clean_play_cache();
 	//memset(play_buf,0,I2S_PAGE_SIZE);
 	//write_pcm(play_buf);
 	usleep(800*1000);
+	tolkLog("tolk qtts pause\n");
 	pause_record_audio();	//ÍË³ö²¥·Å×´Ì¬
 	free(textbuf);
 	if(I2S.qttsend==1){

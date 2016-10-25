@@ -129,9 +129,10 @@ static int SmartConfig(void *arg)
 		wifi->connetEvent(SMART_CONFIG_OK);	//已经接收到ssid 和 passwd
 		sendSsidPasswd(ssid,pwd);
 		sleep(5);
-		while(++timeout<35){	//等待配网成功后，使能按键
+		while(++timeout<30){	//等待配网成功后，使能按键
 			sleep(1);
 			if(checkInternetFile()){
+				sleep(5);
 				break;
 			}
 		}

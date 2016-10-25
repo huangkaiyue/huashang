@@ -73,10 +73,12 @@ static int check_text_cmd(char *text)
 ******************************************/
 static void handle_text(char *text)
 {
+	tolkLog("tolk_start\n");
 	int ret=0;
 	//检查关键词，做出相应的回答
 	if(check_text_cmd(text))
 		return ;
+	tolkLog("tolk handle qtts start\n");
 	ret = PlayQttsText(text,0);
 	if(ret == 10202){
 		//重连，语音播报
@@ -85,6 +87,7 @@ static void handle_text(char *text)
 		startServiceWifi();
 		sleep(2);
 	}
+	tolkLog("tolk handle qtts end\n");
 }
 /*******************************************
 @函数功能:	json解析服务器数据
@@ -241,9 +244,11 @@ int add_event_msg(const char *databuf,int  len,int  type)
 {
 	int msgSize=0;
 	if(event_lock){
-		DEBUG_STD_MSG("add_event_msg event_lock =%d\n",event_lock);
+		DEBUG_STD_MSG("add_event_msg event_lock =%d\n",event_lock); // 写入 type event_lock a+
+		eventlockLog("event_lock add error\n",event_lock);
 		return ;
 	}
+	eventlockLog("event_lock add ok\n",event_lock);
 	struct eventMsg *msg =(struct eventMsg *)(&msgSize);
 	msg->len = len;
 	msg->type = type;
@@ -263,6 +268,7 @@ static void handle_event_msg(const char *data,int msgSize)
 	DEBUG_STD_MSG("=====================================================================================\n");
 	DEBUG_STD_MSG("handle_event_msg cur->type = %d\n",cur->type);
 	DEBUG_STD_MSG("=====================================================================================\n");
+	handleeventLog("handleevent_start\n",cur->type);
 	switch(cur->type){
 		case STUDY_WAV_EVENT:		//会话事件
 			runJsonEvent(data);
@@ -277,10 +283,13 @@ static void handle_event_msg(const char *data,int msgSize)
 			
 		case SET_RATE_EVENT:		//URL清理事件
 			event_lock=1;	//受保护状态事件
+			//lock_start  w+
+			eventlockLog("eventlock_start\n",event_lock);
 			NetStreamExitFile();
 			i2s_start_play(RECODE_RATE);
 			event_lock=0;
 			pause_record_audio();
+			eventlockLog("eventlock end\n",event_lock);
 			break;
 			
 		case URL_VOICES_EVENT:		//URL网络播放事件
@@ -300,7 +309,7 @@ static void handle_event_msg(const char *data,int msgSize)
 			start_event_play_url();
 			NetStreamExitFile();
 			AddDownEvent(data,LOCAL_MP3_EVENT);
-			sleep(1);
+			//sleep(1);
 			break;
 			
 		case QTTS_PLAY_EVENT:		//QTTS事件
@@ -327,6 +336,7 @@ static void handle_event_msg(const char *data,int msgSize)
 			DEBUG_STD_MSG("not event msg !!!\n");
 			break;
 	}
+	handleeventLog("handleevent end\n",msgSize);
 }
 
 static void clean_event_msg(const char *data,int msgSize)

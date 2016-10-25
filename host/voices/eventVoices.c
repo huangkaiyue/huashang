@@ -88,16 +88,6 @@ static void PlayLocal(unsigned char str,char *path, unsigned char Mute)
 	char filename[64]={0};
 	int ret=0;
 	get_paly_num(&playMp3Num,str);
-#if 0
-	if(Mute==PLAY_LAST){
-		playMp3Num=playMp3LastNum;
-	}else{
-		playMp3LastNum=playMp3Num;
-		++playMp3Num;
-	}
-	if(playMp3Num>127)
-		playMp3Num=0;
-#endif
 #if 1
 	if(++playMp3Num>127)
 		playMp3Num=1;
@@ -333,7 +323,7 @@ void handle_event_system_voices(int sys_voices)
 		char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
 		if(strlen(wifi)>0){
 			snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
-			PlayQttsText(buf,0);
+			QttsPlayEvent(buf,0);
 		}
 		Led_vigue_close();
 		enable_gpio();
@@ -342,12 +332,10 @@ void handle_event_system_voices(int sys_voices)
 	{
 		play_sys_tices_voices(NO_WIFI);
 		enable_gpio();
-		//Led_vigue_close();
 	}
 	else if(sys_voices==SMART_CONFIG_FAILED)	//没有收到用户发送的wifi
 	{	
 		play_sys_tices_voices(NOT_REAVWIFI);
-		//Led_vigue_close();
 	}
 	else if(sys_voices==NOT_NETWORK)			//没有连接成功
 	{
@@ -358,7 +346,6 @@ void handle_event_system_voices(int sys_voices)
 	else if(sys_voices==CONNET_CHECK)			//检查网络是否可用
 	{
 		play_sys_tices_voices(CHECK_INTERNET);
-		//enable_gpio();
 	}
 	usleep(1000);
 }
