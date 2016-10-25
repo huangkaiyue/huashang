@@ -31,14 +31,10 @@ int get_mp3filenmae(char *cache_path,char *filename,int playMp3Num){
 			continue;
 		}
 		if(mount==0){
-<<<<<<< HEAD
-			strcpy(filename,entry->d_name);
-=======
 			sprintf(filename,"%s",entry->d_name);
 			if(playMp3Num==0){
 				break;
 			}
->>>>>>> 9a3b59153f1391ff6ed474b0ecb4b5eaeafb669b
 		}
 		mount++;
 		if(mount==playMp3Num){

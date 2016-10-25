@@ -336,7 +336,7 @@ static void handle_event_msg(const char *data,int msgSize)
 			DEBUG_STD_MSG("not event msg !!!\n");
 			break;
 	}
-	handleeventLog("handleevent end\n",msgSize);
+	handleeventLog("handleevent end\n",cur->type);
 }
 
 static void clean_event_msg(const char *data,int msgSize)
