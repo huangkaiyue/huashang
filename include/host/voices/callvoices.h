@@ -51,8 +51,6 @@ typedef struct sys_message
 extern SysMessage sysMes;
 //--------------------eventVoices.c----------------------------------------
 
-#define PLAY_LAST 1
-#define PLAY_NEXT 0
 static enum{
 	mp3=1,
 	story,
@@ -75,7 +73,7 @@ extern void keep_recorde_live(int change);
 extern void init_record_pthread(void);
 extern void exit_record_pthread(void);
 //--------------------eventVoices.c-----------------------------------------------
-extern void createPlayEvent(const void *play,unsigned char Mute);
+extern void createPlayEvent(const void *play,unsigned char Mode);
 extern void CleanUrlEvent(void);
 extern void QttsPlayEvent(char *txt,int type);
 extern void down_voices_sign(void);

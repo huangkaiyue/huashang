@@ -12,7 +12,7 @@
 #include "systools.h"
 #include "gpio_7620.h"
 #include "../host/studyvoices/qtts_qisc.h"
-
+#include "../sdcard/musicList.h"
 #include "config.h"
 
 #define START_SPEEK_E	START_SPEEK_VOICES 		  	//录音、语音识别
@@ -32,7 +32,6 @@ extern void enable_gpio(void);
 extern void DelSdcardMp3file(char * sdpath);
 
 SysMessage sysMes;
-static int playTextNum=0;
 /*******************************************************
 函数功能: 播放网络URL地址
 参数: url URL地址	
@@ -80,36 +79,13 @@ static void CreateLocalMp3(char *localpath)
 	add_event_msg(URL,0,LOCAL_MP3_EVENT);
 }
 #ifdef LOCAL_MP3
-static int playMp3LastNum;
-static void PlayLocal(unsigned char str,char *path, unsigned char Mute)
-{
-	static int playMp3Num=0;
-	char buf[64]={0};
+static void PlayLocal(unsigned char menu,const char *path, unsigned char Mode){	
+	char buf[128]={0};
 	char filename[64]={0};
-	int ret=0;
-	get_paly_num(&playMp3Num,str);
-#if 1
-	if(++playMp3Num>127)
-		playMp3Num=1;
-	if(Mute==PLAY_LAST){
-		playMp3Num -=2;
-		if(playMp3Num<=0){
-			playMp3Num=playMp3LastNum;
-		}
-	}
-#endif
-	snprintf(buf,64,"%s%s",TF_SYS_PATH,path);
-	ret=get_mp3filenmae(buf,filename,playMp3Num);
-	if(ret == -1){
-		playMp3LastNum=playMp3Num-1;
-		playMp3Num=1;
-	}else if(ret == -2){
-		return;
-	}
-	snprintf(buf,64,"%s%s%s",TF_SYS_PATH,path,filename);
+	GetSdcardMusic((const char *)TF_SYS_PATH,path,filename, Mode);
+	snprintf(buf,128,"%s%s%s",TF_SYS_PATH,path,filename);
 	CreateLocalMp3(buf);
-	set_paly_num(playMp3Num,str);
-	sysMes.localplayname=str;
+	sysMes.localplayname=menu;
 }
 #endif
 /*******************************************************
@@ -117,39 +93,22 @@ static void PlayLocal(unsigned char str,char *path, unsigned char Mute)
 参数: play 本地MP3播放命令 或 URL地址
 返回值: 无
 ********************************************************/
-void createPlayEvent(const void *play,unsigned char Mute)
-{
-	char buf[64]={0};
-	char filename[64]={0};
-	int ret=0;
-	if(!strcmp((const char *)play,"testmp3")){
-		if(++playTextNum>127)
-			playTextNum=0;
-		snprintf(buf,64,"%s%s",TF_SYS_PATH,TF_TEST_PATH);
-		ret=get_mp3filenmae(buf,filename,playTextNum);
-		if(ret == -1){
-			playTextNum=1;
-		}else if(ret == -2){
-			return;
-		}
-		snprintf(buf,64,"%s%s%s",TF_SYS_PATH,TF_TEST_PATH,filename);
-		CreateLocalMp3(buf);
-		sysMes.localplayname=testmp3;
-	}
+void createPlayEvent(const void *play,unsigned char Mode){
 #ifdef LOCAL_MP3
-	else if(!strcmp((const char *)play,"mp3")){
-		PlayLocal(mp3,TF_MP3_PATH,Mute);
+	if(!strcmp((const char *)play,"mp3")){
+		PlayLocal(mp3,TF_MP3_PATH,Mode);
 	}
 	else if(!strcmp((const char *)play,"story")){
-		PlayLocal(story,TF_STORY_PATH,Mute);
+		PlayLocal(story,TF_STORY_PATH,Mode);
 	}
 	else if(!strcmp((const char *)play,"english")){
-		PlayLocal(english,TF_ENGLISH_PATH,Mute);
-	}
-#endif
-	else{
+		PlayLocal(english,TF_ENGLISH_PATH,Mode);
+	}else{
 		CreateUrlEvent(play);
 	}
+#else
+	CreateUrlEvent(play);
+#endif	
 }
 /*******************************************************
 函数功能: 清理URL事件
@@ -267,7 +226,6 @@ void handle_event_system_voices(int sys_voices)
 		pool_add_task(DelSdcardMp3file,MP3_SDPATH);//关机删除，长时间不用的文件
 #endif
 		play_sys_tices_voices(END_SYS_VOICES);
-		set_paly_sys_num();
 	}
 	else if(sys_voices==2)						//请稍等
 	{
@@ -279,7 +237,6 @@ void handle_event_system_voices(int sys_voices)
 		pool_add_task(DelSdcardMp3file,MP3_SDPATH);//关机删除，长时间不用的文件
 #endif
 		play_sys_tices_voices(LOW_BATTERY);
-		set_paly_sys_num();
 	}
 	else if(sys_voices==4)						//恢复出厂设置
 	{
@@ -529,6 +486,12 @@ void save_recorder_voices(const char *voices_data,int size)
 }
 #endif
 
+#ifdef LOCAL_MP3
+static void *waitLoadMusicList(void *arg){
+	sleep(5);
+	SysOnloadMusicList((const char *)TF_SYS_PATH,(const char *)TF_MP3_PATH,(const char *)TF_STORY_PATH,(const char *)TF_ENGLISH_PATH);
+} 
+#endif
 /******************************************************************
 初始化8960音频芯片，开启8K录音和播放双工模式
 *******************************************************************/
@@ -545,6 +508,11 @@ void init_wm8960_voices(void)
 	init_record_pthread();
 #ifdef TEST_SDK
 	enable_gpio();
+#endif
+
+#ifdef LOCAL_MP3
+	InitMusicList();
+	pool_add_task(waitLoadMusicList, NULL);	//防止T卡加载慢
 #endif
 }
 void clean_main_voices(void)

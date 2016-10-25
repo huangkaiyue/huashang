@@ -2,6 +2,7 @@
 #include "host/voices/callvoices.h"
 #include "ralink_gpio.h"
 #include "gpio_7620.h"
+#include "../sdcard/musicList.h"
 #include "config.h"
 //#define MAIN
 
@@ -141,13 +142,13 @@ static void signal_handler(int signum)
 			case SUBVOL_KEY:	//play next
 				switch(sysMes.localplayname){
 					case mp3:
-						createPlayEvent((const void *)"mp3",PLAY_LAST);
+						createPlayEvent((const void *)"mp3",PLAY_PREV);
 						break;
 					case story:
-						createPlayEvent((const void *)"story",PLAY_LAST);
+						createPlayEvent((const void *)"story",PLAY_PREV);
 						break;
 					case english:
-						createPlayEvent((const void *)"english",PLAY_LAST);
+						createPlayEvent((const void *)"english",PLAY_PREV);
 						break;
 					default:
 						break;

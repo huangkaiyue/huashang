@@ -12,48 +12,6 @@
 
 #define SD_MIN		50
 
-/****************************************************************************************
-*函数功能:	获取某个目录下的文件
-*参数:		cache_path 目录路径  filename 缓存获取到的文件名  playMp3Num第几个文件名
-*返回值:	-2 打开不成功 -1 获取完当前目录所有文件 0成功获取到
-****************************************************************************************/
-int get_mp3filenmae(char *cache_path,char *filename,int playMp3Num){
-	DIR *dirptr = NULL;  
-	struct dirent *entry;  
-	unsigned char mount=0;
-	int ret = 0;
-	if((dirptr = opendir(cache_path)) == NULL){
-		printf("open dir !\n"); 
-		return -2;  
-	}
-	while (entry = readdir(dirptr)){  
-		if(!strcmp(entry->d_name,".")||!strcmp(entry->d_name,"..")){
-			continue;
-		}
-		if(mount==0){
-<<<<<<< HEAD
-			strcpy(filename,entry->d_name);
-=======
-			sprintf(filename,"%s",entry->d_name);
-			if(playMp3Num==0){
-				break;
-			}
->>>>>>> 9a3b59153f1391ff6ed474b0ecb4b5eaeafb669b
-		}
-		mount++;
-		if(mount==playMp3Num){
-			sprintf(filename,"%s",entry->d_name);
-			break;
-		}
-	}
-	//printf("mount = %d playMp3Num=%d\n",mount,playMp3Num);
-	if(mount<playMp3Num){
-		ret = -1;
-	}
-	closedir(dirptr);   
-	return ret;
-}
-
 //是否小于SD剩余空间下限大小
 void CheckSdcardInfo(char * sdpath)
 {
