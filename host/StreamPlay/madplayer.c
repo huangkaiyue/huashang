@@ -4,31 +4,25 @@
 
 static MadDecode_t *Mad=NULL;
  
-void DecodeStart(void)
-{
+void DecodeStart(void){
 	Mad->playstate=MAD_PLAY;
 }
-void DecodePause(void)
-{
+void DecodePause(void){
 	Mad->playstate=MAD_PAUSE;
 }
-void DecodeExit(void)
-{
+void DecodeExit(void){
 	Mad->playstate=MAD_EXIT;
 }
-int GetDecodeState(void)
-{
+int GetDecodeState(void){
 	return (int )Mad->playstate;
 }
 
-void SetDecodeSize(int fileLen)
-{
+void SetDecodeSize(int fileLen){
 	Mad->flen =fileLen;
 }
 //同一个位置解码出错超过30次。表明为无效音频
 #define DECODE_ERROR_NUM	60 
-static enum mad_flow NewInput(void *data,struct mad_stream *stream)
-{
+static enum mad_flow NewInput(void *data,struct mad_stream *stream){
     MadDecode_t *Mad =(MadDecode_t *)data;
     int ret_code;
     int unproc_data_size; /*the unprocessed data's size*/
@@ -74,8 +68,7 @@ static enum mad_flow NewInput(void *data,struct mad_stream *stream)
     return ret_code;
 }
 
-static inline signed int scale(mad_fixed_t sample)
-{
+static inline signed int scale(mad_fixed_t sample){
     /* round */
     sample += (1L <= MAD_F_FRACBITS - 16);
     if(sample >= MAD_F_ONE)
@@ -85,8 +78,7 @@ static inline signed int scale(mad_fixed_t sample)
     return sample >> (MAD_F_FRACBITS + 1 - 16);
 }
 
-static enum mad_flow output(void *data,struct mad_header const *header,struct mad_pcm *pcm)
-{
+static enum mad_flow output(void *data,struct mad_header const *header,struct mad_pcm *pcm){
     unsigned int nchannels, nsamples;
 //    unsigned int rate;
 	signed int sample;
@@ -121,8 +113,7 @@ static enum mad_flow output(void *data,struct mad_header const *header,struct ma
     return MAD_FLOW_CONTINUE;
 }
 
-static enum mad_flow error(void *data,struct mad_stream *stream,struct mad_frame *frame)
-{
+static enum mad_flow error(void *data,struct mad_stream *stream,struct mad_frame *frame){
    MadDecode_t *mp3 = (MadDecode_t *)data;
     DEBUG_MADPLAY_ERR("decoding error 0x%04x (%s) at byte offset %u\n",stream->error, mad_stream_errorstr(stream),stream->this_frame - mp3->fbuf);
 	if(Mad->err_tices++>DECODE_ERROR_NUM)
@@ -137,8 +128,7 @@ int get_playstate(void){
 	return Mad->playstate;
 }
 
-void DecodePlayMusic(void InputMusicStream(char *msg,int size))
-{
+void DecodePlayMusic(void InputMusicStream(char *msg,int size)){
     struct mad_decoder decoder;
     int result;
 
@@ -163,8 +153,7 @@ void DecodePlayMusic(void InputMusicStream(char *msg,int size))
 	Mad->flen=0;
     return result;
 }
-void InitDecode(void WritePcmData(char *data,int size))
-{
+void InitDecode(void WritePcmData(char *data,int size)){
 	Mad = (MadDecode_t *)calloc(1,sizeof(MadDecode_t));
 	if(Mad==NULL)
 	{
@@ -172,10 +161,8 @@ void InitDecode(void WritePcmData(char *data,int size))
 	}
 	Mad->WritePcmVoices=WritePcmData;
 }
-void CleanDecode(void)
-{
-	if(Mad)
-	{
+void CleanDecode(void){
+	if(Mad){
 		Mad->playstate =MAD_EXIT;
 		free(Mad);
 		Mad=NULL;

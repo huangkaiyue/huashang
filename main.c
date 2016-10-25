@@ -100,9 +100,6 @@ int main(int argc, char **argv)
 					case english:
 						createPlayEvent((const void *)"english",PLAY_NEXT);
 						break;
-					case testmp3:
-						createPlayEvent((const void *)"testmp3",PLAY_NEXT);
-						break;
 					default:
 						sysMes.localplayname=0;
 						break;

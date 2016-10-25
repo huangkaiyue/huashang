@@ -46,6 +46,8 @@
 
 #define LOG_MP3PLAY		//使能URL打印信息
 
+#define ENABLE_LOG		//使能写入文件log
+
 //----------------------用户数据类-------------------------------
 
 #define UDP_BRO_PORT 		20001						// 本地广播端口

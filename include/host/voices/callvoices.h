@@ -75,7 +75,7 @@ extern void exit_record_pthread(void);
 //--------------------eventVoices.c-----------------------------------------------
 extern void createPlayEvent(const void *play,unsigned char Mode);
 extern void CleanUrlEvent(void);
-extern void QttsPlayEvent(char *txt,int type);
+extern void QttsPlayEvent(const char *txt,int type);
 extern void down_voices_sign(void);
 extern void Net_work(void);
 extern void create_event_system_voices(int sys_voices);

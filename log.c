@@ -1,7 +1,8 @@
 #include "comshead.h"
+#include "config.h"
 
-int WriteMp3Data(char *filename,char *data,int size)
-{
+int WriteMp3Data(char *filename,char *data,int size){
+#ifdef ENABLE_LOG
 	FILE *fp = fopen(filename,"w+");
 	if(NULL == fp ){
 		return -1;
@@ -10,8 +11,10 @@ int WriteMp3Data(char *filename,char *data,int size)
   	fflush(fp);
 	fclose(fp);
 	return 0;
+#endif	
 }
 void playurlLog(const char *data){
+#ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	if(!strcmp(data,"url_start\n")){
 		fp =fopen("/home/url.log","w+");
@@ -26,10 +29,11 @@ void playurlLog(const char *data){
     fwrite(data,1,size,fp);
   	fflush(fp);
 	fclose(fp);
-	return ;
+#endif	
 }
 
 void smartConifgLog(const char *data){
+#ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	if(!strcmp(data,"smart_start\n")){
 		fp =fopen("/home/smartconfig.log","w+");
@@ -45,8 +49,10 @@ void smartConifgLog(const char *data){
   	fflush(fp);
 	fclose(fp);
 	return ;
+#endif
 }
 void playsysvoicesLog(const char *data){
+#ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	if(!strcmp(data,"playsys_start\n")){
 		fp =fopen("/home/playsysvoices.log","w+");
@@ -62,8 +68,10 @@ void playsysvoicesLog(const char *data){
   	fflush(fp);
 	fclose(fp);
 	return ;
+#endif
 }
 void cleanplayLog(const char *data){
+#ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	if(!strcmp(data,"cleanplay_start\n")){
 		fp =fopen("/home/cleanplay.log","w+");
@@ -79,8 +87,10 @@ void cleanplayLog(const char *data){
   	fflush(fp);
 	fclose(fp);
 	return ;
+#endif
 }
 void eventlockLog(const char *data,unsigned char lock){
+#ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	char buf[128];
 	if(!strcmp(data,"eventlock_start\n")){
@@ -97,8 +107,10 @@ void eventlockLog(const char *data,unsigned char lock){
   	fflush(fp);
 	fclose(fp);
 	return ;
+#endif
 }
 void handleeventLog(const char *data,unsigned char msgSize){
+#ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	char buf[128];
 	if(!strcmp(data,"handleevent_start\n")){
@@ -115,8 +127,10 @@ void handleeventLog(const char *data,unsigned char msgSize){
   	fflush(fp);
 	fclose(fp);
 	return ;
+#endif
 }
 void tolkLog(const char *data){
+#ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	if(!strcmp(data,"tolk_start\n")){
 		fp =fopen("/home/tolk.log","w+");
@@ -131,8 +145,10 @@ void tolkLog(const char *data){
   	fflush(fp);
 	fclose(fp);
 	return ;
+#endif
 }
 void musicdbLog(const char *data,const char *filename){
+#ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	char buf[128];
 	if(!strcmp(data,"musicdb_start\n")){
@@ -149,6 +165,7 @@ void musicdbLog(const char *data,const char *filename){
   	fflush(fp);
 	fclose(fp);
 	return ;
+#endif
 }
 
 

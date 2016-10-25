@@ -59,10 +59,8 @@ static void CreateUrlEvent(const void *data){
 参数: localpath 本地MP3播放地址	
 返回值: 无
 ********************************************************/
-static void CreateLocalMp3(char *localpath)
-{
-	if(getEventNum()>0)
-	{
+static void CreateLocalMp3(char *localpath){
+	if(getEventNum()>0){
 		DEBUG_EVENT("CreateUrlEvent num =%d \n",getEventNum());
 		return;
 	}
@@ -116,8 +114,7 @@ void createPlayEvent(const void *play,unsigned char Mode){
 参数: 无
 返回值: 无
 ********************************************************/
-void CleanUrlEvent(void)
-{
+void CleanUrlEvent(void){
 	sysMes.localplayname=0;
 	add_event_msg(NULL,0,SET_RATE_EVENT);
 }
@@ -126,15 +123,14 @@ void CleanUrlEvent(void)
 参数: txt QTTS文本 type :0---GBK 1----UTF8
 返回值: 无
 ********************************************************/
-void QttsPlayEvent(char *txt,int type)
-{
+void QttsPlayEvent(const char *txt,int type){
 	if(GetRecordeLive() ==PLAY_URL_E){
 		CleanUrlEvent();
 	}
 	char *TXT= (char *)calloc(1,strlen(txt)+1);
 	if(TXT){
 		sprintf(TXT,"%s",txt);
-		add_event_msg(TXT,type,QTTS_PLAY_EVENT);
+		add_event_msg((const char *)TXT,type,QTTS_PLAY_EVENT);
 	}
 }
 
@@ -144,8 +140,7 @@ void QttsPlayEvent(char *txt,int type)
 返回值: 无
 ********************************************************/
 static int staittime=0;
-void down_voices_sign(void)
-{
+void down_voices_sign(void){
 	time_t t;
 	if(time(&t)-staittime<1)
 		return;
@@ -167,8 +162,7 @@ void down_voices_sign(void)
 参数: pid_name	进程名字
 返回值: 无
 ********************************************************/
-static int get_pid_name(char *pid_name)
-{
+static int get_pid_name(char *pid_name){
 	if(!strcmp(pid_name,"NetManger")){
 		return 0;
 	}
@@ -179,8 +173,7 @@ static int get_pid_name(char *pid_name)
 参数: 无
 返回值: 无
 ********************************************************/
-void Net_work(void)
-{
+void Net_work(void){
 	if(judge_pid_exist(get_pid_name)){
 		remove("/var/server.lock");
 		remove("/var/internet.lock");
@@ -217,8 +210,7 @@ void create_event_system_voices(int sys_voices)
 参数: sys_voices 系统音标号
 返回值: 无
 ********************************************************/
-void handle_event_system_voices(int sys_voices)
-{
+void handle_event_system_voices(int sys_voices){
 	playsysvoicesLog("playsys voices handle \n");
 //----------------------系统有关-----------------------------------------------------
 	if(sys_voices==1)							//结束音
