@@ -12,8 +12,6 @@
 #define DATABASE_NAME	"music.db"  	//数据库名
 #define MESSAGE_TABLE	"message"	//记录歌曲信息表名	
 
-#define MUSIC_LIST	3
-
 typedef struct{
 	List_t list[MUSIC_LIST];
 }MusicList_t;
@@ -92,13 +90,21 @@ int SysOnloadMusicList(const char *sdcard,const char *mp3Music,const char *story
 	strcat(sqlPath,DATABASE_NAME);
 	if(OpenSql(sqlPath) != 0)
 		return -1;
-	
+
+	int i=0,listNum=MUSIC_LIST;
 	GetTableName(mp3Music,Mlist->list[0].listname);
 	GetTableName(story,Mlist->list[1].listname);
 	GetTableName(english,Mlist->list[2].listname);
-	int i=0;
+	
+#ifdef DOWN_URL_MUSIC	
+	CreateMusicTable(XIMALA_MUSIC);
+	sprintf(Mlist->list[MUSIC_LIST-1].listname,"%s",XIMALA_MUSIC);
+	GetMusicMessageSQL(MESSAGE_TABLE,&(Mlist->list[MUSIC_LIST-1]));
+	printf("Mlist->list[MUSIC_LIST-1].Nums:%d Mlist->list[i].listname:%s\n",Mlist->list[MUSIC_LIST-1].Nums,Mlist->list[MUSIC_LIST-1].listname);
+	listNum-=1;
+#endif	
 	CreateMusicListMesage(MESSAGE_TABLE);
-	for(i=0;i<MUSIC_LIST;i++){
+	for(;i<listNum;i++){
 		GetMusicMessageSQL(MESSAGE_TABLE,&(Mlist->list[i]));
 		CreateMusicTable(Mlist->list[i].listname);
 		//printf("Mlist->list[0].listname =%s\n",Mlist->list[i].listname);
@@ -145,7 +151,20 @@ int GetSdcardMusic(const char *sdcard,const char *musicDir,char *getMusicname,un
 	GetTableSqlById(Mlist->list[i].listname,Mlist->list[i].playindex,getMusicname);
 	return 0;
 }
-
+#ifdef DOWN_URL_MUSIC
+int InsertXimalayaMusic(const char *musicDir,const char *musicName){
+//	printf("InsertXimalayaMusic musicDir=%s musicName=%s \n",musicDir,musicName);
+	if(InsertSql(musicDir,musicName))
+		return -1;
+//	printf("InsertXimalayaMusic ok \n");
+	Mlist->list[MUSIC_LIST-1].Nums++;
+	if(InsertMusicMessageSQL(MESSAGE_TABLE,Mlist->list[MUSIC_LIST-1].listname,Mlist->list[MUSIC_LIST-1].Nums,0)){
+//			printf("Mlist->list[MUSIC_LIST-1].listname =%s Mlist->list[MUSIC_LIST-1].Nums=%d\n",Mlist->list[MUSIC_LIST-1].listname,Mlist->list[MUSIC_LIST-1].Nums);
+			UpdateSqlByMessage(MESSAGE_TABLE,Mlist->list[MUSIC_LIST-1].listname,Mlist->list[MUSIC_LIST-1].Nums,0);
+	}
+	return 0;
+}
+#endif
 int InitMusicList(void){
 	Mlist = (MusicList_t *)calloc(1,sizeof(MusicList_t));
 	if(Mlist==NULL){
@@ -177,10 +196,23 @@ void testPlayList(void){
 		memset(musicname,0,128);
 	}
 }
+void test_GetlocalSdcard(void){
+	char getMusicname[128]={0};
+	int i=0;
+	for(i=0;i<12;i++)	{
+		GetSdcardMusic((const char *)"sdcard/",(const char *)XIMALA_MUSIC,getMusicname,PLAY_NEXT);
+		printf("XIMALA_MUSIC[%d] = %s\n",i,getMusicname);
+		memset(getMusicname,0,128);
+	}
+}
 int main(void){
 	InitMusicList();
 	SysOnloadMusicList((const char *)"sdcard/",(const char *)"keji/",(const char *)"why/",(const char *)"english/");
-	testPlayList();
+	//testPlayList();
+	InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)"testmusic11");
+	InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)"testmusic12");
+	InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)"testmusic13");
+	test_GetlocalSdcard();
 	CleanMusicList();
 	return 0;
 }

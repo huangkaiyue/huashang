@@ -50,7 +50,7 @@ void CloseSql(void){
 ****************************************/
 int CreateTable(const char *sql){
 	if(sqlite3_exec(db,sql,0,0,&errmsg) != SQLITE_OK){
-		printf("create table failed! =%s\n",sql);
+		perror("create table failed!\n");
 		return -1;
 	}
 	return 0;
@@ -174,7 +174,7 @@ int UpdateSql(const char *table_name,const char *usrname,const char *newname){
 
 int UpdateSqlByMessage(const char *table_name,const char *name,int number,int DirTime){
 	SqlLock();
-	const char *sql = sqlite3_mprintf("update '%s' set number='%d' DirTime='%d' where name='%s';",table_name,number,DirTime,name);	
+	const char *sql = sqlite3_mprintf("update '%s' set number='%d',DirTime='%d' where name='%s';",table_name,number,DirTime,name);	
 	if(sqlite3_exec(db,sql,0,0,&errmsg) != SQLITE_OK){
 		perror(" updata failed!");
 		SqlunLock();
