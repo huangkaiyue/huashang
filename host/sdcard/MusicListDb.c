@@ -142,8 +142,7 @@ int GetSdcardMusic(const char *sdcard,const char *musicDir,char *getMusicname,un
 		default:
 			return -1;
 	}
-	GetTableSqlById(Mlist->list[i].listname,Mlist->list[i].playindex,getMusicname);
-	return 0;
+	return GetTableSqlById(Mlist->list[i].listname,Mlist->list[i].playindex,getMusicname);
 }
 
 int InitMusicList(void){

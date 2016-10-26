@@ -55,7 +55,6 @@ static enum{
 	mp3=1,
 	story,
 	english,
-	testmp3,
 };
 
 //--------------------callvoices.c-----------------------------------------

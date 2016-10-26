@@ -49,6 +49,8 @@ void CloseSql(void){
 创建表
 ****************************************/
 int CreateTable(const char *sql){
+	if(db == NULL)
+		return -1;
 	if(sqlite3_exec(db,sql,0,0,&errmsg) != SQLITE_OK){
 		printf("create table failed! =%s\n",sql);
 		return -1;
@@ -59,6 +61,8 @@ int CreateTable(const char *sql){
 插入用户数据库
 ******************************/
 int InsertSql(const char *table_name,const char *name){
+	if(db == NULL)
+		return -1;
 	SqlLock();
 	const char *sql = sqlite3_mprintf("insert into '%s' (name)values('%s');",table_name,name);
 	if(sqlite3_exec(db,sql,0,0,&errmsg) != SQLITE_OK){
@@ -71,6 +75,8 @@ int InsertSql(const char *table_name,const char *name){
 	return 0;
 }
 int InsertMusicMessageSQL(const char *table_name,const char *name,int num,int loadtime){
+	if(db == NULL)
+		return -1;
 	SqlLock();
 	const char *sql = sqlite3_mprintf("insert into '%s' (name,number,DirTime)values('%s','%d','%d');",table_name,name,num,loadtime);
 	if(sqlite3_exec(db,sql,0,0,&errmsg) != SQLITE_OK){
@@ -98,6 +104,8 @@ static int CallGetMessage( void * para, int n_column, char ** column_value, char
 	return 0;
 }
 int GetMusicMessageSQL(const char *table_name,List_t *list){
+	if(db == NULL)
+		return -1;
 	const char *sql = NULL;
 	SqlLock();
 	sql = sqlite3_mprintf("select  * from '%s' where name='%s';",table_name,list->listname);
@@ -133,6 +141,8 @@ static int call_get_vaule( void * para, int n_column, char ** column_value, char
 
 
 int GetTableSqlById(const char *table_name,int id,char *name){	
+	if(db == NULL)
+		return -1;	
 	const char *sql = NULL;
 	SqlLock();
 	sql = sqlite3_mprintf("select  * from '%s' where id='%d';",table_name,id);
@@ -146,11 +156,13 @@ int GetTableSqlById(const char *table_name,int id,char *name){
 	SqlunLock();
 	return 0;
 }
-int GetTableSql(const char *table_name,void table_result(int nRow,int nColumn,char **dbResult)){	
+int GetTableSql(const char *table_name,void table_result(int nRow,int nColumn,char **dbResult)){		
 	char *errmsg = NULL;
 	int result,nRow, nColumn;
 	const char *sql 	= NULL;
 	char **dbResult;	
+	if(db == NULL)
+		return -1;
 	sql = sqlite3_mprintf("select * from '%s' ;",table_name);	
 	result = sqlite3_get_table( db,sql, &dbResult, &nRow, &nColumn, &errmsg );	
 	if( SQLITE_OK == result ){	
@@ -161,6 +173,8 @@ int GetTableSql(const char *table_name,void table_result(int nRow,int nColumn,ch
 	return 0;
 }
 int UpdateSql(const char *table_name,const char *usrname,const char *newname){
+	if(db == NULL)
+		return -1;	
 	SqlLock();
 	const char *sql = sqlite3_mprintf("update '%s' set name='%s' where name='%s';",table_name,newname,usrname);	
 	if(sqlite3_exec(db,sql,0,0,&errmsg) != SQLITE_OK){
@@ -173,6 +187,8 @@ int UpdateSql(const char *table_name,const char *usrname,const char *newname){
 }
 
 int UpdateSqlByMessage(const char *table_name,const char *name,int number,int DirTime){
+	if(db == NULL)
+		return -1;
 	SqlLock();
 	const char *sql = sqlite3_mprintf("update '%s' set number='%d' DirTime='%d' where name='%s';",table_name,number,DirTime,name);	
 	if(sqlite3_exec(db,sql,0,0,&errmsg) != SQLITE_OK){
@@ -185,6 +201,8 @@ int UpdateSqlByMessage(const char *table_name,const char *name,int number,int Di
 }
 
 int del_DBdata(const char *table_name,const char *usrname){
+	if(db == NULL)
+		return -1;	
 	SqlLock();
 	const char *sql = sqlite3_mprintf("delete from '%s' where name='%s';",table_name,usrname);
 	if(sqlite3_exec(db,sql,0,0,&errmsg) != SQLITE_OK){
@@ -199,6 +217,9 @@ int del_DBdata(const char *table_name,const char *usrname){
 int get_table(const char *table_name,void *Para,int (*sqlite3_callback)( void * para, int n_column, char ** column_value, char ** column_name )){
 	int ret;
 	const char *sql = NULL;
+	if(db == NULL)
+		return -1;
+
 	SqlLock();
 	
 	sql = sqlite3_mprintf("select  * from '%s' ;",table_name);
@@ -222,6 +243,8 @@ int show_table(const char *table_name){
 	const char *sql = NULL;
 	char **dbResult; 		//是 char ** 类型，两个*号  
 	int nRow, nColumn;  
+	if(db == NULL)
+		return -1;
 
 	SqlLock();
 	sql = sqlite3_mprintf("select * from '%s' ;",table_name);	
@@ -250,6 +273,9 @@ int show_table(const char *table_name){
 }
 int __sql_del_table(const char *table_name){
 	const char *sql = NULL;
+	if(db == NULL)
+		return -1;
+
 	SqlLock();
 	sql = sqlite3_mprintf("DROP TABLE '%s';",table_name);
 

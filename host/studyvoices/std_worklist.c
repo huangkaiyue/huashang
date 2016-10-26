@@ -260,6 +260,15 @@ int getEventNum(void)
 {
 	return getWorkMsgNum(evMsg);
 }
+void cleanEvent(void){
+char *msg;
+int msgSize;
+while(getWorkMsgNum(evMsg)){
+	getMsgQueue(evMsg,&msg,&msgSize);
+		free(msg);
+		usleep(100);
+	}
+}
 /*******************************************************
 @函数功能:	事件处理函数
 @参数:	data 数据	msgSize事件类型以及数据大小结构体
@@ -287,6 +296,8 @@ static void handle_event_msg(const char *data,int msgSize)
 			event_lock=1;	//受保护状态事件
 			//lock_start  w+
 			eventlockLog("eventlock_start\n",event_lock);
+			cleanplayEvent();
+			cleanEvent();
 			NetStreamExitFile();
 			i2s_start_play(RECODE_RATE);
 			event_lock=0;
