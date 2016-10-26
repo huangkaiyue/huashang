@@ -21,7 +21,19 @@ int AddDownEvent(char *data,int msgSize){
 	return putMsgQueue(DownEvent,(const char *)data, msgSize);
 }
 #endif
-
+int getplayEventNum(void)
+{
+	return getWorkMsgNum(DownEvent);
+}
+void cleanplayEvent(void){
+char *msg;
+int msgSize;
+while(getWorkMsgNum(DownEvent)){
+	getMsgQueue(DownEvent,&msg,&msgSize);
+		free(msg);
+		usleep(100);
+	}
+}
 void init_system_net(void)
 {
 	set_pthread_sigblock();
@@ -89,6 +101,7 @@ int main(int argc, char **argv)
 			playLocalMp3((const char *)msg);
 			free((void *)msg);
 			usleep(1000);
+#if 1
 			if(getEventNum()==0&&getWorkMsgNum(DownEvent)==0){
 				switch(sysMes.localplayname){
 					case mp3:
@@ -105,6 +118,7 @@ int main(int argc, char **argv)
 						break;
 				}
 			}
+#endif
 		}				//end LOCAL_MP3_EVENT
 	}
 #endif

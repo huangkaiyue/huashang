@@ -42,7 +42,7 @@ static void CreateUrlEvent(const void *data){
 	playurlLog("url_start\n");
 	playurlLog(VERSION);	//°æ±¾Ê±¼ä
 #endif
-	if(getEventNum()>0){
+	if(getEventNum()>0||getplayEventNum()>0){
 		DEBUG_EVENT("CreateUrlEvent num =%d \n",getEventNum());
 		return;
 	}
@@ -80,7 +80,9 @@ static void CreateLocalMp3(char *localpath){
 static void PlayLocal(unsigned char menu,const char *path, unsigned char Mode){	
 	char buf[128]={0};
 	char filename[64]={0};
-	GetSdcardMusic((const char *)TF_SYS_PATH,path,filename, Mode);
+	if(GetSdcardMusic((const char *)TF_SYS_PATH,path,filename, Mode)){
+		return;
+	}
 	snprintf(buf,128,"%s%s%s",TF_SYS_PATH,path,filename);
 	printf("filepath = %s",buf);
 	CreateLocalMp3(buf);
