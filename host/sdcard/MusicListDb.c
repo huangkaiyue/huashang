@@ -83,8 +83,24 @@ static int onloadSdcardFile(const char *sdcard,List_t *list){
 	closedir(dirptr);   
 	return 0;
 }
+static enum{
+	mp3_N=1,
+	story_N,
+	english_N,
+	guoxue_N,
+};
 
-int SysOnloadMusicList(const char *sdcard,const char *mp3Music,const char *story,const char *english){
+void SaveSystemPlayNum(void){
+	set_paly_num(Mlist->list[0].playindex,mp3_N);
+	usleep(100);
+	set_paly_num(Mlist->list[1].playindex,story_N);
+	usleep(100);
+	set_paly_num(Mlist->list[2].playindex,english_N);
+	usleep(100);
+	set_paly_num(Mlist->list[3].playindex,guoxue_N);
+	usleep(100);
+}
+int SysOnloadMusicList(const char *sdcard,const char *mp3Music,const char *story,const char *english,const char *guoxue){
 	char sqlPath[128]={0};
 	checkpath(sdcard,sqlPath);
 	strcat(sqlPath,DATABASE_NAME);
@@ -93,9 +109,13 @@ int SysOnloadMusicList(const char *sdcard,const char *mp3Music,const char *story
 
 	int i=0,listNum=MUSIC_LIST;
 	GetTableName(mp3Music,Mlist->list[0].listname);
+	get_paly_num(&Mlist->list[0].playindex,mp3_N);
 	GetTableName(story,Mlist->list[1].listname);
+	get_paly_num(&Mlist->list[1].playindex,story_N);
 	GetTableName(english,Mlist->list[2].listname);
-	
+	get_paly_num(&Mlist->list[2].playindex,english_N);
+	GetTableName(guoxue,Mlist->list[3].listname);
+	get_paly_num(&Mlist->list[3].playindex,guoxue_N);
 #ifdef DOWN_URL_MUSIC	
 	CreateMusicTable(XIMALA_MUSIC);
 	sprintf(Mlist->list[MUSIC_LIST-1].listname,"%s",XIMALA_MUSIC);
@@ -159,6 +179,15 @@ int InsertXimalayaMusic(const char *musicDir,const char *musicName){
 	Mlist->list[MUSIC_LIST-1].Nums++;
 	if(InsertMusicMessageSQL(MESSAGE_TABLE,Mlist->list[MUSIC_LIST-1].listname,Mlist->list[MUSIC_LIST-1].Nums,0)){
 //			printf("Mlist->list[MUSIC_LIST-1].listname =%s Mlist->list[MUSIC_LIST-1].Nums=%d\n",Mlist->list[MUSIC_LIST-1].listname,Mlist->list[MUSIC_LIST-1].Nums);
+			UpdateSqlByMessage(MESSAGE_TABLE,Mlist->list[MUSIC_LIST-1].listname,Mlist->list[MUSIC_LIST-1].Nums,0);
+	}
+	return 0;
+}
+int DelXimalayaMusic(const char *musicDir,const char *musicName){
+	if(del_DBdata(musicDir,musicName))
+		return -1;
+	Mlist->list[MUSIC_LIST-1].Nums--;
+	if(InsertMusicMessageSQL(MESSAGE_TABLE,Mlist->list[MUSIC_LIST-1].listname,Mlist->list[MUSIC_LIST-1].Nums,0)){
 			UpdateSqlByMessage(MESSAGE_TABLE,Mlist->list[MUSIC_LIST-1].listname,Mlist->list[MUSIC_LIST-1].Nums,0);
 	}
 	return 0;

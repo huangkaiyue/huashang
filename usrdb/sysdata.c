@@ -35,12 +35,86 @@ int updateSysList(char *list,char *passwd)
 {
 	return NvramGetCamlist(list,passwd);
 }
+//----------------------------播放记录-------------------------------------
+#ifdef LOCAL_MP3
+//获取播放记录
+static enum{
+	mp3_S=1,
+	story_S,
+	english_S,
+	guoxue_S,
+};
+void get_paly_num(int *size,unsigned char str)
+{
+	char *NUM;
+	switch(str){
+		case mp3_S:
+			NUM = nvram_bufget(RT2860_NVRAM, "playMp3Num");
+			break;
+		case story_S:
+			NUM= nvram_bufget(RT2860_NVRAM, "playStoryNum");
+			break;
+		case english_S:
+			NUM= nvram_bufget(RT2860_NVRAM, "playEnglishNum");
+			break;
+		case guoxue_S:
+			NUM= nvram_bufget(RT2860_NVRAM, "playGuoxueNum");
+			break;
+	}
+	*size = (unsigned char)atoi(NUM);
+}
+
+//设置播放记录
+void set_paly_num(int size,unsigned char str)
+{
+	char buf_s[64]={0};
+	switch(str){
+		case mp3_S:
+			sprintf(buf_s,"%s %d", "nvram_set 2860 playMp3Num", size);
+			break;
+		case story_S:
+			sprintf(buf_s,"%s %d", "nvram_set 2860 playStoryNum", size);
+			break;
+		case english_S:
+			sprintf(buf_s,"%s %d", "nvram_set 2860 playEnglishNum", size);
+			break;
+		case guoxue_S:
+			sprintf(buf_s,"%s %d", "nvram_set 2860 playGuoxueNum", size);
+			break;
+	}
+	system(buf_s);
+	//nvram_bufset(RT2860_NVRAM, "VoiceSIZE",buf_s);
+}
+#endif
+//----------------------------权限次数-------------------------------------
+//获取权限次数
+unsigned char getSystemLock(void)
+{
+	unsigned char *size;
+	char *number = nvram_bufget(RT2860_NVRAM, "SystemLock");
+	*size = (unsigned char)atoi(number);
+	return *size;
+}
+
+//设置权限次数
+void setSystemLock(int size)
+{
+	char buf_s[64]={0};
+	sprintf(buf_s,"%s %d", "nvram_set 2860 SystemLock", size);
+	system(buf_s);
+	//nvram_bufset(RT2860_NVRAM, "VoiceSIZE",buf_s);
+}
+
 //----------------------------音量-------------------------------------
 //获取音量
 void get_vol_size(unsigned char *size)
 {
 	char *vol = nvram_bufget(RT2860_NVRAM, "VoiceSIZE");
-	*size = (unsigned char)atoi(vol);
+	if(!strcmp(vol,"")){
+		*size=105;
+	}else{
+		*size = (unsigned char)atoi(vol);
+	}
 }
 
 //设置音量

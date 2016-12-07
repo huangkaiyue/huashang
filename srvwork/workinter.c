@@ -18,9 +18,6 @@
   "Commands: del_usr(deltele usr  )\n"\
   "Commands: uplist  initlist  \n"\
   "Commands: help(h)  quit(q)\n"  
-#ifdef TEXT_UP
-static char amr_data[5000];
-#endif
 void test_ConnetEvent(int event)
 {
 	printf("event =%d\n",event);
@@ -102,61 +99,6 @@ void pasreInputCmd(const char *com)
 		{
 			createPlayEvent((const void *)"testmp3",1);
 		}
-#ifdef TEXT_UP
-		else if(!strcmp(com,"up"))
-		{
-			char buf[40];
-			FILE *fp;
-			int i=0,k=0;
-			while(1){
-				if(sysMes.recorde_live==3||i==0){
-					if(i==3)
-						i=0;
-					i++;
-					sysMes.recorde_live=6;
-					k++;
-					if(k>5)
-						sysMes.recorde_live==3;
-						break;
-				}else{
-					printf("sleep ... (k=%d)\n",k);
-					sleep(2);
-					continue;
-				}
-				memset(buf,0,40);
-				switch(i){
-					case 1:
-						sprintf(buf,"%s%d%s","/home/",946685274,".amr");//½²¸öÐ¦»°
-						break;
-					case 2:
-						sprintf(buf,"%s%d%s","/home/",946685979,".amr");
-						break;
-					case 3:
-						sprintf(buf,"%s%d%s","/home/",946685295,".amr");
-						break;
-				}
-				printf("buf =%s\n",buf);
-				fp =fopen(buf,"r");
-				if(fp==NULL)
-				{
-					perror("open file error ...\n");
-					break;
-				}
-				int fsta,fend,cur_pos;
-				cur_pos = ftell(fp);
-				fseek(fp, 0, SEEK_SET);
-				fsta = ftell(fp);
-				fseek(fp, 0, SEEK_END);
-				fend = ftell(fp);
-				fseek(fp, cur_pos, SEEK_SET);
-				int len = fend-fsta;
-				printf("len =%d\n",len);
-				fread(amr_data,len,1,fp);
-				send_voices_server((const char *)amr_data,len,"amr");
-				fclose(fp);
-			}
-		}
-#endif	//end TEXT_UP
 		else if(!strcmp(com,"initlist"))
 		{
 			updateSysList(FRIST_SMART_LIST, FRIST_PASSWD);
@@ -200,8 +142,10 @@ void pasreInputCmd(const char *com)
 		}else if(!strcmp(com,"prev")){
 			test_backSeekTo();
 		}else if(!strcmp(com,"amr")){
-			WavtoAmrfile("/mnt/tang/");
+			WavtoAmrfile("/mnt/qtts/","/mnt/amr/",0);
 			//createPlayEvent((const void *)"story",PLAY_NEXT);
+			sleep(5);
+			WavtoAmrfile("/mnt/qtts/","/mnt/amr/",1);
 		}
 		else if (!strcmp(com, "quit") ||
              		!strcmp(com, "q"))
@@ -209,6 +153,36 @@ void pasreInputCmd(const char *com)
     		clean_resources();
 			exit(0);
 			return ;
+    	}else if (!strcmp(com, "guoxue"))
+    	{
+    		createPlayEvent((const void *)"guoxue",1);
+    	}else if (!strcmp(com, "english"))
+    	{
+    		createPlayEvent((const void *)"english",1);
+    	}else if (!strcmp(com, "story"))
+    	{
+    		createPlayEvent((const void *)"story",1);
+    	}else if (!strcmp(com, "mp3"))
+    	{
+    		createPlayEvent((const void *)"mp3",1);
+    	}else if (!strcmp(com, "next"))
+    	{
+    		switch(sysMes.localplayname){
+					case mp3:
+						createPlayEvent((const void *)"mp3",1);
+						break;
+					case story:
+						createPlayEvent((const void *)"story",1);
+						break;
+					case english:
+						createPlayEvent((const void *)"english",1);
+						break;
+					case guoxue:
+						createPlayEvent((const void *)"guoxue",1);
+						break;
+					default:
+						break;
+				}
     	}
     	else if (!strcmp(com, "help") ||
            	!strcmp(com, "h"))

@@ -6,6 +6,7 @@
 #define MSOPEN		0x23	//定时开 0010 0011 ->0b01000100
 #define MSCLOSE		0x33	//定时关 0011 0011 ->0b01001100
 #define MSBATTERY	0x81	//请求电量
+#define MSCLOCK		0xa3	//闹钟开机 1010 0011
 
 #define SMCLOSETIME	0x42	//MCU定时定时到关机信号发送 0100 0010 ->0b01000010
 #define SMBATTERY	0x52	//电池电量 0101 0010 ->0b01001010
@@ -14,15 +15,17 @@
 #define SMOK		0xf2	//握手信号 1111 0010 ->0b01001111
 #define SMLOW		0x91	//低电提醒
 
-
 #define OPEN		1
 #define CLOSE		2
 #define TIME		3
 #define BATTYPE		4
-#define SMOKER		5
+#define SMOKER_OK	5
+#define SMOKER_ER	6
+#define CLOCK		7
 
 #define SERIAL_SOC_PATH		"/dev/ttyS0"
 #define SPEED_SOC			9600
+#define CLOCK_TIME			3			//闹钟提前开机时间
 
 //#define DBG_UART
 #ifdef DBG_UART 
@@ -31,10 +34,10 @@
 #define DEBUG_UART(fmt, args...) { }  
 #endif	//end DBG_AP_STA
 
-
 typedef struct {
 	unsigned char head;
 	unsigned char data;
+	unsigned char cache;
 }ReacData;
 
 typedef struct {//当前时间

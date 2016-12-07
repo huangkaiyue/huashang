@@ -6,6 +6,10 @@
 int SendTo(int sockfd,char *data,int size,struct sockaddr_in *peer)
 {
 	char *cachedata = (char *)calloc(1,size+16);
+	if(cachedata==NULL){
+		perror("calloc error !!!");
+		return;
+	}
 	snprintf(cachedata,16,"%s%d%s","head:",size,":");
 	memcpy(cachedata+16,data,size);
 	sendto(sockfd, (char *)cachedata, size+16, 0,(struct sockaddr*)peer, sizeof(struct sockaddr));

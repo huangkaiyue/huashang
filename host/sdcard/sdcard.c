@@ -1,6 +1,7 @@
 #include "comshead.h"
 #include "config.h"
 #include "systools.h"
+#include "../sdcard/musicList.h"
 
 #define SEC			1
 #define MIN			60*SEC
@@ -33,9 +34,6 @@ void DelSdcardMp3file(char * sdpath)
 	time_t timep;
 	
 	time(&timep);
-#ifdef LOG_DELMP3
-	writeLog("/home/mp3filename.txt",sdpath);
-#endif
 	if((dirptr = opendir(sdpath)) == NULL)	
 	{  
 		printf("open dir !\n"); 
@@ -45,23 +43,22 @@ void DelSdcardMp3file(char * sdpath)
 	{  
 		//去除当前目录和上一级目录
 		if( !strcmp(entry->d_name,".")||!strcmp(entry->d_name,"..") ){
-			usleep(1000);
 			continue;
 		}
-#ifdef LOG_DELMP3
-		writeLog("/home/mp3filename.txt",entry->d_name);
-#endif
 		printf("filename: %s\n",entry->d_name);
+		if(!strstr(entry->d_name,".mp3")){
+			continue;
+		}
 		snprintf(filepath,128,"%s%s",sdpath,entry->d_name);
 		if( stat(filepath, &Mp3info) != 0 ){
 			break;
 		}
 		if((timep-Mp3info.st_ctime)<FILETIME){
-			usleep(1000);
 			continue;
 		}else{			//删除长时间不用的文件
 			if( remove(filepath) == 0){
 				printf("Removed %s.\n", filepath);
+				//DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)entry->d_name);
 				delmp3Num++;
 				if(delmp3Num>REMOVE_MP3_NUM){
 					break;
@@ -69,14 +66,13 @@ void DelSdcardMp3file(char * sdpath)
 			}
 			else
 				perror("remove");
-			usleep(1000);
 		}
 		usleep(1000);
 	}
 	printf("del file end ... \n");
 }
 #ifdef TEST_SDK
-void WavtoAmrfile(char * sdpath)
+void WavtoAmrfile(char * sdpath,char *amrpath,unsigned char type)
 {
 	char filepath[128]={0};
 	char wavfilepath[128]={0};
@@ -94,23 +90,22 @@ void WavtoAmrfile(char * sdpath)
 	{  
 		//去除当前目录和上一级目录
 		if( !strcmp(entry->d_name,".")||!strcmp(entry->d_name,"..") ){
-			usleep(1000);
 			continue;
 		}
 		printf("filename: %s\n",entry->d_name);
-		if(!strstr(entry->d_name,".wav")){
-			usleep(1000);
-		}
 		sscanf(entry->d_name,"%[^.].%*s",filepath);
 		snprintf(wavfilepath,128,"%s%s",sdpath,entry->d_name);
-		snprintf(amrfilepath,128,"%s%s%s","/mnt/tang/",filepath,".amr");
-		//WavToAmr8kFile(wavfilepath,amrfilepath);
+		snprintf(amrfilepath,128,"%s%s%s",amrpath,filepath,".amr");
+		if(type==0){
+			WavToAmr8kFile(wavfilepath,amrfilepath);
+		}
 #ifdef	SPEEK_VOICES
-		playspeekVoices(amrfilepath);
+		else if(type==1){
+			playspeekVoices(amrfilepath);
+		}
 #endif
 		memset(wavfilepath,0,128);
 		memset(amrfilepath,0,128);
-		usleep(10000);
 	}
 	printf("wav to amr file end ... \n");
 }

@@ -6,6 +6,7 @@
 #include "base/pool.h"
 #include "host/studyvoices/std_worklist.h"
 #include "host/studyvoices/prompt_tone.h"
+#include "gpio_7620.h"
 #include "config.h"
 
 //默认音频头部数据
@@ -27,8 +28,14 @@ struct wave_pcm_hdr pcmwavhdr = {
 #define VOICES_MIN	13200	//是否是大于0.5秒的音频，采样率16000、量化位16位
 #define VOICES_ERR	1000	//误触发
 
-#define KB		1024
+#define SEC				1
+#define MIN				60*SEC
+#define SYSTEMOUTSIGN	5*MIN
+#define SYSTEMOUTTIME	10*MIN
+#define PLAYOUTTIME		15*MIN
+#define ERRORTIME		30*24*60*MIN
 
+#define KB	1024
 static char buf_voices[STD_RECODE_SIZE];
 static char amr_data[12*KB];
 static int len_voices = 0;
@@ -131,7 +138,7 @@ static void voices_packt(const char *data,int size)
 		}
 #endif	//end 0
 	}
-	else if(len_voices > VOICES_MIN)//音频上传
+	else if(len_voices > VOICES_MIN)	//音频上传
 	{
 #if 0
 		pool_add_task(play_sys_tices_voices,TULING_WINT);
@@ -143,7 +150,7 @@ static void voices_packt(const char *data,int size)
 		pcmwavhdr.size_8 = (len_voices+36);
 		pcmwavhdr.data_size = len_voices;
 		memcpy(buf_voices,&pcmwavhdr,WAV_HEAD);				//写音频头
-		if(WavToAmr8k((const char *)buf_voices,amr_data,&amr_size)){		//转换成amr格式
+		if(WavToAmr8k((const char *)buf_voices,amr_data,&amr_size)){	//转换成amr格式
 			DEBUG_VOICES_ERROR("enc failed \n");
 		}
 		send_voices_server((const char *)amr_data,amr_size,"amr");
@@ -151,13 +158,13 @@ static void voices_packt(const char *data,int size)
 	}
 	else if(len_voices < VOICES_ERR)
 	{
-		goto exit1;//误触发
+		goto exit1;	//误触发
 	}
 	else
 	{
 		if(sysMes.recorde_live !=PLAY_WAV){
-			i2s_start_play(8000);
-			play_sys_tices_voices(NO_VOICES);
+			//i2s_start_play(8000);
+			playsysvoices(NO_VOICES);
 		}
 		goto exit1;
 	}
@@ -168,7 +175,24 @@ exit0:
 	memset(buf_voices,0,len_voices);
 	len_voices = 0;
 }
-
+int SetSystemTime(unsigned char outtime){
+	time_t timep;
+	struct tm *p;
+	time(&timep);
+	char syscloseTime[64];
+	SocSendMenu(3,0);
+	usleep(100*1000);
+	p=localtime(&timep); /*取得当地时间*/
+	if((p->tm_hour)+8>=24){
+		p->tm_hour=(p->tm_hour)+8-24;
+	}else{
+		p->tm_hour=(p->tm_hour)+8;
+	}
+	sprintf(syscloseTime,"%d:%d",(p->tm_hour),(p->tm_min)+outtime);
+	printf("SetSystemTime : %s\n",syscloseTime);
+	SocSendMenu(2,syscloseTime);
+	return 0;
+}
 /*******************************************************
 函数功能: 录音线程 ，对当前环境检测，筛选有效音频
 参数:   	无
@@ -177,29 +201,75 @@ exit0:
 static void *pthread_record_voices(void *arg)
 {
 	char *pBuf;
-	sysMes.error_400002=3;//保证第一次就能报出400002的语音
+	sysMes.error_400002=3;		//保证第一次就能报出400002的语音
 	sysMes.recorde_live=RECODE_PAUSE;
 	//sysMes.oldrecorde_live=sysMes.recorde_live;
+	time_t t;
+	int endtime,starttime;
+	starttime=time(&t);
+	endtime=time(&t);
 	while(sysMes.recorde_live!=RECODE_STOP){
+#ifdef CLOCESYSTEM
+		endtime=time(&t);
+		if((endtime-starttime)>ERRORTIME){
+			starttime=time(&t);
+			sysMes.Playlocaltime=time(&t);
+		}else{
+			if(sysMes.recorde_live==RECODE_PAUSE){
+				if((endtime-starttime)==SYSTEMOUTSIGN){		//长时间不触发事件，则关闭
+					sysMes.recorde_live=TIME_SIGN;
+				}
+				if((endtime-starttime)>SYSTEMOUTTIME){		//长时间不触发事件，则关闭
+					sysMes.recorde_live=TIME_OUT;
+					TimeLog("TIME_OUT\n");
+				}
+			}else{
+				starttime=time(&t);
+			}
+			if((endtime-sysMes.Playlocaltime)>PLAYOUTTIME&&sysMes.recorde_live==PLAY_URL){
+				sysMes.recorde_live=PLAY_OUT;
+				TimeLog("PLAY_OUT\n");
+			}
+		}
+#endif
 		switch(sysMes.recorde_live){
-			case START_SPEEK_VOICES:
+			case START_SPEEK_VOICES:	//会话录音
 				pBuf = i2s_get_data();
 				voices_packt((const char *)pBuf,I2S_PAGE_SIZE);
 				break;
-			case END_SPEEK_VOICES:
-				voices_packt(NULL, 0);//发送空音频作为一段音频的结束标志
+			case END_SPEEK_VOICES:		//会话录音结束
+				voices_packt(NULL, 0);	//发送空音频作为一段音频的结束标志
 				break;
 #ifdef SPEEK_VOICES
-			case START_TAIK_MESSAGE:
+			case START_TAIK_MESSAGE:	//对讲录音
 				pBuf = i2s_get_data();
 				save_recorder_voices((const char *)pBuf,I2S_PAGE_SIZE);
-				usleep(5000);//不会有快进的感觉
+				usleep(5000);		//不会有快进的感觉
+				break;
+#endif
+#ifdef CLOCESYSTEM
+			case TIME_SIGN:
+				PlayQttsText("小朋友快来跟我玩，跟我说话聊天吧。",0);
+				sysMes.recorde_live=RECODE_PAUSE;
+				sleep(1);
+				break;
+				
+			case PLAY_OUT:
+				SetSystemTime(1);
+				sysMes.recorde_live=PLAY_URL;
+				sysMes.Playlocaltime=time(&t);
+				break;
+				
+			case TIME_OUT:				//超时退出
+				SetSystemTime(1);
+				sysMes.recorde_live=RECODE_PAUSE;
+				starttime=time(&t);
 				break;
 #endif
 			default:
 				//printf("pthread_record_voices: recorde_live (%d)\n",sysMes.recorde_live);
-				i2s_get_data();	//默认状态清除音频
-				usleep(30000);
+				i2s_get_data();		//默认状态清除音频
+				usleep(50000);
 				break;
 		}
 	}
@@ -217,7 +287,7 @@ static void *test_recorde_play(void)
 {
 	char *pBuf;
 	while(sysMes.recorde_live!=RECODE_STOP)
-	{	
+	{
 		DEBUG_VOICES("test_recorde_play :recorde now...\n");
 		pBuf = i2s_get_data();			//占用的时间有点长
 		memcpy(play_buf,pBuf,I2S_PAGE_SIZE);	

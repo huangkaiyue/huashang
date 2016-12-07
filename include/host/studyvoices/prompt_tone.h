@@ -66,6 +66,7 @@
 #define REQUEST_FAILED		"qtts/request_failed_8k.amr"	//请求服务器数据失败
 
 #define CHANGE_NETWORK		"qtts/change_network_8k.amr"	//正在连接，请稍等
+#define CONNET_TIME			"qtts/waittime_network_8k.amr"	//联网过渡音
 #define START_INTERNET		"qtts/start_internet_8K.amr"	//开始配网，请发送wifi名以及密码
 #define CHECK_INTERNET		"qtts/check_internet_8K.amr"	//正在检查网络是否可用，可等待，或重新配网
 #define LINK_SUCCESS		"qtts/link_conect_8k.amr"		//连接成功
@@ -87,6 +88,9 @@
 #define LOW_BATTERY			"qtts/low_battery_8K.amr"
 
 #define UPDATA_END			"qtts/end_updata_8K.amr"		//更新固件结束
+
+#define SEND_OK				"qtts/send_ok_8K.amr"			//发送成功
+#define SEND_ERROR			"qtts/send_error_8K.amr"		//发送失败
 
 #endif
 /*******************************************************************************

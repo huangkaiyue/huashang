@@ -4,8 +4,9 @@
 #include "msp_errors.h"
 #include "base/queWorkCond.h"
 #include "qtts_qisc.h"
+#include "config.h"
 
-#define DBG_QTTS
+//#define DBG_QTTS
 #ifdef 	DBG_QTTS 
 #define DEBUG_QTTS(fmt, args...) printf("QTTS: " fmt, ## args)
 #else   
@@ -28,13 +29,13 @@ _MspLogin login_config;
 #define DOWN_QTTS_ING	1
 #define PLAY_QTTS_QUIT	0
 #define PLAY_QTTS_ING	1
-#define PLAY_QTTS_EXIT	2
 
 //#define VINN_GBK	"vcn=vinn,aue = speex-wb,auf=audio/L16;rate=8000,spd=7,vol = 8,rdn = 3,tte = gbk"
-#define VINN_GBK	"voice_name=vinn,text_encoding=gbk,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =2"
-#define VINN_UTF8	"voice_name=vinn,text_encoding=utf8,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =2"
+#define VIMM_GBK	"voice_name=vinn,text_encoding=gbk,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =2"
+#define VIMM_UTF8	"voice_name=vinn,text_encoding=utf8,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =2"
 #ifdef VOICS_CH
-#define VIMM_GBK	"voice_name=vixx,text_encoding=gbk,sample_rate=8000,speed=50,volume=50,pitch=40,rdn =2"
+#define VINN_GBK	"voice_name=vixx,text_encoding=gbk,sample_rate=8000,speed=50,volume=50,pitch=40,rdn =2"
+#define VINN_UTF8	"voice_name=vixx,text_encoding=utf8,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =2"
 #endif
 
 typedef struct{
@@ -147,6 +148,7 @@ void __exitqttsPlay(void)
 		free(data);
 	}
 	cleanState();
+	DEBUG_QTTS("play_qtts_data : end...\n\n");
 	return NULL;
  }
 /***************************************************************************
@@ -178,15 +180,20 @@ static int text_to_speech(const char* src_text  ,const char* params)
 	}
 	Qstream->downState=DOWN_QTTS_ING;
 	Qstream->playState=PLAY_QTTS_ING;
+	tolkLog("qtts down start\n");
+	DEBUG_QTTS("text_to_speech :play_qtts_data start(ret=%d)...\n\n",ret);
 	pool_add_task(play_qtts_data,(void *)Qstream);		//启动播放线程
+	DEBUG_QTTS("text_to_speech :play_qtts_data end(ret=%d)...\n\n",ret);
 	while(Qstream->playState){
 		const void *data = QTTSAudioGet(sess_id, &audio_len, &synth_status, &ret);
+		tolkLog("qtts QTTSAudioGet start\n");
 		if (NULL != data){
 			char *getdata = (char *)malloc(audio_len+1);
 			if(getdata ==NULL){
 				continue;
 			}
 			memcpy(getdata,data,audio_len);
+			DEBUG_QTTS("text_to_speech :putMsgQueue (ret=%d)...\n\n",ret);
 			putMsgQueue(Qstream->qttsList,getdata,audio_len);	//添加到播放队列
 		}
 		usleep(100*1000);
@@ -195,12 +202,15 @@ static int text_to_speech(const char* src_text  ,const char* params)
 			Qstream->downState=DOWN_QTTS_QUIT;
 			break;
 		}
+		tolkLog("qtts QTTSAudioGet end\n");
 	}
+	tolkLog("qtts down ok\n");
 	while(Qstream->downState==DOWN_QTTS_QUIT){		//等待播放线程退出
 		if(Qstream->playState!=PLAY_QTTS_ING)
 			break;
 		usleep(100*1000);
 	}
+	tolkLog("qtts quit ok\n");
 	Qstream->playState=PLAY_QTTS_QUIT;
 	DEBUG_QTTS("text_to_speech :TTS end(ret=%d)...\n\n",ret);
 	ret = QTTSSessionEnd(sess_id, NULL);
@@ -213,12 +223,27 @@ static int text_to_speech(const char* src_text  ,const char* params)
 ******************************************/
 int Qtts_voices_text(char *text,unsigned char type)
 {
+#ifdef VOICS_CH
 	if(type==QTTS_SYS){
-		return text_to_speech(text,(const char *)VINN_GBK);//女童音
+		if(get_volch()==0)
+			return text_to_speech(text,(const char *)VIMM_GBK);//女童音
+		else
+			return text_to_speech(text,(const char *)VINN_GBK);//男童音
 	}
 	else if(type==QTTS_APP){
-		return text_to_speech(text,(const char *)VINN_UTF8);//女童音;
+		if(get_volch()==0)
+			return text_to_speech(text,(const char *)VIMM_UTF8);//女童音
+		else
+			return text_to_speech(text,(const char *)VINN_UTF8);//男童音
 	}
+#else
+	if(type==QTTS_SYS){
+		//return text_to_speech(text,(const char *)VIMM_GBK);//女童音
+	}
+	else if(type==QTTS_APP){
+		//return text_to_speech(text,(const char *)VIMM_UTF8);//女童音
+	}
+#endif
 }
 
 int init_iat_MSPLogin(void WritePcm(char *data,int size))
@@ -307,6 +332,10 @@ int main(int argc,char **argv)
 	int len = ftell(fp);
 	fseek(fp,0,SEEK_SET);
 	char *data = (char *)malloc(len+1);
+	if(data==NULL){
+		perror("calloc error !!!");
+		return;
+	}
 	fread(data,len,1,fp);
 	fclose(fp);
 	Qtts_voices_text(data,QTTS_SYS);

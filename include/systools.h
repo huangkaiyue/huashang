@@ -32,7 +32,6 @@ extern unsigned char *base64_decode(unsigned char *code,int inSize);
 ****************************************************************/
 extern int writeLog(const char *filename,const char *str);
 
-
 /********************************************
 功能：搜索字符串右边起的第一个匹配字符
 ********************************************/

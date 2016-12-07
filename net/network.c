@@ -5,10 +5,7 @@
 #include "base/udp_sock.h"
 #include "../uart/uart.h"
 #include "base/pool.h"
-
-#ifdef 	TCP_LOG	
 #include "systools.h"
-#endif
 
 //#define SERVER_LOG
 #ifdef SERVER_LOG
@@ -96,6 +93,10 @@ static int __send_ctrl_ack(Server *ser,int sockfd,char *data,int size)
 {
 	int ret=0;
 	char *cachedata = (char *)calloc(1,size+16);
+	if(cachedata==NULL){
+		perror("calloc error !!!");
+		return;
+	}
 	snprintf(cachedata,16,"%s%d%s","head:",size,":");
 	memcpy(cachedata+16,data,size);
 	ServerLog("-------------------------__send_ctrl_ack(%d)-------------------------\n",sockfd);
@@ -139,6 +140,10 @@ static int SendUdp_Ack(Server *ser,struct sockaddr_in *addr,char *data,int size)
 {
 	int ret=0;
 	char *cachedata = (char *)calloc(1,size+16);
+	if(cachedata==NULL){
+		perror("calloc error !!!");
+		return;
+	}
 	snprintf(cachedata,16,"%s%d%s","head:",size,":");
 	memcpy(cachedata+16,data,size);
 	ServerLog("----------------------------SendUdp_Ack(%s)--------------------------\n",inet_ntoa(addr->sin_addr));
@@ -213,9 +218,7 @@ static void recv_ctrlMsg(Server *ser,char recvbuf[])
 	if (FD_ISSET(ser->broSock, &ser->fdsr)){ 
 		if((ret = recvfrom(ser->broSock, recvbuf,512,0,(struct sockaddr*)&peer,(socklen_t *)&len))>0)
 		{
-#ifdef 	UDP_LOG	
-			writeLog("/home/udp_log.txt",recvbuf);
-#endif
+			udpLog(recvbuf);
 			handler_CtrlMsg(ser->broSock,recvbuf,ret,&peer);
 		}
 	}
@@ -235,9 +238,7 @@ static void recv_ctrlMsg(Server *ser,char recvbuf[])
 					break;
 				}else{
 					ServerLog("recv_ctrlMsg \n");
-#ifdef 	TCP_LOG	
-					writeLog("/home/tcp_log.txt",recvbuf);
-#endif
+					tcpLog(recvbuf);
 					handler_CtrlMsg(ser->fd_A[i],recvbuf,ret,NULL);
 				}  
 			}

@@ -29,7 +29,7 @@ typedef struct{
 	short proflag;				//播放进度标记
 	unsigned short musicTime;	//音乐总时长
 	char playfilename[128];		//当前播放的url地址
-	char musicname[64];			//当前播放的歌曲名字		
+	char musicname[48];			//当前播放的歌曲名字		
 }Player_t;
 
 typedef struct{

@@ -2,7 +2,7 @@
 #define _STD_WORKLIST_H_
 
 
-//#define DBG_STD_MSG
+#define DBG_STD_MSG
 #ifdef DBG_STD_MSG
 #define DEBUG_STD_MSG(fmt, args...) printf("std worklist: " fmt, ## args)
 #else   

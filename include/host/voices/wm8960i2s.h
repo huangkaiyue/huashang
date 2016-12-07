@@ -63,6 +63,7 @@ extern void WritePcmData(char *data,int size);
 extern void WriteqttsPcmData(char *data,int len);
 extern void SetVol(int dir,int vol);
 extern int GetVol(void);
+extern void Mute_voices(unsigned char stat);
 extern int i2s_start_play(unsigned short rate);
 extern char *i2s_get_data(void);
 extern void i2s_destory_voices(void);

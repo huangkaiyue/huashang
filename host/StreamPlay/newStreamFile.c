@@ -5,6 +5,7 @@
 #include "madplay.h"
 #include "config.h"
 #include "curldown.h"
+#include "../sdcard/musicList.h"
 
 static Mp3Stream *st=NULL;
 
@@ -112,8 +113,43 @@ static void InputNetStream(char * inputMsg,int inputSize){
 	pthread_mutex_unlock(&st->mutex);
 }
 
+static unsigned char like_mp3_sign=0;
+#ifdef PALY_URL_SD
+static void Savemp3File(void){
+	if(CheckSdcardInfo(MP3_SDPATH)){	//内存不足50M删除指定数目的歌曲
+		DelSdcardMp3file(MP3_SDPATH);
+	}
+	char buf[200]={0};
+	if(like_mp3_sign==1){	//收藏到喜爱目录
+		snprintf(buf,200,"cp %s %s%s",URL_SDPATH,MP3_LIKEPATH,st->mp3name);
+		like_mp3_sign=0;
+		InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
+	}else{
+		snprintf(buf,200,"cp %s %s%s",URL_SDPATH,MP3_SDPATH,st->mp3name);
+	}
+	system(buf);
+}
+static void Delmp3File(void){
+	if(like_mp3_sign==2){
+		char buf[200]={0};
+		snprintf(buf,200,"%s%s",MP3_LIKEPATH,st->mp3name);
+		like_mp3_sign=0;
+		remove(buf);
+		DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
+	}
+}
+//喜爱
+void Save_like_music(void){
+	like_mp3_sign=1;
+}
+
+void Del_like_music(void){
+	like_mp3_sign=2;
+}
+#endif
 //播放网络流音频文件
 static void *NetplayStreamMusic(void *arg){
+	unsigned short rate_one=0,rate_two=0;
 	pthread_mutex_lock(&st->mutex);
 	if(st->rfp==NULL){
 		st->rfp = fopen("/home/cache.tmp","r");
@@ -123,7 +159,13 @@ static void *NetplayStreamMusic(void *arg){
 			return ;
 		}
 	}
+#if 0
 	get_mp3head(st->rfp,&st->rate,&st->channel);
+#else
+	get_mp3head(st->rfp,&rate_one,&st->channel);
+	get_mp3head(st->rfp,&rate_two,&st->channel);
+	st->rate=(rate_one>rate_two?rate_one:rate_two);
+#endif
 #ifdef SAFE_READ_WRITER
 	fclose(st->rfp);
 	st->rfp=NULL;
@@ -131,7 +173,7 @@ static void *NetplayStreamMusic(void *arg){
 	fseek(st->rfp,0,SEEK_SET);
 #endif
 	pthread_mutex_unlock(&st->mutex);
-	if(st->rate==0)
+	if(st->rate==0||st->rate==8000)
 		st->rate=44100;
 
 	DEBUG_STREAM("music st->rate =%d st->channel=%d \n",st->rate,st->channel);
@@ -145,17 +187,23 @@ static void *NetplayStreamMusic(void *arg){
 		st->ack_playCtr(TCP_ACK,&st->player,MAD_NEXT);
 	}
 #endif
+#ifdef PALY_URL_SD
+	if(st->cacheSize==st->streamLen){	//下载结束
+		Savemp3File();
+	}
+#endif
 	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//发送结束状态
 	cleanStreamData(st);	//状态切换是否加锁
-	
+
 	DEBUG_STREAM("exit play ok (%d)\n",get_playstate());
 	return NULL;
 }
+
 //开始下载, 接口兼容，需要去掉streamLen
 static void NetStartDown(const char *filename,int streamLen){
 	DEBUG_STREAM("filename =%s streamLen=%d\n",filename,streamLen);
 	if(st->wfp==NULL){
-		st->wfp = fopen("/home/cache.tmp","w+");		
+		st->wfp = fopen("/home/cache.tmp","w+");
 		if(st->wfp==NULL){
 			perror("fopen write failed ");
 			return ;
@@ -189,19 +237,9 @@ static void NetGetStreamData(const char *data,int size){
 }
 //结束下载
 static void NetEndDown(int downLen){
-	char buf[200]={0};
 	DEBUG_STREAM("OK \n");
 	//st->cacheSize=downLen;
 	SetDecodeSize(downLen);
-#ifdef PALY_URL_SD
-	if(CheckSdcardInfo(MP3_SDPATH)){	//内存不足50M删除指定数目的歌曲
-		DelSdcardMp3file(MP3_SDPATH);
-	}
-	if(downLen==st->streamLen){
-		snprintf(buf,200,"%s %s %s%s","cp",URL_SDPATH,MP3_SDPATH,st->mp3name);
-		system(buf);
-	}
-#endif
 	if(st->wfp)
 		fclose(st->wfp);
 	st->wfp=NULL;
@@ -214,6 +252,7 @@ void NetStreamExitFile(void){
 		quitDownFile();
 		eventlockLog("eventlock exit down\n",5);
 	}
+	eventlockLog("rate \n",st->rate);
 	//DEBUG_STREAM("=================NetStreamExitFile getDownState (%d)...\n",st->player.playState);
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//退出播放
 		pthread_mutex_lock(&st->mutex);
@@ -329,6 +368,7 @@ void playLocalMp3(const char *mp3file){
 	st->player.progress=0;
 	st->streamLen=0;
 	st->playSize=0;
+	unsigned short rate_one=0,rate_two=0;
 	st->rfp = fopen(mp3file,"r");
 	if(st->rfp==NULL){
 		perror("fopen read failed ");
@@ -339,7 +379,13 @@ void playLocalMp3(const char *mp3file){
 	st->player.playState =MAD_PLAY;
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	
+#if 0
 	get_mp3head(st->rfp,&st->rate,&st->channel);
+#else
+	get_mp3head(st->rfp,&rate_one,&st->channel);
+	get_mp3head(st->rfp,&rate_two,&st->channel);
+	st->rate=(rate_one>rate_two?rate_one:rate_two);
+#endif
 	fseek(st->rfp,0,SEEK_END);
 	st->streamLen = ftell(st->rfp);
 	fseek(st->rfp,0,SEEK_SET);
@@ -361,6 +407,7 @@ void playLocalMp3(const char *mp3file){
 			st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);
 		}
 #endif
+	Delmp3File();		//删除喜爱歌曲
 	cleanStreamData(st);	//状态切换是否加锁
 	DEBUG_STREAM("exit play ok (%d)\n",get_playstate());
 	//free((void *)mp3file);
@@ -376,14 +423,19 @@ void PlayUrl(const void *data){
 	
 	CopyUrlMessage((Player_t *)data,(Player_t *)&st->player);
 	char *buf= (char *)calloc(1,strlen(filename)+1+MP3_PATHLEN);
-	if(buf){
-		snprintf(buf,200,"%s%s",MP3_SDPATH,filename);	//更新文件播放时间
+	char *likebuf= (char *)calloc(1,strlen(filename)+1+MP3_LIKEPATHLEN);
+	if(buf||likebuf){
+		snprintf(buf,200,"%s%s",MP3_SDPATH,filename);		//更新文件播放时间
+		snprintf(likebuf,200,"%s%s",MP3_LIKEPATH,filename);	//更新文件播放时间
 		if(!access(buf,F_OK)){
 			//snprintf(filecmd,128,"%s%s","chmod 777 ",buf);
 			//system(filecmd);
 			DEBUG_STREAM("PlayUrl playLocalMp3(%s) ... \n",filename);
 			playLocalMp3(buf);
-		}else{
+		}else if(!access(likebuf,F_OK)){
+			playLocalMp3(likebuf);
+		}
+		else{
 			DEBUG_STREAM("PlayUrl NetStreamDownFilePlay (%s)... \n",filename);
 			NetStreamDownFilePlay(data);
 		}

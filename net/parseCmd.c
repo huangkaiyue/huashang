@@ -7,6 +7,8 @@
 #include "StreamFile.h"
 #include "host/voices/wm8960i2s.h"
 #include "../host/studyvoices/qtts_qisc.h"
+#include "../host/voices/gpio_7620.h"
+#include "host/ap_sta.h"
 
 #define STREAM_EXIT				MAD_EXIT	//停止	
 #define STREAM_PLAY 			MAD_PLAY	//播放
@@ -22,7 +24,7 @@
 #define DEBUG_TCP(fmt, args...) { }
 #endif	//end DBG_AP_STA
 
-#define VOL_DATA(x) (x-77)*2
+#define VOL_DATA(x) (x-90)*4
 
 unsigned char gpio_look=0;
 /*
@@ -197,8 +199,8 @@ void ack_playCtr(int nettype,Player_t *play,unsigned char playState)
 #ifdef CLOSE_VOICE
 	if(playState==STREAM_EXIT){
 		Mute_voices(MUTE);
-		//clean_i2s_play(8000);
 		clean_play_cache();
+		pause_record_audio();
 	}
 #endif
 	cJSON_AddStringToObject(pItem, "url",play->playfilename);
@@ -251,10 +253,56 @@ void uploadVoicesToaliyun(const char *filename){
 	SendtoaliyunServices(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
 }
+void CloseSystemSignToaliyun(void){
+	char* szJSON = NULL;
+	cJSON* pItem = NULL;
+	pItem = cJSON_CreateObject();
+	cJSON_AddStringToObject(pItem, "handler", "clock");
+	cJSON_AddStringToObject(pItem, "status","close");
+	szJSON = cJSON_Print(pItem);
+	JsonLog(szJSON);
+	SendtoaliyunServices(szJSON,strlen(szJSON));
+	cJSON_Delete(pItem);
+}
+void SetClockToaliyun(unsigned char clocknum,unsigned char state,const char *time,const char *ringPath){
+	char* szJSON = NULL;
+	cJSON* pItem = NULL;
+	pItem = cJSON_CreateObject();
+	cJSON_AddStringToObject(pItem, "handler", "clock");
+	cJSON_AddStringToObject(pItem, "status","set");
+	cJSON_AddNumberToObject(pItem, "clocknum",clocknum);
+	cJSON_AddNumberToObject(pItem, "state",state);
+	cJSON_AddStringToObject(pItem, "time",time);
+	cJSON_AddStringToObject(pItem, "ringPath",ringPath);
+	szJSON = cJSON_Print(pItem);
+	JsonLog(szJSON);
+	SendtoaliyunServices(szJSON,strlen(szJSON));
+	cJSON_Delete(pItem);
+}
+void BindDevToaliyun(void){
+	char* szJSON = NULL;
+	cJSON* pItem = NULL;
+	pItem = cJSON_CreateObject();
+	cJSON_AddStringToObject(pItem, "handler", "binddev");
+	cJSON_AddStringToObject(pItem, "list","abc");
+	cJSON_AddStringToObject(pItem, "status","ok");
+	szJSON = cJSON_Print(pItem);
+	SendtoaliyunServices(szJSON,strlen(szJSON));
+	cJSON_Delete(pItem);
+}
 #endif
 
 void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer)
 {
+#if 0
+	FILE *fp=fopen("/mnt/tcp_test.txt","r");
+	char *recvdata=(char *)malloc(129);
+	if(recvdata==NULL){
+		return;
+	}
+	size=fread(recvdata,1,128,fp);
+	DEBUG_TCP("handler_  CtrlMsg = %s(%d)\n" ,recvdata,size);
+#endif	
 	cJSON * pJson = cJSON_Parse(recvdata);
 	if(NULL == pJson)
 	{
@@ -300,10 +348,10 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		if(pSub->valueint==1)
 		{
 			set_vol_ch(0);
-			ack_chCtr(sockfd,1);//----------->男音
+			ack_chCtr(sockfd,1);//----------->女音
 		}else if (pSub->valueint==2){
 			set_vol_ch(1);
-			ack_chCtr(sockfd,0);//----------->女音
+			ack_chCtr(sockfd,0);//----------->男音
 		}
 	}//end setvoices
 #endif	//end VOICS_CH
@@ -338,6 +386,10 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}else if(!strcmp(pSub->valuestring,"switch")){
 			mute_recorde_vol(UNMUTE);
 			Player_t *player = (Player_t *)calloc(1,sizeof(Player_t));
+			if(player==NULL){
+				perror("calloc error !!!");
+				return;
+			}
 			char *musicname=NULL;
 			if(cJSON_GetObjectItem(pJson, "name")!=NULL){
 				musicname=cJSON_GetObjectItem(pJson, "name")->valuestring;
@@ -345,7 +397,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			if(player){					//新增加json协议，用于同步界面 2016-10-11 14:00
 				snprintf(player->playfilename,128,"%s",cJSON_GetObjectItem(pJson, "url")->valuestring);
 				if(musicname!=NULL){
-					snprintf(player->musicname,64,"%s",musicname);
+					snprintf(player->musicname,48,"%s",musicname);
 					player->musicTime = cJSON_GetObjectItem(pJson, "time")->valueint;
 				}
 				createPlayEvent(player,0);
@@ -353,12 +405,14 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}else if (!strcmp(pSub->valuestring,"pause")){
 			mute_recorde_vol(MUTE);
 			StreamPause();
+			OpenPlay();			//----打开play状态
 		}else if (!strcmp(pSub->valuestring,"stop")){
 			mute_recorde_vol(MUTE);
 			CleanUrlEvent();
 		}else if (!strcmp(pSub->valuestring,"play")){
 			mute_recorde_vol(UNMUTE);
 			StreamPlay();
+			OpenPause();		//----打开pause状态
 		}else if (!strcmp(pSub->valuestring,"seekto")){
 			seekToStream(cJSON_GetObjectItem(pJson, "progress")->valueint);
 		}
@@ -451,14 +505,74 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	}else if(!strcmp(pSub->valuestring,"ServerWifi")){
 		int event = cJSON_GetObjectItem(pJson, "event")->valueint;
 		create_event_system_voices(event);
+		if(CONNECT_OK==event){
+			Led_vigue_close();
+#ifdef QITUTU_SHI
+			led_left_right(left,openled);
+			led_left_right(right,openled);
+#endif
+			SocSendMenu(3,0);
+			usleep(100*1000);
+		}else if(NOT_NETWORK==event){
+			pool_add_task(Led_vigue_open,NULL);
+			led_left_right(left,closeled);
+			led_left_right(right,closeled);
+		}
 	}else if(!strcmp(pSub->valuestring,"TestNet")){
 		test_brocastCtr(sockfd,peer,recvdata);
 	}else if(!strcmp(pSub->valuestring,"qtts")){
 		QttsPlayEvent(cJSON_GetObjectItem(pJson, "text")->valuestring,QTTS_APP);
+#ifdef	SYSTEMLOCK
+		if(!strcmp((cJSON_GetObjectItem(pJson, "text")->valuestring),"***rihuiwangxun_open***"))
+			setSystemLock(0);
+		if(!strcmp((cJSON_GetObjectItem(pJson, "text")->valuestring),"***rihuiwangxun_close***"))
+			setSystemLock(SYSTEMLOCKNUM);
+#endif
+		if(strstr((cJSON_GetObjectItem(pJson, "text")->valuestring),"set_clock")){
+			char *data=cJSON_GetObjectItem(pJson, "text")->valuestring;
+			char time[12]={0};
+			char path[12]={0};
+			char state[12]={0};
+			char clocknum[12]={0};
+			sscanf(data,"set_clock:%[^:]:%[^:]:%[^:]:%s",clocknum,state,path,time);
+			SetClockToaliyun(atoi(clocknum),atoi(state),time,path);
+		}
 	}
 #ifdef SPEEK_VOICES
 	else if (!strcmp(pSub->valuestring,"speek")){
 		CreateSpeekEvent((const char *)cJSON_GetObjectItem(pJson, "file")->valuestring);
+	}
+	else if (!strcmp(pSub->valuestring,"binddev")){
+		EnableBindDev();
+	}
+	else if (!strcmp(pSub->valuestring,"uploadfile")){
+		pSub = cJSON_GetObjectItem(pJson, "status");
+		if(!strcmp(pSub->valuestring,"ok")){			//发送成功
+			create_event_system_voices(20);
+		}else if(!strcmp(pSub->valuestring,"failed")){	//发送失败
+			create_event_system_voices(21);
+		}
+	}
+	else if (!strcmp(pSub->valuestring,"clock")){
+		pSub = cJSON_GetObjectItem(pJson, "status");
+		if(!strcmp(pSub->valuestring,"ok")){			//到点报语音
+			//报语音
+			char *path=NULL;
+			if(cJSON_GetObjectItem(pJson, "path")!=NULL){
+				path=cJSON_GetObjectItem(pJson, "path")->valuestring;
+			}
+			QttsPlayEvent("闹钟响了，闹钟响了。",QTTS_SYS);
+		}else if(!strcmp(pSub->valuestring,"close")){	//关闭设置开机时间
+			//
+			char *time_close=NULL;
+			if(cJSON_GetObjectItem(pJson, "time")!=NULL){
+				time_close=cJSON_GetObjectItem(pJson, "time")->valuestring;
+			}
+			SocSendMenu(3,0);
+			usleep(100*1000);
+			SocSendMenu(7,time_close);	//设置闹钟开机时间
+			printf("clock close (ok)...\n");
+		}
 	}
 #endif	
 exit:

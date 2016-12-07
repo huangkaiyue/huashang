@@ -1,77 +1,114 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
-//----------------------°æ±¾Àà-----------------------------------
+//----------------------ç‰ˆæœ¬ç±»-----------------------------------
 
-#define VERSION "\n10.26-12:00\n"	//°æ±¾ºÅ
+#define VERSION "\n12.04-11:00\n"	//ç‰ˆæœ¬å·
 
-//#define TEST_SDK					//²âÊÔSDK
+#define TEST_SDK					//æµ‹è¯•SDK
 
-#ifdef TEST_SDK						//Ê¹ÄÜÃüÁîÊäÈëĞĞ
+#ifdef TEST_SDK						//ä½¿èƒ½å‘½ä»¤è¾“å…¥è¡Œ
 	#define WORK_INTER
 #endif
+//#define CONFIG_ALL
+//#define DATOU_JIANG
+#define QITUTU_SHI
+//----------------------åŠŸèƒ½ç±»-----------------------------------
+#define SYSTEMLOCK				//æµ‹è¯•ç‰ˆæœ¬é™åˆ¶å¼€æœºæ¬¡æ•°
 
-//----------------------¹¦ÄÜÀà-----------------------------------
+#define CLOCESYSTEM				//è¶…æ—¶é€€å‡º
 
-#define SPEEK_VOICES	//¿ªÆô¶Ô½²¹¦ÄÜ
+#define CLOSE_VOICE				//ä¸å·¥ä½œå¤„äºå…³é—­éŸ³é¢‘çŠ¶æ€
 
-#define PALY_URL_SD		//ÏÂÔØ±£´æµ½±¾µØ
+//#define TULIN_WINT_MUSIC		//å›¾çµè¿‡æ¸¡éŸ³ä½éŸ³ä¹
+	
+#define SELECT_UDP				//å°†udpæ·»åŠ åˆ°select å½“ä¸­
 
-#define LOCAL_MP3		//MP3±¾µØ²¥·Å
+#ifdef DATOU_JIANG	//å¤§å¤´---è’‹æ€»
+	#define PALY_URL_SD		//ä¸‹è½½ä¿å­˜åˆ°æœ¬åœ°
 
-#define	LED_LR			//LED×óÓÒµÆÒÔ¼°¶à°´¼ü
+	#define LOCAL_MP3		//MP3æœ¬åœ°æ’­æ”¾
 
-#define CLOSE_VOICE		//²»¹¤×÷´¦ÓÚ¹Ø±ÕÒôÆµ×´Ì¬
+	#define	LED_LR			//LEDå·¦å³ç¯ä»¥åŠå¤šæŒ‰é”®
 
-#define TULIN_WINT_MUSIC//Í¼Áé¹ı¶ÉÒôÎ»ÒôÀÖ
+	//#define VOICS_CH		//æ’­éŸ³äººé€‰æ‹©åŠŸèƒ½æ·»åŠ 
+#endif
+#ifdef QITUTU_SHI	//çŸ³æ€»---å¥½å¥‡å…”
+	#define SPEEK_VOICES	//å¼€å¯å¯¹è®²åŠŸèƒ½
 
-#define SELECT_UDP		//½«udpÌí¼Óµ½select µ±ÖĞ
+	#define SPEEK_VOICES1	//æŒ‰é”®åˆ‡æ¢ä¼šè¯
 
-//#define VOICS_CH		//²¥ÒôÈËÑ¡Ôñ¹¦ÄÜÌí¼Ó
+	#define PALY_URL_SD		//ä¸‹è½½ä¿å­˜åˆ°æœ¬åœ°
 
-//----------------------²âÊÔÀà-----------------------------------
+	#define LOCAL_MP3		//MP3æœ¬åœ°æ’­æ”¾
 
-//#define TEXT_UP		//²âÊÔÉÏ´«ÓïÒô½Ó¿Ú
+	#define	LED_LR			//LEDå·¦å³ç¯ä»¥åŠå¤šæŒ‰é”®
 
-//#define TEST_MIC		//²âÊÔÂ¼Òô²¢Ö±½Ó²¥·Å³öÀ´
+	#define VOICS_CH		//æ’­éŸ³äººé€‰æ‹©åŠŸèƒ½æ·»åŠ 
+#endif
+#ifdef CONFIG_ALL	//å…¨åŠŸèƒ½
+	#define SPEEK_VOICES	//å¼€å¯å¯¹è®²åŠŸèƒ½
+//=====================================================
+	#define SPEEK_VOICES1	//æŒ‰é”®åˆ‡æ¢ä¼šè¯
+	
+	#define PALY_URL_SD		//ä¸‹è½½ä¿å­˜åˆ°æœ¬åœ°
 
-//#define TEST_SAVE_MP3	//²âÊÔÓÃÓÚ±£´æÓïÒôÊ¶±ğÖ®ºó£¬ÏÂÔØÏÂÀ´µÄMP3ÎÄ±¾ĞÅÏ¢
+	#define LOCAL_MP3		//MP3æœ¬åœ°æ’­æ”¾
 
-#define UDP_LOG			//Ê¹ÄÜudp´òÓ¡ĞÅÏ¢
+	#define	LED_LR			//LEDå·¦å³ç¯ä»¥åŠå¤šæŒ‰é”®
+//=====================================================
+	#define VOICS_CH		//æ’­éŸ³äººé€‰æ‹©åŠŸèƒ½æ·»åŠ 
+#endif
+//----------------------æµ‹è¯•ç±»-----------------------------------
 
-#define TCP_LOG			//Ê¹ÄÜtcp´òÓ¡ĞÅÏ¢
+//#define TEST_MIC			//æµ‹è¯•å½•éŸ³å¹¶ç›´æ¥æ’­æ”¾å‡ºæ¥
 
-#define STRLOG			//Ê¹ÄÜ²¥·ÅÆ÷´òÓ¡ĞÅÏ¢
+//#define TEST_SAVE_MP3		//æµ‹è¯•ç”¨äºä¿å­˜è¯­éŸ³è¯†åˆ«ä¹‹åï¼Œä¸‹è½½ä¸‹æ¥çš„MP3æ–‡æœ¬ä¿¡æ¯
 
-//#define LOG_DELMP3	//Ê¹ÄÜÉ¾³ıMP3Â·¾¶´òÓ¡ĞÅÏ¢
+//#define ENABLE_LOG			//ä½¿èƒ½å†™å…¥æ–‡ä»¶log
+//----------------------ç”¨æˆ·æ•°æ®ç±»-------------------------------
 
-#define LOG_MP3PLAY		//Ê¹ÄÜURL´òÓ¡ĞÅÏ¢
-
-#define ENABLE_LOG		//Ê¹ÄÜĞ´ÈëÎÄ¼şlog
-
-//----------------------ÓÃ»§Êı¾İÀà-------------------------------
-
-#define UDP_BRO_PORT 		20001						// ±¾µØ¹ã²¥¶Ë¿Ú
+#define UDP_BRO_PORT 		20001						// æœ¬åœ°å¹¿æ’­ç«¯å£
 
 #define FRIST_SMART_LIST	"smart12345678"
 #define FRIST_PASSWD		"12345678"
-
-#define TF_SYS_PATH 		"/media/mmcblk0p1/"			//tf¿¨Â·¾¶
-#define TF_TEST_PATH 		"testmp3/"					//±¾µØ²âÊÔÂ·¾¶
+#ifndef TEST_SDK	
+	#define TF_SYS_PATH 		"/media/mmcblk0p1/"		//tfå¡è·¯å¾„
+#else
+	#define TF_SYS_PATH 		"/mnt/neirong/"			//tfå¡è·¯å¾„
+#endif
 #ifdef LOCAL_MP3
 #ifdef	LED_LR
-#define TF_MP3_PATH 		"keji/"						//±¾µØÒôÀÖÂ·¾¶
-#define TF_STORY_PATH 		"why/"						//±¾µØ¹ÊÊÂÂ·¾¶
-#define TF_ENGLISH_PATH		"english/"					//±¾µØÓ¢ÓïÂ·¾¶
+#if 0
+#define TF_MP3_PATH 		"keji/"						//æœ¬åœ°éŸ³ä¹è·¯å¾„
+#define TF_STORY_PATH 		"why/"						//æœ¬åœ°æ•…äº‹è·¯å¾„
+#define TF_ENGLISH_PATH		"english/"					//æœ¬åœ°è‹±è¯­è·¯å¾„
 #else
-#define TF_MP3_PATH 		"mp3/"						//±¾µØÒôÀÖÂ·¾¶
-#define TF_STORY_PATH 		"story/"					//±¾µØ¹ÊÊÂÂ·¾¶
-#define TF_ENGLISH_PATH		"english/"					//±¾µØÓ¢ÓïÂ·¾¶
+#define TF_MP3_PATH 		"æ•…äº‹/"						//æœ¬åœ°éŸ³ä¹è·¯å¾„ï¼ˆå„¿æ­Œï¼‰
+#define TF_STORY_PATH 		"ç´ è´¨/"						//æœ¬åœ°æ•…äº‹è·¯å¾„
+#define TF_ENGLISH_PATH		"è‹±è¯­/"						//æœ¬åœ°è‹±è¯­è·¯å¾„
+#define TF_GUOXUE_PATH		"å›½å­¦/"						//æœ¬åœ°å›½å­¦è·¯å¾„ï¼ˆç§‘æŠ€ï¼‰
+#endif
+#else
+#define TF_MP3_PATH 		"mp3/"						//æœ¬åœ°éŸ³ä¹è·¯å¾„
+#define TF_STORY_PATH 		"story/"					//æœ¬åœ°æ•…äº‹è·¯å¾„
+#define TF_ENGLISH_PATH		"english/"					//æœ¬åœ°è‹±è¯­è·¯å¾„
 #endif
 #endif
 #ifdef PALY_URL_SD
-#define URL_SDPATH			"/home/cache.tmp"			//url»º´æÂ·¾¶
-#define MP3_SDPATH			"/media/mmcblk0p1/music/"	//url±£´æÂ·¾¶
+#define URL_SDPATH				"/home/cache.tmp"		//urlç¼“å­˜è·¯å¾„
+#ifdef TEST_SDK	
+	#define MP3_SDPATH			"/mnt/neirong/music/"			//urlä¿å­˜è·¯å¾„
+	#define MP3_LIKEPATH		"/mnt/neirong/ximalaya/"		//urlå–œçˆ±è·¯å¾„
+#else
+	#define MP3_SDPATH			"/media/mmcblk0p1/music/"	//urlä¿å­˜è·¯å¾„
+	#define MP3_LIKEPATH		"/media/mmcblk0p1/ximalaya/"//urlå–œçˆ±è·¯å¾„
+#endif
 #define MP3_PATHLEN			sizeof(MP3_SDPATH)
+#define MP3_LIKEPATHLEN		sizeof(MP3_LIKEPATH)
 #endif
 
+#define SYSTEMLOCKNUM	500		//é™åˆ¶æ¬¡æ•°
+
 #endif
+
+

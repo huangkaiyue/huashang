@@ -46,14 +46,17 @@ static  void test_save_mp3file(char *mp3_data,int size)
 static int check_text_cmd(char *text)
 {
 	if(strstr(text,"音乐")){
-		//play_sys_tices_voices(NO_MUSIC);
-		PlayQttsText("小朋友，我还不会唱歌，你教我唱吧。",0);
+		//playsysvoices(NO_MUSIC);
+		//PlayQttsText("小朋友，我还不会唱歌，你教我唱吧。",QTTS_SYS);
+		pause_record_audio();
+		//createPlayEvent((const void *)"mp3",1);
+		createPlayEvent((const void *)"xiai",1);
 		return 1;
 	}
 	else if(strstr(text,"图灵")){
-		//play_sys_tices_voices(TULING_HAHAXIONG);
-		PlayQttsText("我叫大头，聪明又可爱的大头。",0);
-		//PlayQttsText("我就是风流倜傥，玉树临风，人见人爱，花见花开，车见爆胎，聪明又可爱的糍粑糖，你也可以叫我糖糖，我们做好朋友吧。",0);
+		playsysvoices(TULING_HAHAXIONG);
+		//PlayQttsText("我叫大头，聪明又可爱的大头。",QTTS_SYS);
+		//PlayQttsText("我就是风流倜傥，玉树临风，人见人爱，花见花开，车见爆胎，聪明又可爱的糍粑糖，你也可以叫我糖糖，我们做好朋友吧。",QTTS_SYS);
 		return 1;
 	}
 	else if(strstr(text,"音量")){
@@ -77,17 +80,15 @@ static void handle_text(char *text)
 	int ret=0;
 	//检查关键词，做出相应的回答
 	if(check_text_cmd(text)){
-		//pause_record_audio();
+		//pause_record_audio();------请在check_text_cmd函数中添加
 		return ;
 	}
 	tolkLog("tolk handle qtts start\n");
-	ret = PlayQttsText(text,0);
+	ret = PlayQttsText(text,QTTS_APP);
 	if(ret == 10202){
 		//重连，语音播报
-		play_sys_tices_voices(REQUEST_FAILED);
-		sleep(2);
+		playsysvoices(REQUEST_FAILED);
 		startServiceWifi();
-		sleep(2);
 	}
 	tolkLog("tolk handle qtts end\n");
 }
@@ -128,7 +129,7 @@ static int parseJson_string(char * pMsg,void handle_jsion(char *textString))
 		case 40002:
 			//if(++sysMes.error_400002>2){
 				sysMes.error_400002=0;
-				play_sys_tices_voices(ERROR_40002);
+				playsysvoices(ERROR_40002);
 			//}
 			goto exit;
 			break;
@@ -138,16 +139,19 @@ static int parseJson_string(char * pMsg,void handle_jsion(char *textString))
 		DEBUG_STD_MSG("get text failed\n");
 		goto exit;
     }
+	printf("=%s=\n",pSub->valuestring);
 	handle_jsion(pSub->valuestring);
 	err=0;
 exit:
 	cJSON_Delete(pJson);
 	return err;
- }
+}
+
 jmp_buf env; 
 
-void recvSignal(int sig) {  
-    printf("received signal %d !!!\n",sig);  
+void recvSignal(int sig) {
+	tulingLog("recvSignal signal 11",0);
+    printf("received signal %d !!!\n",sig);
 	siglongjmp(env,1); 
 } 
 
@@ -157,6 +161,7 @@ void recvSignal(int sig) {
 @		len	上传数据大小
 @		voices_type	数据类型
 ********************************************************/
+#if 0
 void send_voices_server(const char *voicesdata,int len,char *voices_type)
 {
 	time_t t;
@@ -172,14 +177,17 @@ void send_voices_server(const char *voicesdata,int len,char *voices_type)
 	}
 	DEBUG_STD_MSG("up voices data ...(len=%d)\n",len);
 	
-	int r = sigsetjmp(env,1);  //保存一下上下文  
-	if(  r	== 0){
+	tulingLog("tuling_start",err);
+	int r = sigsetjmp(env,1);  //保存一下上下文
+	tulingLog("tuling env start...",err);
+	if(r== 0){
 		signal(SIGSEGV, recvSignal);  //出现段错误回调函数
 		DEBUG_STD_MSG("set signal ok \n");
 		///图灵服务器上，内部可能会发生错误的代码 
 		if((err=tl_req_voice(audio, len, RECODE_RATE, voices_type,\
 								key, &result,&resSize,&text,&textSize)))
 		{
+			tulingLog("tl_req_voice error",err);
 			if(err==5||err==6){
 				endtime=time(&t);
 				if((endtime-starttime)<15)//重连，语音播报
@@ -189,19 +197,14 @@ void send_voices_server(const char *voicesdata,int len,char *voices_type)
 						DEBUG_STD_MSG("up voices data failed err =%d\n",err);
 						if(err==5||err==6){
 							create_event_system_voices(5);
-							sleep(2);
 							startServiceWifi();
-							sleep(2);
 							free(audio);
 							goto exit1;
 						}
 					}
 				}else{
 					create_event_system_voices(5);
-					//DEBUG_STD_MSG("startServiceWifi ...\n");
-					sleep(2);
 					startServiceWifi();
-					sleep(2);
 					free(audio);
 					goto exit1;
 				}
@@ -209,9 +212,13 @@ void send_voices_server(const char *voicesdata,int len,char *voices_type)
 		}
 	}
 	else{
-		 DEBUG_STD_MSG("jump this code bug!!\n");
-		 create_event_system_voices(5);
+		DEBUG_STD_MSG("jump this code bug!!\n");
+		tulingLog("save up down",err);
+		create_event_system_voices(5);
+		free(audio);
+		goto exit1;
 	}
+	tulingLog("tuling_end",err);
 	free(audio);
 	audio=NULL;
 	if(result){
@@ -222,10 +229,39 @@ void send_voices_server(const char *voicesdata,int len,char *voices_type)
 		add_event_msg(text,0,STUDY_WAV_EVENT);
 	}
 	return ;
-exit1:	
+exit1:
+#ifdef QITUTU_SHI
+	Led_System_vigue_close();
+#endif
 	pause_record_audio();
 	return;
 }
+#else
+void send_voices_server(const char *voicesdata,int len,char *voices_type)
+{
+	int textSize=0, err=0;
+	char *text=NULL;
+	start_event_play_wav();//暂停录音
+	DEBUG_STD_MSG("up voices data ...(len=%d)\n",len);
+	if((err=reqTlVoices(10,key,(const void *)voicesdata,len,RECODE_RATE,voices_type,&text,&textSize)))
+	{
+		create_event_system_voices(5);
+		startServiceWifi();
+		goto exit1;
+	}
+	if(text){
+		add_event_msg(text,0,STUDY_WAV_EVENT);
+	}
+	return ;
+exit1:
+#ifdef QITUTU_SHI
+	Led_System_vigue_close();
+#endif
+	pause_record_audio();
+	return;
+}
+
+#endif
 /******************************************************
 @函数功能:	学习音事件处理函数
 @参数:	data 数据 len 数据大小
@@ -234,7 +270,7 @@ static void runJsonEvent(const char *data)
 {
 	parseJson_string(data,handle_text);
 	free(data);
-	//play_sys_tices_voices(TULING_DIDI);
+	//playsysvoices(TULING_DIDI);
 }
 int event_lock=0;
 /*******************************************************
@@ -250,10 +286,13 @@ int add_event_msg(const char *databuf,int  len,int  type)
 		eventlockLog("event_lock add error\n",event_lock);
 		return ;
 	}
+	if(type!=LOCAL_MP3_EVENT)	//不为本地播放清理播放上下曲
+		sysMes.localplayname=0;
 	eventlockLog("event_lock add ok\n",event_lock);
 	struct eventMsg *msg =(struct eventMsg *)(&msgSize);
 	msg->len = len;
 	msg->type = type;
+	printf("add end ..\n");
 	return putMsgQueue(evMsg,databuf,msgSize);
 }
 int getEventNum(void)
@@ -282,6 +321,9 @@ static void handle_event_msg(const char *data,int msgSize)
 	handleeventLog("handleevent_start\n",cur->type);
 	switch(cur->type){
 		case STUDY_WAV_EVENT:		//会话事件
+#ifdef QITUTU_SHI
+			Led_System_vigue_close();
+#endif
 			runJsonEvent(data);
 			//pause_record_audio();
 			break;
@@ -289,38 +331,38 @@ static void handle_event_msg(const char *data,int msgSize)
 		case SYS_VOICES_EVENT:		//系统音事件
 			start_event_play_wav();
 			handle_event_system_voices(cur->len);
-			pause_record_audio();
+			if(cur->len!=2)
+				pause_record_audio();
+			printf("=================SYS_VOICES_EVENT===end=============\n");
 			break;
 			
 		case SET_RATE_EVENT:		//URL清理事件
 			event_lock=1;	//受保护状态事件
-			//lock_start  w+
 			eventlockLog("eventlock_start\n",event_lock);
-			cleanplayEvent();
-			cleanEvent();
+			cleanplayEvent(1);
+			//cleanEvent();
 			NetStreamExitFile();
 			i2s_start_play(RECODE_RATE);
 			event_lock=0;
+			sysMes.localplayname=0;
 			pause_record_audio();
 			eventlockLog("eventlock end\n",event_lock);
 			break;
 			
 		case URL_VOICES_EVENT:		//URL网络播放事件
-#ifdef LOG_MP3PLAY
 			playurlLog("url play\n");
-#endif
-			start_event_play_url();
+			cleanplayEvent(0);
 			NetStreamExitFile();
-#ifdef LOG_MP3PLAY
+			start_event_play_url();
 			playurlLog("NetStreamExitFile\n");
-#endif
 			AddDownEvent(data,URL_VOICES_EVENT);
 			sleep(3);
 			break;
 
 		case LOCAL_MP3_EVENT:		//本地音乐播放事件
-			start_event_play_url();
+			cleanplayEvent(0);
 			NetStreamExitFile();
+			start_event_play_url();
 			AddDownEvent(data,LOCAL_MP3_EVENT);
 			//sleep(1);
 			break;

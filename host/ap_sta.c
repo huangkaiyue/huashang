@@ -79,6 +79,13 @@ static int smartGetSsid(char *smartData,char *ssid,char *passwd)
 	//printf("ssid:%s pwd: %s \n",ssid,passwd);
 	return 0;
 }
+static int createInternetLock(void){
+	fopen("/var/SmartConfig.lock","w+");
+}
+
+static void delInternetLock(void){
+	remove("/var/SmartConfig.lock");
+}
 static int SmartConfig(void *arg)
 {
   	FILE *fp=NULL;
@@ -93,6 +100,7 @@ static int SmartConfig(void *arg)
 		perror("calloc failed ");
 		return ret ;
 	}	
+	createInternetLock();
 	system("iwpriv apcli0 elian start");
 	while (++timeout<280){	
 		//必须实时打开管道，才能读取到更新的数据
@@ -122,6 +130,7 @@ static int SmartConfig(void *arg)
 		snprintf(wifi->passwd,64,"%s",pwd);
 		wifi->connetEvent(SMART_CONFIG_OK);	//已经接收到ssid 和 passwd
 		sendSsidPasswd(ssid,pwd);
+		delInternetLock();
 		sleep(5);
 		while(++timeout<30){	//等待配网成功后，使能按键
 			sleep(1);
@@ -132,6 +141,7 @@ static int SmartConfig(void *arg)
 		}
 	}else{
 		wifi->connetEvent(SMART_CONFIG_FAILED); //没有收到app发送过来的ssid和passwd
+		delInternetLock();
 	}
 	wifi->enableGpio();
 	free(wifi);
@@ -198,6 +208,10 @@ int main(int argc,char **argv)
 	}
 	int mode = atoi(argv[1]);
 	ConnetWIFI *wifi = (ConnetWIFI *)malloc(sizeof(ConnetWIFI));
+	if(wifi==NULL){
+		perror("calloc error !!!");
+		return;
+	}
 	wifi->connetEvent = test_ConnetEvent;
 	switch(mode)
 	{

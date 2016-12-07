@@ -7,7 +7,8 @@ SDK_PATH=/home/7620sdk/7688/sdk4300_20140916/RT288x_SDK/source
 #SDK_PATH=/home/7620sdk/7688/sdk4300_20140916/RT288x_SDK/uart_source7688
 KERNEL_PATH =$(SDK_PATH)/linux-2.6.36.x
 
-OTHEN_LIB=-lmsc463 -lTLRobot342
+#OTHEN_LIB=-lmsc463 -lTLRobot342
+OTHEN_LIB=-lmsc463
 SYSTEM_LIB=-lpthread -ldl -lrt  $(SDK_PATH)/lib/libnvram/libnvram-0.9.28.so
 OPEN_LIB= -lz -lcurl -lssl -lcrypto -lmad  -lopencore-amrnb -lsqlite3
 MY_LIB=-lbase463 -lmtkwifi -ldownFile463 -ldemoquick463 -lsystools463
@@ -43,6 +44,7 @@ all +=host/sdcard/sdcard.o
 all +=host/sdcard/sqlite.o
 all +=host/sdcard/MusicListDb.o
 all +=host/studyvoices/std_worklist.o
+all +=host/studyvoices/demoSpeech.o
 all +=host/studyvoices/qtts_qisc.o
 all +=host/ap_sta.o
 
