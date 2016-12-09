@@ -239,30 +239,6 @@ exit1:
 	return;
 }
 #endif
-static void *PlayLocalMp3Event(void *data){
-	playLocalMp3((const char *)data);
-	free((void *)data);
-	usleep(1000);
-	if(getEventNum()==0&&getplayEventNum()==0){
-		switch(sysMes.localplayname){
-			case mp3:
-				createPlayEvent((const void *)"mp3",PLAY_NEXT_AUTO);
-				break;
-			case story:
-				createPlayEvent((const void *)"story",PLAY_NEXT_AUTO);
-				break;
-			case english:
-				createPlayEvent((const void *)"english",PLAY_NEXT_AUTO);
-				break;
-			case guoxue:
-				createPlayEvent((const void *)"guoxue",PLAY_NEXT_AUTO);
-				break;
-			default:
-				sysMes.localplayname=0;
-				break;
-		}
-	}
-}
 /******************************************************
 @函数功能:	学习音事件处理函数
 @参数:	data 数据 len 数据大小
@@ -361,18 +337,10 @@ static void handle_event_msg(const char *data,int msgSize)
 			
 #ifdef 	LOCAL_MP3
 		case LOCAL_MP3_EVENT:		//本地音乐播放事件
-#if 0
 			cleanplayEvent(0);
 			NetStreamExitFile();
 			start_event_play_url();
 			AddDownEvent(data,LOCAL_MP3_EVENT);
-#else
-			NetStreamExitFile();
-			start_event_play_url();
-			if(pthread_create_attr(PlayLocalMp3Event,(void *)data)){
-				perror("create handle record voices failed!");
-			}
-#endif
 			break;
 #endif
 			

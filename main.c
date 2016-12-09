@@ -118,7 +118,7 @@ int main(int argc, char **argv)
 #endif
 			free((void *)msg);
 		}
-#if 	0
+#if 	1
 		else if(LOCAL_MP3_EVENT==event){
 			playLocalMp3((const char *)msg);
 			free((void *)msg);
