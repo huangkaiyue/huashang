@@ -148,8 +148,6 @@ int main(int argc, char **argv)
 #endif
 		else if(QUIT_MAIN==event){
 			printf("end main !!!\n");
-
-			
 			break;
 		}
 	}
