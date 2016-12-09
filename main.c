@@ -39,7 +39,8 @@ static void loadLocalServer(int argc,const char *argv[]){
 	if(argc<2){
 		printf("LocalServer -qttspath /home/\n");
 		exit(1);
-	}
+	}	
+	memset(&sysMes,0,sizeof(SysMessage));
 	for(i=0; i<argc; i++){
 		int lastarg = i==argc-1;
 		if(!strcmp(argv[i],"-qttspath") && !lastarg){
@@ -48,7 +49,6 @@ static void loadLocalServer(int argc,const char *argv[]){
 		}
 	}
 	time_t t;
-	memset(&sysMes,0,sizeof(SysMessage));
 	sysMes.localplayname=0;		//本地播放目录
 	sysMes.Playlocaltime=time(&t);
 	set_pthread_sigblock();
