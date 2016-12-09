@@ -157,7 +157,7 @@ static void *NetplayStreamMusic(void *arg){
 		if(st->rfp==NULL){
 			perror("fopen read failed ");
 			pthread_mutex_unlock(&st->mutex);
-			return ;
+			return NULL;
 		}
 	}
 #if 0

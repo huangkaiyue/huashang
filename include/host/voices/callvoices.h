@@ -57,10 +57,7 @@
 #define SEND_OK_PLAY				20	//发送成功
 #define SEND_ERROR_PLAY				21	//发送失败
 
-typedef struct sys_message
-{
-	//unsigned char networkstate:1,
-	//	network_timeout:7;			//网络状态  0:没有网络 1 有网络
+typedef struct sys_message{
 	unsigned char recorde_live;
 	unsigned char oldrecorde_live;
 	unsigned char error_400002;	

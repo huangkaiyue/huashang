@@ -69,8 +69,6 @@
 
 #define UDP_BRO_PORT 		20001						// 本地广播端口
 
-#define FRIST_SMART_LIST	"smart12345678"
-#define FRIST_PASSWD		"12345678"
 #ifndef TEST_SDK	
 	#define TF_SYS_PATH 		"/media/mmcblk0p1/"		//tf卡路径
 #else

@@ -10,32 +10,22 @@
 #include "host/StreamPlay/StreamFile.h"
 #include "host/voices/gpio_7620.h"
 #include "host/sdcard/musicList.h"
-#include "../host/studyvoices/qtts_qisc.h"
 #include "config.h"
 
-#define MAIN_DOWN
-#ifdef MAIN_DOWN
 static WorkQueue *DownEvent=NULL;
 int AddDownEvent(char *data,int msgSize){
 	return putMsgQueue(DownEvent,(const char *)data, msgSize);
 }
-#endif
-int getplayEventNum(void)
-{
+int getplayEventNum(void){
 	return getWorkMsgNum(DownEvent);
 }
 static unsigned char clean_sign=0;
+//清除播放事件
 void cleanplayEvent(unsigned char type){
 	clean_sign=type;
 }
-void init_system_net(void)
-{
-	set_pthread_sigblock();
-	InitSysList(FRIST_SMART_LIST,FRIST_PASSWD);//初始化用户数据库
-	pool_init(3);
-}
-int clean_resources(void)
-{
+
+int clean_resources(void){
 	clean_main_voices();
 	clean_videoServer();
 	pool_destroy();
@@ -59,18 +49,18 @@ static void loadLocalServer(int argc,const char *argv[]){
 	}
 }
 
-int main(int argc, char **argv)
-{   
+int main(int argc, char **argv){   
 	checkConnectFile();
 	memset(&sysMes,0,sizeof(SysMessage));
-	
-	//sysMes.network_timeout=0;
+
 	sysMes.localplayname=0;		//本地播放目录
 	time_t t;
 	sysMes.Playlocaltime=time(&t);
 
 	loadLocalServer(argc,argv);
-	init_system_net();
+	set_pthread_sigblock();
+	pool_init(3);
+
 	init_wm8960_voices();
 	
 	DownEvent = initQueue();
@@ -84,23 +74,10 @@ int main(int argc, char **argv)
 	led_left_right(left,closeled);
 	led_left_right(right,closeled);
 #endif
-#ifdef	SYSTEMLOCK
-	int opennumber=getSystemLock();
-	if(opennumber>SYSTEMLOCKNUM){	//检查开机次数
-		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
-		sleep(10);
-		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
-		sleep(10);
-		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
-		sleep(10);
-		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
-		sleep(10);
-		SetSystemTime(1);
-	}
-	setSystemLock((opennumber+1));
+
+#ifdef SYSTEMLOCK
+	checkSystemLock();
 #endif
-	
-#ifdef MAIN_DOWN
 	char *msg=NULL;
 	int event=0;
 	while(1){
@@ -110,21 +87,21 @@ int main(int argc, char **argv)
 			usleep(100);
 			continue;
 		}
-		if(URL_VOICES_EVENT==event){
-#ifdef PALY_URL_SD
-			PlayUrl((const void *)msg);
-#else
-			NetStreamDownFilePlay((const void *)msg);
-#endif
-			free((void *)msg);
-		}
-#if 	1
-		else if(LOCAL_MP3_EVENT==event){
-			playLocalMp3((const char *)msg);
-			free((void *)msg);
-			usleep(1000);
-#if 1
-			if(getEventNum()==0&&getWorkMsgNum(DownEvent)==0){
+		switch(event){
+			case URL_VOICES_EVENT:
+				#ifdef PALY_URL_SD
+					PlayUrl((const void *)msg);
+				#else
+					NetStreamDownFilePlay((const void *)msg);
+				#endif
+				free((void *)msg);
+				break;
+			case LOCAL_MP3_EVENT:	
+				playLocalMp3((const char *)msg);
+				free((void *)msg);
+				usleep(1000);
+			#if 1
+				if(getEventNum()==0&&getWorkMsgNum(DownEvent)==0){
 				switch(sysMes.localplayname){
 					case mp3:
 						createPlayEvent((const void *)"mp3",PLAY_NEXT_AUTO);
@@ -141,17 +118,16 @@ int main(int argc, char **argv)
 					default:
 						sysMes.localplayname=0;
 						break;
-				}
-			}
-#endif
-		}				//end LOCAL_MP3_EVENT
-#endif
-		else if(QUIT_MAIN==event){
-			printf("end main !!!\n");
-			break;
+					}
+				}			
+			#endif				
+				break;
+			case QUIT_MAIN:
+				printf("end main !!!\n");
+				goto exit0;
 		}
 	}
-#endif
+exit0:
 	return 0;
 }
 

@@ -3,14 +3,6 @@
 
 #include "config.h"
 
-typedef struct {
-	char list[24];
-	char passwd[24];
-}HOST;
-extern HOST host;
-
-extern int updateSysList(char *list,char *passwd);
-extern void InitSysList(char *frist_camlist,char *camlist_passwd);
 extern unsigned char get_System_Lock(void);
 extern void set_System_Lock(int size);
 extern void set_vol_size(unsigned char size);

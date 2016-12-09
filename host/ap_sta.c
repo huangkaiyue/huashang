@@ -79,15 +79,14 @@ static int smartGetSsid(char *smartData,char *ssid,char *passwd)
 	//printf("ssid:%s pwd: %s \n",ssid,passwd);
 	return 0;
 }
-static int createInternetLock(void){
+static void createInternetLock(void){
 	fopen("/var/SmartConfig.lock","w+");
 }
 
 static void delInternetLock(void){
 	remove("/var/SmartConfig.lock");
 }
-static int SmartConfig(void *arg)
-{
+static int SmartConfig(void *arg){
   	FILE *fp=NULL;
    	char *buf, *ptr;
 	char ssid[64]={0},pwd[64]={0};

@@ -99,10 +99,6 @@ void pasreInputCmd(const char *com)
 		{
 			createPlayEvent((const void *)"testmp3",1);
 		}
-		else if(!strcmp(com,"initlist"))
-		{
-			updateSysList(FRIST_SMART_LIST, FRIST_PASSWD);
-		}
 		else if(!strcmp(com,"scanwifi"))
 		{
 			char msg[1500]={0};
