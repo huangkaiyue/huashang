@@ -30,7 +30,6 @@ int clean_resources(void){
 	clean_videoServer();
 	pool_destroy();
 	AddDownEvent("baibai",QUIT_MAIN);
-
 	printf("clean resources finished \n");
 	return 0;
 }
@@ -39,6 +38,7 @@ static void loadLocalServer(int argc,const char *argv[]){
 	char *aliUrl=NULL;
 	if(argc<2){
 		printf("LocalServer -qttspath /home/\n");
+		exit(1);
 	}
 	for(i=0; i<argc; i++){
 		int lastarg = i==argc-1;
@@ -47,24 +47,14 @@ static void loadLocalServer(int argc,const char *argv[]){
 			memcpy(sysMes.sd_path,qttspath,strlen(qttspath));
 		}
 	}
-}
-
-int main(int argc, char **argv){   
-	checkConnectFile();
-	memset(&sysMes,0,sizeof(SysMessage));
-
-	sysMes.localplayname=0;		//本地播放目录
 	time_t t;
+	memset(&sysMes,0,sizeof(SysMessage));
+	sysMes.localplayname=0;		//本地播放目录
 	sysMes.Playlocaltime=time(&t);
-
-	loadLocalServer(argc,argv);
 	set_pthread_sigblock();
 	pool_init(3);
-
 	init_wm8960_voices();
-	
 	DownEvent = initQueue();
-
 #ifdef WORK_INTER
 	init_interface(pasreInputCmd);
 #endif	//end WORK_INTER
@@ -74,10 +64,14 @@ int main(int argc, char **argv){
 	led_left_right(left,closeled);
 	led_left_right(right,closeled);
 #endif
-
 #ifdef SYSTEMLOCK
 	checkSystemLock();
-#endif
+#endif	
+}
+
+int main(int argc, char **argv){   
+	checkConnectFile();
+	loadLocalServer(argc,argv);
 	char *msg=NULL;
 	int event=0;
 	while(1){
