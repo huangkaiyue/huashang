@@ -36,7 +36,7 @@ int updateSysList(char *list,char *passwd)
 	return NvramGetCamlist(list,passwd);
 }
 //----------------------------播放记录-------------------------------------
-#ifdef LOCAL_MP3
+#if 0
 //获取播放记录
 static enum{
 	mp3_S=1,

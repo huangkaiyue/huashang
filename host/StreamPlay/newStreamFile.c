@@ -129,6 +129,7 @@ static void Savemp3File(void){
 	}
 	system(buf);
 }
+//³¤°´É¾³ýÏ²°®¸èÇú
 static void Delmp3File(void){
 	if(like_mp3_sign==2){
 		char buf[200]={0};
