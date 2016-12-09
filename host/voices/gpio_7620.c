@@ -3,8 +3,9 @@
 #include "ralink_gpio.h"
 #include "gpio_7620.h"
 #include "../sdcard/musicList.h"
-#include "config.h"
+#include "../studyvoices/qtts_qisc.h"
 #include "nvram.h"
+#include "config.h"
 //#define MAIN
 
 static Gpio gpio;
@@ -144,7 +145,7 @@ void OpenPlay(void){
 }
 
 //按键处理事件
-#ifdef QITUTU_SHI
+#ifndef QITUTU_SHI
 static void signal_handler(int signum)
 {
 	char buf[128]={0};
@@ -165,7 +166,7 @@ static void signal_handler(int signum)
 				wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
 				if(strlen(wifi)>0){
 					snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
-					QttsPlayEvent(buf,0);
+					QttsPlayEvent(buf,QTTS_GBK);
 				}
 				break;
 				
@@ -305,7 +306,7 @@ static void signal_handler(int signum)
 	unlock_msgEv();
 }
 #endif
-#ifdef DATOU_JIANG
+#ifndef DATOU_JIANG
 static void signal_handler(int signum)
 {
 	char buf[128]={0};
@@ -326,7 +327,7 @@ static void signal_handler(int signum)
 				wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
 				if(strlen(wifi)>0){
 					snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
-					QttsPlayEvent(buf,0);
+					QttsPlayEvent(buf,QTTS_GBK);
 				}
 				break;
 				

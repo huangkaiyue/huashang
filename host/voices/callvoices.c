@@ -7,6 +7,7 @@
 #include "host/studyvoices/std_worklist.h"
 #include "host/studyvoices/prompt_tone.h"
 #include "gpio_7620.h"
+#include "../studyvoices/qtts_qisc.h"
 #include "config.h"
 
 //默认音频头部数据
@@ -140,9 +141,10 @@ static void voices_packt(const char *data,int size)
 	}
 	else if(len_voices > VOICES_MIN)	//音频上传
 	{
-#if 0
+#if 1
+		start_event_play_wav();		//播放wav
 		pool_add_task(play_sys_tices_voices,TULING_WINT);
-		usleep(1000*1000);
+		//usleep(1000*1000);
 #else
 		create_event_system_voices(2);
 #endif
@@ -163,7 +165,6 @@ static void voices_packt(const char *data,int size)
 	else
 	{
 		if(sysMes.recorde_live !=PLAY_WAV){
-			//i2s_start_play(8000);
 			playsysvoices(NO_VOICES);
 		}
 		goto exit1;
@@ -174,6 +175,7 @@ exit1:
 exit0:
 	memset(buf_voices,0,len_voices);
 	len_voices = 0;
+	return ;
 }
 int SetSystemTime(unsigned char outtime){
 	time_t timep;
@@ -249,7 +251,7 @@ static void *pthread_record_voices(void *arg)
 #endif
 #ifdef CLOCESYSTEM
 			case TIME_SIGN:
-				PlayQttsText("小朋友快来跟我玩，跟我说话聊天吧。",0);
+				PlayQttsText("小朋友快来跟我玩，跟我说话聊天吧。",QTTS_GBK);
 				sysMes.recorde_live=RECODE_PAUSE;
 				sleep(1);
 				break;

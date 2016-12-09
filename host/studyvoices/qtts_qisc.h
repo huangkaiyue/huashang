@@ -3,8 +3,8 @@
 
 //extern int voices_single_to_stereo(char *dest_files,char *src_files);
 
-#define QTTS_SYS	0
-#define QTTS_APP	1
+#define QTTS_GBK	0
+#define QTTS_UTF8	1
 
 extern int Qtts_voices_text(char *text,unsigned char type);
 

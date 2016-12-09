@@ -11,6 +11,7 @@
 #include "qtts_qisc.h"
 #include "config.h"
 #include "StreamFile.h"
+#include "../sdcard/musicList.h"
 
 static char *key = "a2f6808bf85a693e1bde2069c8b7fd79";
 //static char *key = "21868a0cd8806ee2ba5eab6181f0add7";//tang : change 2016.4.26 for from chang key 
@@ -37,39 +38,6 @@ static  void test_save_mp3file(char *mp3_data,int size)
 }
 #endif
 
-/********************************************************
-@函数功能:	匹配文字语音控制
-@参数:	text 匹配的文本
-@返回:	1表示匹配成功
-@	  	0表示匹配失败
-*********************************************************/
-static int check_text_cmd(char *text)
-{
-	if(strstr(text,"音乐")){
-		//playsysvoices(NO_MUSIC);
-		//PlayQttsText("小朋友，我还不会唱歌，你教我唱吧。",QTTS_SYS);
-		pause_record_audio();
-		//createPlayEvent((const void *)"mp3",1);
-		createPlayEvent((const void *)"xiai",1);
-		return 1;
-	}
-	else if(strstr(text,"图灵")){
-		playsysvoices(TULING_HAHAXIONG);
-		//PlayQttsText("我叫大头，聪明又可爱的大头。",QTTS_SYS);
-		//PlayQttsText("我就是风流倜傥，玉树临风，人见人爱，花见花开，车见爆胎，聪明又可爱的糍粑糖，你也可以叫我糖糖，我们做好朋友吧。",QTTS_SYS);
-		return 1;
-	}
-	else if(strstr(text,"音量")){
-		if((strstr(text,"加")&&strstr(text,"减"))||(strstr(text,"大")&&strstr(text,"小")))
-			return 0;
-		else if(strstr(text,"加")||strstr(text,"大"))
-			SetVol(VOL_ADD,0);
-		else if(strstr(text,"减")||strstr(text,"小"))
-			SetVol(VOL_SUB,0);	
-		return 1;
-	}
-	return 0;
-}
 /******************************************
 @函数功能:	文本处理函数
 @参数:	text 文本文字
@@ -84,7 +52,7 @@ static void handle_text(char *text)
 		return ;
 	}
 	tolkLog("tolk handle qtts start\n");
-	ret = PlayQttsText(text,QTTS_APP);
+	ret = PlayQttsText(text,QTTS_GBK);
 	if(ret == 10202){
 		//重连，语音播报
 		playsysvoices(REQUEST_FAILED);
@@ -99,7 +67,7 @@ static void handle_text(char *text)
 @		textString	解析后的数据
 @返回值:	0	成功	其他整数都是错误码
 ***********************************************/
-static int parseJson_string(char * pMsg,void handle_jsion(char *textString))
+static int parseJson_string(const char * pMsg,void handle_jsion(char *textString))
 {
 	int err=-1;
 	if(NULL == pMsg){
@@ -139,21 +107,20 @@ static int parseJson_string(char * pMsg,void handle_jsion(char *textString))
 		DEBUG_STD_MSG("get text failed\n");
 		goto exit;
     }
-	printf("=%s=\n",pSub->valuestring);
+	printf("=get text=%s=\n",pSub->valuestring);
 	handle_jsion(pSub->valuestring);
+	
+	pSub = cJSON_GetObjectItem(pJson, "info");
+    if(NULL == pSub){
+		DEBUG_STD_MSG("get text failed\n");
+		goto exit;
+    }
+	printf("=upload=%s=\n",pSub->valuestring);
 	err=0;
 exit:
 	cJSON_Delete(pJson);
 	return err;
 }
-
-jmp_buf env; 
-
-void recvSignal(int sig) {
-	tulingLog("recvSignal signal 11",0);
-    printf("received signal %d !!!\n",sig);
-	siglongjmp(env,1); 
-} 
 
 /*******************************************************
 @函数功能:	上传数据到服务器并获取到回复
@@ -162,6 +129,14 @@ void recvSignal(int sig) {
 @		voices_type	数据类型
 ********************************************************/
 #if 0
+jmp_buf env; 
+
+void recvSignal(int sig) {
+	tulingLog("recvSignal signal 11",0);
+    printf("received signal %d !!!\n",sig);
+	siglongjmp(env,1); 
+} 
+
 void send_voices_server(const char *voicesdata,int len,char *voices_type)
 {
 	time_t t;
@@ -243,10 +218,13 @@ void send_voices_server(const char *voicesdata,int len,char *voices_type)
 	char *text=NULL;
 	start_event_play_wav();//暂停录音
 	DEBUG_STD_MSG("up voices data ...(len=%d)\n",len);
-	if((err=reqTlVoices(10,key,(const void *)voicesdata,len,RECODE_RATE,voices_type,&text,&textSize)))
-	{
+	err=reqTlVoices(10,key,(const void *)voicesdata,len,RECODE_RATE,voices_type,&text,&textSize);
+	if(err==-1){
 		create_event_system_voices(5);
 		startServiceWifi();
+		goto exit1;
+	}else if(err==1){
+		QttsPlayEvent("我就不回答你。",QTTS_GBK);
 		goto exit1;
 	}
 	if(text){
@@ -260,8 +238,31 @@ exit1:
 	pause_record_audio();
 	return;
 }
-
 #endif
+static void *PlayLocalMp3Event(void *data){
+	playLocalMp3((const char *)data);
+	free((void *)data);
+	usleep(1000);
+	if(getEventNum()==0&&getplayEventNum()==0){
+		switch(sysMes.localplayname){
+			case mp3:
+				createPlayEvent((const void *)"mp3",PLAY_NEXT_AUTO);
+				break;
+			case story:
+				createPlayEvent((const void *)"story",PLAY_NEXT_AUTO);
+				break;
+			case english:
+				createPlayEvent((const void *)"english",PLAY_NEXT_AUTO);
+				break;
+			case guoxue:
+				createPlayEvent((const void *)"guoxue",PLAY_NEXT_AUTO);
+				break;
+			default:
+				sysMes.localplayname=0;
+				break;
+		}
+	}
+}
 /******************************************************
 @函数功能:	学习音事件处理函数
 @参数:	data 数据 len 数据大小
@@ -333,7 +334,6 @@ static void handle_event_msg(const char *data,int msgSize)
 			handle_event_system_voices(cur->len);
 			if(cur->len!=2)
 				pause_record_audio();
-			printf("=================SYS_VOICES_EVENT===end=============\n");
 			break;
 			
 		case SET_RATE_EVENT:		//URL清理事件
@@ -358,17 +358,27 @@ static void handle_event_msg(const char *data,int msgSize)
 			AddDownEvent(data,URL_VOICES_EVENT);
 			sleep(3);
 			break;
-
+			
+#ifdef 	LOCAL_MP3
 		case LOCAL_MP3_EVENT:		//本地音乐播放事件
+#if 0
 			cleanplayEvent(0);
 			NetStreamExitFile();
 			start_event_play_url();
 			AddDownEvent(data,LOCAL_MP3_EVENT);
-			//sleep(1);
+#else
+			NetStreamExitFile();
+			start_event_play_url();
+			if(pthread_create_attr(PlayLocalMp3Event,(void *)data)){
+				perror("create handle record voices failed!");
+			}
+#endif
 			break;
+#endif
 			
 		case QTTS_PLAY_EVENT:		//QTTS事件
 			start_event_play_wav();
+			stait_qtts_cache();
 			PlayQttsText(data,cur->len);
 			//pause_record_audio();
 			free((void *)data);

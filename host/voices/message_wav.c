@@ -64,7 +64,6 @@ void playAmrVoices(const char *filename)
 			if(pos>0){
 				memset(play_buf+pos,0,I2S_PAGE_SIZE-pos);//清空上一次尾部杂音
 				write_pcm(play_buf);
-				usleep(1000);
 			}
 			break;
 		}
@@ -80,9 +79,12 @@ void playAmrVoices(const char *filename)
 	}
 	playsysvoicesLog("playsys amr end \n");
 	fclose(fp);
+	memset(play_buf,0,pos);
+	stait_qtts_cache();
+	if(strstr(filename,"TuLin_Wint_8K")){
+		return ;
+	}
 	clean_play_cache();
-	//memset(play_buf,0,I2S_PAGE_SIZE);
-	//write_pcm(play_buf);
 	remove(outfile);
 }
 #endif
@@ -102,6 +104,11 @@ void playspeekVoices(const char *filename){
 }
 #endif
 void playsysvoices(char *filePath){
+	if(strstr(filePath,"no_voices_8K")){
+	}else{
+		while(get_qtts_cache());
+		usleep(300*1000);
+	}
 	play_sys_tices_voices(filePath);
 	pause_record_audio();
 }
@@ -168,7 +175,6 @@ void PlayQttsText(char *text,unsigned char type)
 	Qtts_voices_text(textbuf,type);
 	free(textbuf);
 #else
-	stait_qtts_cache();
 	Qtts_voices_text(text,type);
 #endif
 	tolkLog("tolk qtts end\n");
@@ -180,6 +186,7 @@ void PlayQttsText(char *text,unsigned char type)
 		I2S.qttspos =0;
 	}
 	tolkLog("tolk qtts clean\n");
+	clean_qtts_cache();
 	clean_play_cache();
 	usleep(800*1000);
 	tolkLog("tolk qtts pause\n");

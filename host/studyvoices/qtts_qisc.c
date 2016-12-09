@@ -143,9 +143,11 @@ void __exitqttsPlay(void)
 			usleep(100);
 			continue;
 		}
-		getMsgQueue(Qstream->qttsList,&data,&len);
-		Qstream->WritePcm(data,len);
-		free(data);
+		if(get_qtts_cache()==0){
+			getMsgQueue(Qstream->qttsList,&data,&len);
+			Qstream->WritePcm(data,len);
+			free(data);
+		}
 	}
 	cleanState();
 	DEBUG_QTTS("play_qtts_data : end...\n\n");
@@ -181,9 +183,7 @@ static int text_to_speech(const char* src_text  ,const char* params)
 	Qstream->downState=DOWN_QTTS_ING;
 	Qstream->playState=PLAY_QTTS_ING;
 	tolkLog("qtts down start\n");
-	DEBUG_QTTS("text_to_speech :play_qtts_data start(ret=%d)...\n\n",ret);
 	pool_add_task(play_qtts_data,(void *)Qstream);		//启动播放线程
-	DEBUG_QTTS("text_to_speech :play_qtts_data end(ret=%d)...\n\n",ret);
 	while(Qstream->playState){
 		const void *data = QTTSAudioGet(sess_id, &audio_len, &synth_status, &ret);
 		tolkLog("qtts QTTSAudioGet start\n");
@@ -193,16 +193,13 @@ static int text_to_speech(const char* src_text  ,const char* params)
 				continue;
 			}
 			memcpy(getdata,data,audio_len);
-			DEBUG_QTTS("text_to_speech :putMsgQueue (ret=%d)...\n\n",ret);
 			putMsgQueue(Qstream->qttsList,getdata,audio_len);	//添加到播放队列
 		}
 		usleep(100*1000);
 		if (synth_status==2|| ret!= 0){		//退出
-			DEBUG_QTTS("synth_status(%d)ret(%d)\n",synth_status,ret);
 			Qstream->downState=DOWN_QTTS_QUIT;
 			break;
 		}
-		tolkLog("qtts QTTSAudioGet end\n");
 	}
 	tolkLog("qtts down ok\n");
 	while(Qstream->downState==DOWN_QTTS_QUIT){		//等待播放线程退出
@@ -224,24 +221,24 @@ static int text_to_speech(const char* src_text  ,const char* params)
 int Qtts_voices_text(char *text,unsigned char type)
 {
 #ifdef VOICS_CH
-	if(type==QTTS_SYS){
+	if(type==QTTS_GBK){
 		if(get_volch()==0)
 			return text_to_speech(text,(const char *)VIMM_GBK);//女童音
 		else
 			return text_to_speech(text,(const char *)VINN_GBK);//男童音
 	}
-	else if(type==QTTS_APP){
+	else if(type==QTTS_GBK){
 		if(get_volch()==0)
 			return text_to_speech(text,(const char *)VIMM_UTF8);//女童音
 		else
 			return text_to_speech(text,(const char *)VINN_UTF8);//男童音
 	}
 #else
-	if(type==QTTS_SYS){
-		//return text_to_speech(text,(const char *)VIMM_GBK);//女童音
+	if(type==QTTS_GBK){
+		return text_to_speech(text,(const char *)VIMM_GBK);//女童音
 	}
-	else if(type==QTTS_APP){
-		//return text_to_speech(text,(const char *)VIMM_UTF8);//女童音
+	else if(type==QTTS_GBK){
+		return text_to_speech(text,(const char *)VIMM_UTF8);//女童音
 	}
 #endif
 }
@@ -323,7 +320,7 @@ int main(int argc,char **argv)
 	{
 		exit(0);
 	}
-	Qtts_voices_text("1234566789",QTTS_SYS);
+	Qtts_voices_text("1234566789",QTTS_GBK);
 	return 0;
 	FILE *fp =fopen(argv[1],"r");
 	if(fp==NULL)
@@ -338,7 +335,7 @@ int main(int argc,char **argv)
 	}
 	fread(data,len,1,fp);
 	fclose(fp);
-	Qtts_voices_text(data,QTTS_SYS);
+	Qtts_voices_text(data,QTTS_GBK);
 	free(data);
 	return 0;	
 }

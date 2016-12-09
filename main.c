@@ -1,6 +1,4 @@
 #include "comshead.h"
-#include "config.h"
-#include "udpsrv/broadcast.h"
 #include "base/pool.h"
 #include "srvwork/workinter.h"
 #include "sysdata.h"
@@ -13,6 +11,7 @@
 #include "host/voices/gpio_7620.h"
 #include "host/sdcard/musicList.h"
 #include "../host/studyvoices/qtts_qisc.h"
+#include "config.h"
 
 #define MAIN_DOWN
 #ifdef MAIN_DOWN
@@ -34,17 +33,11 @@ void init_system_net(void)
 	set_pthread_sigblock();
 	InitSysList(FRIST_SMART_LIST,FRIST_PASSWD);//初始化用户数据库
 	pool_init(3);
-#ifndef SELECT_UDP
-	init_broadcast(UDP_BRO_PORT);
-#endif
 }
 int clean_resources(void)
 {
 	clean_main_voices();
 	clean_videoServer();
-#ifndef SELECT_UDP
-	clean_broadcast();
-#endif
 	pool_destroy();
 	AddDownEvent("baibai",QUIT_MAIN);
 
@@ -94,13 +87,13 @@ int main(int argc, char **argv)
 #ifdef	SYSTEMLOCK
 	int opennumber=getSystemLock();
 	if(opennumber>SYSTEMLOCKNUM){	//检查开机次数
-		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_SYS);
+		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
 		sleep(10);
-		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_SYS);
+		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
 		sleep(10);
-		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_SYS);
+		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
 		sleep(10);
-		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_SYS);
+		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
 		sleep(10);
 		SetSystemTime(1);
 	}
@@ -125,7 +118,7 @@ int main(int argc, char **argv)
 #endif
 			free((void *)msg);
 		}
-#ifdef 	LOCAL_MP3
+#if 	0
 		else if(LOCAL_MP3_EVENT==event){
 			playLocalMp3((const char *)msg);
 			free((void *)msg);

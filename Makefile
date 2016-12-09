@@ -28,7 +28,6 @@ all +=log.o
 all +=net/network.o
 all +=net/parseCmd.o
 all +=uart/uart.o
-all +=udpsrv/newBindbro.o
 #all +=mtkwifiLib/mtkwifi.o
 all +=usrdb/sysdata.o
 
@@ -45,6 +44,7 @@ all +=host/sdcard/sqlite.o
 all +=host/sdcard/MusicListDb.o
 all +=host/studyvoices/std_worklist.o
 all +=host/studyvoices/demoSpeech.o
+all +=host/studyvoices/check_text_utf8.o
 all +=host/studyvoices/qtts_qisc.o
 all +=host/ap_sta.o
 

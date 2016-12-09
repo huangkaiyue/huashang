@@ -47,7 +47,7 @@ static void CreateUrlEvent(const void *data){
 		return;
 	}
 	if(GetRecordeLive() == PLAY_WAV_E){
-		exitqttsPlay();
+		//exitqttsPlay();
 		return;
 	}
 	add_event_msg(data,0,URL_VOICES_EVENT);
@@ -264,7 +264,7 @@ void handle_event_system_voices(int sys_voices){
 			break;
 //----------------------重连有关-----------------------------------------------------
 		case REQUEST_FAILED_PLAY:					//重连，请求服务器数据失败
-			play_sys_tices_voices(REQUEST_FAILED);
+			playsysvoices(REQUEST_FAILED);
 			break;
 		case UPDATA_END_PLAY:						//更新固件结束
 			play_sys_tices_voices(UPDATA_END);

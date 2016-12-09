@@ -27,6 +27,65 @@
 #define VOL_DATA(x) (x-90)*4
 
 unsigned char gpio_look=0;
+
+static int SendTo(int sockfd,char *data,int size,struct sockaddr_in *peer){
+	char *cachedata = (char *)calloc(1,size+16);
+	if(cachedata==NULL){
+		perror("calloc error !!!");
+		return;
+	}
+	snprintf(cachedata,16,"%s%d%s","head:",size,":");
+	memcpy(cachedata+16,data,size);
+	sendto(sockfd, (char *)cachedata, size+16, 0,(struct sockaddr*)peer, sizeof(struct sockaddr));
+	free(cachedata);
+	return 0;
+}
+static void recv_brocastCtr(int sockfd,struct sockaddr_in *peer,char *recvdata){
+	char* szJSON = NULL;
+	cJSON* pItem = NULL;
+	char IP[20]={0};
+	GetNetworkcardIp("apcli0",IP);
+	//GetNetworkcardIp("eth2.2",IP);
+	pItem = cJSON_CreateObject();
+	cJSON_AddStringToObject(pItem, "handler", "brocast");
+	cJSON_AddStringToObject(pItem, "ip",IP); 
+	cJSON_AddNumberToObject(pItem, "port", 20000);
+	cJSON_AddStringToObject(pItem, "status","ok");
+	szJSON = cJSON_Print(pItem);
+	printf("recv_brocastCtr :\n%s(%d)\n",szJSON,strlen(szJSON));
+	int i;
+	for(i=0;i<4;i++){
+		SendTo(sockfd, (char *)szJSON, strlen(szJSON),peer);
+		usleep(10*1000);
+	}
+	cJSON_Delete(pItem);
+}
+
+static void test_brocastCtr(int sockfd,struct sockaddr_in *peer,char *recvdata){
+	char* szJSON = NULL;
+	cJSON* pItem = NULL;
+	char IP[20]={0};
+	GetNetworkcardIp("apcli0",IP);
+	pItem = cJSON_CreateObject();
+	cJSON_AddStringToObject(pItem, "handler", "TestNet");
+	cJSON_AddStringToObject(pItem, "ip",IP); 
+	cJSON_AddNumberToObject(pItem, "port", 20000);
+	if(!strcmp(IP,""))
+	{
+		cJSON_AddStringToObject(pItem, "status","failed");
+	}else{
+		cJSON_AddStringToObject(pItem, "status","ok");
+	}
+	szJSON = cJSON_Print(pItem);
+	printf("test_brocastCtr :\n%s(%d)\n",szJSON,strlen(szJSON));
+	int i;
+	for(i=0;i<2;i++){
+		SendTo(sockfd, (char *)szJSON, strlen(szJSON),peer);
+		usleep(10*1000);
+		}
+	cJSON_Delete(pItem);
+}
+
 /*
 @函数功能:	音量加减处理以及返回函数
 @参数:	size 音量加减标志位
@@ -250,6 +309,7 @@ void uploadVoicesToaliyun(const char *filename){
 	cJSON_AddStringToObject(pItem, "handler", "speek");
 	cJSON_AddStringToObject(pItem, "filename",filename);
 	szJSON = cJSON_Print(pItem);
+	JsonLog(szJSON);
 	SendtoaliyunServices(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
 }
@@ -467,31 +527,31 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	else if(!strcmp(pSub->valuestring,"updateHost")){	//----------->由版本监测进程发送过来
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(!strcmp(pSub->valuestring,"newversion")){	//有新版本，需要更新
-			QttsPlayEvent("有新版本，需要更新。",QTTS_SYS);//send to app
+			QttsPlayEvent("有新版本，需要更新。",QTTS_GBK);//send to app
 		}else if(!strcmp(pSub->valuestring,"start")){	//正在下载固件
-			QttsPlayEvent("正在下载固件。",QTTS_SYS);
+			QttsPlayEvent("正在下载固件。",QTTS_GBK);
 		}else if(!strcmp(pSub->valuestring,"error")){	//下载固件错误
-			QttsPlayEvent("下载固件错误。",QTTS_SYS);
+			QttsPlayEvent("下载固件错误。",QTTS_GBK);
 		}else if(!strcmp(pSub->valuestring,"end")){ 	//下载固件结束
-			QttsPlayEvent("下载固件结束。",QTTS_SYS);
+			QttsPlayEvent("下载固件结束。",QTTS_GBK);
 		}else if(!strcmp(pSub->valuestring,"progress")){		//下载进度
 			pSub = cJSON_GetObjectItem(pJson, "value");
 			if(pSub->valueint==25)
-				QttsPlayEvent("下载到百分之二十五。",QTTS_SYS);			
+				QttsPlayEvent("下载到百分之二十五。",QTTS_GBK);			
 			else if(pSub->valueint==50)
-				QttsPlayEvent("下载到百分之五十。",QTTS_SYS);		
+				QttsPlayEvent("下载到百分之五十。",QTTS_GBK);		
 			else if(pSub->valueint==75)
-				QttsPlayEvent("下载到百分之七十五。",QTTS_SYS);
+				QttsPlayEvent("下载到百分之七十五。",QTTS_GBK);
 		}
 	}//  end updateHost
 	else if(!strcmp(pSub->valuestring,"updateImage")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(!strcmp(pSub->valuestring,"start")){ 		//开始更新固件
-			QttsPlayEvent("开始更新固件。",QTTS_SYS);
+			QttsPlayEvent("开始更新固件。",QTTS_GBK);
 		}else if(!strcmp(pSub->valuestring,"error")){	//更新固件错误
-			QttsPlayEvent("更新固件错误。",QTTS_SYS);
+			QttsPlayEvent("更新固件错误。",QTTS_GBK);
 		}else if(!strcmp(pSub->valuestring,"end")){ 	//更新固件结束
-			//QttsPlayEvent("更新固件结束。",QTTS_SYS);
+			//QttsPlayEvent("更新固件结束。",QTTS_GBK);
 			create_event_system_voices(6);
 		}
 	}//  end updateImage                // end----------->由版本监测进程发送过来
@@ -521,7 +581,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	}else if(!strcmp(pSub->valuestring,"TestNet")){
 		test_brocastCtr(sockfd,peer,recvdata);
 	}else if(!strcmp(pSub->valuestring,"qtts")){
-		QttsPlayEvent(cJSON_GetObjectItem(pJson, "text")->valuestring,QTTS_APP);
+		QttsPlayEvent(cJSON_GetObjectItem(pJson, "text")->valuestring,QTTS_GBK);
 #ifdef	SYSTEMLOCK
 		if(!strcmp((cJSON_GetObjectItem(pJson, "text")->valuestring),"***rihuiwangxun_open***"))
 			setSystemLock(0);
@@ -561,7 +621,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			if(cJSON_GetObjectItem(pJson, "path")!=NULL){
 				path=cJSON_GetObjectItem(pJson, "path")->valuestring;
 			}
-			QttsPlayEvent("闹钟响了，闹钟响了。",QTTS_SYS);
+			QttsPlayEvent("闹钟响了，闹钟响了。",QTTS_GBK);
 		}else if(!strcmp(pSub->valuestring,"close")){	//关闭设置开机时间
 			//
 			char *time_close=NULL;

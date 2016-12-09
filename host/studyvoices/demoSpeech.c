@@ -14,6 +14,9 @@
 #define DEBUG_SPEEK(fmt, args...) { }
 #endif
 
+#define REQ_FAILED			-1
+#define REQ_OK				0
+#define REQ_NOT_RESPONSE	1
 
 #define HTTP_PORT	80
 
@@ -21,7 +24,7 @@ static int sock = -1;
 #define HOST_REQ
 
 #ifdef HOST_REQ
-static unsigned char reqNum=10;
+static unsigned char reqNum=15;
 static char ServerIp[20];
 #endif
 static char upload_head[] = 
@@ -43,12 +46,13 @@ static char upload_request[] =
 
 static sigjmp_buf jmpbuf;
 
-void sigalrm_fn(int sig){
+static void sigalrm_fn(int sig){
 	printf("demospeeck alarm!\n");
 	if(sock>0)
 		close(sock);
 	sock=-1;
 	siglongjmp(jmpbuf,1);
+	printf("......sigalrm_fn........\n");
 }
 
 struct resp_header{    
@@ -79,21 +83,29 @@ static int httpUploadData(int timeout,const char *key,const char *hostaddr,const
 	char endBoundary[128]={0};			
 	int ContentLength = -1;
 	struct hostent	 *host=NULL;
-	int reuslt=-1;
+	int reuslt=REQ_FAILED;
 
 	*text = NULL;
 	*textSize = 0;
 
 #ifdef HOST_REQ 
+#if 1
 	signal(SIGALRM,sigalrm_fn);
 	if(sigsetjmp(jmpbuf,1)!=0){
-		alarm(0);
 		signal(SIGALRM,SIG_IGN);
-		return -1;
+		printf("..............\n");
+		return reuslt;
 	}
 	alarm(timeout);
+#endif	
 	if(++reqNum>=10){
-		host=gethostbyname(hostaddr);
+		if(reqNum<15){
+			reqNum=0;
+		}
+		if((host=gethostbyname(hostaddr))==NULL){
+			fprintf(stderr, "Gethostname   error,	%s\n ",   strerror(errno));
+			goto exit0;
+		}
 		reqNum=0;
 		snprintf(ServerIp,20,"%s",(char *)inet_ntoa(*((struct in_addr *)host->h_addr)));
 	}
@@ -102,7 +114,9 @@ static int httpUploadData(int timeout,const char *key,const char *hostaddr,const
 #else
 	if((host=timeGesthostbyname(hostaddr,5)) == NULL){
 		fprintf(stderr, "Gethostname   error,	%s\n ",   strerror(errno));
-		return -1;
+		alarm(0);
+		signal(SIGALRM,SIG_IGN);
+		return reuslt;
 	}
 	DEBUG_SPEEK("hostaddr=%s ip=%s \n",hostaddr,(char *)inet_ntoa(*((struct in_addr *)host->h_addr)));
 	sock = create_client((char *)inet_ntoa(*((struct in_addr *)host->h_addr)),(int)HTTP_PORT);
@@ -123,8 +137,9 @@ static int httpUploadData(int timeout,const char *key,const char *hostaddr,const
 */
 	if(sock < 0 ){
 		printf("connect server error!\n");
-		return -1;
+		goto exit0;
 	}
+	reuslt =REQ_NOT_RESPONSE;
 	
 	ContentLength = len;
 	char str1[1024]={0};
@@ -184,7 +199,6 @@ static int httpUploadData(int timeout,const char *key,const char *hostaddr,const
 		goto exit0;
 	}
 	DEBUG_SPEEK("%s\n",upload_request);
-	
 	int w_size=0,pos=0,all_Size=0;
 	while(1){
 		//printf("ret = %d\n",ret);
@@ -219,14 +233,14 @@ static int httpUploadData(int timeout,const char *key,const char *hostaddr,const
 		}
 	}
 	get_resp_header(response,&resp);	
-	DEBUG_SPEEK("resp.content_length = %ld\n",resp.content_length);
+	DEBUG_SPEEK("resp.content_length = %ld status_code = %d\n",resp.content_length,resp.status_code);
 	//printf("response = %s\n",response);
-	if(resp.content_length==0){
+	if(resp.status_code!=200||resp.content_length==0){
 		goto exit0;
 	}
 	char *code = (char *)calloc(1,resp.content_length+1);
 	if(code==NULL){
-		return -1;
+		goto exit0;
 	}
 	ret=0;
 	length=0;
@@ -243,10 +257,14 @@ static int httpUploadData(int timeout,const char *key,const char *hostaddr,const
 	}
 	*text = code;
 	*textSize = resp.content_length;
-	reuslt=0;
-	signal(SIGALRM,SIG_IGN);
+	reuslt =REQ_OK;
 exit0:	
-	close(sock);
+	//设置SIGALRM 为忽略信号，不执行信号函数
+	alarm(0);
+	signal(SIGALRM,SIG_IGN);
+	if(sock>0)
+		close(sock);
+	sock=-1;
 	return reuslt;	
 }
 
@@ -255,6 +273,7 @@ int reqTlVoices(int timeout,const char *key,const void * audio,int len,int rate,
 	struct timeval starttime,endtime;
     gettimeofday(&starttime,0); 
 	ret=httpUploadData(timeout,key,(const char *)"test79.tuling123.com",audio,len,rate,format,text,textSize);
+	printf("ret = %d\n",ret);
 	gettimeofday(&endtime,0);
     double timeuse = 1000000*(endtime.tv_sec - starttime.tv_sec) + endtime.tv_usec - starttime.tv_usec;
     //除以1000则进行毫秒计时，如果除以1000000则进行秒级别计时，如果除以1则进行微妙级别计时
