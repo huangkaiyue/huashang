@@ -52,7 +52,7 @@ static void handle_text(char *text)
 		return ;
 	}
 	tolkLog("tolk handle qtts start\n");
-	ret = PlayQttsText(text,QTTS_GBK);
+	ret = PlayQttsText(text,QTTS_UTF8);
 	if(ret == 10202){
 		//重连，语音播报
 		playsysvoices(REQUEST_FAILED);
@@ -212,6 +212,57 @@ exit1:
 	return;
 }
 #else
+#define SPEEK_1 1
+#define SPEEK_2 2
+#define SPEEK_3 3
+#define SPEEK_4 4
+#define JOKE_1	5
+#define JOKE_2	6
+#define JOKE_3	7
+#define MUSIC_1	8
+#define MUSIC_2	9
+#define SONG_1	10
+
+static void TaiwanToTulingError(void){
+	srand( (unsigned)time( NULL ) );
+	int i=(1+(int) (10.0*rand()/(RAND_MAX+1.0)));
+	switch(i){
+//---------------------------------对答-------------------------------------------------------
+	case SPEEK_1:
+		QttsPlayEvent("我就不回答你。",QTTS_GBK);
+		break;
+	case SPEEK_2:
+		QttsPlayEvent("我也不知道哟，你不会怪我吧。",QTTS_GBK);
+		break;
+	case SPEEK_3:
+		QttsPlayEvent("啦啦啦，今天天气真不错，心情也是棒棒哒。",QTTS_GBK);
+		break;
+	case SPEEK_4:
+		QttsPlayEvent("不要老是问我这样的问题。",QTTS_GBK);
+		break;
+//---------------------------------笑话-------------------------------------------------------
+	case JOKE_1:
+		QttsPlayEvent("孙子问，爷爷，水牛是啥样子?爷爷说：水牛跟普通牛长的差不多，不同的是它喜欢在水中生活。孙子说：噢，我懂啦，它一定是喜欢吃鱼吧。",QTTS_GBK);
+		break;
+	case JOKE_2:
+		QttsPlayEvent("父亲吩咐儿子说：你到西服店去取为爸爸订做的衣服。如果老板问你要钱，你就告诉他，因为你太小，爸爸不让你带钱出门。儿子离开后不久，又空着手回来了，并告诉父亲说：爸爸，西服店老板说，等我长大了再去拿。",QTTS_GBK);
+		break;
+	case JOKE_3:
+		QttsPlayEvent("儿子：妈妈，我得了一百分，您奖给我什么呀？妈妈：十块钱。儿子：那就先奖我一半吧，我得了50分。",QTTS_GBK);
+		break;
+//---------------------------------儿歌-------------------------------------------------------
+	case MUSIC_1:
+		QttsPlayEvent("你拍一,我拍一,一个小孩坐飞机。",QTTS_GBK);
+		break;
+	case MUSIC_2:
+		QttsPlayEvent("找呀找呀找朋友，找到一个好朋友，敬个礼呀握握手，你是我的好朋友。",QTTS_GBK);
+		break;
+//---------------------------------诗歌-------------------------------------------------------
+	case SONG_1:
+		QttsPlayEvent("我给你读首诗吧，静夜思。作者：李白，床前明月光，疑是地上霜。举头望明月，低头思故乡。",QTTS_GBK);
+		break;
+	}
+}
 void send_voices_server(const char *voicesdata,int len,char *voices_type)
 {
 	int textSize=0, err=0;
@@ -224,7 +275,7 @@ void send_voices_server(const char *voicesdata,int len,char *voices_type)
 		startServiceWifi();
 		goto exit1;
 	}else if(err==1){
-		QttsPlayEvent("我就不回答你。",QTTS_GBK);
+		TaiwanToTulingError();
 		goto exit1;
 	}
 	if(text){

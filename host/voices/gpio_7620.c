@@ -145,7 +145,8 @@ void OpenPlay(void){
 }
 
 //按键处理事件
-#ifndef QITUTU_SHI
+//---------------------------------------------------------------------------------------
+#ifdef QITUTU_SHI
 static void signal_handler(int signum)
 {
 	char buf[128]={0};
@@ -305,8 +306,9 @@ static void signal_handler(int signum)
 	}
 	unlock_msgEv();
 }
-#endif
-#ifndef DATOU_JIANG
+#else
+//---------------------------------------------------------------------------------------
+//#ifdef DATOU_JIANG
 static void signal_handler(int signum)
 {
 	char buf[128]={0};

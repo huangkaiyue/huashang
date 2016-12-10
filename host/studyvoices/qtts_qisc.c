@@ -149,6 +149,7 @@ void __exitqttsPlay(void)
 			free(data);
 		}
 	}
+	stait_qtts_cache();
 	cleanState();
 	DEBUG_QTTS("play_qtts_data : end...\n\n");
 	return NULL;
@@ -186,7 +187,6 @@ static int text_to_speech(const char* src_text  ,const char* params)
 	pool_add_task(play_qtts_data,(void *)Qstream);		//启动播放线程
 	while(Qstream->playState){
 		const void *data = QTTSAudioGet(sess_id, &audio_len, &synth_status, &ret);
-		tolkLog("qtts QTTSAudioGet start\n");
 		if (NULL != data){
 			char *getdata = (char *)malloc(audio_len+1);
 			if(getdata ==NULL){
@@ -201,7 +201,6 @@ static int text_to_speech(const char* src_text  ,const char* params)
 			break;
 		}
 	}
-	tolkLog("qtts down ok\n");
 	while(Qstream->downState==DOWN_QTTS_QUIT){		//等待播放线程退出
 		if(Qstream->playState!=PLAY_QTTS_ING)
 			break;
@@ -209,7 +208,6 @@ static int text_to_speech(const char* src_text  ,const char* params)
 	}
 	tolkLog("qtts quit ok\n");
 	Qstream->playState=PLAY_QTTS_QUIT;
-	DEBUG_QTTS("text_to_speech :TTS end(ret=%d)...\n\n",ret);
 	ret = QTTSSessionEnd(sess_id, NULL);
 	return ret;
 }
@@ -227,7 +225,7 @@ int Qtts_voices_text(char *text,unsigned char type)
 		else
 			return text_to_speech(text,(const char *)VINN_GBK);//男童音
 	}
-	else if(type==QTTS_GBK){
+	else if(type==QTTS_UTF8){
 		if(get_volch()==0)
 			return text_to_speech(text,(const char *)VIMM_UTF8);//女童音
 		else
@@ -237,7 +235,7 @@ int Qtts_voices_text(char *text,unsigned char type)
 	if(type==QTTS_GBK){
 		return text_to_speech(text,(const char *)VIMM_GBK);//女童音
 	}
-	else if(type==QTTS_GBK){
+	else if(type==QTTS_UTF8){
 		return text_to_speech(text,(const char *)VIMM_UTF8);//女童音
 	}
 #endif

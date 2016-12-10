@@ -128,7 +128,7 @@ void SocSendMenu(unsigned char str,char *senddata)
 			data.hour=atoi(pt);
 			if(atoi(p)<CLOCK_TIME){
 				data.hour -= 1;
-				data.min=(atoi(p)-CLOCK_TIME)+60;
+				data.min=(atoi(p)+60)-CLOCK_TIME;
 			}else{
 				data.min=atoi(p)-CLOCK_TIME;
 			}

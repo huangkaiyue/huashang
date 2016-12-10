@@ -43,7 +43,7 @@
 
 	#define	LED_LR			//LED左右灯以及多按键
 
-	#define VOICS_CH		//播音人选择功能添加
+	//#define VOICS_CH		//播音人选择功能添加
 #endif
 #ifdef CONFIG_ALL	//全功能
 	#define SPEEK_VOICES	//开启对讲功能

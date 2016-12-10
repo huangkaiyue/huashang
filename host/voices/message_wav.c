@@ -106,8 +106,8 @@ void playspeekVoices(const char *filename){
 void playsysvoices(char *filePath){
 	if(strstr(filePath,"no_voices_8K")){
 	}else{
-		while(get_qtts_cache());
-		usleep(300*1000);
+		while(get_qtts_cache());	//fix me
+		sleep(1);
 	}
 	play_sys_tices_voices(filePath);
 	pause_record_audio();
@@ -186,7 +186,6 @@ void PlayQttsText(char *text,unsigned char type)
 		I2S.qttspos =0;
 	}
 	tolkLog("tolk qtts clean\n");
-	clean_qtts_cache();
 	clean_play_cache();
 	usleep(800*1000);
 	tolkLog("tolk qtts pause\n");

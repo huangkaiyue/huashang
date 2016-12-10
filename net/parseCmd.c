@@ -581,7 +581,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	}else if(!strcmp(pSub->valuestring,"TestNet")){
 		test_brocastCtr(sockfd,peer,recvdata);
 	}else if(!strcmp(pSub->valuestring,"qtts")){
-		QttsPlayEvent(cJSON_GetObjectItem(pJson, "text")->valuestring,QTTS_GBK);
+		QttsPlayEvent(cJSON_GetObjectItem(pJson, "text")->valuestring,QTTS_UTF8);
 #ifdef	SYSTEMLOCK
 		if(!strcmp((cJSON_GetObjectItem(pJson, "text")->valuestring),"***rihuiwangxun_open***"))
 			setSystemLock(0);
@@ -624,13 +624,13 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			QttsPlayEvent("闹钟响了，闹钟响了。",QTTS_GBK);
 		}else if(!strcmp(pSub->valuestring,"close")){	//关闭设置开机时间
 			//
-			char *time_close=NULL;
+			char *time_open=NULL;
 			if(cJSON_GetObjectItem(pJson, "time")!=NULL){
-				time_close=cJSON_GetObjectItem(pJson, "time")->valuestring;
+				time_open=cJSON_GetObjectItem(pJson, "time")->valuestring;
 			}
 			SocSendMenu(3,0);
 			usleep(100*1000);
-			SocSendMenu(7,time_close);	//设置闹钟开机时间
+			SocSendMenu(7,time_open);	//设置闹钟开机时间
 			printf("clock close (ok)...\n");
 		}
 	}
