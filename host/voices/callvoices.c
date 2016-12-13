@@ -32,8 +32,8 @@ struct wave_pcm_hdr pcmwavhdr = {
 #define SEC				1
 #define MIN				60*SEC
 #define SYSTEMOUTSIGN	5*MIN
-#define SYSTEMOUTTIME	10*MIN
-#define PLAYOUTTIME		15*MIN
+#define SYSTEMOUTTIME	20*MIN
+#define PLAYOUTTIME		600*MIN
 #define ERRORTIME		30*24*60*MIN
 
 #define KB	1024

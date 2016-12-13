@@ -11,6 +11,7 @@
 #include "host/voices/gpio_7620.h"
 #include "host/sdcard/musicList.h"
 #include "config.h"
+#include "host/studyvoices/prompt_tone.h"
 
 static WorkQueue *DownEvent=NULL;
 int AddDownEvent(char *data,int msgSize){
@@ -66,7 +67,8 @@ static void loadLocalServer(int argc,const char *argv[]){
 #endif
 #ifdef SYSTEMLOCK
 	checkSystemLock();
-#endif	
+#endif
+	mkdir(CACHE_WAV_PATH,777);
 }
 
 int main(int argc, char **argv){   

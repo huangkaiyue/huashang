@@ -6,7 +6,6 @@
 #include "base/tools.h"
 #include "workinter.h"
 #include "host/voices/callvoices.h"
-#include "../udpsrv/broadcast.h"
 #include "../host/voices/gpio_7620.h"
 
 #define IMHELP    \
@@ -117,9 +116,12 @@ void pasreInputCmd(const char *com)
 			CleanUrlEvent();
 		}
 		else if(!strcmp(com,"uart")){
-			char bufo[12]="00:20";
+			char bufo[12]="10:30";
 			char bufc[12]="00:17";
 			SocSendMenu(3,0);
+			sleep(2);
+			printf("--------------------------\n");
+			SocSendMenu(7,bufo);
 			sleep(2);
 			printf("--------------------------\n");
 			SocSendMenu(1,bufo);

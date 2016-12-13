@@ -71,7 +71,6 @@ void Led_System_vigue_open(void){
 void Led_System_vigue_close(void){
 	led_system_type=LED_VIGUE_CLOSE;
 }
-#ifdef LED_LR
 void led_left_right(unsigned char type,unsigned char io)
 {
 	switch(type){
@@ -89,7 +88,6 @@ void led_left_right(unsigned char type,unsigned char io)
 			break;
 	}
 }
-#endif
 //串口开关
 static void uart_open(void){
 	if (ioctl(gpio.fd, TANG_UART_OPEN) < 0) {
@@ -126,9 +124,9 @@ static void ReadSpeekGpio(void){
 	}
 #if 1
 	if((0x01&(gpio.data>>7))==1){
-		gpio.speek_tolk=TOLK;
-	}else{
 		gpio.speek_tolk=SPEEK;
+	}else{
+		gpio.speek_tolk=TOLK;
 	}
 #else
 	gpio.speek_tolk=TOLK;
@@ -173,7 +171,7 @@ static void signal_handler(int signum)
 				
 			case RESERVE_KEY2:
 #ifdef SPEEK_VOICES1
-				gpio.speek_tolk=TOLK;
+				gpio.speek_tolk=SPEEK;
 #endif
 				break;
 
@@ -191,42 +189,9 @@ static void signal_handler(int signum)
 #ifdef 	LOCAL_MP3
 			case ADDVOL_KEY:	//play last
 				createPlayEvent((const void *)"xiai",PLAY_NEXT);
-				/*
-				switch(sysMes.localplayname){
-					case mp3:
-						createPlayEvent((const void *)"mp3",PLAY_NEXT);
-						break;
-					case story:
-						createPlayEvent((const void *)"story",PLAY_NEXT);
-						break;
-					case english:
-						createPlayEvent((const void *)"english",PLAY_NEXT);
-						break;
-					case guoxue:
-						createPlayEvent((const void *)"guoxue",PLAY_NEXT);
-						break;
-					default:
-						break;
-				}*/
 				break;
 			case SUBVOL_KEY:	//play next
-				createPlayEvent((const void *)"xiai",PLAY_PREV);/*
-				switch(sysMes.localplayname){
-					case mp3:
-						createPlayEvent((const void *)"mp3",PLAY_PREV);
-						break;
-					case story:
-						createPlayEvent((const void *)"story",PLAY_PREV);
-						break;
-					case english:
-						createPlayEvent((const void *)"english",PLAY_PREV);
-						break;
-					case guoxue:
-						createPlayEvent((const void *)"guoxue",PLAY_PREV);
-						break;
-					default:
-						break;
-				}*/
+				createPlayEvent((const void *)"xiai",PLAY_PREV);
 				break;
 #endif
 			case RESERVE_KEY1://预留键
@@ -263,7 +228,7 @@ static void signal_handler(int signum)
 				break;
 					
 			case RESERVE_KEY2://会话对讲开关键
-				gpio.speek_tolk=SPEEK;
+				gpio.speek_tolk=TOLK;
 				break;
 				
 			case NETWORK_KEY://配网键
@@ -306,9 +271,9 @@ static void signal_handler(int signum)
 	}
 	unlock_msgEv();
 }
-#else
+#endif
 //---------------------------------------------------------------------------------------
-//#ifdef DATOU_JIANG
+#ifdef DATOU_JIANG
 static void signal_handler(int signum)
 {
 	char buf[128]={0};
@@ -499,8 +464,63 @@ static void signal_handler(int signum)
 	}
 	unlock_msgEv();
 }
-
 #endif
+#ifdef TANGTANG_LUO
+static void signal_handler(int signum)
+{
+	char buf[128]={0};
+	char *wifi=NULL;
+	//拿到底层按键事件号码
+	if (ioctl(gpio.fd, TANG_GET_NUMBER,&gpio.mount) < 0){
+		perror("ioctl");
+		close(gpio.fd);
+		return ;
+	}
+	if(check_lock_msgEv()){
+		return ;
+	}
+	lock_msgEv();
+	if (signum == GPIO_UP){
+		switch(gpio.mount){
+			case NETWORK_KEY:		//播报WiFi名
+				wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
+				if(strlen(wifi)>0){
+					snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
+					QttsPlayEvent(buf,QTTS_GBK);
+				}
+				break;
+
+			case SPEEK_KEY:
+				end_event_std();
+				break;
+		}
+		DEBUG_GPIO("signal up (%d) !!!\n",gpio.mount);
+	}// end gpio_up
+	else if (signum == GPIO_DOWN){
+		switch(gpio.mount){
+			case RESET_KEY://恢复出厂设置
+				create_event_system_voices(4);
+				//ResetDefaultRouter();
+				system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
+				break;
+				
+			case NETWORK_KEY://配网键
+				Net_work();
+				break;
+				
+			case SPEEK_KEY://会话键
+				down_voices_sign();
+				break;
+		}// end gpio_down
+		DEBUG_GPIO("signal down (%d) !!!\n",gpio.mount);
+	}
+	else{
+		DEBUG_GPIO("not know signum ...\n");
+	}
+	unlock_msgEv();
+}
+#endif
+
 //数据方向
 static int gpio_set_dir(int r){
 	int req;
@@ -615,6 +635,31 @@ void enable_gpio(void)
 	signal(SIGUSR2, signal_handler);
 }
 //初始化GPIO
+static void enableResetgpio(void){
+	if (ioctl(gpio.fd, RALINK_GPIO6332_SET_DIR_IN, (0x1<<6)) < 0) {
+		perror("ioctl");
+		close(gpio.fd);
+		return -1;
+	}
+	if (ioctl(gpio.fd, RALINK_GPIO_ENABLE_INTP) < 0) {
+		perror("ioctl");
+		close(gpio.fd);
+		return ;
+	}
+#if 1	//使能恢复出厂设置按键
+	ralink_gpio_reg_info info;
+	info.pid = getpid();
+	info.irq = RESET_KEY;
+	if (ioctl(gpio.fd, RALINK_GPIO_REG_IRQ, &info) < 0) {
+		perror("ioctl");
+		close(gpio.fd);
+		return ;
+	}
+#endif
+	signal(SIGUSR1, signal_handler);
+	signal(SIGUSR2, signal_handler);
+}
+
 void init_7620_gpio(void)
 {
 	memset(&gpio,0,sizeof(Gpio));
@@ -630,9 +675,9 @@ void init_7620_gpio(void)
 	pool_add_task(Led_vigue_open,NULL);
 #endif
 #ifdef SPEEK_VOICES
-	ReadSpeekGpio();
+	ReadSpeekGpio();	//读取会话对讲功能拨动键
 #endif
-	//enable_gpio();
+	enableResetgpio();	//使能恢复出厂设置按键
 }
 //去使能按键
 void disable_gpio(void)
@@ -642,6 +687,7 @@ void disable_gpio(void)
 		close(gpio.fd);
 		return ;
 	}
+	enableResetgpio();	//使能恢复出厂设置按键
 }
 //清除GPIO
 void clean_7620_gpio(void)

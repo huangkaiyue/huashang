@@ -212,20 +212,42 @@ exit1:
 	return;
 }
 #else
-#define SPEEK_1 1
-#define SPEEK_2 2
-#define SPEEK_3 3
-#define SPEEK_4 4
-#define JOKE_1	5
-#define JOKE_2	6
-#define JOKE_3	7
-#define MUSIC_1	8
-#define MUSIC_2	9
-#define SONG_1	10
+#define SPEEK_1 	1
+#define SPEEK_2 	2
+#define SPEEK_3 	3
+#define SPEEK_4 	4
+#define JOKE_1		5
+#define JOKE_2		6
+#define JOKE_3		7
+#define MUSIC_1		8
+#define MUSIC_2		9
+#define SONG_1		10
+#define EDUCARE_1	11
+#define SPEEK_5		12
+#define EDUCARE_2	13
+#define EDUCARE_3	14
+#define EDUCARE_4	15
+#define EDUCARE_5	16
+#define EDUCARE_6	17
+#define MUSIC_3		18
+#define MUSIC_4		19
+#define SONG_2		20
+#define SONG_3		21
+#define SONG_4		22
+#define SONG_5		23
+#define SONG_6		24
+#define SONG_7		25
+#define SONG_8		26
+#define SONG_9		27
+#define SONG_10		28
+#define MUSIC_5		29
+#define MUSIC_6		30
+#define EDUCARE_7	31
+#define SPEEK_6		32
 
 static void TaiwanToTulingError(void){
 	srand( (unsigned)time( NULL ) );
-	int i=(1+(int) (10.0*rand()/(RAND_MAX+1.0)));
+	int i=(1+(int) (30.0*rand()/(RAND_MAX+1.0)));
 	switch(i){
 //---------------------------------对答-------------------------------------------------------
 	case SPEEK_1:
@@ -240,6 +262,12 @@ static void TaiwanToTulingError(void){
 	case SPEEK_4:
 		QttsPlayEvent("不要老是问我这样的问题。",QTTS_GBK);
 		break;
+	case SPEEK_5:
+		QttsPlayEvent("不要理我，我在思考呢。",QTTS_GBK);
+		break;
+	case SPEEK_6:
+		QttsPlayEvent("这是悄悄话，我要贴在你耳朵边才能告诉你的啦。",QTTS_GBK);
+		break;
 //---------------------------------笑话-------------------------------------------------------
 	case JOKE_1:
 		QttsPlayEvent("孙子问，爷爷，水牛是啥样子?爷爷说：水牛跟普通牛长的差不多，不同的是它喜欢在水中生活。孙子说：噢，我懂啦，它一定是喜欢吃鱼吧。",QTTS_GBK);
@@ -248,7 +276,7 @@ static void TaiwanToTulingError(void){
 		QttsPlayEvent("父亲吩咐儿子说：你到西服店去取为爸爸订做的衣服。如果老板问你要钱，你就告诉他，因为你太小，爸爸不让你带钱出门。儿子离开后不久，又空着手回来了，并告诉父亲说：爸爸，西服店老板说，等我长大了再去拿。",QTTS_GBK);
 		break;
 	case JOKE_3:
-		QttsPlayEvent("儿子：妈妈，我得了一百分，您奖给我什么呀？妈妈：十块钱。儿子：那就先奖我一半吧，我得了50分。",QTTS_GBK);
+		QttsPlayEvent("儿子说：妈妈，我得了一百分，您奖给我什么呀？妈妈说：十块钱。儿子说：那就先奖我一半吧，我得了五十分。",QTTS_GBK);
 		break;
 //---------------------------------儿歌-------------------------------------------------------
 	case MUSIC_1:
@@ -257,9 +285,70 @@ static void TaiwanToTulingError(void){
 	case MUSIC_2:
 		QttsPlayEvent("找呀找呀找朋友，找到一个好朋友，敬个礼呀握握手，你是我的好朋友。",QTTS_GBK);
 		break;
+	case MUSIC_3:
+		QttsPlayEvent("娃哈哈，娃哈哈，我们的生活多愉快。",QTTS_GBK);
+		break;
+	case MUSIC_4:
+		QttsPlayEvent("小小少年，很少烦恼，无忧无虑乐陶陶。",QTTS_GBK);
+		break;
+	case MUSIC_5:
+		QttsPlayEvent("丢，丢，丢手绢，轻轻地放在小朋友的后面，大家不要告诉他，快点快点捉住他，快点快点捉住他。快点快点捉住他。",QTTS_GBK);
+		break;
+	case MUSIC_6:
+		QttsPlayEvent("夜夜想起妈妈的话，闪闪的泪光鲁冰花。",QTTS_GBK);
+		break;
 //---------------------------------诗歌-------------------------------------------------------
 	case SONG_1:
 		QttsPlayEvent("我给你读首诗吧，静夜思。作者：李白，床前明月光，疑是地上霜。举头望明月，低头思故乡。",QTTS_GBK);
+		break;
+	case SONG_2:
+		QttsPlayEvent("我给你读首诗吧，咏鹅，唐·骆宾王。鹅，鹅，鹅，曲项向天歌。白毛浮绿水，红掌拨清波。",QTTS_GBK);
+		break;
+	case SONG_3:
+		QttsPlayEvent("我给你读首诗吧，登鹳雀楼，唐·王之涣。白日依山尽，黄河入海流。欲穷千里目，更上一层楼。",QTTS_GBK);
+		break;
+	case SONG_4:
+		QttsPlayEvent("我给你读首诗吧，《春晓》唐·孟浩然。春眠不觉晓，处处闻啼鸟。夜来风雨声，花落知多少。",QTTS_GBK);
+		break;
+	case SONG_5:
+		QttsPlayEvent("我给你读首诗吧，《九月九日忆山东兄弟》唐·王维。独在异乡为异客，每逢佳节倍思亲。遥知兄弟登高处，遍插茱萸少一人。",QTTS_GBK);
+		break;
+	case SONG_6:
+		QttsPlayEvent("我给你读首诗吧，《望庐山瀑布》唐·李白。日照香炉生紫烟，遥看瀑布挂前川。飞流直下三千尺，疑是银河落九天。",QTTS_GBK);
+		break;
+	case SONG_7:
+		QttsPlayEvent("我给你读首诗吧，《赠汪伦》唐·李白。李白乘舟将欲行，忽闻岸上踏歌声。桃花潭水深千尺，不及汪伦送我情。",QTTS_GBK);
+		break;
+	case SONG_8:
+		QttsPlayEvent("我给你读首诗吧，《黄鹤楼送孟浩然之广陵》唐·李白。故人西辞黄鹤楼，烟花三月下扬州。孤帆远影碧空尽，唯见长江天际流。",QTTS_GBK);
+		break;
+	case SONG_9:
+		QttsPlayEvent("我给你读首诗吧，《早发白帝城》唐·李白。朝辞白帝彩云间，千里江陵一日还。两岸猿声啼不住，轻舟已过万重山。",QTTS_GBK);
+		break;
+	case SONG_10:
+		QttsPlayEvent("我给你读首诗吧，《回乡偶书》唐·贺知章。少小离家老大回，乡音无改鬓毛衰。儿童相见不相识，笑问客从何处来。",QTTS_GBK);
+		break;
+//---------------------------------安全教育的-------------------------------------------------------
+	case EDUCARE_1:
+		QttsPlayEvent("安全小知识，夏天中暑别着急，清凉油擦效果好。",QTTS_GBK);
+		break;
+	case EDUCARE_2:
+		QttsPlayEvent("安全小知识，走路要走人行道，不准追逐和打闹。一慢二看三通过，横穿马路忘不了。",QTTS_GBK);
+		break;
+	case EDUCARE_3:
+		QttsPlayEvent("安全小知识，饮食一定讲卫生，不喝生水零食少。",QTTS_GBK);
+		break;
+	case EDUCARE_4:
+		QttsPlayEvent("安全小知识，上下楼梯靠右行，不准拥挤和抢道。",QTTS_GBK);
+		break;
+	case EDUCARE_5:
+		QttsPlayEvent("安全小知识，乘车要等车停稳，先下后上不急躁。手头不能出车窗，扶紧把手很重要。",QTTS_GBK);
+		break;
+	case EDUCARE_6:
+		QttsPlayEvent("安全小知识，小学生，要牢记，不登高，不下低。不追逐，不投掷，安全意识放第一。",QTTS_GBK);
+		break;
+	case EDUCARE_7:
+		QttsPlayEvent("安全小知识，红灯停，绿灯行，黄绿灯亮快快行，行停停行看灯明。",QTTS_GBK);
 		break;
 	}
 }
@@ -298,7 +387,6 @@ static void runJsonEvent(const char *data)
 {
 	parseJson_string(data,handle_text);
 	free(data);
-	//playsysvoices(TULING_DIDI);
 }
 int event_lock=0;
 /*******************************************************
@@ -425,7 +513,7 @@ static void handle_event_msg(const char *data,int msgSize)
 
 static void clean_event_msg(const char *data,int msgSize)
 {
-	struct eventMsg *cur =(struct eventMsg *)(&msgSize); 
+	struct eventMsg *cur =(struct eventMsg *)(&msgSize);
 	if(cur->type==STUDY_WAV_EVENT){
 		free(data);
 	}else if(cur->type==SYS_VOICES_EVENT){

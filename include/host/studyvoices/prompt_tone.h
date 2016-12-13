@@ -91,6 +91,7 @@
 
 #define SEND_OK				"qtts/send_ok_8K.amr"			//发送成功
 #define SEND_ERROR			"qtts/send_error_8K.amr"		//发送失败
+#define SEND_LINK			"qtts/send_link_8K.amr"			//正在发送
 
 #endif
 /*******************************************************************************
@@ -108,7 +109,7 @@
 保存app端发送过来的音频文件 路径
 *******************************************************************************/
 //#define CACHE_WAV_PATH		"/cache/wav/"
-#define CACHE_WAV_PATH		"/home/"
+#define CACHE_WAV_PATH		"/upload/"
 
 #endif
 

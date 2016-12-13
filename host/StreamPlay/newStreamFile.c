@@ -408,7 +408,9 @@ void playLocalMp3(const char *mp3file){
 			st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);
 		}
 #endif
+#ifdef PALY_URL_SD
 	Delmp3File();		//É¾³ýÏ²°®¸èÇú
+#endif
 	cleanStreamData(st);	//×´Ì¬ÇÐ»»ÊÇ·ñ¼ÓËø
 	DEBUG_STREAM("exit play ok (%d)\n",get_playstate());
 	//free((void *)mp3file);

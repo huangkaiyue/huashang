@@ -302,17 +302,31 @@ void GetNetState(void)
 	cJSON_Delete(pItem);
 }
 #ifdef SPEEK_VOICES
-void uploadVoicesToaliyun(const char *filename){
+void uploadVoicesToaliyun(const char *filename,int fileSize){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
 	pItem = cJSON_CreateObject();
 	cJSON_AddStringToObject(pItem, "handler", "speek");
 	cJSON_AddStringToObject(pItem, "filename",filename);
+	cJSON_AddNumberToObject(pItem, "fileSize",fileSize);
 	szJSON = cJSON_Print(pItem);
 	JsonLog(szJSON);
 	SendtoaliyunServices(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
 }
+void BindDevToaliyun(void){
+	char* szJSON = NULL;
+	cJSON* pItem = NULL;
+	pItem = cJSON_CreateObject();
+	cJSON_AddStringToObject(pItem, "handler", "binddev");
+	cJSON_AddStringToObject(pItem, "list","abc");
+	cJSON_AddStringToObject(pItem, "status","ok");
+	szJSON = cJSON_Print(pItem);
+	SendtoaliyunServices(szJSON,strlen(szJSON));
+	cJSON_Delete(pItem);
+}
+#endif
+#ifdef CLOCKTOALIYUN
 void CloseSystemSignToaliyun(void){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
@@ -339,19 +353,7 @@ void SetClockToaliyun(unsigned char clocknum,unsigned char state,const char *tim
 	SendtoaliyunServices(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
 }
-void BindDevToaliyun(void){
-	char* szJSON = NULL;
-	cJSON* pItem = NULL;
-	pItem = cJSON_CreateObject();
-	cJSON_AddStringToObject(pItem, "handler", "binddev");
-	cJSON_AddStringToObject(pItem, "list","abc");
-	cJSON_AddStringToObject(pItem, "status","ok");
-	szJSON = cJSON_Print(pItem);
-	SendtoaliyunServices(szJSON,strlen(szJSON));
-	cJSON_Delete(pItem);
-}
 #endif
-
 void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer)
 {
 #if 0
@@ -588,6 +590,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		if(!strcmp((cJSON_GetObjectItem(pJson, "text")->valuestring),"***rihuiwangxun_close***"))
 			setSystemLock(SYSTEMLOCKNUM);
 #endif
+#ifdef CLOCKTOALIYUN
 		if(strstr((cJSON_GetObjectItem(pJson, "text")->valuestring),"set_clock")){
 			char *data=cJSON_GetObjectItem(pJson, "text")->valuestring;
 			char time[12]={0};
@@ -597,6 +600,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			sscanf(data,"set_clock:%[^:]:%[^:]:%[^:]:%s",clocknum,state,path,time);
 			SetClockToaliyun(atoi(clocknum),atoi(state),time,path);
 		}
+#endif
 	}
 #ifdef SPEEK_VOICES
 	else if (!strcmp(pSub->valuestring,"speek")){
@@ -628,10 +632,11 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			if(cJSON_GetObjectItem(pJson, "time")!=NULL){
 				time_open=cJSON_GetObjectItem(pJson, "time")->valuestring;
 			}
+			printf("clock close (%s)...\n",time_open);
+			usleep(500*1000);
 			SocSendMenu(3,0);
 			usleep(100*1000);
 			SocSendMenu(7,time_open);	//设置闹钟开机时间
-			printf("clock close (ok)...\n");
 		}
 	}
 #endif	

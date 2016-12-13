@@ -59,33 +59,36 @@ static void CreateUrlEvent(const void *data){
 参数: localpath 本地MP3播放地址	
 返回值: 无
 ********************************************************/
-static void CreateLocalMp3(char *localpath){
+static int CreateLocalMp3(char *localpath){
 	if(getEventNum()>0){
 		DEBUG_EVENT("CreateUrlEvent num =%d \n",getEventNum());
-		return;
+		return -1;
 	}
 	if(GetRecordeLive() == PLAY_WAV_E){
 		exitqttsPlay();
-		return;
+		return -1;
 	}
 	char *URL= (char *)calloc(1,strlen(localpath)+1);
 	if(URL==NULL){
 		perror("calloc error !!!");
-		return;
+		return -1;
 	}
 	sprintf(URL,"%s",localpath);
 	add_event_msg(URL,0,LOCAL_MP3_EVENT);
+	return 0;
 }
-static void PlayLocal(unsigned char menu,const char *path, unsigned char Mode){	
+static int PlayLocal(unsigned char menu,const char *path, unsigned char Mode){	
 	char buf[128]={0};
 	char filename[64]={0};
+	int ret=-1;
 	if(GetSdcardMusic((const char *)TF_SYS_PATH,path,filename, Mode)){
-		return;
+		return ret;
 	}
 	snprintf(buf,128,"%s%s%s",TF_SYS_PATH,path,filename);
 	printf("filepath = %s\n",buf);
-	CreateLocalMp3(buf);
+	ret=CreateLocalMp3(buf);
 	sysMes.localplayname=menu;
+	return ret;
 }
 #endif
 /*******************************************************
@@ -93,7 +96,8 @@ static void PlayLocal(unsigned char menu,const char *path, unsigned char Mode){
 参数: play 本地MP3播放命令 或 URL地址
 返回值: 无
 ********************************************************/
-void createPlayEvent(const void *play,unsigned char Mode){
+int createPlayEvent(const void *play,unsigned char Mode){
+	int ret=-1;
 #ifdef LOCAL_MP3
 	if(Mode==PLAY_NEXT_AUTO){
 		Mode=PLAY_NEXT;
@@ -102,22 +106,24 @@ void createPlayEvent(const void *play,unsigned char Mode){
 		sysMes.Playlocaltime=time(&t);
 	}
 	if(!strcmp((const char *)play,"mp3")){
-		PlayLocal(mp3,TF_MP3_PATH,Mode);
+		ret=PlayLocal(mp3,TF_MP3_PATH,Mode);
 	}
 	else if(!strcmp((const char *)play,"story")){
-		PlayLocal(story,TF_STORY_PATH,Mode);
+		ret=PlayLocal(story,TF_STORY_PATH,Mode);
 	}
 	else if(!strcmp((const char *)play,"english")){
-		PlayLocal(english,TF_ENGLISH_PATH,Mode);
+		ret=PlayLocal(english,TF_ENGLISH_PATH,Mode);
 	}
 	else if(!strcmp((const char *)play,"guoxue")){
-		PlayLocal(guoxue,TF_GUOXUE_PATH,Mode);
+		ret=PlayLocal(guoxue,TF_GUOXUE_PATH,Mode);
 	}
 	else if(!strcmp((const char *)play,"xiai")){
-		PlayLocal(xiai,XIMALA_MUSIC_E,Mode);
+		ret=PlayLocal(xiai,XIMALA_MUSIC_E,Mode);
 	}else{
+		ret=0;
 		CreateUrlEvent(play);
 	}
+	return ret;
 #else
 	CreateUrlEvent(play);
 #endif	
@@ -227,10 +233,15 @@ void create_event_system_voices(int sys_voices)
 	playsysvoicesLog("playsys voices end \n");
 }
 //关机保存文件和清理工作
+#ifdef PALY_URL_SD
 void CloseSystemWork(void){
 	SaveSystemPlayNum();
+#ifdef CLOCKTOALIYUN
+	CloseSystemSignToaliyun();			//发送关机信号给闹钟
+#endif
 	DelSdcardMp3file(MP3_SDPATH);
 }
+#endif
 /*******************************************************
 函数功能: 系统音事件处理函数
 参数: sys_voices 系统音标号
@@ -244,7 +255,6 @@ void handle_event_system_voices(int sys_voices){
 #ifdef PALY_URL_SD
 			pool_add_task(CloseSystemWork,NULL);//关机删除，长时间不用的文件
 #endif
-			CloseSystemSignToaliyun();			//发送关机信号给闹钟
 			play_sys_tices_voices(END_SYS_VOICES);			
 			break;
 		case TULING_WINT_PLAY:						//请稍等	
@@ -310,11 +320,14 @@ void handle_event_system_voices(int sys_voices){
 			play_sys_tices_voices(CHECK_INTERNET);
 			break;
 //----------------------对讲有关-----------------------------------------------------
-		case SEND_OK_PLAY:			//检查网络是否可用
+		case SEND_OK_PLAY:			//发送成功
 			play_sys_tices_voices(SEND_OK);
 			break;
-		case SEND_ERROR_PLAY:			//检查网络是否可用
+		case SEND_ERROR_PLAY:			//发送失败
 			play_sys_tices_voices(SEND_ERROR);
+			break;
+		case SEND_LINK_PLAY:			//正在发送
+			play_sys_tices_voices(SEND_LINK);
 			break;
 	}
 	playsysvoicesLog("playsys voices end \n");
@@ -337,6 +350,7 @@ static int file_len=0;
 static FILE *savefilefp=NULL;
 static void shortVoicesClean(void)
 {
+	usleep(5000);		//等待录音线程，case结束
 	if(savefilefp!=NULL){
 		fclose(savefilefp);
 		savefilefp=NULL;
@@ -392,8 +406,8 @@ static void stop_recorder_tosend_file(void)
 		return;
 	}
 	DEBUG_EVENT("stop save file \n");
-	uploadVoicesToaliyun(filepath);
-	create_event_system_voices(SEND_OK_PLAY);
+	create_event_system_voices(SEND_LINK_PLAY);
+	uploadVoicesToaliyun(filepath,pcmwavhdr.data_size/10+6);
 	//remove(SAVE_WAV_VOICES_DATA);
 }
 /*******************************************************
@@ -408,8 +422,9 @@ void create_event_voices_key(unsigned int state)
 	if(state==0){	//按下
 		sysMes.Starttime=time(&t);
 	}else{			//弹起
+#if 0
 		endtime=time(&t);
-		if((endtime - sysMes.Starttime)<2){		//时间太短
+		if((endtime - sysMes.Starttime)<1){		//时间太短
 			pause_record_audio();
 			shortVoicesClean();
 			return ;
@@ -418,9 +433,13 @@ void create_event_voices_key(unsigned int state)
 			shortVoicesClean();
 			return ;
 		}
+#endif
 	}
 	if(GetRecordeLive() ==PLAY_URL_E){		//打断播放音乐
 		CleanUrlEvent();
+		return;
+	}else if(GetRecordeLive()==PLAY_WAV_E){
+		exitqttsPlay();
 		return;
 	}
 	DEBUG_EVENT("create_event_voices_key ...\n");
@@ -434,7 +453,10 @@ void create_event_voices_key(unsigned int state)
 void handle_voices_key_event(unsigned int state)
 {
 	int i;
-	if(state==0&&GetRecordeLive() ==PAUSE_E){	//按下
+	int endtime;
+	time_t t;
+	//if(state==0&&GetRecordeLive() == PAUSE_E){	//按下
+	if(state==0){
 		DEBUG_EVENT("handle_voices_key_event : state(%d)...\n",state);
 		start_event_play_wav();
 		if(create_recorder_file())		//创建音频文件节点，将插入到链表当中
@@ -445,7 +467,16 @@ void handle_voices_key_event(unsigned int state)
 	}else if(state==1){			//弹起
 		DEBUG_EVENT("handle_voices_key_event : state(%d)\n",state);
 		pause_record_audio();
-		usleep(100);
+#if 1
+		endtime=time(&t);
+		if((endtime - sysMes.Starttime)<2){ 	//时间太短
+			shortVoicesClean();
+			return ;
+		}else if((endtime - sysMes.Starttime)>10){		//时间太长
+			shortVoicesClean();
+			return ;
+		}
+#endif
 		/********************************************
 		注 :需要写文件头信息 
 		*********************************************/

@@ -1,4 +1,5 @@
 #include "comshead.h"
+#include "qtts_qisc.h"
 #include "host/voices/wm8960i2s.h"
 #include "host/studyvoices/prompt_tone.h"
 
@@ -10,12 +11,19 @@
 *********************************************************/
 int check_text_cmd(char *text)
 {
-	if(strstr(text,"音乐")){
-		//playsysvoices(NO_MUSIC);
+	int ret = -1;
+	if(strstr(text,"播放音乐")){
+#ifdef TANGTANG_LUO
+		playsysvoices(NO_MUSIC);
+#else
 		//PlayQttsText("小朋友，我还不会唱歌，你教我唱吧。",QTTS_UTF8);
 		pause_record_audio();
 		//createPlayEvent((const void *)"mp3",1);
-		createPlayEvent((const void *)"xiai",1);
+		ret=createPlayEvent((const void *)"xiai",1);
+		if(ret == -1){
+			PlayQttsText("小朋友，我还不会唱歌，赶紧收藏歌曲，教我唱歌吧。",QTTS_UTF8);
+		}
+#endif
 		return 1;
 	}
 	else if(strstr(text,"图灵")){
@@ -27,10 +35,14 @@ int check_text_cmd(char *text)
 	else if(strstr(text,"音量")){
 		if((strstr(text,"加")&&strstr(text,"减"))||(strstr(text,"大")&&strstr(text,"小")))
 			return 0;
-		else if(strstr(text,"加")||strstr(text,"大"))
+		else if(strstr(text,"加")||strstr(text,"大")){
+			PlayQttsText("音量加设置成功。",QTTS_UTF8);
 			SetVol(VOL_ADD,0);
-		else if(strstr(text,"减")||strstr(text,"小"))
-			SetVol(VOL_SUB,0);	
+		}
+		else if(strstr(text,"减")||strstr(text,"小")){
+			SetVol(VOL_SUB,0);
+			PlayQttsText("音量减设置成功。",QTTS_UTF8);
+		}
 		return 1;
 	}
 	return 0;

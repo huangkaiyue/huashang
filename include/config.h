@@ -2,7 +2,7 @@
 #define _CONFIG_H_
 //----------------------版本类-----------------------------------
 
-#define VERSION "\n12.04-11:00\n"	//版本号
+#define VERSION "\n12.11-15:00\n"	//版本号
 
 //#define TEST_SDK					//测试SDK
 
@@ -12,6 +12,7 @@
 //#define CONFIG_ALL
 //#define DATOU_JIANG
 #define QITUTU_SHI
+//#define TANGTANG_LUO
 //----------------------功能类-----------------------------------
 #define SYSTEMLOCK				//测试版本限制开机次数
 
@@ -33,6 +34,8 @@
 	//#define VOICS_CH		//播音人选择功能添加
 #endif
 #ifdef QITUTU_SHI	//石总---好奇兔
+	#define CLOCKTOALIYUN	//阿里云闹钟
+	
 	#define SPEEK_VOICES	//开启对讲功能
 
 	#define SPEEK_VOICES1	//按键切换会话
@@ -46,6 +49,8 @@
 	//#define VOICS_CH		//播音人选择功能添加
 #endif
 #ifdef CONFIG_ALL	//全功能
+	#define CLOCKTOALIYUN	//阿里云闹钟
+	
 	#define SPEEK_VOICES	//开启对讲功能
 //=====================================================
 	#define SPEEK_VOICES1	//按键切换会话
@@ -64,7 +69,7 @@
 
 //#define TEST_SAVE_MP3		//测试用于保存语音识别之后，下载下来的MP3文本信息
 
-//#define ENABLE_LOG			//使能写入文件log
+#define ENABLE_LOG			//使能写入文件log
 //----------------------用户数据类-------------------------------
 
 #define UDP_BRO_PORT 		20001						// 本地广播端口

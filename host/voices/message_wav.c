@@ -80,6 +80,7 @@ void playAmrVoices(const char *filename)
 	playsysvoicesLog("playsys amr end \n");
 	fclose(fp);
 	memset(play_buf,0,pos);
+	printf("=======end play===========\n");
 	stait_qtts_cache();
 	if(strstr(filename,"TuLin_Wint_8K")){
 		return ;
@@ -106,10 +107,13 @@ void playspeekVoices(const char *filename){
 void playsysvoices(char *filePath){
 	if(strstr(filePath,"no_voices_8K")){
 	}else{
+		printf("=======what=%d==========\n",get_qtts_cache());
 		while(get_qtts_cache());	//fix me
+		printf("=======what===========\n");
 		sleep(1);
 	}
 	play_sys_tices_voices(filePath);
+	clean_qtts_cache();
 	pause_record_audio();
 }
 
@@ -163,7 +167,7 @@ void exitqttsPlay(void){
 void PlayQttsText(char *text,unsigned char type)
 {
 	i2s_start_play(8000);
-#if 0
+#if 1
 	char *textbuf= (char *)calloc(1,strlen(text)+2);
 	if(textbuf==NULL){
 		perror("calloc error !!!");
@@ -171,7 +175,7 @@ void PlayQttsText(char *text,unsigned char type)
 	}
 	sprintf(textbuf,"%s%s",text,",");	//文本尾部添加",",保证文本播报出来
 	tolkLog("tolk qtts start\n");
-	stait_qtts_cache();
+	//stait_qtts_cache();
 	Qtts_voices_text(textbuf,type);
 	free(textbuf);
 #else
@@ -179,7 +183,7 @@ void PlayQttsText(char *text,unsigned char type)
 #endif
 	tolkLog("tolk qtts end\n");
 	//printf("qttspos = %d qttsend = %d\n",I2S.qttspos,I2S.qttsend);
-	if(I2S.qttspos!=0&&I2S.qttsend==0)
+	if(I2S.qttspos!=0&&I2S.qttsend!=1)
 	{
 		memset(play_buf+I2S.qttspos,0,I2S_PAGE_SIZE-I2S.qttspos);
 		write_pcm(play_buf);
@@ -195,6 +199,7 @@ void PlayQttsText(char *text,unsigned char type)
 		Mute_voices(MUTE);
 		return;
 	}
+	tolkLog("tolk qtts qttsend != 1\n");
 	usleep(1000*1000);
 	Mute_voices(MUTE);
 #endif

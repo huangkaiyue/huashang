@@ -471,6 +471,10 @@ void get_time(void){
 	time(&timep);
 	printf("%s",asctime(gmtime(&timep)));
 }
+void UartLog(const char *data,unsigned char number){
+	return;
+};
+
 void VoicesEvent(int event){
 	printf("VoicesEvent event = %d ..\n",event);
 }
@@ -482,6 +486,7 @@ int main(int argc,char *argv[])
 	int i;
 	char bufo[12]="0:30";
 	char bufc[12]="0:27";
+	char bufd[12]="9:47";
 	init_Uart(VoicesEvent,ack_batteryCtr);
 	sleep(2);
 	if(argc < 2){
@@ -503,6 +508,10 @@ int main(int argc,char *argv[])
 		case 4:
 			printf("argv ----->4-----\n");
 			SocSendMenu(4,0);
+			break;
+		case 7:
+			printf("argv ----->4-----\n");
+			SocSendMenu(7,bufd);
 			break;
 		sleep(3);
 		printf("\n");

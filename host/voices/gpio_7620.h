@@ -34,7 +34,6 @@
 #define TOLK		1
 #define BIND_DEV	2
 
-#ifdef LED_LR
 enum{
 	left=0,
 	right,
@@ -43,7 +42,6 @@ enum{
 	openled=0,
 	closeled,
 };
-#endif
 
 #define	LED_VIGUE_OPEN	1
 #define LED_VIGUE_CLOSE	0

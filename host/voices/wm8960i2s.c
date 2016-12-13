@@ -201,6 +201,9 @@ void WritePcmData(char *data,int size)
 void clean_qtts_cache(void){
 	I2S.qttsend=1;
 }
+void clean_qtts_cache_2(void){
+	I2S.qttsend=2;
+}
 void stait_qtts_cache(void){
 	I2S.qttsend=0;
 }

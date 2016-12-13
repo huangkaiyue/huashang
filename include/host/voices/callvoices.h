@@ -56,6 +56,7 @@
 #define CONNET_CHECK_PLAY			19	//正在检查网络是否可用
 #define SEND_OK_PLAY				20	//发送成功
 #define SEND_ERROR_PLAY				21	//发送失败
+#define SEND_LINK_PLAY				22	//正在发送
 
 typedef struct sys_message{
 	unsigned char recorde_live;
@@ -95,7 +96,7 @@ extern int SetSystemTime(unsigned char outtime);
 extern void init_record_pthread(void);
 extern void exit_record_pthread(void);
 //--------------------eventVoices.c-----------------------------------------------
-extern void createPlayEvent(const void *play,unsigned char Mode);
+extern int createPlayEvent(const void *play,unsigned char Mode);
 extern void CleanUrlEvent(void);
 extern void QttsPlayEvent(const char *txt,int type);
 extern void down_voices_sign(void);

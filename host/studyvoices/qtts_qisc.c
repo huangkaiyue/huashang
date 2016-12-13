@@ -149,7 +149,7 @@ void __exitqttsPlay(void)
 			free(data);
 		}
 	}
-	stait_qtts_cache();
+	clean_qtts_cache_2();
 	cleanState();
 	DEBUG_QTTS("play_qtts_data : end...\n\n");
 	return NULL;
