@@ -121,8 +121,9 @@ void clean_play_cache(void){
 #define VOL_DWON		90				//音量下限
 #define VOL_NUM			3				//每次增加
 #define VOL_SET_DATA(x) (x/4)+VOL_DWON	//APP设置值算法
-void SetVol(int dir,int vol)
+int SetVol(int dir,int vol)
 {
+	int ret = 0;
 	if(I2S.tx_vol<=VOL_DWON){
 		I2S.tx_vol=VOL_DWON;
 	}
@@ -146,28 +147,39 @@ void SetVol(int dir,int vol)
 		
 	if(I2S.tx_vol>=VOL_UP){
 		I2S.tx_vol=VOL_UP;
+		ret = -1;
 	}
 	else if(I2S.tx_vol<=VOL_DWON){
 		I2S.tx_vol=0;
+		ret = -1;
 	}
-	set_vol_size(I2S.tx_vol);
 	SET_TX_VOL(I2S.i2s_fd,I2S.tx_vol);
-	printf("SetVol :vol = %d\n",I2S.tx_vol);
+	return ret;
+	//printf("SetVol :vol = %d\n",I2S.tx_vol);
 }
 
 int GetVol(void){
 	return (int)I2S.tx_vol;
 }
-
+void stopclean(void){
+	ioctl(I2S.i2s_fd, I2S_STOP_WM8960, 0);
+}
+void PlayorPause(void){
+	ioctl(I2S.i2s_fd, I2S_PLAY_PAUSE_WM8960, 0);
+}
 void mute_recorde_vol(int change)
 {
-	if(change==UNMUTE){
-		SET_TX_VOL(I2S.i2s_fd,I2S.tx_vol);
-	}else{
-		change=(change>I2S.tx_vol?I2S.tx_vol:change);
-		SET_TX_VOL(I2S.i2s_fd,change);
+#if 1
+	if(change==107){
+		if(change==UNMUTE){
+			SET_TX_VOL(I2S.i2s_fd,I2S.tx_vol);
+		}else{
+			change=(change>I2S.tx_vol?I2S.tx_vol:change);
+			SET_TX_VOL(I2S.i2s_fd,change);
+		}
+		usleep(1000);
 	}
-	usleep(1000);
+#endif
 }
 
 /********************************************
@@ -187,7 +199,7 @@ void write_pcm(char *buf)
 	ioctl(I2S.i2s_fd, I2S_PUT_AUDIO, pBuf);	
 #endif	//end defined(CONFIG_I2S_MMAP)
 }
-
+#if 0
 void WritePcmData(char *data,int size)
 {
 	if(I2S.play_size==I2S_PAGE_SIZE)//fix me end is < do?
@@ -198,6 +210,7 @@ void WritePcmData(char *data,int size)
 	memcpy(play_buf+I2S.play_size,data,size);
 	I2S.play_size +=size;
 }
+#endif
 void clean_qtts_cache(void){
 	I2S.qttsend=1;
 }
@@ -210,6 +223,7 @@ void stait_qtts_cache(void){
 int get_qtts_cache(void){
 	return I2S.qttsend;
 }
+#if 0
 void WriteqttsPcmData(char *data,int len)
 {
 	int i=0;
@@ -228,7 +242,7 @@ void WriteqttsPcmData(char *data,int len)
 		}
 	}
 }
-
+#endif
 /**********************************************
 获取音频数据
 **********************************************/
@@ -303,14 +317,14 @@ void Mute_voices(unsigned char stat)
 {
 	switch(stat){
 		case MUTE:
-			SET_MUTE_DISABLE();
-			mute_recorde_vol(MUTE);
+			//SET_MUTE_DISABLE();
+			//mute_recorde_vol(MUTE);
 			close_wm8960_voices();
 			break;
 		case UNMUTE:
 			open_wm8960_voices();
-			SET_MUTE_ENABLE();
-			mute_recorde_vol(UNMUTE);
+			//SET_MUTE_ENABLE();
+			//mute_recorde_vol(UNMUTE);
 			break;
 	}
 }

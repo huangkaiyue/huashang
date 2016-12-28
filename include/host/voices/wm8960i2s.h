@@ -61,7 +61,7 @@ extern I2SST I2S;
 extern void write_pcm(char *buf);
 extern void WritePcmData(char *data,int size);
 extern void WriteqttsPcmData(char *data,int len);
-extern void SetVol(int dir,int vol);
+extern int SetVol(int dir,int vol);
 extern int GetVol(void);
 extern void Mute_voices(unsigned char stat);
 extern int i2s_start_play(unsigned short rate);

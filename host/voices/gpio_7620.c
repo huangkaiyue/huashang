@@ -4,6 +4,7 @@
 #include "gpio_7620.h"
 #include "../sdcard/musicList.h"
 #include "../studyvoices/qtts_qisc.h"
+#include "host/voices/wm8960i2s.h"
 #include "nvram.h"
 #include "config.h"
 //#define MAIN
@@ -12,6 +13,10 @@ static Gpio gpio;
 
 static int led_type;
 static int led_system_type;
+
+#define GVOL_ADD VOL_ADD
+#define GVOL_SUB VOL_SUB
+#define ONCEVOL		//音量加一次
 
 //开关音频驱动函数
 void open_wm8960_voices(void)
@@ -132,18 +137,8 @@ static void ReadSpeekGpio(void){
 	gpio.speek_tolk=TOLK;
 #endif	
 }
-static unsigned char playType=0;
-#define OPENPAUSE	0
-#define OPENPLAY	1
-void OpenPause(void){
-	 playType=OPENPAUSE;
-}
-void OpenPlay(void){
-	 playType=OPENPLAY;
-}
-
 //按键处理事件
-//---------------------------------------------------------------------------------------
+//-------------------------------------------QITUTU_SHI--------------------------------------------
 #ifdef QITUTU_SHI
 static void signal_handler(int signum)
 {
@@ -183,26 +178,29 @@ static void signal_handler(int signum)
 					
 				}
 				else{
-					create_event_voices_key(1);
+					create_event_voices_key(VOLKEYUP);
 				}
 				break;
 #ifdef 	LOCAL_MP3
 			case ADDVOL_KEY:	//play last
+#ifdef ONCEVOL
 				createPlayEvent((const void *)"xiai",PLAY_NEXT);
+#else
+				VolAndNextKey(VOLKEYUP,ADDVOL_KEY);
+#endif
+				GpioLog("key up",ADDVOL_KEY);
 				break;
 			case SUBVOL_KEY:	//play next
+#ifdef ONCEVOL
 				createPlayEvent((const void *)"xiai",PLAY_PREV);
+#else
+				GpioLog("key up",SUBVOL_KEY);
+#endif
+				VolAndNextKey(VOLKEYUP,SUBVOL_KEY);
 				break;
 #endif
-			case RESERVE_KEY1://预留键
-				if(playType==OPENPAUSE){
-					StreamPause();
-					OpenPlay();		//----打开pause状态
-				}
-				else if(playType==OPENPLAY){
-					StreamPlay();
-					OpenPause();		//----打开pause状态
-				}
+			case RESERVE_KEY1:	//播放、暂停
+				keyStreamPlay();
 				break;
 			case RESERVE_KEY3:	//play last
 				Save_like_music();
@@ -244,7 +242,7 @@ static void signal_handler(int signum)
 					BindDevToaliyun();
 				}
 				else{
-					create_event_voices_key(0);
+					create_event_voices_key(VOLKEYDOWN);
 				}
 				break;
 			
@@ -252,10 +250,20 @@ static void signal_handler(int signum)
 				break;
 #ifdef	LED_LR
 			case ADDVOL_KEY:	//vol +
-				SetVol(1,0);
+#ifdef ONCEVOL
+				SetVol(GVOL_ADD,0);
+#else
+				VolAndNextKey(VOLKEYDOWN,ADDVOL_KEY);
+#endif
+				GpioLog("key down",ADDVOL_KEY);
 				break;
 			case SUBVOL_KEY:	//vol -
-				SetVol(0,0);
+#ifdef ONCEVOL
+				SetVol(GVOL_SUB,0);
+#else
+				VolAndNextKey(VOLKEYDOWN,SUBVOL_KEY);
+#endif
+				GpioLog("key down",SUBVOL_KEY);
 				break;
 			case LETFLED_KEY:	//play next
 				break;
@@ -272,7 +280,7 @@ static void signal_handler(int signum)
 	unlock_msgEv();
 }
 #endif
-//---------------------------------------------------------------------------------------
+//----------------------------------------DATOU_JIANG-----------------------------------------------
 #ifdef DATOU_JIANG
 static void signal_handler(int signum)
 {
@@ -297,19 +305,6 @@ static void signal_handler(int signum)
 					QttsPlayEvent(buf,QTTS_GBK);
 				}
 				break;
-				
-			case RESERVE_KEY2:
-#ifdef	SPEEK_VOICES1
-				gpio.speek_tolk=TOLK;
-#else
-#ifdef 	LOCAL_MP3
-				if(sysMes.localplayname==english){
-				}else{
-					createPlayEvent((const void *)"english",PLAY_NEXT);
-				}
-#endif
-#endif
-				break;
 
 			case SPEEK_KEY:
 #ifdef SPEEK_VOICES
@@ -320,7 +315,7 @@ static void signal_handler(int signum)
 					
 				}
 				else{
-					create_event_voices_key(1);
+					create_event_voices_key(VOLKEYUP);
 				}
 #else
 				end_event_std();
@@ -382,20 +377,35 @@ static void signal_handler(int signum)
 				}
 				break;
 #ifdef	LOCAL_MP3
+			case RESERVE_KEY2:
+#ifdef	SPEEK_VOICES1
+				gpio.speek_tolk=SPEEK;
+#else
+				if(sysMes.localplayname==english){
+					keyStreamPlay();
+				}else{
+					createPlayEvent((const void *)"english",PLAY_NEXT);
+				}
+#endif
+				break;
+
 			case RESERVE_KEY1://预留键
 				if(sysMes.localplayname==guoxue){
+					keyStreamPlay();
 				}else{
 					createPlayEvent((const void *)"guoxue",PLAY_NEXT);
 				}
 				break;
 			case RESERVE_KEY3:	//目录
 				if(sysMes.localplayname==mp3){
+					keyStreamPlay();
 				}else{
 					createPlayEvent((const void *)"mp3",PLAY_NEXT);
 				}
 				break;
 			case LETFLED_KEY:	//left led
 				if(sysMes.localplayname==story){
+					keyStreamPlay();
 				}else{
 					createPlayEvent((const void *)"story",PLAY_NEXT);
 				}
@@ -414,7 +424,7 @@ static void signal_handler(int signum)
 					
 			case RESERVE_KEY2://会话对讲开关键
 #ifdef	SPEEK_VOICES1
-				gpio.speek_tolk=SPEEK;
+				gpio.speek_tolk=TOLK;
 #endif
 				break;
 				
@@ -432,7 +442,7 @@ static void signal_handler(int signum)
 					BindDevToaliyun();
 				}
 				else{
-					create_event_voices_key(0);
+					create_event_voices_key(VOLKEYDOWN);
 				}
 #else
 				down_voices_sign();
@@ -445,10 +455,10 @@ static void signal_handler(int signum)
 			case RESERVE_KEY3:	//目录
 				break;
 			case ADDVOL_KEY:	//vol +
-				SetVol(1,0);
+				SetVol(GVOL_ADD,0);
 				break;
 			case SUBVOL_KEY:	//vol -
-				SetVol(0,0);
+				SetVol(GVOL_SUB,0);
 				break;
 			case LETFLED_KEY:	//left led
 				break;
@@ -465,6 +475,7 @@ static void signal_handler(int signum)
 	unlock_msgEv();
 }
 #endif
+//------------------------------------TANGTANG_LUO-------------------------------------------------
 #ifdef TANGTANG_LUO
 static void signal_handler(int signum)
 {

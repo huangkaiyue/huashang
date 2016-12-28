@@ -69,6 +69,10 @@
 #define CONNET_TIME			"qtts/waittime_network_8k.amr"	//联网过渡音
 #define START_INTERNET		"qtts/start_internet_8K.amr"	//开始配网，请发送wifi名以及密码
 #define CHECK_INTERNET		"qtts/check_internet_8K.amr"	//正在检查网络是否可用，可等待，或重新配网
+#define CHECK_WIFI			"qtts/check_wifi_8K.amr"		//检查WiFi
+#define CHECK_WIFI_WAIT		"qtts/check_wifi_wait_8K.amr"	//检查WiFi过渡音
+#define CHECK_WIFI_NO		"qtts/check_wifi_no_8K.amr"		//检查WiFi
+#define CHECK_WIFI_YES		"qtts/check_wifi_yes_8K.amr"	//检查WiFi
 #define LINK_SUCCESS		"qtts/link_conect_8k.amr"		//连接成功
 #define ERROR_INTER			"qtts/error_internet_8k.amr"	//您的网络有误，请检查网络并重新连接
 #define ERROR_PASSWORD		"qtts/error_password_8k.amr"	//您输入的密码有误，请重新输入
@@ -84,14 +88,36 @@
 #define TULING_WINTXUNFEI	"qtts/TuLin_WintXunfei_8K.amr"	//这个问题有点难，我在问我的智慧爷爷
 #define TULING_HAHAXIONG	"qtts/TuLin_Hahaxiong_8K.amr"	//我叫哈哈熊，聪明又可爱的哈哈熊
 #define NO_MUSIC			"qtts/no_music_8K.amr"			//不支持音乐播放
-#define NO_VOICES			"qtts/no_voices_8K.amr"			//上传数据小于0.5秒
 #define LOW_BATTERY			"qtts/low_battery_8K.amr"
+
+#define NO_VOICES			"qtts/no_voices_8K.amr"			//上传数据小于0.5秒
+#define NO_VOICES_1			"qtts/no_voices_8K_1.amr"		//上传数据小于0.5秒
+#define NO_VOICES_2			"qtts/no_voices_8K_2.amr"		//上传数据小于0.5秒
+#define NO_VOICES_3			"qtts/no_voices_8K_3.amr"		//上传数据小于0.5秒
+#define NO_VOICES_4			"qtts/no_voices_8K_4.amr"		//上传数据小于0.5秒
+#define NO_VOICES_5			"qtts/no_voices_8K_5.amr"		//上传数据小于0.5秒
+#define NO_VOICES_6			"qtts/no_voices_8K_6.amr"		//上传数据小于0.5秒
+#define NO_VOICES_7			"qtts/no_voices_8K_7.amr"		//上传数据小于0.5秒
+#define NO_VOICES_8			"qtts/no_voices_8K_8.amr"		//上传数据小于0.5秒
+#define NO_VOICES_9			"qtts/no_voices_8K_9.amr"		//上传数据小于0.5秒
 
 #define UPDATA_END			"qtts/end_updata_8K.amr"		//更新固件结束
 
 #define SEND_OK				"qtts/send_ok_8K.amr"			//发送成功
 #define SEND_ERROR			"qtts/send_error_8K.amr"		//发送失败
 #define SEND_LINK			"qtts/send_link_8K.amr"			//正在发送
+
+#define KEY_VOICE_DOWN		"qtts/key_down_8K.amr"			//
+#define KEY_VOICE_UP		"qtts/key_up_8K.amr"			//
+
+#define PLAY_ERROR			"qtts/play_error_8K.amr"		//播放失败
+#define TF_ERROR			"qtts/tf_error_8K.amr"			//tf卡加载失败
+
+#define NETWORK_ERROR_1		"qtts/network_error_8K_1.amr"		//网络连接失败
+#define NETWORK_ERROR_2		"qtts/network_error_8K_2.amr"		//网络连接失败
+#define NETWORK_ERROR_3		"qtts/network_error_8K_3.amr"		//网络连接失败
+#define NETWORK_ERROR_4		"qtts/network_error_8K_4.amr"		//网络连接失败
+#define NETWORK_ERROR_5		"qtts/network_error_8K_5.amr"		//网络连接失败
 
 #endif
 /*******************************************************************************

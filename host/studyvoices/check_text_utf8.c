@@ -15,17 +15,29 @@ int check_text_cmd(char *text)
 	if(strstr(text,"播放音乐")){
 #ifdef TANGTANG_LUO
 		playsysvoices(NO_MUSIC);
-#else
 		//PlayQttsText("小朋友，我还不会唱歌，你教我唱吧。",QTTS_UTF8);
+#else
 		pause_record_audio();
-		//createPlayEvent((const void *)"mp3",1);
+#ifdef DATOU_JIANG
+		ret=createPlayEvent((const void *)"mp3",1);
+#else
 		ret=createPlayEvent((const void *)"xiai",1);
+#endif
 		if(ret == -1){
 			PlayQttsText("小朋友，我还不会唱歌，赶紧收藏歌曲，教我唱歌吧。",QTTS_UTF8);
 		}
 #endif
 		return 1;
 	}
+#ifdef DATOU_JIANG
+	else if(strstr(text,"讲故事")){
+		ret=createPlayEvent((const void *)"story",1);
+		if(ret == -1){
+			PlayQttsText("小朋友，我还没有故事，赶紧收藏故事，教我讲故事吧。",QTTS_UTF8);
+		}
+		return 1;
+	}
+#endif
 	else if(strstr(text,"图灵")){
 		playsysvoices(TULING_HAHAXIONG);
 		//PlayQttsText("我叫大头，聪明又可爱的大头。",QTTS_UTF8);
@@ -38,10 +50,12 @@ int check_text_cmd(char *text)
 		else if(strstr(text,"加")||strstr(text,"大")){
 			PlayQttsText("音量加设置成功。",QTTS_UTF8);
 			SetVol(VOL_ADD,0);
+			pause_record_audio();
 		}
 		else if(strstr(text,"减")||strstr(text,"小")){
 			SetVol(VOL_SUB,0);
 			PlayQttsText("音量减设置成功。",QTTS_UTF8);
+			pause_record_audio();
 		}
 		return 1;
 	}

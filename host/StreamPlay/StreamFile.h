@@ -52,10 +52,11 @@ typedef struct{
 	FILE *wfp;						//缓存文件指针				
 	FILE *rfp;						//播放文件指针
 }Mp3Stream;
+extern Mp3Stream *st;
 
 //#define STREAM_DEBUG(fmt, args...)	printf("%s: "fmt,__func__, ## args)
 
-//#define DBG_STREAM
+#define DBG_STREAM
 #ifdef 	DBG_STREAM
 #define DEBUG_STREAM(fmt, args...) printf("%s: " fmt,__func__, ## args)
 #else   
@@ -67,6 +68,8 @@ extern void PlayUrl(const void *data);	//播放URL接口，本地存在就不下载了
 extern int NetStreamDownFilePlay(const void *data);//开始边下边播放 阻塞 耗时下载，后台线程播放
 extern void StreamPause(void);
 extern void StreamPlay(void);
+extern void keyStreamPlay(void);
+
 extern void getStreamState(void *data,void StreamState(void *data,Player_t *player));	//获取播放流状态
 
 extern void playLocalMp3(const char *mp3file);	//播放本地音频流 

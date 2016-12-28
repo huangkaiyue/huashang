@@ -34,6 +34,9 @@
 #define TOLK		1
 #define BIND_DEV	2
 
+#define VOLKEYDOWN	0	//°´ÏÂ
+#define VOLKEYUP	1	//µ¯Æð
+
 enum{
 	left=0,
 	right,

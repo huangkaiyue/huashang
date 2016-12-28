@@ -279,5 +279,25 @@ void UartLog(const char *data,unsigned char number){
 	return ;
 #endif
 }
+void GpioLog(const char *data,unsigned char number){
+#ifdef ENABLE_LOG	
+	FILE *fp = NULL;
+	char buf[128];
+	if(!strcmp(data,"uart_start\n")){
+		fp =fopen("/home/gpio.log","w+");
+	}else{
+		fp =fopen("/home/gpio.log","a+");
+	}
+	sprintf(buf,"%s%s %x\n",data,"gpio:",number);
+	if(NULL == fp ){
+		return ;
+    }
+	int size = strlen(buf);
+    fwrite(buf,1,size,fp);
+  	fflush(fp);
+	fclose(fp);
+	return ;
+#endif
+}
 
 

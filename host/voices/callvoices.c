@@ -26,15 +26,6 @@ struct wave_pcm_hdr pcmwavhdr = {
 	{'d', 'a', 't', 'a'},
 	0  
 };
-#define VOICES_MIN	13200	//是否是大于0.5秒的音频，采样率16000、量化位16位
-#define VOICES_ERR	1000	//误触发
-
-#define SEC				1
-#define MIN				60*SEC
-#define SYSTEMOUTSIGN	5*MIN
-#define SYSTEMOUTTIME	20*MIN
-#define PLAYOUTTIME		600*MIN
-#define ERRORTIME		30*24*60*MIN
 
 #define KB	1024
 static char buf_voices[STD_RECODE_SIZE];
@@ -62,6 +53,10 @@ void end_event_std(void)
 void start_event_play_wav(void)
 {
 	sysMes.recorde_live =PLAY_WAV;
+}
+void start_speek_wait(void)
+{
+	sysMes.recorde_live =SPEEK_WAIT;
 }
 /*****************************************************
 *进入播放URL状态
@@ -110,7 +105,52 @@ void keep_recorde_live(int change)
 		sysMes.recorde_live=sysMes.oldrecorde_live;
 }
 #endif	//end TIMEOUT_CHECK
-
+#define C_VOICES_1	1
+#define C_TAIBEN_1	2
+#define C_TAIBEN_2	3
+#define C_TAIBEN_3	4
+#define C_TAIBEN_4	5
+#define C_TAIBEN_5	6
+#define C_TAIBEN_6	7
+#define C_TAIBEN_7	8
+#define C_TAIBEN_8	9
+#define C_TAIBEN_9	10
+static void TaiBenToTulingNOVoices(void){
+	//srand( (unsigned)time( NULL ) );
+	int i=(1+(int) (10.0*rand()/(RAND_MAX+1.0)));
+	switch(i){
+		case C_VOICES_1:
+			playsysvoices(NO_VOICES);
+			break;
+		case C_TAIBEN_1:
+			playsysvoices(NO_VOICES_1);
+			break;
+		case C_TAIBEN_2:
+			playsysvoices(NO_VOICES_2);
+			break;
+		case C_TAIBEN_3:
+			playsysvoices(NO_VOICES_3);
+			break;
+		case C_TAIBEN_4:
+			playsysvoices(NO_VOICES_4);
+			break;
+		case C_TAIBEN_5:
+			playsysvoices(NO_VOICES_5);
+			break;
+		case C_TAIBEN_6:
+			playsysvoices(NO_VOICES_6);
+			break;
+		case C_TAIBEN_7:
+			playsysvoices(NO_VOICES_7);
+			break;
+		case C_TAIBEN_8:
+			playsysvoices(NO_VOICES_8);
+			break;
+		case C_TAIBEN_9:
+			playsysvoices(NO_VOICES_9);
+			break;
+	}
+}
 /****************************************
 @函数功能:	处理采集数据函数
 @参数:	data 采集到的数据  size 数据大小
@@ -144,7 +184,7 @@ static void voices_packt(const char *data,int size)
 #if 1
 		start_event_play_wav();		//播放wav
 		pool_add_task(play_sys_tices_voices,TULING_WINT);
-		//usleep(1000*1000);
+		usleep(1000*1000);
 #else
 		create_event_system_voices(2);
 #endif
@@ -165,7 +205,11 @@ static void voices_packt(const char *data,int size)
 	else
 	{
 		if(sysMes.recorde_live !=PLAY_WAV){
+#if 1
+			TaiBenToTulingNOVoices();
+#else
 			playsysvoices(NO_VOICES);
+#endif
 		}
 		goto exit1;
 	}
@@ -203,7 +247,6 @@ int SetSystemTime(unsigned char outtime){
 static void *pthread_record_voices(void *arg)
 {
 	char *pBuf;
-	sysMes.error_400002=3;		//保证第一次就能报出400002的语音
 	sysMes.recorde_live=RECODE_PAUSE;
 	//sysMes.oldrecorde_live=sysMes.recorde_live;
 	time_t t;
@@ -251,8 +294,7 @@ static void *pthread_record_voices(void *arg)
 #endif
 #ifdef CLOCESYSTEM
 			case TIME_SIGN:
-				PlayQttsText("小朋友快来跟我玩，跟我说话聊天吧。",QTTS_GBK);
-				sysMes.recorde_live=RECODE_PAUSE;
+				PlayTuLingTaibenQtts("小朋友快来跟我玩，跟我说话聊天吧。",QTTS_GBK);
 				sleep(1);
 				break;
 				
@@ -264,7 +306,7 @@ static void *pthread_record_voices(void *arg)
 				
 			case TIME_OUT:				//超时退出
 				SetSystemTime(1);
-				sysMes.recorde_live=RECODE_PAUSE;
+				pause_record_audio();
 				starttime=time(&t);
 				break;
 #endif

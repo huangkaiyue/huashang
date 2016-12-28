@@ -130,6 +130,7 @@ int SysOnloadMusicList(const char *sdcard,const char *mp3Music,const char *story
 	GetTableName(story,Mlist->list[1].listname);
 	GetTableName(english,Mlist->list[2].listname);
 	GetTableName(guoxue,Mlist->list[3].listname);
+
 #if 0	
 	get_paly_num(&Mlist->list[0].playindex,mp3_N);
 	get_paly_num(&Mlist->list[1].playindex,story_N);
@@ -199,6 +200,7 @@ int GetSdcardMusic(const char *sdcard,const char *musicDir,char *getMusicname,un
 		default:
 			return -1;
 	}
+	printf("GetSdcardMusic : playindex=%d (%d)\n",Mlist->list[i].playindex,Mlist->list[i].Nums);
 	return GetTableSqlById(Mlist->list[i].listname,Mlist->list[i].playindex,getMusicname);
 }
 #ifdef DOWN_URL_MUSIC

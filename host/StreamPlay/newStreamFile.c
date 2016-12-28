@@ -7,10 +7,10 @@
 #include "curldown.h"
 #include "../sdcard/musicList.h"
 
-static Mp3Stream *st=NULL;
+Mp3Stream *st=NULL;
 
 #ifdef SAFE_READ_WRITER
-static int __safe_fread(char *data,int input_size){
+int __safe_fread(char *data,int input_size){
 	int ret=0,r_size=0;
 	if(st->rfp==NULL){
 		st->rfp = fopen("/home/cache.tmp","r");
@@ -34,7 +34,7 @@ static int __safe_fread(char *data,int input_size){
 }
 
 #endif
-static void cleanStreamData(Mp3Stream *st){
+void cleanStreamData(Mp3Stream *st){
 	st->channel=0;
 	st->rate=0;
 #ifndef SAFE_READ_WRITER
@@ -302,6 +302,7 @@ void StreamPause(void){
 	{
 		st->player.playState=MAD_PAUSE;
 		DecodePause();
+		PlayorPause();
 	}else{
 		DEBUG_STREAM("set pause failed\n");
 	}
@@ -313,14 +314,31 @@ void StreamPlay(void){
 	{
 		st->player.playState=MAD_PLAY;
 		DecodeStart();
+		PlayorPause();
 	}else{
 		DEBUG_STREAM("set play failed\n");
 	}
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 }
+void keyStreamPlay(void){
+	if(st->player.playState==MAD_PAUSE){
+		st->player.playState=MAD_PLAY;
+		DecodeStart();
+		PlayorPause();
+		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
+	}else if(st->player.playState==MAD_PLAY){
+		st->player.playState=MAD_PAUSE;
+		DecodePause();
+		PlayorPause();
+		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
+	}
+}
 //进度条控制播放 
 void seekToStream(int progress){
 #ifdef SEEK_TO
+	if(st->player.playState!=MAD_PLAY){
+		return;
+	}
 	int curprogress=0;
 	if(progress<=0)
 		curprogress=1;
@@ -398,6 +416,7 @@ void playLocalMp3(const char *mp3file){
 	DEBUG_STREAM("music st->rate =%d st->channel=%d \n",st->rate,st->channel);
 	st->SetI2SRate(st->rate);
 	SetDecodeSize(st->streamLen);
+	DEBUG_STREAM("music start play \n");
 	DecodePlayMusic(InputlocalStream);
 	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//发送结束状态
 #if 0

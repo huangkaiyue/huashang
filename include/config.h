@@ -24,6 +24,8 @@
 	
 #define SELECT_UDP				//将udp添加到select 当中
 
+#define CHECKNETWORK			//没网不让播放云端
+
 #ifdef DATOU_JIANG	//大头---蒋总
 	#define PALY_URL_SD		//下载保存到本地
 
@@ -70,6 +72,8 @@
 //#define TEST_SAVE_MP3		//测试用于保存语音识别之后，下载下来的MP3文本信息
 
 #define ENABLE_LOG			//使能写入文件log
+
+#define TESTMP3				//测试音频接口
 //----------------------用户数据类-------------------------------
 
 #define UDP_BRO_PORT 		20001						// 本地广播端口

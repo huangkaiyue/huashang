@@ -9,6 +9,7 @@
 #include "../host/studyvoices/qtts_qisc.h"
 #include "../host/voices/gpio_7620.h"
 #include "host/ap_sta.h"
+#include "host/voices/callvoices.h"
 
 #define STREAM_EXIT				MAD_EXIT	//停止	
 #define STREAM_PLAY 			MAD_PLAY	//播放
@@ -467,14 +468,12 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}else if (!strcmp(pSub->valuestring,"pause")){
 			mute_recorde_vol(MUTE);
 			StreamPause();
-			OpenPlay();			//----打开play状态
 		}else if (!strcmp(pSub->valuestring,"stop")){
 			mute_recorde_vol(MUTE);
 			CleanUrlEvent();
 		}else if (!strcmp(pSub->valuestring,"play")){
 			mute_recorde_vol(UNMUTE);
 			StreamPlay();
-			OpenPause();		//----打开pause状态
 		}else if (!strcmp(pSub->valuestring,"seekto")){
 			seekToStream(cJSON_GetObjectItem(pJson, "progress")->valueint);
 		}
@@ -568,21 +567,18 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		int event = cJSON_GetObjectItem(pJson, "event")->valueint;
 		create_event_system_voices(event);
 		if(CONNECT_OK==event){
-			Led_vigue_close();
-#ifdef QITUTU_SHI
-			led_left_right(left,openled);
-			led_left_right(right,openled);
-#endif
-			SocSendMenu(3,0);
-			usleep(100*1000);
+			//Link_Ok_Work();
 		}else if(NOT_NETWORK==event){
-			pool_add_task(Led_vigue_open,NULL);
-			led_left_right(left,closeled);
-			led_left_right(right,closeled);
+			//Link_Error_Work();
 		}
 	}else if(!strcmp(pSub->valuestring,"TestNet")){
 		test_brocastCtr(sockfd,peer,recvdata);
 	}else if(!strcmp(pSub->valuestring,"qtts")){
+#ifdef TESTMP3
+		if(strstr((cJSON_GetObjectItem(pJson, "text")->valuestring),"testmp3")){
+			TestPlay();
+		}else
+#endif
 		QttsPlayEvent(cJSON_GetObjectItem(pJson, "text")->valuestring,QTTS_UTF8);
 #ifdef	SYSTEMLOCK
 		if(!strcmp((cJSON_GetObjectItem(pJson, "text")->valuestring),"***rihuiwangxun_open***"))
@@ -612,7 +608,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	else if (!strcmp(pSub->valuestring,"uploadfile")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(!strcmp(pSub->valuestring,"ok")){			//发送成功
-			create_event_system_voices(20);
+			//create_event_system_voices(20);
 		}else if(!strcmp(pSub->valuestring,"failed")){	//发送失败
 			create_event_system_voices(21);
 		}

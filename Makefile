@@ -48,9 +48,10 @@ all +=host/studyvoices/check_text_utf8.o
 all +=host/studyvoices/qtts_qisc.o
 all +=host/ap_sta.o
 
-all +=host/StreamPlay/madplayer.o
+#all +=host/StreamPlay/madplayer.o
+all +=host/StreamPlay/Decode.o
 all +=host/StreamPlay/newStreamFile.o
-
+all +=host/StreamPlay/downMp3.o
 
 export CC
 $(TAR): $(all)

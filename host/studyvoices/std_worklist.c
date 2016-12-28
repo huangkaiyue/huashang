@@ -56,10 +56,57 @@ static void handle_text(char *text)
 	if(ret == 10202){
 		//重连，语音播报
 		playsysvoices(REQUEST_FAILED);
-		startServiceWifi();
+		//startServiceWifi();
 	}
 	tolkLog("tolk handle qtts end\n");
 }
+#define J_VOICES_1	1
+#define J_TAIBEN_1	2
+#define J_TAIBEN_2	3
+#define J_TAIBEN_3	4
+#define J_TAIBEN_4	5
+#define J_TAIBEN_5	6
+#define J_TAIBEN_6	7
+#define J_TAIBEN_7	8
+#define J_TAIBEN_8	9
+#define J_TAIBEN_9	10
+static void TaiBenToTulingJsonEr(void){
+	//srand( (unsigned)time( NULL ) );
+	int i=(1+(int) (10.0*rand()/(RAND_MAX+1.0)));
+	switch(i){
+		case J_VOICES_1:
+			playsysvoices(ERROR_40002);
+			break;
+		case J_TAIBEN_1:
+			PlayQttsText("小朋友你可以说，播放一首歌。",QTTS_GBK);
+			break;
+		case J_TAIBEN_2:
+			PlayQttsText("小朋友你可以问我，李白是谁。",QTTS_GBK);
+			break;
+		case J_TAIBEN_3:
+			PlayQttsText("小朋友你可以问我，明天天气怎么样。",QTTS_GBK);
+			break;
+		case J_TAIBEN_4:
+			PlayQttsText("小朋友你可以跟我聊聊天，说一说悄悄话。",QTTS_GBK);
+			break;
+		case J_TAIBEN_5:
+			PlayQttsText("小朋友你可以说，讲个故事。",QTTS_GBK);
+			break;
+		case J_TAIBEN_6:
+			PlayQttsText("小朋友你可以说，讲个笑话。",QTTS_GBK);
+			break;
+		case J_TAIBEN_7:
+			PlayQttsText("小朋友可以跟我说，音量减。",QTTS_GBK);
+			break;
+		case J_TAIBEN_8:
+			PlayQttsText("小朋友你可以问我，2+3+4+5等于几。",QTTS_GBK);
+			break;
+		case J_TAIBEN_9:
+			PlayQttsText("小朋友你可以对我说，翻译天空。",QTTS_GBK);
+			break;
+	}
+}
+
 /*******************************************
 @函数功能:	json解析服务器数据
 @参数:	pMsg	服务器数据
@@ -95,22 +142,33 @@ static int parseJson_string(const char * pMsg,void handle_jsion(char *textString
 		case 302000:
 		case 200000:
 		case 40002:
-			//if(++sysMes.error_400002>2){
-				sysMes.error_400002=0;
-				playsysvoices(ERROR_40002);
-			//}
+#if 1
+			TaiBenToTulingJsonEr();
+#else
+			playsysvoices(ERROR_40002);
+#endif
 			goto exit;
-			break;
 	}
-    pSub = cJSON_GetObjectItem(pJson, "text");
+#if 1	//文本
+    pSub = cJSON_GetObjectItem(pJson, "text");		//返回结果
     if(NULL == pSub){
 		DEBUG_STD_MSG("get text failed\n");
 		goto exit;
     }
 	printf("=get text=%s=\n",pSub->valuestring);
 	handle_jsion(pSub->valuestring);
-	
-	pSub = cJSON_GetObjectItem(pJson, "info");
+#else	//语音
+	pSub = cJSON_GetObjectItem(pJson, "fileUrl");		//返回结果
+    if(NULL == pSub){
+		DEBUG_STD_MSG("get text failed\n");
+		goto exit;
+    }
+	printf("=get url=%s=\n",pSub->valuestring);
+	//http://opentest.tuling123.com/file/d3a38a1e-7318-4837-be91-43642ae93842.mp3
+	//AddDownEvent("http://opentest.tuling123.com/file/d3a38a1e-7318-4837-be91-43642ae93842.mp3",TULING_URL_MAIN);
+	AddDownEvent(pSub->valuestring,TULING_URL_MAIN);
+#endif
+	pSub = cJSON_GetObjectItem(pJson, "info");		//语音识别
     if(NULL == pSub){
 		DEBUG_STD_MSG("get text failed\n");
 		goto exit;
@@ -246,12 +304,12 @@ exit1:
 #define SPEEK_6		32
 
 static void TaiwanToTulingError(void){
-	srand( (unsigned)time( NULL ) );
+	//srand( (unsigned)time( NULL ) );
 	int i=(1+(int) (30.0*rand()/(RAND_MAX+1.0)));
 	switch(i){
 //---------------------------------对答-------------------------------------------------------
 	case SPEEK_1:
-		QttsPlayEvent("我就不回答你。",QTTS_GBK);
+		QttsPlayEvent("我先想想，再回答你好啦。",QTTS_GBK);
 		break;
 	case SPEEK_2:
 		QttsPlayEvent("我也不知道哟，你不会怪我吧。",QTTS_GBK);
@@ -352,16 +410,79 @@ static void TaiwanToTulingError(void){
 		break;
 	}
 }
+#define Q_VOICES_1	1
+#define Q_TAIBEN_1	2
+#define Q_TAIBEN_2	3
+#define Q_TAIBEN_3	4
+#define Q_TAIBEN_4	5
+#define Q_TAIBEN_5	6
+#define Q_TAIBEN_6	7
+#define Q_TAIBEN_7	8
+#define Q_TAIBEN_8	9
+#define Q_TAIBEN_9	10
+static void TaiBenToTulingQuestEr(void){
+	//srand( (unsigned)time( NULL ) );
+	int i=(1+(int) (5.0*rand()/(RAND_MAX+1.0)));
+	switch(i){
+		case Q_VOICES_1:
+			create_event_system_voices(5);
+			break;
+#ifdef QITUTU_SHI
+		case Q_TAIBEN_1:
+			createPlayEvent((const void *)"xiai",PLAY_NEXT);
+			break;
+#else
+		case Q_TAIBEN_2:
+			createPlayEvent((const void *)"mp3",PLAY_NEXT);
+			break;
+		case Q_TAIBEN_3:
+			createPlayEvent((const void *)"story",PLAY_NEXT);
+			break;
+		case Q_TAIBEN_4:
+			createPlayEvent((const void *)"guoxue",PLAY_NEXT);
+			break;
+		case Q_TAIBEN_5:
+			createPlayEvent((const void *)"english",PLAY_NEXT);
+			break;
+#endif
+#if 0
+		case Q_TAIBEN_6:
+			QttsPlayEvent("小朋友你可以说，讲个笑话。",QTTS_GBK);
+			break;
+		case Q_TAIBEN_7:
+			QttsPlayEvent("小朋友跟我说，音量减。",QTTS_GBK);
+			break;
+		case Q_TAIBEN_8:
+			QttsPlayEvent("小朋友你问我，2+3+4+5等于几。",QTTS_GBK);
+			break;
+		case Q_TAIBEN_9:
+			QttsPlayEvent("小朋友你问我，翻译天空。",QTTS_GBK);
+			break;
+#endif
+	}
+}
 void send_voices_server(const char *voicesdata,int len,char *voices_type)
 {
 	int textSize=0, err=0;
 	char *text=NULL;
 	start_event_play_wav();//暂停录音
 	DEBUG_STD_MSG("up voices data ...(len=%d)\n",len);
+#if 0
+	char *URL= (char *)calloc(1,strlen("http://opentest.tuling123.com/file/d3a38a1e-7318-4837-be91-43642ae93842.mp3")+1);
+	if(URL==NULL){
+		perror("calloc error !!!");
+		return -1;
+	}
+	sprintf(URL,"%s","http://opentest.tuling123.com/file/d3a38a1e-7318-4837-be91-43642ae93842.mp3");
+	AddDownEvent(URL,TULING_URL_MAIN);
+#else
 	err=reqTlVoices(10,key,(const void *)voicesdata,len,RECODE_RATE,voices_type,&text,&textSize);
 	if(err==-1){
-		create_event_system_voices(5);
-		startServiceWifi();
+#if 1
+		create_event_system_voices(5);	
+#else
+		TaiBenToTulingQuestEr();
+#endif
 		goto exit1;
 	}else if(err==1){
 		TaiwanToTulingError();
@@ -370,6 +491,7 @@ void send_voices_server(const char *voicesdata,int len,char *voices_type)
 	if(text){
 		add_event_msg(text,0,STUDY_WAV_EVENT);
 	}
+#endif
 	return ;
 exit1:
 #ifdef QITUTU_SHI
@@ -418,11 +540,15 @@ int getEventNum(void)
 void cleanEvent(void){
 char *msg;
 int msgSize;
+event_lock=1;	//受保护状态事件
 while(getWorkMsgNum(evMsg)){
 	getMsgQueue(evMsg,&msg,&msgSize);
+	if(msg!=NULL){
 		free(msg);
 		usleep(100);
 	}
+}
+event_lock=0;
 }
 /*******************************************************
 @函数功能:	事件处理函数
@@ -447,8 +573,9 @@ static void handle_event_msg(const char *data,int msgSize)
 		case SYS_VOICES_EVENT:		//系统音事件
 			start_event_play_wav();
 			handle_event_system_voices(cur->len);
-			if(cur->len!=2)
-				pause_record_audio();
+			if(cur->len==2)
+				break;
+			pause_record_audio();
 			break;
 			
 		case SET_RATE_EVENT:		//URL清理事件
@@ -466,7 +593,7 @@ static void handle_event_msg(const char *data,int msgSize)
 			
 		case URL_VOICES_EVENT:		//URL网络播放事件
 			playurlLog("url play\n");
-			cleanplayEvent(0);
+			cleanplayEvent(0);		
 			NetStreamExitFile();
 			start_event_play_url();
 			playurlLog("NetStreamExitFile\n");
@@ -476,24 +603,22 @@ static void handle_event_msg(const char *data,int msgSize)
 			
 #ifdef 	LOCAL_MP3
 		case LOCAL_MP3_EVENT:		//本地音乐播放事件
-			cleanplayEvent(0);
+			cleanplayEvent(0);		//去除清理锁
 			NetStreamExitFile();
 			start_event_play_url();
 			AddDownEvent(data,LOCAL_MP3_EVENT);
+			DEBUG_STD_MSG("handle_event_msg LOCAL_MP3_EVENT add end\n");
 			break;
 #endif
 			
 		case QTTS_PLAY_EVENT:		//QTTS事件
-			start_event_play_wav();
-			stait_qtts_cache();
-			PlayQttsText(data,cur->len);
-			//pause_record_audio();
+			PlayTuLingTaibenQtts(data,cur->len);
 			free((void *)data);
 			break;
 			
 #ifdef SPEEK_VOICES	
 		case SPEEK_VOICES_EVENT:	//接收到语音消息	
-			playspeekVoices(data);	
+			playspeekVoices(data);
 			pause_record_audio();
 			remove(data);
 			usleep(1000);

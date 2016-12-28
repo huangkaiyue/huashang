@@ -19,6 +19,12 @@
 #endif	//end TEST_WIFI
 
 static unsigned char connetState=0;
+int checkconnetState(void){
+	if(connetState==0)
+		return 0;
+	else
+		return -1;
+}
 
 void checkConnectFile(void)
 {
@@ -79,12 +85,18 @@ static int smartGetSsid(char *smartData,char *ssid,char *passwd)
 	//printf("ssid:%s pwd: %s \n",ssid,passwd);
 	return 0;
 }
-static void createInternetLock(void){
+static void createSmartConfigLock(void){
 	fopen("/var/SmartConfig.lock","w+");
 }
 
-static void delInternetLock(void){
+static void delSmartConfigLock(void){
 	remove("/var/SmartConfig.lock");
+}
+static int createInternetLock(void){
+	fopen("/var/internet.lock","w+");
+}
+static void delInternetLock(void){
+	remove("/var/internet.lock");
 }
 static int SmartConfig(void *arg){
   	FILE *fp=NULL;
@@ -99,7 +111,7 @@ static int SmartConfig(void *arg){
 		perror("calloc failed ");
 		return ret ;
 	}	
-	createInternetLock();
+	createSmartConfigLock();
 	system("iwpriv apcli0 elian start");
 	while (++timeout<280){	
 		//必须实时打开管道，才能读取到更新的数据
@@ -129,7 +141,7 @@ static int SmartConfig(void *arg){
 		snprintf(wifi->passwd,64,"%s",pwd);
 		wifi->connetEvent(SMART_CONFIG_OK);	//已经接收到ssid 和 passwd
 		sendSsidPasswd(ssid,pwd);
-		delInternetLock();
+		delSmartConfigLock();
 		sleep(5);
 		while(++timeout<30){	//等待配网成功后，使能按键
 			sleep(1);
@@ -140,7 +152,8 @@ static int SmartConfig(void *arg){
 		}
 	}else{
 		wifi->connetEvent(SMART_CONFIG_FAILED); //没有收到app发送过来的ssid和passwd
-		delInternetLock();
+		delSmartConfigLock();
+		delInternetLock();	//上半段解文件锁
 	}
 	wifi->enableGpio();
 	free(wifi);
@@ -160,6 +173,7 @@ int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void))
 	ConnetEvent(START_SMARTCONFIG);	//通知用户输入wifi 密码，进行配网
 	int ret=0;
 	connetState=1;
+	createInternetLock();	//上半段上文件锁
 	ConnetWIFI *wifi =(ConnetWIFI *)calloc(1,sizeof(ConnetWIFI));
 	if(wifi==NULL)
 	{
@@ -173,6 +187,8 @@ int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void))
 	smartConifgLog("startSmartConfig pool_add_task ok\n");
 	pool_add_task(SmartConfig, wifi);
 exit0:
+	connetState=0;
+	delInternetLock();	//上半段解文件锁
 	return ret;
 }
 

@@ -336,7 +336,7 @@ static int handle_uartMsg(int fd ,unsigned char buf,int size)
 					SocSendMenu(SMOKER_OK,0);
 					uartCtr->battery=data.data;
 					uartCtr->Ack_batteryCtr(get_battery(),uartCtr->charge);
-					if(uartCtr->battery==1&&batterylow==0){		//电量低于25，报语音
+					if(uartCtr->battery<=1&&batterylow==0){		//电量低于25，报语音
 						uartCtr->voicesEvent(3);
 						batterylow=1;
 					}
@@ -417,7 +417,7 @@ static int pthread_create_attr(void *(*start_routine) (void *), void *arg)
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	return pthread_create(&tid,&attr,start_routine,arg);	
+	return pthread_create(&tid,&attr,start_routine,arg);
 }
 //#define TEST
 /*************************************************
@@ -445,9 +445,9 @@ int init_Uart(void VoicesEvent(int event),void ack_batteryCtr(int recvdata,int p
 #ifndef TEST
 	usleep(10000);
 	SocSendMenu(3,NULL);
+#endif
 	usleep(10000);
 	SocSendMenu(4,NULL);
-#endif
 	return 0;
 }
 /*************************************************

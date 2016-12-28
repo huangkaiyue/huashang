@@ -68,6 +68,7 @@ static void loadLocalServer(int argc,const char *argv[]){
 #ifdef SYSTEMLOCK
 	checkSystemLock();
 #endif
+	srand((unsigned)time(NULL));	//取随机数基数
 	mkdir(CACHE_WAV_PATH,777);
 }
 
@@ -84,7 +85,7 @@ int main(int argc, char **argv){
 			continue;
 		}
 		switch(event){
-			case URL_VOICES_EVENT:
+			case URL_VOICES_EVENT:	//url播放
 				#ifdef PALY_URL_SD
 					PlayUrl((const void *)msg);
 				#else
@@ -92,7 +93,12 @@ int main(int argc, char **argv){
 				#endif
 				free((void *)msg);
 				break;
-			case LOCAL_MP3_EVENT:	
+			case TULING_URL_MAIN:	//图灵播放
+				downTulingMp3((const char*)msg);
+				free((void *)msg);
+				break;
+			case LOCAL_MP3_EVENT:	//本地播放
+				printf("LOCAL_MP3_EVENT start play\n");
 				playLocalMp3((const char *)msg);
 				free((void *)msg);
 				usleep(1000);

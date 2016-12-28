@@ -77,20 +77,25 @@ static inline signed int scale(mad_fixed_t sample){
         sample = -MAD_F_ONE;
     return sample >> (MAD_F_FRACBITS + 1 - 16);
 }
-
+unsigned char bithz=0;
 static enum mad_flow output(void *data,struct mad_header const *header,struct mad_pcm *pcm){
     unsigned int nchannels, nsamples;
-//    unsigned int rate;
+    unsigned int rate;
 	signed int sample;
     mad_fixed_t const *left_ch, *right_ch;
 	char buf[4];
     /* pcm->samplerate contains the sampling frequency */
-//    rate = pcm->samplerate;
+    rate = pcm->samplerate;
     nchannels = pcm->channels;
     nsamples = pcm->length;
     left_ch = pcm->samples[0];
     right_ch = pcm->samples[1];
-
+	//printf("pcm->samplerate =%d\n",pcm->samplerate);
+	if(rate==16000&&bithz==0){
+		bithz==1;
+		return MAD_FLOW_CONTINUE;
+	}
+	bithz--;
     while (nsamples--)
     {
         /* output sample(s) in 16-bit signed little-endian PCM */
@@ -110,6 +115,7 @@ static enum mad_flow output(void *data,struct mad_header const *header,struct ma
 			Mad->WritePcmVoices(buf,4);
 		}
     }
+	
     return MAD_FLOW_CONTINUE;
 }
 

@@ -28,7 +28,8 @@ static unsigned char reqNum=15;
 static char ServerIp[20];
 #endif
 static char upload_head[] = 
-	"POST /openapi/speech/speechapi HTTP/1.1\r\n"
+	"POST /speechapi/speech/speechapi HTTP/1.1\r\n"
+//	"POST /openapi/speech/speechapi HTTP/1.1\r\n"
 	"Charset: UTF-8\r\n"
 	"Content-Type: multipart/form-data;boundary=***\r\n"
 	"Cache-Control: no-cache\r\n"
@@ -272,7 +273,7 @@ int reqTlVoices(int timeout,const char *key,const void * audio,int len,int rate,
 	int ret =0;
 	struct timeval starttime,endtime;
     gettimeofday(&starttime,0); 
-	ret=httpUploadData(timeout,key,(const char *)"test79.tuling123.com",audio,len,rate,format,text,textSize);
+	ret=httpUploadData(timeout,key,(const char *)"opentest.tuling123.com",audio,len,rate,format,text,textSize);
 	printf("ret = %d\n",ret);
 	gettimeofday(&endtime,0);
     double timeuse = 1000000*(endtime.tv_sec - starttime.tv_sec) + endtime.tv_usec - starttime.tv_usec;

@@ -154,6 +154,9 @@ void pasreInputCmd(const char *com)
     	}else if (!strcmp(com, "guoxue"))
     	{
     		createPlayEvent((const void *)"guoxue",1);
+    	}else if (!strcmp(com, "xiai"))
+    	{
+    		createPlayEvent((const void *)"xiai",1);
     	}else if (!strcmp(com, "english"))
     	{
     		createPlayEvent((const void *)"english",1);

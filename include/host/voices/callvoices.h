@@ -14,6 +14,7 @@
 #define TIME_OUT				9	//关闭系统
 #define TIME_SIGN				12	//长时间无事件
 #define PLAY_OUT				13	//关闭系统
+#define SPEEK_WAIT				14	//对讲事件
 
 #define RECODE_STOP 			10  //录音停止,退出整个录音线程
 #define RECODE_EXIT_FINNISH		11	//录音正常退出
@@ -38,6 +39,7 @@
 #define SPEEK_VOICES_EVENT		8		//接收到语音消息	
 #define TALK_EVENT_EVENT		9		//对讲事件
 #define QUIT_MAIN				10		//退出main函数
+#define TULING_URL_MAIN			11		//图灵URL事件
 
 //----------------------系统音---------------------------------------
 #define END_SYS_VOICES_PLAY			1	//结束音
@@ -57,16 +59,36 @@
 #define SEND_OK_PLAY				20	//发送成功
 #define SEND_ERROR_PLAY				21	//发送失败
 #define SEND_LINK_PLAY				22	//正在发送
+#define KEY_DOWN_PLAY				23	//按下按键音
+#define PLAY_ERROT_PLAY				24	//播放失败
+#define TF_ERROT_PLAY				25	//TF加载失败
+#define NETWORK_ERROT_PLAY			26	//网络连接失败
+#define WIFI_CHECK_PLAY				27	//检查WiFi
+#define WIFI_NO						28	//检查网络环境失败
+#define WIFI_YES					29	//检查网络环境成功
 
+#define NETWORK_OK 0	//联网成功
+#define NETWORK_ER 1	//联网失败
+//---------------------------------------------------------
+#define VOICES_MIN	13200	//是否是大于0.5秒的音频，采样率16000、量化位16位
+#define VOICES_ERR	1000	//误触发
+
+#define SEC				1
+#define MIN				60*SEC
+#define SYSTEMOUTSIGN	5*MIN
+#define SYSTEMOUTTIME	20*MIN
+#define PLAYOUTTIME		600*MIN
+#define ERRORTIME		30*24*60*MIN
+//--------------------------------------------------------
 typedef struct sys_message{
 	unsigned char recorde_live;
 	unsigned char oldrecorde_live;
-	unsigned char error_400002;	
 	char Play_sign:4;//停止标志位
 	char sd_path[20];
 	int Starttime;
 	int Playlocaltime;
 	unsigned char localplayname;
+	unsigned char network_live;
 }SysMessage;
 extern SysMessage sysMes;
 //--------------------eventVoices.c----------------------------------------
@@ -96,6 +118,7 @@ extern int SetSystemTime(unsigned char outtime);
 extern void init_record_pthread(void);
 extern void exit_record_pthread(void);
 //--------------------eventVoices.c-----------------------------------------------
+extern void setNetWorkLive(unsigned char live);
 extern int createPlayEvent(const void *play,unsigned char Mode);
 extern void CleanUrlEvent(void);
 extern void QttsPlayEvent(const char *txt,int type);
