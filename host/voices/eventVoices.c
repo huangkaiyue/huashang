@@ -170,9 +170,8 @@ static int PlayLocal(unsigned char menu,const char *path, unsigned char Mode){
 		create_event_system_voices(PLAY_ERROT_PLAY);
 		return ret;
 	}
-	snprintf(buf,128,"%s%s%s",TF_SYS_PATH,path,filename);
+	snprintf(buf,128,"%s%s",TF_SYS_PATH,path);
 	if((menu==xiai)&&CheckFileNum(buf)){	 //喜爱目录为空
-	//if((menu==xiai)){
 		create_event_system_voices(LIKE_ERROT_PLAY);
 		return ret;
 	}
@@ -180,6 +179,7 @@ static int PlayLocal(unsigned char menu,const char *path, unsigned char Mode){
 		//create_event_system_voices(PLAY_ERROT_PLAY);
 		return ret;
 	}
+	snprintf(buf,128,"%s%s",buf,filename);
 	printf("filepath = %s\n",buf);
 	ret=CreateLocalMp3(buf);
 	if(ret==0)
@@ -228,6 +228,7 @@ void DelLikeMusic(void){
 		}
 		return ;
 	}
+	printf("Del_like_music like music sub \n");
 	Del_like_music();
 }
 #define VOLWAITTIME		300*1000	//音量加减时间间隔
@@ -552,8 +553,6 @@ void handle_event_system_voices(int sys_voices){
 		case CONNECT_OK_PLAY:			//连接成功
 			play_sys_tices_voices(LINK_SUCCESS);
 			Link_Ok_Work();		//连接成功关灯，开灯，状态设置
-			QttsPlayEvent("小朋友我们接着上次内容继续听吧，开始播放。",QTTS_GBK);
-			createPlayEvent((const void *)"xiai",PLAY_NEXT);
 			enable_gpio();
 			break;
 		case NOT_FIND_WIFI_PLAY:			//没有扫描到wifi
@@ -819,8 +818,20 @@ void save_recorder_voices(const char *voices_data,int size){
 
 #ifdef LOCAL_MP3
 static void *waitLoadMusicList(void *arg){
-	sleep(15);
+	int timeout=0;
+	while(++timeout<20){
+		if(!access(TF_SYS_PATH, F_OK)&&(getNetWorkLive()!=2)){		//检查tf卡
+			break;
+		}
+		sleep(1);
+	}
 	SysOnloadMusicList((const char *)TF_SYS_PATH,(const char *)TF_MP3_PATH,(const char *)TF_STORY_PATH,(const char *)TF_ENGLISH_PATH,(const char *)TF_GUOXUE_PATH);
+#ifdef CHECKNETWORK
+	if(GetRecordeLive()==RECODE_PAUSE&&(getNetWorkLive()!=2){
+		//QttsPlayEvent("小朋友我们接着上次内容继续听吧，开始播放。",QTTS_GBK);
+		createPlayEvent((const void *)"xiai",PLAY_NEXT);
+	}
+#endif
 	CacheNetServer();	//检查网络服务
 	return;
 } 

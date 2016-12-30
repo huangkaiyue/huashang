@@ -42,6 +42,7 @@ void cleanStreamData(Mp3Stream *st){
 		fclose(st->rfp);
 	st->rfp=NULL;
 #endif
+	memset(st->mp3name,0,128);
 	st->player.playState=MAD_EXIT;
 }
 static void ack_progress(void){
@@ -150,15 +151,21 @@ static void Savemp3File(char *filepath){
 		case 1:		//Ìí¼ÓÏ²°®
 			snprintf(buf,200,"cp %s %s%s",filepath,MP3_LIKEPATH,st->mp3name);
 			like_mp3_sign=0;
+			system(buf);
 			InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
 			break;
 		case 2:		//É¾³ýÏ²°®
 			//snprintf(buf,200,"%s%s",MP3_LIKEPATH,st->mp3name);
 			like_mp3_sign=0;
-			remove(filepath);
-			DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
+			printf("del file name : %s (mp3name :%s)\n",filepath,st->mp3name);
+			if(strcmp(st->mp3name,"")){
+				remove(filepath);
+				DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
+			}
 			break;
 		default:
+			snprintf(buf,200,"cp %s %s%s",URL_SDPATH,MP3_SDPATH,st->mp3name);
+			system(buf);
 			break;
 	}
 }

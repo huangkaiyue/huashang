@@ -51,6 +51,7 @@ static void loadLocalServer(int argc,const char *argv[]){
 	}
 	time_t t;
 	sysMes.localplayname=0;		//本地播放目录
+	sysMes.network_live=2;		//开机不属于联网成功或失败
 	sysMes.Playlocaltime=time(&t);
 	set_pthread_sigblock();
 	pool_init(3);

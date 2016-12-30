@@ -236,7 +236,7 @@ int get_table(const char *table_name,void *Para,int (*sqlite3_callback)( void * 
 	return 0;
 }
 
-//#define SHOW_SQL_DB
+#define SHOW_SQL_DB
 #ifdef SHOW_SQL_DB
 int show_table(const char *table_name){
 	int result, i, j, index;

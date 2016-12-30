@@ -105,7 +105,7 @@ void SaveSystemPlayNum(void){
 #else
 	List_t cachelist;
 	int i=0;
-	for(i=0;i<4;i++){
+	for(i=0;i<MUSIC_LIST;i++){
 		snprintf(cachelist.listname,24,"%s%s","cache",Mlist->list[i].listname);
 		if(InsertMusicMessageSQL(MESSAGE_TABLE,cachelist.listname,Mlist->list[i].playindex,0)){
 			UpdateSqlByMessage(MESSAGE_TABLE,cachelist.listname,Mlist->list[i].playindex,0);
@@ -138,7 +138,7 @@ int SysOnloadMusicList(const char *sdcard,const char *mp3Music,const char *story
 	get_paly_num(&Mlist->list[3].playindex,guoxue_N);
 #else
 	List_t cachelist;
-	for(i=0;i<4;i++){
+	for(i=0;i<MUSIC_LIST;i++){
 		// 缓存目录当中的 cachemp3 字段里面，Nums记录的是关机之后，播放的num标号
 		memset(&cachelist,0,sizeof(List_t));
 		snprintf(cachelist.listname,24,"%s%s","cache",Mlist->list[i].listname);
@@ -224,6 +224,9 @@ int DelXimalayaMusic(const char *musicDir,const char *musicName){
 			UpdateSqlByMessage(MESSAGE_TABLE,Mlist->list[MUSIC_LIST-1].listname,Mlist->list[MUSIC_LIST-1].Nums,0);
 	}
 	return 0;
+}
+int ShowDbAll(void){
+	show_table(XIMALA_MUSIC);
 }
 #endif
 int InitMusicList(void){

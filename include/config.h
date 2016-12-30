@@ -4,7 +4,7 @@
 
 #define VERSION "\n12.11-15:00\n"	//版本号
 
-#define TEST_SDK					//测试SDK
+//#define TEST_SDK					//测试SDK
 
 #ifdef TEST_SDK						//使能命令输入行
 	#define WORK_INTER

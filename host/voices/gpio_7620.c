@@ -271,7 +271,7 @@ static void signal_handler(int signum)
 				break;
 #endif
 			case RESERVE_KEY3:	//play last
-				Del_like_music();
+				DelLikeMusic();
 				break;
 		}// end gpio_down
 		DEBUG_GPIO("signal down (%d) !!!\n",gpio.mount);
