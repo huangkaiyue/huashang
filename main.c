@@ -94,6 +94,7 @@ int main(int argc, char **argv){
 				free((void *)msg);
 				break;
 			case TULING_URL_MAIN:	//Õº¡È≤•∑≈
+				start_play_tuling();
 				downTulingMp3((const char*)msg);
 				free((void *)msg);
 				break;

@@ -111,6 +111,7 @@
 #define KEY_VOICE_UP		"qtts/key_up_8K.amr"			//
 
 #define PLAY_ERROR			"qtts/play_error_8K.amr"		//播放失败
+#define LIKE_ERROR			"qtts/like_error_8K.amr"		//当前没有喜爱内容，快去收藏喜爱内容吧
 #define TF_ERROR			"qtts/tf_error_8K.amr"			//tf卡加载失败
 
 #define NETWORK_ERROR_1		"qtts/network_error_8K_1.amr"		//网络连接失败

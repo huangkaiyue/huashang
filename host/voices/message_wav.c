@@ -135,27 +135,39 @@ void playspeekVoices(const char *filename){
 #if 1
 void playsysvoices(char *filePath){
 	char path[128];
+	int i=0;
 	playsysvoicesLog("playsysvoices start \n");
 	i2s_start_play(8000);
 	if(strstr(filePath,"no_voices_8K")||strstr(filePath,"start_haha_talk_8k")){
 	}else{
 		playsysvoicesLog("playsysvoices while start \n");
 		while(1){
+			i++;
+			//if();
+			start_event_play_wav();
+			if(get_qtts_cache()==1){
+				clean_qtts_cache_2();
+				pause_record_audio();
+				return;
+			}
 			if(get_qtts_cache()==0)
 				break;
 			usleep(1000);
 		}	//----fix me
-		playsysvoicesLog("playsysvoices while end \n");
+		playsysvoicesLog("playsysvoices while end (i=%d)\n",i);
 		sleep(1);
 	}
 	snprintf(path,128,"%s%s",sysMes.sd_path,filePath);
 	playAmrVoices(path);
-	usleep(800*1000);
-	clean_qtts_cache();
-	pause_record_audio();
 #ifdef CLOSE_VOICE
+	usleep(800*1000);
+	clean_qtts_cache_2();
+	pause_record_audio();
 	usleep(1000*1000);
 	Mute_voices(MUTE);
+#else
+	clean_qtts_cache_2();
+	pause_record_audio();
 #endif
 }
 
@@ -171,7 +183,7 @@ void play_sys_tices_voices(char *filePath)
 	i2s_start_play(8000);
 #ifdef CLOSE_VOICE
 	if(strstr(path,"TuLin_Wint_8K")){
-		mute_recorde_vol(102);
+		mute_recorde_vol(102);	//保持跟里面条件一致
 	}else{
 		mute_recorde_vol(UNMUTE);
 	}
@@ -187,11 +199,13 @@ void play_sys_tices_voices(char *filePath)
 		return;
 	}
 	clean_qtts_cache_2();	//qtts 正常播放
+#ifdef CLOSE_VOICE
 	usleep(800*1000);
 	pause_record_audio();
-#ifdef CLOSE_VOICE
 	usleep(1000*1000);
 	Mute_voices(MUTE);
+#else
+	pause_record_audio();
 #endif
 }
 
@@ -288,11 +302,12 @@ void PlayQttsText(char *text,unsigned char type)
 #endif
 	if(I2S.qttsend==1){
 		tolkLog("tolk qtts qttsend == 1\n");
-		clean_play_cache();		//清理
-		pause_record_audio();	//退出播放状态
-#ifdef CLOSE_VOICE
+#if 1
 		Mute_voices(MUTE);
 #endif
+		pause_record_audio();	//退出播放状态
+		clean_play_cache();		//清理
+		stopclean();	//最后一片数据丢掉
 		return;
 	}
 	if(I2S.qttspos!=0&&I2S.qttsend!=1)
@@ -302,12 +317,15 @@ void PlayQttsText(char *text,unsigned char type)
 		I2S.qttspos =0;
 	}
 	tolkLog("tolk qtts clean\n");
-	clean_play_cache();		//清理
+#ifdef CLOSE_VOICE
 	usleep(800*1000);
 	tolkLog("tolk qtts pause\n");
 	pause_record_audio();	//退出播放状态
-#ifdef CLOSE_VOICE
+	clean_play_cache();		//清理
 	usleep(1000*1000);
 	Mute_voices(MUTE);
+#else
+	pause_record_audio();	//退出播放状态
+	clean_play_cache();		//清理
 #endif
 }

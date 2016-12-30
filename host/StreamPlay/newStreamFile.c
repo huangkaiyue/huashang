@@ -115,6 +115,7 @@ static void InputNetStream(char * inputMsg,int inputSize){
 
 static unsigned char like_mp3_sign=0;
 #ifdef PALY_URL_SD
+#if 0
 static void Savemp3File(void){
 	if(CheckSdcardInfo(MP3_SDPATH)){	//内存不足50M删除指定数目的歌曲
 		DelSdcardMp3file(MP3_SDPATH);
@@ -139,6 +140,30 @@ static void Delmp3File(void){
 		DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
 	}
 }
+#else
+static void Savemp3File(char *filepath){
+	char buf[200]={0};
+	if(CheckSdcardInfo(MP3_SDPATH)){	//内存不足50M删除指定数目的歌曲
+		DelSdcardMp3file(MP3_SDPATH);
+	}
+	switch(like_mp3_sign){
+		case 1:		//添加喜爱
+			snprintf(buf,200,"cp %s %s%s",filepath,MP3_LIKEPATH,st->mp3name);
+			like_mp3_sign=0;
+			InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
+			break;
+		case 2:		//删除喜爱
+			//snprintf(buf,200,"%s%s",MP3_LIKEPATH,st->mp3name);
+			like_mp3_sign=0;
+			remove(filepath);
+			DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
+			break;
+		default:
+			break;
+	}
+}
+
+#endif
 //喜爱
 void Save_like_music(void){
 	like_mp3_sign=1;
@@ -190,7 +215,7 @@ static void *NetplayStreamMusic(void *arg){
 #endif
 #ifdef PALY_URL_SD
 	if(st->cacheSize==st->streamLen){	//下载结束
-		Savemp3File();
+		Savemp3File(URL_SDPATH);
 	}
 #endif
 	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//发送结束状态
@@ -264,6 +289,7 @@ void NetStreamExitFile(void){
 		DecodeExit();
 		pthread_mutex_unlock(&st->mutex);
 		eventlockLog("eventlock exit mp3\n",5);
+		DEBUG_STREAM("NetStreamExitFile while ...\n");
 		usleep(100);
 	}
 	DEBUG_STREAM("NetStreamExitFile end ...\n");
@@ -428,7 +454,7 @@ void playLocalMp3(const char *mp3file){
 		}
 #endif
 #ifdef PALY_URL_SD
-	Delmp3File();		//删除喜爱歌曲
+	Savemp3File(mp3file);		//删除喜爱歌曲
 #endif
 	cleanStreamData(st);	//状态切换是否加锁
 	DEBUG_STREAM("exit play ok (%d)\n",get_playstate());
@@ -447,17 +473,16 @@ void PlayUrl(const void *data){
 	char *buf= (char *)calloc(1,strlen(filename)+1+MP3_PATHLEN);
 	char *likebuf= (char *)calloc(1,strlen(filename)+1+MP3_LIKEPATHLEN);
 	if(buf||likebuf){
-		snprintf(buf,200,"%s%s",MP3_SDPATH,filename);		//更新文件播放时间
-		snprintf(likebuf,200,"%s%s",MP3_LIKEPATH,filename);	//更新文件播放时间
+		snprintf(buf,200,"%s%s",MP3_SDPATH,filename);		//
+		snprintf(likebuf,200,"%s%s",MP3_LIKEPATH,filename);	//
+		snprintf(st->mp3name,128,"%s",filename);			//将名字写入结构体中
 		if(!access(buf,F_OK)){
-			//snprintf(filecmd,128,"%s%s","chmod 777 ",buf);
-			//system(filecmd);
 			DEBUG_STREAM("PlayUrl playLocalMp3(%s) ... \n",filename);
 			playLocalMp3(buf);
 		}else if(!access(likebuf,F_OK)){
+			DEBUG_STREAM("PlayUrl playLocalMp3(%s) ... \n",filename);
 			playLocalMp3(likebuf);
-		}
-		else{
+		}else{
 			DEBUG_STREAM("PlayUrl NetStreamDownFilePlay (%s)... \n",filename);
 			NetStreamDownFilePlay(data);
 		}

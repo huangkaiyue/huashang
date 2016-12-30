@@ -4,7 +4,7 @@
 
 #define VERSION "\n12.11-15:00\n"	//版本号
 
-//#define TEST_SDK					//测试SDK
+#define TEST_SDK					//测试SDK
 
 #ifdef TEST_SDK						//使能命令输入行
 	#define WORK_INTER
@@ -18,7 +18,7 @@
 
 #define CLOCESYSTEM				//超时退出
 
-#define CLOSE_VOICE				//不工作处于关闭音频状态
+//#define CLOSE_VOICE				//不工作处于关闭音频状态
 
 //#define TULIN_WINT_MUSIC		//图灵过渡音位音乐
 	

@@ -256,13 +256,13 @@ void ack_playCtr(int nettype,Player_t *play,unsigned char playState)
 	pItem = cJSON_CreateObject();
 	cJSON_AddStringToObject(pItem, "handler", "mplayer");
 	CreateState(pItem,playState);
-#ifdef CLOSE_VOICE
 	if(playState==STREAM_EXIT){
+#ifndef CLOSE_VOICE
 		Mute_voices(MUTE);
+#endif
 		clean_play_cache();
 		pause_record_audio();
 	}
-#endif
 	cJSON_AddStringToObject(pItem, "url",play->playfilename);
 	cJSON_AddStringToObject(pItem, "name",play->musicname);
 	cJSON_AddNumberToObject(pItem, "time",(int)play->musicTime);

@@ -130,10 +130,10 @@ int SetVol(int dir,int vol)
 	switch(dir)
 	{
 		case VOL_SUB:
-			I2S.tx_vol-=3;
+			I2S.tx_vol-=VOL_NUM;
 			break;
 		case VOL_ADD:
-			I2S.tx_vol+=3;
+			I2S.tx_vol+=VOL_NUM;
 			break;
 		case VOL_SET:
 			if(vol==0)
@@ -162,7 +162,11 @@ int GetVol(void){
 	return (int)I2S.tx_vol;
 }
 void stopclean(void){
+	//ioctl(I2S.i2s_fd, I2S_TX_STOP, 0);
 	ioctl(I2S.i2s_fd, I2S_STOP_WM8960, 0);
+}
+void cleanstop(void){
+	ioctl(I2S.i2s_fd, I2S_START_WM8960, 0);
 }
 void PlayorPause(void){
 	ioctl(I2S.i2s_fd, I2S_PLAY_PAUSE_WM8960, 0);
@@ -170,7 +174,7 @@ void PlayorPause(void){
 void mute_recorde_vol(int change)
 {
 #if 1
-	if(change==107){
+	if(change==102){	//保持跟外面调整的一致
 		if(change==UNMUTE){
 			SET_TX_VOL(I2S.i2s_fd,I2S.tx_vol);
 		}else{
@@ -334,7 +338,9 @@ int i2s_start_play(unsigned short rate)
 	if(rate==I2S.tx_rate)  //播放的采样率等于录音采样率，不需要切换
 	{
 		printf("start play rate = %d\n",rate);
+#ifndef CLOSE_VOICE		//保持打开状态
 		Mute_voices(UNMUTE);
+#endif
 		return -1;
 	}
 	Mute_voices(MUTE);

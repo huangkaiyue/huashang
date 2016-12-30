@@ -149,7 +149,7 @@ static int parseJson_string(const char * pMsg,void handle_jsion(char *textString
 #endif
 			goto exit;
 	}
-#if 1	//文本
+#if 0	//文本
     pSub = cJSON_GetObjectItem(pJson, "text");		//返回结果
     if(NULL == pSub){
 		DEBUG_STD_MSG("get text failed\n");
@@ -166,7 +166,13 @@ static int parseJson_string(const char * pMsg,void handle_jsion(char *textString
 	printf("=get url=%s=\n",pSub->valuestring);
 	//http://opentest.tuling123.com/file/d3a38a1e-7318-4837-be91-43642ae93842.mp3
 	//AddDownEvent("http://opentest.tuling123.com/file/d3a38a1e-7318-4837-be91-43642ae93842.mp3",TULING_URL_MAIN);
-	AddDownEvent(pSub->valuestring,TULING_URL_MAIN);
+	char *URL= (char *)calloc(1,strlen(pSub->valuestring)+1);
+	if(URL==NULL){
+		perror("calloc error !!!");
+		goto exit;
+	}
+	sprintf(URL,"%s",pSub->valuestring);
+	AddDownEvent(URL,TULING_URL_MAIN);
 #endif
 	pSub = cJSON_GetObjectItem(pJson, "info");		//语音识别
     if(NULL == pSub){

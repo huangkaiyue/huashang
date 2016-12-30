@@ -20,7 +20,7 @@ static void InputTulingStream(char * inputMsg,int inputSize){
 	pthread_mutex_lock(&st->mutex);
 	if(!__safe_fread(inputMsg,inputSize))
 		st->playSize +=inputSize;
-	DEBUG_STREAM(" st->playSize = %d \n",st->playSize);
+	//DEBUG_STREAM(" st->playSize = %d \n",st->playSize);
 	pthread_mutex_unlock(&st->mutex);
 }
 
@@ -28,6 +28,7 @@ static void *Netplaytuling(void *arg){
 	st->SetI2SRate(8000);
 	DecodePlayMusic(InputTulingStream);
 	cleanStreamData(st);	//×´Ì¬ÇÐ»»ÊÇ·ñ¼ÓËø
+	pause_record_audio();
 	return NULL;
 }
 

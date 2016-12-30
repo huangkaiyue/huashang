@@ -23,10 +23,10 @@
 #define	SPEEK_KEY		41	//会话键
 #define	RESERVE_KEY1	42	//科技
 
-#define RESERVE_KEY3	21	//儿歌
+#define RESERVE_KEY3	20	//儿歌
 #define ADDVOL_KEY		16	//上一曲--音量加
 #define SUBVOL_KEY		17	//下一曲--音量减
-#define LETFLED_KEY		20	//素质
+#define LETFLED_KEY		21	//素质
 #define RIGHTLED_KEY	14	//配网--灯
 
 #define GPIO_DEV	"/dev/gpio"

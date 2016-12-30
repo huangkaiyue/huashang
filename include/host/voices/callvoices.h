@@ -15,6 +15,7 @@
 #define TIME_SIGN				12	//长时间无事件
 #define PLAY_OUT				13	//关闭系统
 #define SPEEK_WAIT				14	//对讲事件
+#define PLAY_TULING				15	//播放图灵
 
 #define RECODE_STOP 			10  //录音停止,退出整个录音线程
 #define RECODE_EXIT_FINNISH		11	//录音正常退出
@@ -66,6 +67,7 @@
 #define WIFI_CHECK_PLAY				27	//检查WiFi
 #define WIFI_NO						28	//检查网络环境失败
 #define WIFI_YES					29	//检查网络环境成功
+#define LIKE_ERROT_PLAY				30	//当前没有喜爱内容，快去收藏喜爱内容吧
 
 #define NETWORK_OK 0	//联网成功
 #define NETWORK_ER 1	//联网失败
@@ -76,8 +78,8 @@
 #define SEC				1
 #define MIN				60*SEC
 #define SYSTEMOUTSIGN	5*MIN
-#define SYSTEMOUTTIME	20*MIN
-#define PLAYOUTTIME		600*MIN
+#define SYSTEMOUTTIME	15*MIN
+#define PLAYOUTTIME		60*MIN
 #define ERRORTIME		30*24*60*MIN
 //--------------------------------------------------------
 typedef struct sys_message{

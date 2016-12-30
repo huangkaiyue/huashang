@@ -58,6 +58,10 @@ void start_speek_wait(void)
 {
 	sysMes.recorde_live =SPEEK_WAIT;
 }
+void start_play_tuling(void)
+{
+	sysMes.recorde_live =PLAY_TULING;
+}
 /*****************************************************
 *进入播放URL状态
 *****************************************************/
@@ -181,7 +185,7 @@ static void voices_packt(const char *data,int size)
 	}
 	else if(len_voices > VOICES_MIN)	//音频上传
 	{
-#if 1
+#if 0
 		start_event_play_wav();		//播放wav
 		pool_add_task(play_sys_tices_voices,TULING_WINT);
 		usleep(1000*1000);

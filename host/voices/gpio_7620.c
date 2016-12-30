@@ -14,8 +14,8 @@ static Gpio gpio;
 static int led_type;
 static int led_system_type;
 
-#define GVOL_ADD VOL_ADD
-#define GVOL_SUB VOL_SUB
+#define GVOL_ADD 	VOL_ADD
+#define GVOL_SUB 	VOL_SUB
 #define ONCEVOL		//音量加一次
 
 //开关音频驱动函数
@@ -166,7 +166,8 @@ static void signal_handler(int signum)
 				
 			case RESERVE_KEY2:
 #ifdef SPEEK_VOICES1
-				gpio.speek_tolk=SPEEK;
+				//gpio.speek_tolk=SPEEK;
+				ReadSpeekGpio();
 #endif
 				break;
 
@@ -203,7 +204,7 @@ static void signal_handler(int signum)
 				keyStreamPlay();
 				break;
 			case RESERVE_KEY3:	//play last
-				Save_like_music();
+				CreateLikeMusic();
 				break;
 			case RIGHTLED_KEY:
 #ifdef VOICS_CH
@@ -226,7 +227,8 @@ static void signal_handler(int signum)
 				break;
 					
 			case RESERVE_KEY2://会话对讲开关键
-				gpio.speek_tolk=TOLK;
+				//gpio.speek_tolk=TOLK;
+				ReadSpeekGpio();
 				break;
 				
 			case NETWORK_KEY://配网键
@@ -379,7 +381,8 @@ static void signal_handler(int signum)
 #ifdef	LOCAL_MP3
 			case RESERVE_KEY2:
 #ifdef	SPEEK_VOICES1
-				gpio.speek_tolk=SPEEK;
+				//gpio.speek_tolk=SPEEK;
+				ReadSpeekGpio();
 #else
 				if(sysMes.localplayname==english){
 					keyStreamPlay();
@@ -424,7 +427,8 @@ static void signal_handler(int signum)
 					
 			case RESERVE_KEY2://会话对讲开关键
 #ifdef	SPEEK_VOICES1
-				gpio.speek_tolk=TOLK;
+				//gpio.speek_tolk=TOLK;
+				ReadSpeekGpio();
 #endif
 				break;
 				

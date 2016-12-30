@@ -13,6 +13,27 @@
 
 #define SD_MIN		50
 
+int CheckFileNum(char * sdpath){
+	int ret = -1;
+	DIR *dirptr = NULL;
+	struct dirent *entry;
+	if((dirptr = opendir(sdpath)) == NULL)	
+	{  
+		printf("open dir !\n"); 
+		return ;	
+	}
+	while (entry = readdir(dirptr))  
+	{  
+		//去除当前目录和上一级目录
+		if( !strcmp(entry->d_name,".")||!strcmp(entry->d_name,"..") ){
+			continue;
+		}
+		ret = 0;
+		break;
+	}
+	return ret;
+}
+
 //是否小于SD剩余空间下限大小
 void CheckSdcardInfo(char * sdpath)
 {

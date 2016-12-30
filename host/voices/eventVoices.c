@@ -24,8 +24,9 @@
 #define END_SPEEK_E		END_SPEEK_VOICES			//结束录音
 #define PLAY_URL_E		PLAY_URL					//播放url数据
 #define START_TAIK_MESSAGE_E START_TAIK_MESSAGE
+#define PLAY_TULING_E 	PLAY_TULING
 
-#define DBG_EVENT
+//#define DBG_EVENT
 #ifdef DBG_EVENT  
 #define DEBUG_EVENT(fmt, args...) printf("event : " fmt, ## args)  
 #else   
@@ -33,6 +34,7 @@
 #endif //end DBG_EVENT
 
 extern void DelSdcardMp3file(char * sdpath);
+extern int CheckFileNum(char * sdpath);
 
 SysMessage sysMes;
 
@@ -169,6 +171,15 @@ static int PlayLocal(unsigned char menu,const char *path, unsigned char Mode){
 		return ret;
 	}
 	snprintf(buf,128,"%s%s%s",TF_SYS_PATH,path,filename);
+	if((menu==xiai)&&CheckFileNum(buf)){	 //喜爱目录为空
+	//if((menu==xiai)){
+		create_event_system_voices(LIKE_ERROT_PLAY);
+		return ret;
+	}
+	if(!strcmp(filename,"")){
+		//create_event_system_voices(PLAY_ERROT_PLAY);
+		return ret;
+	}
 	printf("filepath = %s\n",buf);
 	ret=CreateLocalMp3(buf);
 	if(ret==0)
@@ -202,6 +213,7 @@ void CreateLikeMusic(void){
 		}
 		return ;
 	}
+	printf("CreateLikeMusic like music add \n");
 	Save_like_music();
 }
 void DelLikeMusic(void){
@@ -335,6 +347,9 @@ void QttsPlayEvent(const char *txt,int type){
 	if(GetRecordeLive() ==PLAY_URL_E){
 		CleanUrlEvent();
 	}
+	if(GetRecordeLive() ==PLAY_TULING_E){
+		NetStreamExitFile();
+	}
 	char *TXT= (char *)calloc(1,strlen(txt)+1);
 	if(TXT){
 		sprintf(TXT,"%s",txt);
@@ -357,6 +372,8 @@ void down_voices_sign(void){
 		exitqttsPlay();
 	}else if(GetRecordeLive() ==PLAY_URL_E){
 		CleanUrlEvent();
+	}else if(GetRecordeLive() ==PLAY_TULING_E){
+		NetStreamExitFile();
 	}else{
 #ifdef CHECKNETWORK
 	if(checkNetWorkLive()){	//检查网络
@@ -364,12 +381,12 @@ void down_voices_sign(void){
 		return;
 	}
 #endif
-		sysMes.localplayname=0;	
-		NetStreamExitFile();
+	sysMes.localplayname=0;	
+	NetStreamExitFile();
 #if 0
-		create_event_system_voices(KEY_DOWN_PLAY);
+	create_event_system_voices(KEY_DOWN_PLAY);
 #else
-		start_event_std();
+	start_event_std();
 #endif
 	}
 }
@@ -460,6 +477,9 @@ void create_event_system_voices(int sys_voices)
 		if(GetRecordeLive()==PLAY_WAV){
 			exitqttsPlay();	//清理事件
 		}
+		if(GetRecordeLive() ==PLAY_TULING_E){
+			NetStreamExitFile();
+		}
 	}
 	if(GetRecordeLive() ==PLAY_URL_E){
 		CleanUrlEvent();
@@ -532,6 +552,8 @@ void handle_event_system_voices(int sys_voices){
 		case CONNECT_OK_PLAY:			//连接成功
 			play_sys_tices_voices(LINK_SUCCESS);
 			Link_Ok_Work();		//连接成功关灯，开灯，状态设置
+			QttsPlayEvent("小朋友我们接着上次内容继续听吧，开始播放。",QTTS_GBK);
+			createPlayEvent((const void *)"xiai",PLAY_NEXT);
 			enable_gpio();
 			break;
 		case NOT_FIND_WIFI_PLAY:			//没有扫描到wifi
@@ -577,6 +599,10 @@ void handle_event_system_voices(int sys_voices){
 			play_sys_tices_voices(PLAY_ERROR);
 			//start_event_std();
 			break;
+		case LIKE_ERROT_PLAY:			//播放失败
+			play_sys_tices_voices(LIKE_ERROR);
+			//start_event_std();
+			break;
 		case TF_ERROT_PLAY:				//TF加载失败
 			play_sys_tices_voices(TF_ERROR);
 			break;			
@@ -592,6 +618,9 @@ void handle_event_system_voices(int sys_voices){
 void CreateSpeekEvent(const char *filename){
 	if(GetRecordeLive() ==PLAY_URL_E){
 		CleanUrlEvent();
+	}
+	if(GetRecordeLive() ==PLAY_TULING_E){
+		NetStreamExitFile();
 	}
 	char *TXT= (char *)calloc(1,strlen(filename)+1);
 	if(TXT){
@@ -707,6 +736,9 @@ void create_event_voices_key(unsigned int state)
 		return;
 	}else if(GetRecordeLive()==PLAY_WAV_E){
 		exitqttsPlay();
+		return;
+	}else if(GetRecordeLive() ==PLAY_TULING_E){
+		NetStreamExitFile();
 		return;
 	}
 	DEBUG_EVENT("create_event_voices_key(%d) ...\n",state);
