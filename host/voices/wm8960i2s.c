@@ -154,8 +154,8 @@ int SetVol(int dir,int vol)
 		ret = -1;
 	}
 	SET_TX_VOL(I2S.i2s_fd,I2S.tx_vol);
-	return ret;
 	//printf("SetVol :vol = %d\n",I2S.tx_vol);
+	return ret;
 }
 
 int GetVol(void){

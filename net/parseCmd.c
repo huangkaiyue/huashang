@@ -93,11 +93,10 @@ static void test_brocastCtr(int sockfd,struct sockaddr_in *peer,char *recvdata){
 @		0	音量减
 @		1	音量加
 */
-void ack_VolCtr(int sockfd,char *dir,int data)
+void ack_VolCtr(char *dir,int data)
 {
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
-//	DEBUG_TCP("ack_VolCtr : add and sub !!!\n");
 	pItem = cJSON_CreateObject();
 	cJSON_AddStringToObject(pItem, "handler", "vol");
 	cJSON_AddStringToObject(pItem, "dir", dir);
@@ -355,6 +354,18 @@ void SetClockToaliyun(unsigned char clocknum,unsigned char state,const char *tim
 	cJSON_Delete(pItem);
 }
 #endif
+void Ack_CallDev(int recvdata)
+{
+	char* szJSON = NULL;
+	cJSON* pItem = NULL;
+	pItem = cJSON_CreateObject();
+	cJSON_AddStringToObject(pItem, "handler", "call");
+	cJSON_AddStringToObject(pItem, "status","cancel");
+	szJSON = cJSON_Print(pItem);
+	DEBUG_TCP("ack_gpioCtr: %s\n",szJSON);
+	sendAll_Ack(szJSON,strlen(szJSON));
+	cJSON_Delete(pItem);
+}
 void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer)
 {
 #if 0
@@ -391,13 +402,13 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		DEBUG_TCP("dir = %s\n", pSub->valuestring);
 		if(!strcmp(pSub->valuestring,"add")){
 			SetVol(VOL_ADD,0);
-			ack_VolCtr(sockfd,"add",GetVol());//----------->音量加
+			ack_VolCtr("add",GetVol());//----------->音量加
 		}else if (!strcmp(pSub->valuestring,"sub")){
 			SetVol(VOL_SUB,0);
-			ack_VolCtr(sockfd,"sub",GetVol());//----------->音量减
+			ack_VolCtr("sub",GetVol());//----------->音量减
 		}else if (!strcmp(pSub->valuestring,"no")){
 			SetVol(VOL_SET,cJSON_GetObjectItem(pJson, "data")->valueint);
-			ack_VolCtr(sockfd,"no",GetVol());//----------->设置固定音量
+			ack_VolCtr("no",GetVol());//----------->设置固定音量
 		}
 	}//end vol 音量大小
 #ifdef VOICS_CH
@@ -604,6 +615,10 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	}
 	else if (!strcmp(pSub->valuestring,"binddev")){
 		EnableBindDev();
+		QttsPlayEvent("成功收到小伙伴的绑定请求。",QTTS_GBK);
+	}
+	else if (!strcmp(pSub->valuestring,"call")){
+		QttsPlayEvent("在家么，在家么，有人在家么，有重要消息通知你哟，请按按键回复我。",QTTS_GBK);
 	}
 	else if (!strcmp(pSub->valuestring,"uploadfile")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
@@ -611,6 +626,8 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			//create_event_system_voices(20);
 		}else if(!strcmp(pSub->valuestring,"failed")){	//发送失败
 			create_event_system_voices(21);
+		}else if(!strcmp(pSub->valuestring,"timeout")){	//发送失败
+			QttsPlayEvent("当前网络环境差，语音发送失败，请检查网络。",QTTS_GBK);
 		}
 	}
 	else if (!strcmp(pSub->valuestring,"clock")){
@@ -621,6 +638,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			if(cJSON_GetObjectItem(pJson, "path")!=NULL){
 				path=cJSON_GetObjectItem(pJson, "path")->valuestring;
 			}
+			CreateSpeekEvent(path);
 			QttsPlayEvent("闹钟响了，闹钟响了。",QTTS_GBK);
 		}else if(!strcmp(pSub->valuestring,"close")){	//关闭设置开机时间
 			//

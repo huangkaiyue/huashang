@@ -156,21 +156,22 @@ int GetTableSqlById(const char *table_name,int id,char *name){
 	SqlunLock();
 	return 0;
 }
-int GetTableSql(const char *table_name,void table_result(int nRow,int nColumn,char **dbResult)){		
+int GetTableSql(const char *table_name,void *args,int table_result(void *args,int nRow,int nColumn,char **dbResult)){		
 	char *errmsg = NULL;
 	int result,nRow, nColumn;
 	const char *sql 	= NULL;
 	char **dbResult;	
+	int ret;
 	if(db == NULL)
 		return -1;
 	sql = sqlite3_mprintf("select * from '%s' ;",table_name);	
 	result = sqlite3_get_table( db,sql, &dbResult, &nRow, &nColumn, &errmsg );	
 	if( SQLITE_OK == result ){	
-		table_result(nRow, nColumn,dbResult);
+		ret = table_result(args,nRow, nColumn,dbResult);
 		sqlite3_free_table( dbResult );  
-		return -1;
+		return ret;
 	}
-	return 0;
+	return -1;
 }
 int UpdateSql(const char *table_name,const char *usrname,const char *newname){
 	if(db == NULL)
@@ -236,7 +237,7 @@ int get_table(const char *table_name,void *Para,int (*sqlite3_callback)( void * 
 	return 0;
 }
 
-#define SHOW_SQL_DB
+//#define SHOW_SQL_DB
 #ifdef SHOW_SQL_DB
 int show_table(const char *table_name){
 	int result, i, j, index;

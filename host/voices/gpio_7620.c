@@ -174,11 +174,7 @@ static void signal_handler(int signum)
 			case SPEEK_KEY:
 				if(gpio.speek_tolk==SPEEK){
 					end_event_std();
-				}
-				else if(gpio.speek_tolk==BIND_DEV){
-					
-				}
-				else{
+				}else{
 					create_event_voices_key(VOLKEYUP);
 				}
 				break;
@@ -206,7 +202,10 @@ static void signal_handler(int signum)
 			case RESERVE_KEY3:	//play last
 				CreateLikeMusic();
 				break;
-			case RIGHTLED_KEY:
+			case LETFLED_KEY:	//回复键
+				Ack_CallDev();
+				break;
+			case RIGHTLED_KEY:	//bind键
 #ifdef VOICS_CH
 				if(get_volch()==0){
 					set_vol_ch(1);
@@ -214,6 +213,13 @@ static void signal_handler(int signum)
 					set_vol_ch(0);
 				}
 #endif
+				if(gpio.speek_tolk==BIND_DEV){
+					BindDevToaliyun();
+					ReadSpeekGpio();
+					QttsPlayEvent("成功处理小伙伴的绑定请求。",QTTS_GBK);
+				}else{
+					
+				}
 				break;
 		}
 		DEBUG_GPIO("signal up (%d) !!!\n",gpio.mount);
@@ -236,14 +242,10 @@ static void signal_handler(int signum)
 				break;
 				
 			case SPEEK_KEY://会话键
+				ReadSpeekGpio();
 				if(gpio.speek_tolk==SPEEK){
 					down_voices_sign();
-				}
-				else if(gpio.speek_tolk==BIND_DEV){
-					ReadSpeekGpio();
-					BindDevToaliyun();
-				}
-				else{
+				}else{
 					create_event_voices_key(VOLKEYDOWN);
 				}
 				break;
@@ -257,6 +259,7 @@ static void signal_handler(int signum)
 #else
 				VolAndNextKey(VOLKEYDOWN,ADDVOL_KEY);
 #endif
+				ack_VolCtr("add",GetVol());		//----------->音量减
 				GpioLog("key down",ADDVOL_KEY);
 				break;
 			case SUBVOL_KEY:	//vol -
@@ -265,6 +268,7 @@ static void signal_handler(int signum)
 #else
 				VolAndNextKey(VOLKEYDOWN,SUBVOL_KEY);
 #endif
+				ack_VolCtr("sub",GetVol());		//----------->音量减
 				GpioLog("key down",SUBVOL_KEY);
 				break;
 			case LETFLED_KEY:	//play next
@@ -312,11 +316,7 @@ static void signal_handler(int signum)
 #ifdef SPEEK_VOICES
 				if(gpio.speek_tolk==SPEEK){
 					end_event_std();
-				}
-				else if(gpio.speek_tolk==BIND_DEV){
-					
-				}
-				else{
+				}else{
 					create_event_voices_key(VOLKEYUP);
 				}
 #else
@@ -440,12 +440,7 @@ static void signal_handler(int signum)
 #ifdef	SPEEK_VOICES
 				if(gpio.speek_tolk==SPEEK){
 					down_voices_sign();
-				}
-				else if(gpio.speek_tolk==BIND_DEV){
-					ReadSpeekGpio();
-					BindDevToaliyun();
-				}
-				else{
+				}else{
 					create_event_voices_key(VOLKEYDOWN);
 				}
 #else
@@ -460,9 +455,11 @@ static void signal_handler(int signum)
 				break;
 			case ADDVOL_KEY:	//vol +
 				SetVol(GVOL_ADD,0);
+				ack_VolCtr("add",GetVol());//----------->音量减
 				break;
 			case SUBVOL_KEY:	//vol -
 				SetVol(GVOL_SUB,0);
+				ack_VolCtr("sub",GetVol());//----------->音量减
 				break;
 			case LETFLED_KEY:	//left led
 				break;

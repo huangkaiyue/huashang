@@ -195,9 +195,12 @@ static void *NetplayStreamMusic(void *arg){
 #if 0
 	get_mp3head(st->rfp,&st->rate,&st->channel);
 #else
-	get_mp3head(st->rfp,&rate_one,&st->channel);
-	get_mp3head(st->rfp,&rate_two,&st->channel);
-	st->rate=(rate_one>rate_two?rate_one:rate_two);
+	get_mp3head(st->rfp,&st->rate,&st->channel);
+	if(st->rfp != 44100){
+		get_mp3head(st->rfp,&rate_one,&st->channel);
+		get_mp3head(st->rfp,&rate_two,&st->channel);
+		st->rate=rate_one>rate_two?rate_one:rate_two;
+	}
 #endif
 #ifdef SAFE_READ_WRITER
 	fclose(st->rfp);
@@ -434,16 +437,19 @@ void playLocalMp3(const char *mp3file){
 #if 0
 	get_mp3head(st->rfp,&st->rate,&st->channel);
 #else
-	get_mp3head(st->rfp,&rate_one,&st->channel);
-	get_mp3head(st->rfp,&rate_two,&st->channel);
-	st->rate=(rate_one>rate_two?rate_one:rate_two);
+	get_mp3head(st->rfp,&st->rate,&st->channel);
+	if(st->rfp != 44100){
+		get_mp3head(st->rfp,&rate_one,&st->channel);
+		get_mp3head(st->rfp,&rate_two,&st->channel);
+		st->rate=rate_one>rate_two?rate_one:rate_two;
+	}
 #endif
 	fseek(st->rfp,0,SEEK_END);
 	st->streamLen = ftell(st->rfp);
 	fseek(st->rfp,0,SEEK_SET);
 
 	pthread_mutex_unlock(&st->mutex);
-	if(st->rate==0)
+	if(st->rate==0||st->rate==8000)
 		st->rate=44100;
 	
 	DEBUG_STREAM("music st->rate =%d st->channel=%d \n",st->rate,st->channel);

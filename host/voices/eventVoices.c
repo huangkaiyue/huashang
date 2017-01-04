@@ -166,9 +166,14 @@ static int PlayLocal(unsigned char menu,const char *path, unsigned char Mode){
 		create_event_system_voices(TF_ERROT_PLAY);
 		return ret;
 	}
-	if(GetSdcardMusic((const char *)TF_SYS_PATH,path,filename, Mode)){
-		create_event_system_voices(PLAY_ERROT_PLAY);
-		return ret;
+	if(menu==xiai){
+		PlayxiaiMusic((const char *)TF_SYS_PATH,path,filename, Mode);
+	}
+	else{
+		if(GetSdcardMusic((const char *)TF_SYS_PATH,path,filename, Mode)){
+			create_event_system_voices(PLAY_ERROT_PLAY);
+			return ret;
+		}
 	}
 	snprintf(buf,128,"%s%s",TF_SYS_PATH,path);
 	if((menu==xiai)&&CheckFileNum(buf)){	 //喜爱目录为空
@@ -474,6 +479,9 @@ void create_event_system_voices(int sys_voices)
 {
 	playsysvoicesLog("playsys_start\n");
 	if((sys_voices==END_SYS_VOICES_PLAY)){	//结束音退出事件
+#ifdef PALY_URL_SD
+		pool_add_task(CloseSystemWork,NULL);//关机删除，长时间不用的文件
+#endif
 		cleanEvent();	//清理队列
 		if(GetRecordeLive()==PLAY_WAV){
 			exitqttsPlay();	//清理事件
@@ -498,9 +506,6 @@ void handle_event_system_voices(int sys_voices){
 //----------------------系统有关-----------------------------------------------------
 	switch(sys_voices){
 		case END_SYS_VOICES_PLAY:					//结束音
-#ifdef PALY_URL_SD
-			pool_add_task(CloseSystemWork,NULL);//关机删除，长时间不用的文件
-#endif
 			play_sys_tices_voices(END_SYS_VOICES);			
 			break;
 		case TULING_WINT_PLAY:						//请稍等	
@@ -553,6 +558,10 @@ void handle_event_system_voices(int sys_voices){
 		case CONNECT_OK_PLAY:			//连接成功
 			play_sys_tices_voices(LINK_SUCCESS);
 			Link_Ok_Work();		//连接成功关灯，开灯，状态设置
+			if(!access(TF_SYS_PATH, F_OK)){
+				QttsPlayEvent("小朋友我们接着上次内容继续听吧，开始播放。",QTTS_GBK);
+				createPlayEvent((const void *)"xiai",PLAY_NEXT);
+			}
 			enable_gpio();
 			break;
 		case NOT_FIND_WIFI_PLAY:			//没有扫描到wifi
@@ -820,19 +829,18 @@ void save_recorder_voices(const char *voices_data,int size){
 static void *waitLoadMusicList(void *arg){
 	int timeout=0;
 	while(++timeout<20){
-		if(!access(TF_SYS_PATH, F_OK)&&(getNetWorkLive()!=2)){		//检查tf卡
+		if(!access(TF_SYS_PATH, F_OK)){		//检查tf卡
 			break;
 		}
 		sleep(1);
 	}
 	SysOnloadMusicList((const char *)TF_SYS_PATH,(const char *)TF_MP3_PATH,(const char *)TF_STORY_PATH,(const char *)TF_ENGLISH_PATH,(const char *)TF_GUOXUE_PATH);
-#ifdef CHECKNETWORK
-	if(GetRecordeLive()==RECODE_PAUSE&&(getNetWorkLive()!=2){
-		//QttsPlayEvent("小朋友我们接着上次内容继续听吧，开始播放。",QTTS_GBK);
-		createPlayEvent((const void *)"xiai",PLAY_NEXT);
-	}
-#endif
 	CacheNetServer();	//检查网络服务
+	sleep(20);
+	if(sysMes.network_live==2){
+		sysMes.network_live==1;
+		enable_gpio();
+	}
 	return;
 } 
 #endif

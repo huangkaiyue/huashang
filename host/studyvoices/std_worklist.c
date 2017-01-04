@@ -449,20 +449,6 @@ static void TaiBenToTulingQuestEr(void){
 			createPlayEvent((const void *)"english",PLAY_NEXT);
 			break;
 #endif
-#if 0
-		case Q_TAIBEN_6:
-			QttsPlayEvent("小朋友你可以说，讲个笑话。",QTTS_GBK);
-			break;
-		case Q_TAIBEN_7:
-			QttsPlayEvent("小朋友跟我说，音量减。",QTTS_GBK);
-			break;
-		case Q_TAIBEN_8:
-			QttsPlayEvent("小朋友你问我，2+3+4+5等于几。",QTTS_GBK);
-			break;
-		case Q_TAIBEN_9:
-			QttsPlayEvent("小朋友你问我，翻译天空。",QTTS_GBK);
-			break;
-#endif
 	}
 }
 void send_voices_server(const char *voicesdata,int len,char *voices_type)
