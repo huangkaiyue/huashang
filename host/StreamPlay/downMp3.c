@@ -1,74 +1,55 @@
 #include "comshead.h"
 #include "base/pool.h"
-#include "base/head_mp3.h"
-#include "StreamFile.h"
-#include "madplay.h"
 #include "config.h"
-#include "curldown.h"
+#include "host/voices/wm8960i2s.h"
 
-//实现写入音频流的接口, 需要输入的数据内存存放位置 inputMsg  inputSize 输入的数据流大小
-static void InputTulingStream(char * inputMsg,int inputSize){
-	while(st->playSize+inputSize>st->cacheSize){
-		if(getDownState()==DOWN_QUIT){	//已经退出下载，停止播放	
-			if( st->playSize+inputSize>=st->cacheSize){
-				__safe_fread(inputMsg,st->cacheSize-st->playSize);
-			}
-			return ;
-		}
-		usleep(100);//下载比较慢，睡眠等待下载 ,发送停止状态,下载到一定程度，唤醒  (app等到下一个时刻再自动唤醒)
-	}
-	pthread_mutex_lock(&st->mutex);
-	if(!__safe_fread(inputMsg,inputSize))
-		st->playSize +=inputSize;
-	//DEBUG_STREAM(" st->playSize = %d \n",st->playSize);
-	pthread_mutex_unlock(&st->mutex);
-}
-
-static void *Netplaytuling(void *arg){
-	st->SetI2SRate(8000);
-	DecodePlayMusic(InputTulingStream);
-	cleanStreamData(st);	//状态切换是否加锁
-	pause_record_audio();
-	return NULL;
-}
+extern  void *play_qtts_data(void *arg);
 
 //开始下载, 接口兼容，需要去掉streamLen
 static void tulingStartDown(const char *filename,int streamLen){
-	DEBUG_STREAM("filename =%s streamLen=%d\n",filename,streamLen);
-	if(st->wfp==NULL){
-		st->wfp = fopen("/home/cache.tmp","w+");
-		if(st->wfp==NULL){
-			perror("fopen write failed ");
-			return ;
-		}
-		fseek(st->wfp,streamLen+1,SEEK_SET);
-		fwrite("\0",1,1,st->wfp);
-		fseek(st->wfp,0,SEEK_SET);
-	}
-	st->streamLen=streamLen;
-	snprintf(st->mp3name,128,"%s",filename);
-	st->player.playState=MAD_PLAY;
-	pool_add_task(Netplaytuling,NULL);
+	printf("filename =%s streamLen=%d\n",filename,streamLen);
 }
 //获取到流数据
 static void  tulingGetStreamData(const char *data,int size){
-	pthread_mutex_lock(&st->mutex);
-	if(!__safe_write(st->wfp,(const void *)data,size))
-		st->cacheSize +=size;
-	pthread_mutex_unlock(&st->mutex);
+	printf("%s: size = %d\n",__func__,size);
+	putPcmdata((const void *)data,size);
 }
 //结束下载
 static void  tulingEndDown(int downLen){
-	SetDecodeSize(downLen);
-	if(st->wfp)
-		fclose(st->wfp);
-	st->wfp=NULL;
-}
-void downTulingMp3(const char *url){
-	setDowning();
-	st->cacheSize =0;
-	st->playSize=0;
-	st->player.playState=MAD_NEXT;
-	demoDownFile(url,15,tulingStartDown,tulingGetStreamData,tulingEndDown);
+	printf("tulingEndDown mp3 \n");
 }
 
+void test_read_file(void){
+	FILE *fp = fopen("8caf0b37-3359-4b85-b06b-aec080ab1d69.pcm","r"); 
+	int pos=0;
+	char buf[2]={0};
+	int ret =0;
+	while(1){
+		ret = fread(buf,2,1,fp);
+		if(ret==0){
+			break;
+		}
+		memcpy(play_buf+pos,buf,2);
+		pos+=2;
+		memcpy(play_buf+pos,buf,2);
+		pos+=2;
+		if(pos==I2S_PAGE_SIZE){
+			write_pcm(play_buf);
+			pos=0;
+		}
+	}
+	fclose(fp);
+}
+void downTulingMp3(const char *url){
+	printf("start down tuling mp3 \n");
+	test_read_file();
+	return ;
+	setDowning();
+	StartPthreadPlay();
+	pool_add_task(play_qtts_data,NULL);		//启动播放线程
+	demoDownFile(url,15,tulingStartDown,tulingGetStreamData,tulingEndDown);
+	SetDownExit();
+	WaitPthreadExit();
+	printf("downTulingMp3 exit mp3 \n");
+	pause_record_audio();
+}

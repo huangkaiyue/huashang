@@ -4,7 +4,7 @@
 
 #define VERSION "\n12.11-15:00\n"	//版本号
 
-//#define TEST_SDK					//测试SDK
+#define TEST_SDK					//测试SDK
 
 #ifdef TEST_SDK						//使能命令输入行
 	#define WORK_INTER
@@ -24,7 +24,7 @@
 	
 #define SELECT_UDP				//将udp添加到select 当中
 
-#define CHECKNETWORK			//没网不让播放云端
+//#define CHECKNETWORK			//没网不让播放云端
 
 #ifdef DATOU_JIANG	//大头---蒋总
 	#define PALY_URL_SD		//下载保存到本地

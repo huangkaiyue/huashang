@@ -149,7 +149,7 @@ static int parseJson_string(const char * pMsg,void handle_jsion(char *textString
 #endif
 			goto exit;
 	}
-#if 1	//文本
+#if 0	//文本
     pSub = cJSON_GetObjectItem(pJson, "text");		//返回结果
     if(NULL == pSub){
 		DEBUG_STD_MSG("get text failed\n");
@@ -456,16 +456,21 @@ void send_voices_server(const char *voicesdata,int len,char *voices_type)
 	int textSize=0, err=0;
 	char *text=NULL;
 	start_event_play_wav();//暂停录音
-	DEBUG_STD_MSG("up voices data ...(len=%d)\n",len);
-#if 0
-	char *URL= (char *)calloc(1,strlen("http://opentest.tuling123.com/file/d3a38a1e-7318-4837-be91-43642ae93842.mp3")+1);
+#if 1
+	sleep(5);
+	printf("test ........ ...AddDownEvent \n");
+
+	char *URL= (char *)calloc(1,strlen("http://opentest.tuling123.com/file/8caf0b37-3359-4b85-b06b-aec080ab1d69.pcm")+1);
 	if(URL==NULL){
 		perror("calloc error !!!");
 		return -1;
 	}
-	sprintf(URL,"%s","http://opentest.tuling123.com/file/d3a38a1e-7318-4837-be91-43642ae93842.mp3");
+	sprintf(URL,"%s","http://opentest.tuling123.com/file/8caf0b37-3359-4b85-b06b-aec080ab1d69.pcm");
 	AddDownEvent(URL,TULING_URL_MAIN);
-#else
+	return ;
+#endif
+	
+	printf("up voices data ...(len=%d)\n",len);
 	err=reqTlVoices(10,key,(const void *)voicesdata,len,RECODE_RATE,voices_type,&text,&textSize);
 	if(err==-1){
 #if 1
@@ -481,7 +486,6 @@ void send_voices_server(const char *voicesdata,int len,char *voices_type)
 	if(text){
 		add_event_msg(text,0,STUDY_WAV_EVENT);
 	}
-#endif
 	return ;
 exit1:
 #ifdef QITUTU_SHI
