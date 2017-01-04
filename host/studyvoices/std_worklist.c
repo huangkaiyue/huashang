@@ -273,7 +273,6 @@ exit1:
 	pause_record_audio();
 	return;
 }
-#else
 #define SPEEK_1 	1
 #define SPEEK_2 	2
 #define SPEEK_3 	3
@@ -414,6 +413,7 @@ static void TaiwanToTulingError(void){
 		break;
 	}
 }
+#else
 #define Q_VOICES_1	1
 #define Q_TAIBEN_1	2
 #define Q_TAIBEN_2	3

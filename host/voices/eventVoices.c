@@ -82,7 +82,7 @@ static int getNetWorkLive(void){
 	return sysMes.network_live;
 }
 int checkNetWorkLive(void){
-	if(getNetWorkLive()==NETWORK_ER){
+	if(getNetWorkLive()==NETWORK_ER||getNetWorkLive==2){
 		//播报台本
 		if(getEventNum()>0){	//检查是否添加过事件
 			return;
