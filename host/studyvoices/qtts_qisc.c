@@ -114,12 +114,10 @@ static void single_to_stereo(char *src,int srclen,char *tar,int *tarlen)
 @参数:	data 数据
 @		len	数据大小
 *****************************************************/
-static void cleanState(void)
-{
+static void cleanState(void){
 	Qstream->playState=PLAY_QTTS_QUIT;
 }
-void __exitqttsPlay(void)
-{
+void __exitqttsPlay(void){
 	char *msg;
 	int msgSize;
 	Qstream->playState=PLAY_QTTS_QUIT;
@@ -130,11 +128,19 @@ void __exitqttsPlay(void)
 	}
 	DEBUG_QTTS("exitqttsPlay: end (%d) ...\n",getWorkMsgNum(Qstream->qttsList));
  }
- static void *play_qtts_data(void *arg)
- {
+void putPcmdata(const void *data,int size){
+	char *getdata = (char *)calloc(1,size+1);
+	if(getdata){
+		memcpy(getdata,data,size);
+		putMsgQueue(Qstream->qttsList,getdata,size);	//添加到播放队列
+	}
+}
+ void *play_qtts_data(void *arg){
 	 char *data;
 	 int len;
+	 //printf("%s: Qstream->playState 。。。。。。。。。。。。。。。play_qtts_data=%d\n",__func__,Qstream->playState);
 	 while(Qstream->playState){
+	 	//printf("%s: Qstream->playState =%d\n",__func__,Qstream->playState);
 	 	if(getWorkMsgNum(Qstream->qttsList)==0){
 			if(Qstream->downState==DOWN_QTTS_QUIT){
 				DEBUG_QTTS("play_qtts_data: exit ...\n");
@@ -145,6 +151,7 @@ void __exitqttsPlay(void)
 		}
 		if(get_qtts_cache()==0){
 			getMsgQueue(Qstream->qttsList,&data,&len);
+			printf("%s: len =%d\n",__func__,len);
 			Qstream->WritePcm(data,len);
 			free(data);
 		}
@@ -153,7 +160,32 @@ void __exitqttsPlay(void)
 	cleanState();
 	DEBUG_QTTS("play_qtts_data : end...\n\n");
 	return NULL;
- }
+}
+
+void StartPthreadPlay(void){
+	Qstream->downState=DOWN_QTTS_ING;
+	Qstream->playState=PLAY_QTTS_ING;
+	printf("----------------qtts down start----------------\n");
+	
+	usleep(100);
+}
+ void WaitPthreadExit(void){
+	while(Qstream->downState==DOWN_QTTS_QUIT){		//等待播放线程退出
+		if(Qstream->playState!=PLAY_QTTS_ING)
+			break;
+		printf("..................... WaitPthreadExit .....................\n ");
+		usleep(100*1000);
+	}
+	tolkLog("qtts quit ok\n");
+	Qstream->playState=PLAY_QTTS_QUIT;
+}
+int GetplayState(void){
+	return Qstream->playState;
+} 
+void SetDownExit(void){
+	Qstream->downState= DOWN_QTTS_QUIT;
+}
+
 /***************************************************************************
 @函数功能:	文本转换语音
 @参数:	src_text 文本文件 
@@ -181,33 +213,19 @@ static int text_to_speech(const char* src_text  ,const char* params)
 		QTTSSessionEnd(sess_id, "TextPutError");
 		return ret;
 	}
-	Qstream->downState=DOWN_QTTS_ING;
-	Qstream->playState=PLAY_QTTS_ING;
-	tolkLog("qtts down start\n");
-	pool_add_task(play_qtts_data,(void *)Qstream);		//启动播放线程
-	while(Qstream->playState){
+	StartPthreadPlay();
+	while(GetplayState()){
 		const void *data = QTTSAudioGet(sess_id, &audio_len, &synth_status, &ret);
 		if (NULL != data){
-			char *getdata = (char *)malloc(audio_len+1);
-			if(getdata ==NULL){
-				continue;
-			}
-			memcpy(getdata,data,audio_len);
-			putMsgQueue(Qstream->qttsList,getdata,audio_len);	//添加到播放队列
+			putPcmdata(data,audio_len);
 		}
 		usleep(100*1000);
 		if (synth_status==2|| ret!= 0){		//退出
-			Qstream->downState=DOWN_QTTS_QUIT;
+			SetDownExit();
 			break;
 		}
 	}
-	while(Qstream->downState==DOWN_QTTS_QUIT){		//等待播放线程退出
-		if(Qstream->playState!=PLAY_QTTS_ING)
-			break;
-		usleep(100*1000);
-	}
-	tolkLog("qtts quit ok\n");
-	Qstream->playState=PLAY_QTTS_QUIT;
+	WaitPthreadExit();
 	ret = QTTSSessionEnd(sess_id, NULL);
 	return ret;
 }

@@ -186,7 +186,7 @@ void pasreInputCmd(const char *com)
 				}
     	}else if (!strcmp(com, "showdb"))
     	{
-    		ShowDbAll();
+  
     	}
     	else if (!strcmp(com, "help") ||
            	!strcmp(com, "h"))

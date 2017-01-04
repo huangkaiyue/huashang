@@ -54,7 +54,7 @@ static void loadLocalServer(int argc,const char *argv[]){
 	sysMes.network_live=2;		//开机不属于联网成功或失败
 	sysMes.Playlocaltime=time(&t);
 	set_pthread_sigblock();
-	pool_init(3);
+	pool_init(4);
 	init_wm8960_voices();
 	DownEvent = initQueue();
 #ifdef WORK_INTER
