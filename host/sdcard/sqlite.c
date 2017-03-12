@@ -164,9 +164,9 @@ int GetTableSql(const char *table_name,void *args,int table_result(void *args,in
 	int ret;
 	if(db == NULL)
 		return -1;
-	sql = sqlite3_mprintf("select * from '%s' ;",table_name);	
-	result = sqlite3_get_table( db,sql, &dbResult, &nRow, &nColumn, &errmsg );	
-	if( SQLITE_OK == result ){	
+	sql = sqlite3_mprintf("select * from '%s' ;","ximalaya");	
+	result = sqlite3_get_table( db,sql, &dbResult, &nRow, &nColumn, &errmsg );
+	if( SQLITE_OK == result ){
 		ret = table_result(args,nRow, nColumn,dbResult);
 		sqlite3_free_table( dbResult );  
 		return ret;
@@ -205,6 +205,7 @@ int del_DBdata(const char *table_name,const char *usrname){
 	if(db == NULL)
 		return -1;	
 	SqlLock();
+	printf("========usrname=%s==========\n",usrname);
 	const char *sql = sqlite3_mprintf("delete from '%s' where name='%s';",table_name,usrname);
 	if(sqlite3_exec(db,sql,0,0,&errmsg) != SQLITE_OK){
 		SqlunLock();

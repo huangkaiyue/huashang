@@ -24,15 +24,24 @@
 #define	RESERVE_KEY1	42	//科技
 
 #define RESERVE_KEY3	20	//儿歌
-#define ADDVOL_KEY		16	//上一曲--音量加
+
+//#define SUBVOL_KEY		16	//下一曲--音量加
+//#define ADDVOL_KEY		17	//上一曲--音量减
+
 #define SUBVOL_KEY		17	//下一曲--音量减
+#define ADDVOL_KEY		16	//上一曲--音量加
+
+
+
 #define LETFLED_KEY		21	//素质
 #define RIGHTLED_KEY	14	//配网--灯
 
 #define GPIO_DEV	"/dev/gpio"
 #define SPEEK		0
 #define TOLK		1
-#define BIND_DEV	2
+
+#define BIND_DEV_ER	0
+#define BIND_DEV_OK	1
 
 #define VOLKEYDOWN	0	//按下
 #define VOLKEYUP	1	//弹起
@@ -61,15 +70,17 @@ typedef struct {
 			speek_tolk:2,
 			ledletf:2,
 			ledright:2;
+	unsigned char callbake:2,
+		bindsign:6;
 	unsigned int data;
 }Gpio;
 
 extern void open_wm8960_voices(void);
 extern void close_wm8960_voices(void);
-extern void led_left_right(unsigned char type,unsigned char io);
+extern void led_lr_oc(unsigned char type);
 extern void Led_System_vigue_open(void);
 extern void enable_gpio(void);
-extern void init_7620_gpio(void);
+extern void InitMtk76xx_gpio(void);
 extern void disable_gpio(void);
 extern void clean_7620_gpio(void);
 extern void Led_vigue_open(void);

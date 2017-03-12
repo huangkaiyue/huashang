@@ -2,7 +2,6 @@
 #include "base/pool.h"
 #include "base/cJSON.h"
 #include "network.h"
-#include "../uart/uart.h"
 #include "madplay.h"
 #include "StreamFile.h"
 #include "host/voices/wm8960i2s.h"
@@ -10,6 +9,7 @@
 #include "../host/voices/gpio_7620.h"
 #include "host/ap_sta.h"
 #include "host/voices/callvoices.h"
+#include "sysdata.h"
 
 #define STREAM_EXIT				MAD_EXIT	//停止	
 #define STREAM_PLAY 			MAD_PLAY	//播放
@@ -60,6 +60,7 @@ static void recv_brocastCtr(int sockfd,struct sockaddr_in *peer,char *recvdata){
 		usleep(10*1000);
 	}
 	cJSON_Delete(pItem);
+	free(szJSON);
 }
 
 static void test_brocastCtr(int sockfd,struct sockaddr_in *peer,char *recvdata){
@@ -85,6 +86,7 @@ static void test_brocastCtr(int sockfd,struct sockaddr_in *peer,char *recvdata){
 		usleep(10*1000);
 		}
 	cJSON_Delete(pItem);
+	free(szJSON);
 }
 
 /*
@@ -106,6 +108,7 @@ void ack_VolCtr(char *dir,int data)
 	DEBUG_TCP("ack_VolCtr: %s\n",szJSON);
 	sendAll_Ack(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
 }
 #ifdef VOICS_CH
 /*
@@ -126,6 +129,7 @@ void ack_chCtr(int sockfd,int type)
 	DEBUG_TCP("ack_chCtr: %s\n",szJSON);
 	send_ctrl_ack(sockfd,szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
 }
 #endif //end VOICS_CH
 /*
@@ -150,11 +154,13 @@ void ack_hostCtr(int sockfd,char *recvdata,char *type)
 	DEBUG_TCP("ack_hostCtr: %s\n",szJSON);
 	sendAll_Ack(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
 }
 /*
 @函数功能:	电池电量返回函数
 @参数:	recvdata 电池电量
 */
+//ack_batteryCtr(get_battery(),get_charge());
 void ack_batteryCtr(int recvdata,int power)
 {
 	char* szJSON = NULL;
@@ -168,11 +174,27 @@ void ack_batteryCtr(int recvdata,int power)
 	DEBUG_TCP("ack_batteryCtr: %s\n",szJSON);
 	sendAll_Ack(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
+}
+void ack_TlingCtr(char *recvdata)
+{
+	char* szJSON = NULL;
+	cJSON* pItem = NULL;
+	pItem = cJSON_CreateObject();
+	cJSON_AddStringToObject(pItem, "handler", "tuling");
+	cJSON_AddStringToObject(pItem, "tulinfo",recvdata);
+	cJSON_AddStringToObject(pItem, "status","ok");
+	szJSON = cJSON_Print(pItem);
+	printf("ack_batteryCtr: %s\n",szJSON);
+	sendAll_Ack(szJSON,strlen(szJSON));
+	cJSON_Delete(pItem);
+	free(szJSON);
 }
 /*
 @函数功能:	所有信息返回函数
 @参数:	recvdata 电池电量
 */
+//ack_alluserCtr(new_fd,get_battery(),get_charge());
 void ack_alluserCtr(const int sockfd,int state,int power)
 {
 	char stropenTime[10]={0};
@@ -183,15 +205,20 @@ void ack_alluserCtr(const int sockfd,int state,int power)
 	cJSON_AddStringToObject(pItem, "handler", "sys");
 	cJSON_AddNumberToObject(pItem, "state",state);
 	cJSON_AddNumberToObject(pItem, "power",power);
-	get_host_time(1,stropenTime);
+	Get_OpenCloseTime_formRouteTable(OPEN_TIME,stropenTime);
 	cJSON_AddStringToObject(pItem, "openTime",stropenTime);
-	get_host_time(0,strcloseTime);
+	Get_OpenCloseTime_formRouteTable(CLOSE_TIME,strcloseTime);
 	cJSON_AddStringToObject(pItem, "closeTime",strcloseTime);
 	cJSON_AddStringToObject(pItem, "status","ok");
 	szJSON = cJSON_Print(pItem);
 	DEBUG_TCP("ack_alluserCtr: %s\n",szJSON);
+	JsonLog(szJSON);
 	send_ctrl_ack(sockfd,szJSON,strlen(szJSON));
+#ifdef SPEEK_VOICES
+	SendtoaliyunServices(szJSON,strlen(szJSON));	//发送给微信
+#endif
 	cJSON_Delete(pItem);
+	free(szJSON);
 }
 static void CreateState(cJSON* pItem,unsigned char playState)
 {
@@ -226,6 +253,7 @@ void ack_allplayerCtr(void *data,Player_t *player)
 	DEBUG_TCP("ack_allplayerCtr: %s\n",szJSON);
 	send_ctrl_ack(sockfd,szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
 }
 typedef struct{
 	char *url;
@@ -246,6 +274,7 @@ void ack_playCtr(char *url,unsigned char state)
 	DEBUG_TCP("ack_playCtr: %s\n",szJSON);
 	sendAll_Ack(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
 }
 #else
 void ack_playCtr(int nettype,Player_t *play,unsigned char playState)
@@ -256,11 +285,10 @@ void ack_playCtr(int nettype,Player_t *play,unsigned char playState)
 	cJSON_AddStringToObject(pItem, "handler", "mplayer");
 	CreateState(pItem,playState);
 	if(playState==STREAM_EXIT){
-#ifndef CLOSE_VOICE
+#ifndef CLOSE_VOICE 
 		Mute_voices(MUTE);
 #endif
-		clean_play_cache();
-		pause_record_audio();
+		CleanI2S_PlayCachedata();
 	}
 	cJSON_AddStringToObject(pItem, "url",play->playfilename);
 	cJSON_AddStringToObject(pItem, "name",play->musicname);
@@ -274,6 +302,7 @@ void ack_playCtr(int nettype,Player_t *play,unsigned char playState)
 	else
 		sendAll_Ack(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
 }	
 #endif
 void ack_gpioCtr(int recvdata)
@@ -288,6 +317,7 @@ void ack_gpioCtr(int recvdata)
 	DEBUG_TCP("ack_gpioCtr: %s\n",szJSON);
 	sendAll_Ack(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
 }
 
 void GetNetState(void)
@@ -300,6 +330,7 @@ void GetNetState(void)
 	szJSON = cJSON_Print(pItem);
 	SendtoServicesWifi(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
 }
 #ifdef SPEEK_VOICES
 void uploadVoicesToaliyun(const char *filename,int fileSize){
@@ -313,6 +344,7 @@ void uploadVoicesToaliyun(const char *filename,int fileSize){
 	JsonLog(szJSON);
 	SendtoaliyunServices(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
 }
 void BindDevToaliyun(void){
 	char* szJSON = NULL;
@@ -324,6 +356,21 @@ void BindDevToaliyun(void){
 	szJSON = cJSON_Print(pItem);
 	SendtoaliyunServices(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
+}
+void Ack_CallDev(int recvdata)
+{
+	char* szJSON = NULL;
+	cJSON* pItem = NULL;
+	pItem = cJSON_CreateObject();
+	cJSON_AddStringToObject(pItem, "handler", "call");
+	cJSON_AddStringToObject(pItem, "status","cancel");
+	szJSON = cJSON_Print(pItem);
+	DEBUG_TCP("ack_gpioCtr: %s\n",szJSON);
+	JsonLog(szJSON);
+	SendtoaliyunServices(szJSON,strlen(szJSON));	//发送给微信
+	cJSON_Delete(pItem);
+	free(szJSON);
 }
 #endif
 #ifdef CLOCKTOALIYUN
@@ -337,6 +384,7 @@ void CloseSystemSignToaliyun(void){
 	JsonLog(szJSON);
 	SendtoaliyunServices(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
 }
 void SetClockToaliyun(unsigned char clocknum,unsigned char state,const char *time,const char *ringPath){
 	char* szJSON = NULL;
@@ -352,92 +400,63 @@ void SetClockToaliyun(unsigned char clocknum,unsigned char state,const char *tim
 	JsonLog(szJSON);
 	SendtoaliyunServices(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
 }
 #endif
-void Ack_CallDev(int recvdata)
-{
-	char* szJSON = NULL;
-	cJSON* pItem = NULL;
-	pItem = cJSON_CreateObject();
-	cJSON_AddStringToObject(pItem, "handler", "call");
-	cJSON_AddStringToObject(pItem, "status","cancel");
-	szJSON = cJSON_Print(pItem);
-	DEBUG_TCP("ack_gpioCtr: %s\n",szJSON);
-	sendAll_Ack(szJSON,strlen(szJSON));
-	cJSON_Delete(pItem);
-}
-void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer)
-{
-#if 0
-	FILE *fp=fopen("/mnt/tcp_test.txt","r");
-	char *recvdata=(char *)malloc(129);
-	if(recvdata==NULL){
-		return;
-	}
-	size=fread(recvdata,1,128,fp);
-	DEBUG_TCP("handler_  CtrlMsg = %s(%d)\n" ,recvdata,size);
-#endif	
+void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer){
 	cJSON * pJson = cJSON_Parse(recvdata);
-	if(NULL == pJson)
-	{
+	if(NULL == pJson){
 		return -1;
 	}
 	//DEBUG_TCP("handler_CtrlMsg = %s\n",recvdata);
 	cJSON * pSub = cJSON_GetObjectItem(pJson, "handler");
-	if(NULL == pSub)
-	{
+	if(NULL == pSub){
 		DEBUG_TCP("get json data  failed\n");
 		goto exit;
 	}
-	if(!strcmp(pSub->valuestring,"vol"))
-	{
+	if(!strcmp(pSub->valuestring,"vol")){
 		// get number from json
 		DEBUG_TCP("handler_CtrlMsg = %s\n",recvdata);
 		pSub = cJSON_GetObjectItem(pJson, "dir");
-		if(NULL == pSub)
-		{
+		if(NULL == pSub){
 			DEBUG_TCP("get vol failed\n");
 			goto exit;
 		}
 		DEBUG_TCP("dir = %s\n", pSub->valuestring);
 		if(!strcmp(pSub->valuestring,"add")){
-			SetVol(VOL_ADD,0);
+			Setwm8960Vol(VOL_ADD,0);
 			ack_VolCtr("add",GetVol());//----------->音量加
 		}else if (!strcmp(pSub->valuestring,"sub")){
-			SetVol(VOL_SUB,0);
+			Setwm8960Vol(VOL_SUB,0);
 			ack_VolCtr("sub",GetVol());//----------->音量减
 		}else if (!strcmp(pSub->valuestring,"no")){
-			SetVol(VOL_SET,cJSON_GetObjectItem(pJson, "data")->valueint);
+			Setwm8960Vol(VOL_SET,cJSON_GetObjectItem(pJson, "data")->valueint);
 			ack_VolCtr("no",GetVol());//----------->设置固定音量
 		}
 	}//end vol 音量大小
 #ifdef VOICS_CH
 	else if(!strcmp(pSub->valuestring,"setvoices")){
 		pSub = cJSON_GetObjectItem(pJson, "type");
-		if(NULL == pSub)
-		{
+		if(NULL == pSub){
 			DEBUG_TCP("get vol failed\n");
 			goto exit;
 		}
-		if(pSub->valueint==1)
-		{
-			set_vol_ch(0);
+		if(pSub->valueint==1){
+			SaveVolCh_toRouteTable(0);
 			ack_chCtr(sockfd,1);//----------->女音
 		}else if (pSub->valueint==2){
-			set_vol_ch(1);
+			SaveVolCh_toRouteTable(1);
 			ack_chCtr(sockfd,0);//----------->男音
 		}
 	}//end setvoices
 #endif	//end VOICS_CH
 	else if(!strcmp(pSub->valuestring,"lock")){
 		pSub = cJSON_GetObjectItem(pJson, "state");
-		if(NULL == pSub)
-		{
+		if(NULL == pSub){
 			DEBUG_TCP("get vol failed\n");
 			goto exit;
 		}
-		if(pSub->valueint==0)
-		{
+		if(pSub->valueint==0){
 			gpio_look=0;
 			enable_gpio();//----------->解锁
 			ack_gpioCtr(0);
@@ -449,16 +468,14 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	}//end lock 按键锁
 	else if(!strcmp(pSub->valuestring,"mplayer")){
 		pSub = cJSON_GetObjectItem(pJson, "state");
-		if(NULL == pSub)
-		{
+		if(NULL == pSub){
 			DEBUG_TCP("get vol failed\n");
 			goto exit;
 		}
-		if(!strcmp(pSub->valuestring,"get"))
-		{
+		if(!strcmp(pSub->valuestring,"get")){
 			getStreamState(&sockfd,ack_allplayerCtr);//----------->app登陆获取播放器信息
 		}else if(!strcmp(pSub->valuestring,"switch")){
-			mute_recorde_vol(UNMUTE);
+			//mute_recorde_vol(UNMUTE);
 			Player_t *player = (Player_t *)calloc(1,sizeof(Player_t));
 			if(player==NULL){
 				perror("calloc error !!!");
@@ -474,16 +491,27 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 					snprintf(player->musicname,48,"%s",musicname);
 					player->musicTime = cJSON_GetObjectItem(pJson, "time")->valueint;
 				}
+#ifdef TEST_PLAY_EQ_MUSIC	
+				if(strstr(musicname,".wav")){
+					createPlay_wavFileEvent(player);
+				}else if(!strcmp(musicname,"test.mp3")){
+					TestPlay_localMp3Music();
+				}else{
+					createPlayEvent(player,0);
+				}
+#else	
 				createPlayEvent(player,0);
+#endif
+				
 			}
 		}else if (!strcmp(pSub->valuestring,"pause")){
-			mute_recorde_vol(MUTE);
+			//mute_recorde_vol(MUTE);
 			StreamPause();
 		}else if (!strcmp(pSub->valuestring,"stop")){
-			mute_recorde_vol(MUTE);
+			//mute_recorde_vol(MUTE);
 			CleanUrlEvent();
 		}else if (!strcmp(pSub->valuestring,"play")){
-			mute_recorde_vol(UNMUTE);
+			//mute_recorde_vol(UNMUTE);
 			StreamPlay();
 		}else if (!strcmp(pSub->valuestring,"seekto")){
 			seekToStream(cJSON_GetObjectItem(pJson, "progress")->valueint);
@@ -501,7 +529,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			//定时开机
 			char *stropenTime = cJSON_GetObjectItem(pJson, "time")->valuestring;
 			DEBUG_TCP("stropenTime = %s\n",stropenTime);
-			set_host_time(1,stropenTime);
+			Save_OpenCloseTime_toRouteTable(OPEN_TIME,stropenTime);
 			ack_hostCtr(sockfd,stropenTime,"open");
 			
 			SocSendMenu(3,0);
@@ -512,7 +540,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			//定时关机
 			char *strcloseTime = cJSON_GetObjectItem(pJson, "time")->valuestring;
 			DEBUG_TCP("strcloseTime = %s\n",strcloseTime);
-			set_host_time(0,strcloseTime);
+			Save_OpenCloseTime_toRouteTable(CLOSE_TIME,strcloseTime);
 			ack_hostCtr(sockfd,strcloseTime,"close");
 			
 			SocSendMenu(3,0);
@@ -539,32 +567,42 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	else if(!strcmp(pSub->valuestring,"updateHost")){	//----------->由版本监测进程发送过来
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(!strcmp(pSub->valuestring,"newversion")){	//有新版本，需要更新
-			QttsPlayEvent("有新版本，需要更新。",QTTS_GBK);//send to app
+			//Create_PlayQttsEvent("有新版本，需要更新。",QTTS_GBK);//send to app
+			Create_PlaySystemEventVoices(UPDATA_NEW_PLAY);
 		}else if(!strcmp(pSub->valuestring,"start")){	//正在下载固件
-			QttsPlayEvent("正在下载固件。",QTTS_GBK);
+			//Create_PlayQttsEvent("正在下载固件。",QTTS_GBK);
+			Create_PlaySystemEventVoices(DOWNLOAD_ING_PLAY);
 		}else if(!strcmp(pSub->valuestring,"error")){	//下载固件错误
-			QttsPlayEvent("下载固件错误。",QTTS_GBK);
+			//Create_PlayQttsEvent("下载固件错误。",QTTS_GBK);
+			Create_PlaySystemEventVoices(DOWNLOAD_ERROE_PLAY);
 		}else if(!strcmp(pSub->valuestring,"end")){ 	//下载固件结束
-			QttsPlayEvent("下载固件结束。",QTTS_GBK);
+			//Create_PlayQttsEvent("下载固件结束。",QTTS_GBK);
+			Create_PlaySystemEventVoices(DOWNLOAD_END_PLAY);
 		}else if(!strcmp(pSub->valuestring,"progress")){		//下载进度
 			pSub = cJSON_GetObjectItem(pJson, "value");
-			if(pSub->valueint==25)
-				QttsPlayEvent("下载到百分之二十五。",QTTS_GBK);			
-			else if(pSub->valueint==50)
-				QttsPlayEvent("下载到百分之五十。",QTTS_GBK);		
-			else if(pSub->valueint==75)
-				QttsPlayEvent("下载到百分之七十五。",QTTS_GBK);
+			if(pSub->valueint==25){
+				//Create_PlayQttsEvent("下载到百分之二十五。",QTTS_GBK);
+				Create_PlaySystemEventVoices(DOWNLOAD_25_PLAY);			
+			}else if(pSub->valueint==50){
+				//Create_PlayQttsEvent("下载到百分之五十。",QTTS_GBK);	
+				Create_PlaySystemEventVoices(DOWNLOAD_50_PLAY);	
+			}else if(pSub->valueint==75){
+				//Create_PlayQttsEvent("下载到百分之七十五。",QTTS_GBK);
+				Create_PlaySystemEventVoices(DOWNLOAD_75_PLAY);
+			}
 		}
 	}//  end updateHost
 	else if(!strcmp(pSub->valuestring,"updateImage")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(!strcmp(pSub->valuestring,"start")){ 		//开始更新固件
-			QttsPlayEvent("开始更新固件。",QTTS_GBK);
+			//Create_PlayQttsEvent("开始更新固件。",QTTS_GBK);
+			Create_PlaySystemEventVoices(UPDATA_START_PLAY);
 		}else if(!strcmp(pSub->valuestring,"error")){	//更新固件错误
-			QttsPlayEvent("更新固件错误。",QTTS_GBK);
+			//Create_PlayQttsEvent("更新固件错误。",QTTS_GBK);
+			Create_PlaySystemEventVoices(UPDATA_ERROR_PLAY);
 		}else if(!strcmp(pSub->valuestring,"end")){ 	//更新固件结束
-			//QttsPlayEvent("更新固件结束。",QTTS_GBK);
-			create_event_system_voices(6);
+			//Create_PlayQttsEvent("更新固件结束。",QTTS_GBK);
+			Create_PlaySystemEventVoices(6);
 		}
 	}//  end updateImage                // end----------->由版本监测进程发送过来
 	else if(!strcmp(pSub->valuestring,"newImage")){	// app端确认还是取消更新操作
@@ -576,21 +614,16 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}
 	}else if(!strcmp(pSub->valuestring,"ServerWifi")){
 		int event = cJSON_GetObjectItem(pJson, "event")->valueint;
-		create_event_system_voices(event);
+		Create_PlaySystemEventVoices(event);
 		if(CONNECT_OK==event){
-			//Link_Ok_Work();
+			//Link_NetworkOk();
 		}else if(NOT_NETWORK==event){
-			//Link_Error_Work();
+			//Link_NetworkError();
 		}
 	}else if(!strcmp(pSub->valuestring,"TestNet")){
 		test_brocastCtr(sockfd,peer,recvdata);
 	}else if(!strcmp(pSub->valuestring,"qtts")){
-#ifdef TESTMP3
-		if(strstr((cJSON_GetObjectItem(pJson, "text")->valuestring),"testmp3")){
-			TestPlay();
-		}else
-#endif
-		QttsPlayEvent(cJSON_GetObjectItem(pJson, "text")->valuestring,QTTS_UTF8);
+		Create_PlayQttsEvent(cJSON_GetObjectItem(pJson, "text")->valuestring,QTTS_UTF8);
 #ifdef	SYSTEMLOCK
 		if(!strcmp((cJSON_GetObjectItem(pJson, "text")->valuestring),"***rihuiwangxun_open***"))
 			setSystemLock(0);
@@ -614,20 +647,27 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		CreateSpeekEvent((const char *)cJSON_GetObjectItem(pJson, "file")->valuestring);
 	}
 	else if (!strcmp(pSub->valuestring,"binddev")){
-		EnableBindDev();
-		QttsPlayEvent("成功收到小伙伴的绑定请求。",QTTS_GBK);
+		pSub = cJSON_GetObjectItem(pJson, "status");
+		if(!strcmp(pSub->valuestring,"failed")){
+			//Create_PlayQttsEvent("成功收到小伙伴的绑定请求。",QTTS_GBK);
+		}else if(!strcmp(pSub->valuestring,"ask")){
+			EnableBindDev();
+			Create_PlaySystemEventVoices(BIND_SSID_PLAY);
+		}
 	}
 	else if (!strcmp(pSub->valuestring,"call")){
-		QttsPlayEvent("在家么，在家么，有人在家么，有重要消息通知你哟，请按按键回复我。",QTTS_GBK);
+		EnableCallDev();
+		Create_PlaySystemEventVoices(TALK_CONFIRM_PLAY);
 	}
 	else if (!strcmp(pSub->valuestring,"uploadfile")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(!strcmp(pSub->valuestring,"ok")){			//发送成功
-			//create_event_system_voices(20);
+			//Create_PlaySystemEventVoices(20);
 		}else if(!strcmp(pSub->valuestring,"failed")){	//发送失败
-			create_event_system_voices(21);
+			Create_PlaySystemEventVoices(21);
 		}else if(!strcmp(pSub->valuestring,"timeout")){	//发送失败
-			QttsPlayEvent("当前网络环境差，语音发送失败，请检查网络。",QTTS_GBK);
+			Create_PlaySystemEventVoices(SEND_LINK_ER_PLAY);
+			//Create_PlayQttsEvent("当前网络环境差，语音发送失败，请检查网络。",QTTS_GBK);
 		}
 	}
 	else if (!strcmp(pSub->valuestring,"clock")){
@@ -639,7 +679,6 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 				path=cJSON_GetObjectItem(pJson, "path")->valuestring;
 			}
 			CreateSpeekEvent(path);
-			QttsPlayEvent("闹钟响了，闹钟响了。",QTTS_GBK);
 		}else if(!strcmp(pSub->valuestring,"close")){	//关闭设置开机时间
 			//
 			char *time_open=NULL;
@@ -652,7 +691,13 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			usleep(100*1000);
 			SocSendMenu(7,time_open);	//设置闹钟开机时间
 		}
-	}
+	}else if(!strcmp(pSub->valuestring,"getdev")){	//微信获取设备信息
+		ack_alluserCtr(sockfd,get_battery(),get_charge());
+	}else if (!strcmp(pSub->valuestring,"tuling")){
+		char *userId= cJSON_GetObjectItem(pJson, "userid")->valuestring;
+		char *token= cJSON_GetObjectItem(pJson, "token")->valuestring;
+		Load_useridAndToken((const char *) userId,(const char *) token);
+	}
 #endif	
 exit:
 	cJSON_Delete(pJson);

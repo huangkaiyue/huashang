@@ -24,18 +24,31 @@ typedef struct{
 	int flen;
 }Mplayer_t;
 Mplayer_t *Mad=NULL;
-
+/*
+@ 
+@ 初始化解码器
+@
+*/
 static void Mad_Decode_Init(void){
 	mad_stream_init(&stream);
  	mad_frame_init(&frame);
  	mad_synth_init(&synth);
 }
-
+/*
+@ 
+@ 释放解码器
+@
+*/
 static void Mad_Decode_Free(void){
 	mad_synth_finish(&synth);
  	mad_frame_finish(&frame);
  	mad_stream_finish(&stream);
 }
+/*
+@ 解码音频文件
+@ InputMusicStream 函数指针,回调读入mp3文件数据 ，msg 存入的音频数据 size 需要读入大小 
+@ 0 解码成功 -1 解码失败
+*/
 int DecodePlayMusic(void InputMusicStream(const void *msg,int size)){
 	int i = 0;
  	unsigned char *in_buf;

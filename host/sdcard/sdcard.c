@@ -20,7 +20,7 @@ int CheckFileNum(char * sdpath){
 	if((dirptr = opendir(sdpath)) == NULL)	
 	{  
 		printf("open dir !\n"); 
-		return ;	
+		return ret;	
 	}
 	while (entry = readdir(dirptr))  
 	{  
@@ -28,8 +28,10 @@ int CheckFileNum(char * sdpath){
 		if( !strcmp(entry->d_name,".")||!strcmp(entry->d_name,"..") ){
 			continue;
 		}
-		ret = 0;
-		break;
+		if(strstr(entry->d_name,".mp3")){
+			ret = 0;
+			break;
+		}
 	}
 	return ret;
 }

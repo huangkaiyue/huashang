@@ -142,6 +142,19 @@ static void Delmp3File(void){
 	}
 }
 #else
+int GetFileNameForPath(char *path){
+	int i=0;
+	int size=strlen(path);
+	char *p;
+	for(i=size;i>0;i--){
+		p=strstr(path+i, "/");
+		if(p==NULL)
+			continue;
+		printf("path :%s\n",path);
+		break;
+	}
+	return (size-strlen(p)+1);
+}
 static void Savemp3File(char *filepath){
 	char buf[200]={0};
 	if(CheckSdcardInfo(MP3_SDPATH)){	//ÄÚ´æ²»×ã50MÉ¾³ýÖ¸¶¨ÊýÄ¿µÄ¸èÇú
@@ -155,13 +168,17 @@ static void Savemp3File(char *filepath){
 			InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
 			break;
 		case 2:		//É¾³ýÏ²°®
-			//snprintf(buf,200,"%s%s",MP3_LIKEPATH,st->mp3name);
 			like_mp3_sign=0;
-			printf("del file name : %s (mp3name :%s)\n",filepath,st->mp3name);
-			if(strcmp(st->mp3name,"")){
-				remove(filepath);
-				DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
+			if(!strcmp(st->mp3name,"")){	//µÈÓÚ¿Õ
+				int size=GetFileNameForPath(filepath);
+				memcpy(st->mp3name,filepath+size,strlen(filepath));
 			}
+			printf("filepath: %s \t mp3name: %s \n",filepath,st->mp3name);
+			if(DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name)==0)
+				remove(filepath);
+			break;
+		case 3:
+			like_mp3_sign=0;
 			break;
 		default:
 			snprintf(buf,200,"cp %s %s%s",URL_SDPATH,MP3_SDPATH,st->mp3name);
@@ -230,7 +247,8 @@ static void *NetplayStreamMusic(void *arg){
 #endif
 	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//·¢ËÍ½áÊø×´Ì¬
 	cleanStreamData(st);	//×´Ì¬ÇÐ»»ÊÇ·ñ¼ÓËø
-
+	
+	pause_record_audio(23);
 	DEBUG_STREAM("exit play ok (%d)\n",get_playstate());
 	return NULL;
 }
@@ -289,7 +307,7 @@ void NetStreamExitFile(void){
 		eventlockLog("eventlock exit down\n",5);
 	}
 	eventlockLog("rate \n",st->rate);
-	//DEBUG_STREAM("=================NetStreamExitFile getDownState (%d)...\n",st->player.playState);
+	//DEBUG_STREAM("=====NetStreamExitFile getDownState (%d)...\n",st->player.playState);
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//ÍË³ö²¥·Å
 		pthread_mutex_lock(&st->mutex);
 		st->player.progress=0;
@@ -334,8 +352,7 @@ int NetStreamDownFilePlay(const void *data){
 }
 //ÔÝÍ£
 void StreamPause(void){
-	if(st->player.playState==MAD_PLAY)
-	{
+	if(st->player.playState==MAD_PLAY){
 		st->player.playState=MAD_PAUSE;
 		DecodePause();
 		PlayorPause();
@@ -429,11 +446,12 @@ void playLocalMp3(const char *mp3file){
 		perror("fopen read failed ");
 		return ;
 	}
-	
+	printf("============playLocalMp3==============\n"); //---bug,²»ÄÜÉ¾£¬¸¡µãÒì³£
 	pthread_mutex_lock(&st->mutex);
 	st->player.playState =MAD_PLAY;
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	
+	printf("=============ack_playCtr=============\n"); //---bug,²»ÄÜÉ¾
 #if 0
 	get_mp3head(st->rfp,&st->rate,&st->channel);
 #else
@@ -447,6 +465,8 @@ void playLocalMp3(const char *mp3file){
 	fseek(st->rfp,0,SEEK_END);
 	st->streamLen = ftell(st->rfp);
 	fseek(st->rfp,0,SEEK_SET);
+
+	printf("=============fseek=============\n"); //---bug,²»ÄÜÉ¾
 
 	pthread_mutex_unlock(&st->mutex);
 	if(st->rate==0||st->rate==8000)
@@ -466,6 +486,8 @@ void playLocalMp3(const char *mp3file){
 			st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);
 		}
 #endif
+	if(like_mp3_sign==0)
+		like_mp3_sign=3;
 #ifdef PALY_URL_SD
 	Savemp3File(mp3file);		//É¾³ýÏ²°®¸èÇú
 #endif
@@ -501,6 +523,73 @@ void PlayUrl(const void *data){
 		}
 		free((void *)buf);
 	}
+}
+#endif
+#ifdef TEST_PLAY_EQ_MUSIC
+#include "host/voices/WavAmrCon.h"
+#include "host/voices/wm8960i2s.h"
+
+void SetplayWavEixt(void){
+	st->player.playState=MAD_EXIT;
+}
+void TestPlay_EqWavFile(const void *data){
+	Player_t *play =(Player_t *)data;
+	st->player.progress=0;
+	st->streamLen=0;
+	st->playSize=0;
+	
+	unsigned short rate_one=0,rate_two=0;
+	char filepath[256]={0};
+	snprintf(filepath,256,"/media/mmcblk0p1/testmp3/%s",play->playfilename);
+	st->rfp = fopen(filepath,"r");
+	if(st->rfp==NULL){
+		perror("fopen read failed ");
+		return ;
+	}
+	struct wave_pcm_hdr wav;
+	fread(&wav,sizeof(struct wave_pcm_hdr),1,st->rfp);
+	writeLog((const char * )"/home/test_play_wav.txt",(const char *) play->playfilename);
+	char logBuf[128]={0};
+	sprintf(logBuf,"rate %d channel %d",wav.samples_per_sec,wav.channels);
+	if(wav.samples_per_sec>44100){
+		wav.samples_per_sec=44100;
+	}
+	if(wav.channels>2){
+		wav.channels=2;
+	}
+	writeLog((const char * )"/home/test_play_wav.txt",(const char *) logBuf);
+	st->SetI2SRate(wav.samples_per_sec);
+	Mute_voices(UNMUTE);
+	int i=0,pos=0,ret=0,Numbers=0;
+	char cachebuf[2]={0};
+	st->player.playState=MAD_PLAY;
+	while(1){
+		if(st->player.playState==MAD_EXIT)
+			break;
+		pos =0;
+		if(wav.channels==1){
+			for(i=0;i<I2S_PAGE_SIZE;i+=2){
+				ret = fread(cachebuf,1,2,st->rfp);
+				if(ret==0){
+					break;
+				}
+				memcpy(play_buf+pos,cachebuf,2);
+				pos+=2;
+				memcpy(play_buf+pos,cachebuf,2);
+				pos+=2;
+				write_pcm(play_buf);
+			}				
+		}else if(wav.channels==2){
+			ret = fread(play_buf,1,I2S_PAGE_SIZE,st->rfp);
+			if(ret==0){
+				break;
+			}
+			sprintf(logBuf,"play Numbers %d ret=%d ",Numbers++,ret);
+			//writeLog((const char * )"/home/test_play_wav.txt",(const char *) logBuf);
+			write_pcm(play_buf);
+		}
+	}
+	fclose(st->rfp);
 }
 #endif
 

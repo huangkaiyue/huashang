@@ -7,6 +7,7 @@
 #include "workinter.h"
 #include "host/voices/callvoices.h"
 #include "../host/voices/gpio_7620.h"
+#include "StreamFile.h"
 
 #define IMHELP    \
   "Commands: poolnum(pn)\n"\
@@ -17,12 +18,14 @@
   "Commands: del_usr(deltele usr  )\n"\
   "Commands: uplist  initlist  \n"\
   "Commands: help(h)  quit(q)\n"  
-void test_ConnetEvent(int event)
-{
+void test_ConnetEvent(int event){
 	printf("event =%d\n",event);
 }
-void pasreInputCmd(const char *com)
-{
+/*
+@ 调试命令，编译固件需要去掉
+@
+*/
+void pasreInputCmd(const char *com){
  		if (!strcmp(com, "lsmen") ||
         	!strcmp(com, "mem"))
     	{
@@ -39,19 +42,19 @@ void pasreInputCmd(const char *com)
 		}
 		else if(!strcmp(com,"addvol"))
 		{	
-			SetVol(1,0);
+			Setwm8960Vol(1,0);
 		}else if(!strcmp(com,"10"))
 		{
 			int i=0;
 			for(i;i<10;i++){
 				disable_gpio();
-				create_event_system_voices(10);
+				Create_PlaySystemEventVoices(10);
 				sleep(15);
 			}
 		}
 		else if(!strcmp(com,"subvol"))
 		{
-			SetVol(0,0);
+			Setwm8960Vol(0,0);
 		}
 		else if(!strcmp(com,"version"))
 		{
@@ -59,7 +62,7 @@ void pasreInputCmd(const char *com)
 		}
 		else if(!strcmp(com,"gwifi"))
 		{
-			startSmartConfig(create_event_system_voices);
+			startSmartConfig(Create_PlaySystemEventVoices);
 		}
 		else if(!strcmp(com,"c"))
 		{
@@ -80,18 +83,18 @@ void pasreInputCmd(const char *com)
 #ifdef VOICS_CH
 		else if(!strcmp(com,"volch0"))
 		{
-			set_vol_ch(0);
+			SaveVolCh_toRouteTable(0);
 		}
 		else if(!strcmp(com,"volch1"))
 		{
-			set_vol_ch(1);
+			SaveVolCh_toRouteTable(1);
 		}
 #endif //VOICS_CH
 		else if(!strcmp(com,"qtts"))
 		{
 			static char buf[566];
 			memset(buf,0,566);
-			start_event_play_wav();
+			start_event_play_wav(8);
 			memcpy(buf,"互联网+”代表一种新的经济形态，即充分发挥互联网在生产要素配置中的优化和集成作用，将互联网的创新成果深度融合于经济社会各领域之中，提升实体经济的创新力和生产力，形成更广泛的以互联网为基础设施和实现工具的经济发展新形态。“ 互联网+”行动计划将重点促进以云计算、物联网、大数据为代表的新一代信息技术与现代制造业、生产性服务业等的融合创新，发展壮大新兴业态，打造新的产业增长点，为大众创业、万众创新提供环境，为产业智能化提供支撑，增强新的经济发展动力，促进国民经济提质增效升级。 2015年3月5日十二届全国人大三次会议上，李克强总理在政府工作报告中首次提出“互联网+”行动计划。",566);
 			PlayQttsText(buf,0);
 		}else if(!strcmp(com,"testmp3"))
@@ -110,7 +113,15 @@ void pasreInputCmd(const char *com)
 			ReadWifi();
 		}
 		else if(!strcmp(com,"url")){
-			createPlayEvent((const void *)"http://fdfs.xmcdn.com/group7/M01/A3/8D/wKgDX1d2Rr6w3CegABHDHZzUiUs448.mp3",1);
+			//createPlayEvent((const void *)"http://fdfs.xmcdn.com/group7/M01/A3/8D/wKgDX1d2Rr6w3CegABHDHZzUiUs448.mp3",1);
+			Player_t *App=(Player_t *)calloc(1,sizeof(Player_t));
+			if(App==NULL){
+				perror("calloc error !!!");
+			}
+			snprintf(App->playfilename,128,"%s","http://beta.app.tuling123.com/file/soundset/music/bazhixiaoe.mp3");	
+			snprintf(App->musicname,64,"%s","speek");
+			App->musicTime = 0;
+			createPlayEvent(App,1);
 		}
 		else if(!strcmp(com,"qurl")){
 			CleanUrlEvent();
@@ -134,7 +145,7 @@ void pasreInputCmd(const char *com)
 			sleep(1);
 			printf("--------------------------\n");
 		}else if(!strcmp(com,"qtts1")){
-			QttsPlayEvent("正在下载固件",0);
+			Create_PlayQttsEvent("正在下载固件",0);
 		}else if(!strcmp(com,"seek")){
 			test_quikSeekTo();
 		}else if(!strcmp(com,"prev")){
@@ -151,22 +162,38 @@ void pasreInputCmd(const char *com)
     		clean_resources();
 			exit(0);
 			return ;
-    	}else if (!strcmp(com, "guoxue"))
+    	}else if (!strcmp(com, "1"))
     	{
+    		if(sysMes.localplayname==english){
+				keyStreamPlay();
+			}else{
     		createPlayEvent((const void *)"guoxue",1);
+			}
     	}else if (!strcmp(com, "xiai"))
     	{
     		createPlayEvent((const void *)"xiai",1);
-    	}else if (!strcmp(com, "english"))
+    	}else if (!strcmp(com, "2"))
     	{
-    		createPlayEvent((const void *)"english",1);
-    	}else if (!strcmp(com, "story"))
+    		if(sysMes.localplayname==english){
+				keyStreamPlay();
+			}else{
+    			createPlayEvent((const void *)"english",1);
+			}
+    	}else if (!strcmp(com, "3"))
     	{
-    		createPlayEvent((const void *)"story",1);
+    		if(sysMes.localplayname==story){
+				keyStreamPlay();
+			}else{
+    			createPlayEvent((const void *)"story",1);
+			}
+    	}else if (!strcmp(com, "4"))
+    	{
+    		if(sysMes.localplayname==mp3){
+				keyStreamPlay();
+			}else{
+    			createPlayEvent((const void *)"mp3",1);
+			}
     	}else if (!strcmp(com, "mp3"))
-    	{
-    		createPlayEvent((const void *)"mp3",1);
-    	}else if (!strcmp(com, "next"))
     	{
     		switch(sysMes.localplayname){
 					case mp3:
@@ -184,9 +211,6 @@ void pasreInputCmd(const char *com)
 					default:
 						break;
 				}
-    	}else if (!strcmp(com, "showdb"))
-    	{
-  
     	}
     	else if (!strcmp(com, "help") ||
            	!strcmp(com, "h"))

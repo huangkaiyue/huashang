@@ -3,7 +3,6 @@
 #include "network.h"
 #include "sysdata.h"
 #include "base/udp_sock.h"
-#include "../uart/uart.h"
 #include "base/pool.h"
 #include "systools.h"
 

@@ -211,17 +211,17 @@ static int table_result(void *args,int nRow,int nColumn,char **dbResult){
 	index = nColumn; 
 	if(netmusic->playMode==PLAY_NEXT){
 		if(++netmusic->playindex>=nRow){
-			netmusic->playindex=1;
+			netmusic->playindex=0;
 		}
 	}else if(netmusic->playMode==PLAY_PREV){
-		if(--netmusic->playindex<=0){
-			netmusic->playindex=nRow;
+		if(--netmusic->playindex<0){
+			netmusic->playindex=nRow-1;
 		}
 	}
 	printf( "all cloumn: %d records  netmusic->playindex = %d\n", nRow ,netmusic->playindex);	
-	int res = (netmusic->playindex-1)*nColumn+nColumn-1;
-	snprintf(getMusicname,128,dbResult [res]);	
-#if 0	
+	int res = netmusic->playindex*nColumn+nColumn-1;
+	snprintf(getMusicname,128,dbResult [res+2]);	//二是去掉表头
+#if 1
 	for( i = 0; i < nRow ; i++ )  { 		
 			for( j = 0 ; j < nColumn; j++ )  {  
 				if(netmusic->playindex==i){

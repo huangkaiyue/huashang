@@ -4,23 +4,27 @@
 #include "host/voices/wm8960i2s.h"
 
 extern  void *play_qtts_data(void *arg);
-
 //开始下载, 接口兼容，需要去掉streamLen
 static void tulingStartDown(const char *filename,int streamLen){
+	initputPcmdata();
 	printf("filename =%s streamLen=%d\n",filename,streamLen);
 }
 //获取到流数据
 static void  tulingGetStreamData(const char *data,int size){
-	printf("%s: size = %d\n",__func__,size);
 	putPcmdata((const void *)data,size);
 }
 //结束下载
 static void  tulingEndDown(int downLen){
 	printf("tulingEndDown mp3 \n");
 }
-
+#ifdef TEST_DOWNFILE
 void test_read_file(void){
-	FILE *fp = fopen("8caf0b37-3359-4b85-b06b-aec080ab1d69.pcm","r"); 
+	//FILE *fp = fopen("8caf0b37-3359-4b85-b06b-aec080ab1d69.pcm","r");
+	FILE *fp = fopen("test_down.pcm","r");
+	if(fp==NULL){
+		perror("fopen read failed ");
+		return ;
+	}
 	int pos=0;
 	char buf[2]={0};
 	int ret =0;
@@ -40,16 +44,20 @@ void test_read_file(void){
 	}
 	fclose(fp);
 }
+#endif
 void downTulingMp3(const char *url){
 	printf("start down tuling mp3 \n");
+#ifdef TEST_DOWNFILE
 	test_read_file();
-	return ;
+#else
 	setDowning();
 	StartPthreadPlay();
-	pool_add_task(play_qtts_data,NULL);		//启动播放线程
+	tulingLog("downTulingMp3 start",1);
 	demoDownFile(url,15,tulingStartDown,tulingGetStreamData,tulingEndDown);
 	SetDownExit();
+	tulingLog("downTulingMp3 wait",1);
 	WaitPthreadExit();
+	tulingLog("downTulingMp3 end",1);
 	printf("downTulingMp3 exit mp3 \n");
-	pause_record_audio();
+#endif
 }

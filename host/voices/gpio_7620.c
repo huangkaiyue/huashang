@@ -30,7 +30,7 @@ void close_wm8960_voices(void)
 //系统灯开关
 void open_sys_led(void)
 {
-	ioctl(gpio.fd, TANG_LED_CLOSE);
+	ioctl(gpio.fd, TANG_LED_CLOSE);	//close 三极管 为关闭
 }
 void close_sys_led(void)
 {
@@ -49,7 +49,15 @@ void Led_vigue_open(void){
 		open_sys_led();
 		usleep(500*1000);
 	}
-	open_sys_led();
+#ifdef QITUTU_SHI
+	open_sys_led();	//
+#endif
+#ifdef TANGTANG_LUO
+	open_sys_led();	//
+#endif
+#ifdef DATOU_JIANG
+	close_sys_led();
+#endif
 }
 
 void Led_vigue_close(void){
@@ -58,25 +66,29 @@ void Led_vigue_close(void){
 void Led_System_vigue_open(void){
 	Led_System_vigue_close();
 	usleep(300*1000);
-	led_left_right(left,closeled);
-	led_left_right(right,closeled);
+	led_lr_oc(closeled);
 	usleep(300*1000);
 	led_system_type=LED_VIGUE_OPEN;
 	while(led_system_type==LED_VIGUE_OPEN){
-		led_left_right(left,openled);
-		led_left_right(right,openled);
+		led_lr_oc(openled);
 		usleep(300*1000);
-		led_left_right(left,closeled);
-		led_left_right(right,closeled);
+		led_lr_oc(closeled);
 		usleep(300*1000);
 	}
-	led_left_right(left,openled);
-	led_left_right(right,openled);
+#ifdef QITUTU_SHI
+	led_lr_oc(openled);
+#endif
+#ifdef TANGTANG_LUO
+	led_lr_oc(openled);
+#endif
+#ifdef DATOU_JIANG
+	led_lr_oc(closeled);
+#endif
 }
 void Led_System_vigue_close(void){
 	led_system_type=LED_VIGUE_CLOSE;
 }
-void led_left_right(unsigned char type,unsigned char io)
+static void led_left_right(unsigned char type,unsigned char io)
 {
 	switch(type){
 		case left:
@@ -93,13 +105,25 @@ void led_left_right(unsigned char type,unsigned char io)
 			break;
 	}
 }
+void led_lr_oc(unsigned char type){
+	switch(type){
+		case openled:	//开
+			led_left_right(left,openled);
+			led_left_right(right,openled);
+			break;
+		case closeled:
+			led_left_right(left,closeled);
+			led_left_right(right,closeled);
+			break;
+	}
+}
 //串口开关
-static void uart_open(void){
+static void enableUart(void){
 	if (ioctl(gpio.fd, TANG_UART_OPEN) < 0) {
 		perror("ioctl uart");
 		return ;
 	}
-	DEBUG_GPIO("uart_open..\n");
+	DEBUG_GPIO("enableUart..\n");
 }
 //锁函数
 static void lock_msgEv(void)
@@ -119,7 +143,10 @@ static int check_lock_msgEv(void)
 	return 0;
 }
 void EnableBindDev(void){
-	gpio.speek_tolk=BIND_DEV;
+	gpio.bindsign=BIND_DEV_OK;
+}
+void EnableCallDev(void){
+	gpio.callbake=1;
 }
 static void ReadSpeekGpio(void){
 	if (ioctl(gpio.fd,TANG_GET_DATA_3264,&gpio.data) < 0){
@@ -137,6 +164,7 @@ static void ReadSpeekGpio(void){
 	gpio.speek_tolk=TOLK;
 #endif	
 }
+
 //按键处理事件
 //-------------------------------------------QITUTU_SHI--------------------------------------------
 #ifdef QITUTU_SHI
@@ -160,7 +188,7 @@ static void signal_handler(int signum)
 				wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
 				if(strlen(wifi)>0){
 					snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
-					QttsPlayEvent(buf,QTTS_GBK);
+					Create_PlayQttsEvent(buf,QTTS_GBK);
 				}
 				break;
 				
@@ -175,13 +203,13 @@ static void signal_handler(int signum)
 				if(gpio.speek_tolk==SPEEK){
 					end_event_std();
 				}else{
-					create_event_voices_key(VOLKEYUP);
+					Create_WeixinSpeekEvent(VOLKEYUP);
 				}
 				break;
 #ifdef 	LOCAL_MP3
 			case ADDVOL_KEY:	//play last
 #ifdef ONCEVOL
-				createPlayEvent((const void *)"xiai",PLAY_NEXT);
+				createPlayEvent((const void *)"xiai",PLAY_PREV);
 #else
 				VolAndNextKey(VOLKEYUP,ADDVOL_KEY);
 #endif
@@ -189,7 +217,7 @@ static void signal_handler(int signum)
 				break;
 			case SUBVOL_KEY:	//play next
 #ifdef ONCEVOL
-				createPlayEvent((const void *)"xiai",PLAY_PREV);
+				createPlayEvent((const void *)"xiai",PLAY_NEXT);
 #else
 				GpioLog("key up",SUBVOL_KEY);
 #endif
@@ -203,22 +231,34 @@ static void signal_handler(int signum)
 				CreateLikeMusic();
 				break;
 			case LETFLED_KEY:	//回复键
-				Ack_CallDev();
+				if(gpio.callbake==1){
+					Create_PlaySystemEventVoices(TALK_CONFIRM_OK_PLAY);
+					//Create_PlayQttsEvent("确认消息回复成功，请发上传语音。",QTTS_GBK);
+					gpio.callbake==0;
+					Ack_CallDev();
+				}else{
+					if(getEventNum()>0){
+						break;
+					}
+					Create_PlaySystemEventVoices(TALK_CONFIRM_ER_PLAY);
+					//Create_PlayQttsEvent("当前还没有人呼叫你。",QTTS_GBK);
+				}
 				break;
 			case RIGHTLED_KEY:	//bind键
 #ifdef VOICS_CH
 				if(get_volch()==0){
-					set_vol_ch(1);
+					SaveVolCh_toRouteTable(1);
 				}else if(get_volch()==1){
-					set_vol_ch(0);
+					SaveVolCh_toRouteTable(0);
 				}
 #endif
-				if(gpio.speek_tolk==BIND_DEV){
+				if(gpio.bindsign==BIND_DEV_OK){
 					BindDevToaliyun();
-					ReadSpeekGpio();
-					QttsPlayEvent("成功处理小伙伴的绑定请求。",QTTS_GBK);
+					Create_PlaySystemEventVoices(BIND_OK_PLAY);
+					gpio.bindsign=BIND_DEV_ER;
+					//Create_PlayQttsEvent("成功处理小伙伴的绑定请求。",QTTS_GBK);
 				}else{
-					
+					Create_PlayQttsEvent("快去邀请小伙伴一起来聊天吧。",QTTS_GBK);
 				}
 				break;
 		}
@@ -227,7 +267,7 @@ static void signal_handler(int signum)
 	else if (signum == GPIO_DOWN){
 		switch(gpio.mount){
 			case RESET_KEY://恢复出厂设置
-				create_event_system_voices(4);
+				Create_PlaySystemEventVoices(4);
 				//ResetDefaultRouter();
 				system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
 				break;
@@ -242,12 +282,14 @@ static void signal_handler(int signum)
 				break;
 				
 			case SPEEK_KEY://会话键
-				ReadSpeekGpio();
+#ifdef	SPEEK_VOICES1
+				ReadSpeekGpio();	//-----bug
+#endif
 				if(gpio.speek_tolk==SPEEK){
 					down_voices_sign();
 				}else{
-					create_event_voices_key(VOLKEYDOWN);
-				}
+					Create_WeixinSpeekEvent(VOLKEYDOWN);
+				}			
 				break;
 			
 			case RESERVE_KEY1://预留键
@@ -255,7 +297,7 @@ static void signal_handler(int signum)
 #ifdef	LED_LR
 			case ADDVOL_KEY:	//vol +
 #ifdef ONCEVOL
-				SetVol(GVOL_ADD,0);
+				Setwm8960Vol(GVOL_ADD,0);
 #else
 				VolAndNextKey(VOLKEYDOWN,ADDVOL_KEY);
 #endif
@@ -264,7 +306,7 @@ static void signal_handler(int signum)
 				break;
 			case SUBVOL_KEY:	//vol -
 #ifdef ONCEVOL
-				SetVol(GVOL_SUB,0);
+				Setwm8960Vol(GVOL_SUB,0);
 #else
 				VolAndNextKey(VOLKEYDOWN,SUBVOL_KEY);
 #endif
@@ -308,7 +350,7 @@ static void signal_handler(int signum)
 				wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
 				if(strlen(wifi)>0){
 					snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
-					QttsPlayEvent(buf,QTTS_GBK);
+					Create_PlayQttsEvent(buf,QTTS_GBK);
 				}
 				break;
 
@@ -317,7 +359,7 @@ static void signal_handler(int signum)
 				if(gpio.speek_tolk==SPEEK){
 					end_event_std();
 				}else{
-					create_event_voices_key(VOLKEYUP);
+					Create_WeixinSpeekEvent(VOLKEYUP);
 				}
 #else
 				end_event_std();
@@ -326,24 +368,6 @@ static void signal_handler(int signum)
 			
 #ifdef 	LOCAL_MP3
 			case ADDVOL_KEY:	//play last
-				switch(sysMes.localplayname){
-					case mp3:
-						createPlayEvent((const void *)"mp3",PLAY_NEXT);
-						break;
-					case story:
-						createPlayEvent((const void *)"story",PLAY_NEXT);
-						break;
-					case english:
-						createPlayEvent((const void *)"english",PLAY_NEXT);
-						break;
-					case guoxue:
-						createPlayEvent((const void *)"guoxue",PLAY_NEXT);
-						break;
-					default:
-						break;
-				}
-				break;
-			case SUBVOL_KEY:	//play next
 				switch(sysMes.localplayname){
 					case mp3:
 						createPlayEvent((const void *)"mp3",PLAY_PREV);
@@ -361,8 +385,27 @@ static void signal_handler(int signum)
 						break;
 				}
 				break;
+			case SUBVOL_KEY:	//play next
+				switch(sysMes.localplayname){
+					case mp3:
+						createPlayEvent((const void *)"mp3",PLAY_NEXT);
+						break;
+					case story:
+						createPlayEvent((const void *)"story",PLAY_NEXT);
+						break;
+					case english:
+						createPlayEvent((const void *)"english",PLAY_NEXT);
+						break;
+					case guoxue:
+						createPlayEvent((const void *)"guoxue",PLAY_NEXT);
+						break;
+					default:
+						break;
+				}
+				break;
 #endif
 			case RIGHTLED_KEY:
+#if 0
 				if(gpio.ledletf==1){
 					gpio.ledletf=0;
 					led_left_right(left,closeled);
@@ -377,6 +420,13 @@ static void signal_handler(int signum)
 					gpio.ledright=1;
 					led_left_right(right,openled);
 				}
+#else
+				if(sysMes.localplayname==english){
+					keyStreamPlay();
+				}else{
+					createPlayEvent((const void *)"english",PLAY_NEXT);
+				}
+#endif
 				break;
 #ifdef	LOCAL_MP3
 			case RESERVE_KEY2:
@@ -420,7 +470,7 @@ static void signal_handler(int signum)
 	else if (signum == GPIO_DOWN){
 		switch(gpio.mount){
 			case RESET_KEY://恢复出厂设置
-				create_event_system_voices(4);
+				Create_PlaySystemEventVoices(4);
 				//ResetDefaultRouter();
 				system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
 				break;
@@ -438,10 +488,14 @@ static void signal_handler(int signum)
 				
 			case SPEEK_KEY://会话键
 #ifdef	SPEEK_VOICES
+#ifdef	SPEEK_VOICES1
+				ReadSpeekGpio();
+#endif
+				printf("%d \n",gpio.speek_tolk);
 				if(gpio.speek_tolk==SPEEK){
 					down_voices_sign();
 				}else{
-					create_event_voices_key(VOLKEYDOWN);
+					Create_WeixinSpeekEvent(VOLKEYDOWN);
 				}
 #else
 				down_voices_sign();
@@ -454,17 +508,16 @@ static void signal_handler(int signum)
 			case RESERVE_KEY3:	//目录
 				break;
 			case ADDVOL_KEY:	//vol +
-				SetVol(GVOL_ADD,0);
+				Setwm8960Vol(GVOL_ADD,0);
 				ack_VolCtr("add",GetVol());//----------->音量减
 				break;
 			case SUBVOL_KEY:	//vol -
-				SetVol(GVOL_SUB,0);
+				Setwm8960Vol(GVOL_SUB,0);
 				ack_VolCtr("sub",GetVol());//----------->音量减
 				break;
 			case LETFLED_KEY:	//left led
 				break;
 			case RIGHTLED_KEY:
-				Net_work();
 				break;
 #endif
 		}// end gpio_down
@@ -498,7 +551,7 @@ static void signal_handler(int signum)
 				wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
 				if(strlen(wifi)>0){
 					snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
-					QttsPlayEvent(buf,QTTS_GBK);
+					Create_PlayQttsEvent(buf,QTTS_GBK);
 				}
 				break;
 
@@ -511,7 +564,7 @@ static void signal_handler(int signum)
 	else if (signum == GPIO_DOWN){
 		switch(gpio.mount){
 			case RESET_KEY://恢复出厂设置
-				create_event_system_voices(4);
+				Create_PlaySystemEventVoices(4);
 				//ResetDefaultRouter();
 				system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
 				break;
@@ -671,16 +724,19 @@ static void enableResetgpio(void){
 	signal(SIGUSR1, signal_handler);
 	signal(SIGUSR2, signal_handler);
 }
-
-void init_7620_gpio(void)
-{
+/*
+@ 
+@ 初始化mtk76xx 系列gpio，注册gpio，并使能部分按键中断
+@
+*/
+void InitMtk76xx_gpio(void){
 	memset(&gpio,0,sizeof(Gpio));
 	gpio.fd = open(GPIO_DEV, O_RDONLY);
 	if (gpio.fd < 0) {
 		perror(GPIO_DEV);
 		return ;
 	}
-	uart_open();
+	enableUart();
 #if	0
 	close_sys_led();
 #else
@@ -689,7 +745,7 @@ void init_7620_gpio(void)
 #ifdef SPEEK_VOICES
 	ReadSpeekGpio();	//读取会话对讲功能拨动键
 #endif
-	enableResetgpio();	//使能恢复出厂设置按键
+	enableResetgpio();	//使能恢复出厂设置按键 (防止开机出现死机现象，无法操作)
 }
 //去使能按键
 void disable_gpio(void)
@@ -702,7 +758,7 @@ void disable_gpio(void)
 	enableResetgpio();	//使能恢复出厂设置按键
 }
 //清除GPIO
-void clean_7620_gpio(void)
+void CleanMtk76xx_gpio(void)
 {
 	//close_sys_led();
 	disable_gpio();
@@ -711,8 +767,8 @@ void clean_7620_gpio(void)
 #ifdef MAIN
 int main(void)
 {
-	init_7620_gpio();
-	DEBUG_GPIO("init_7620_gpio \n");
+	InitMtk76xx_gpio();
+	DEBUG_GPIO("InitMtk76xx_gpio \n");
 	open_wm8960_voices();
 	while(1){
 		pause();

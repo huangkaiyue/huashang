@@ -12,7 +12,6 @@ typedef struct{
 
 #define PLAY_NEXT		1		//播放下一首歌曲
 #define PLAY_PREV		2 		//播放上一首歌曲
-#define PLAY_NEXT_AUTO	3 		//播放上一首歌曲
 
 #ifdef DOWN_URL_MUSIC
 #define XIMALA_MUSIC	"ximalaya"	//喜马拉雅收藏的歌曲		

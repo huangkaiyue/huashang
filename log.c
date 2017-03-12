@@ -228,7 +228,7 @@ void tulingLog(const char *data,unsigned char err){
 	}else{
 		fp =fopen("/home/tuling.log","a+");
 	}
-	sprintf(buf,"%s%d %s\n","err:",err,data);
+	sprintf(buf,"err:%d %s\n",err,data);
 	if(NULL == fp ){
 		return ;
     }
@@ -268,7 +268,7 @@ void UartLog(const char *data,unsigned char number){
 	}else{
 		fp =fopen("/home/uart.log","a+");
 	}
-	sprintf(buf,"%s%s %x\n",data,"0x:",number);
+	sprintf(buf,"%s: 0x%x\n",data,number);
 	if(NULL == fp ){
 		return ;
     }
@@ -299,5 +299,4 @@ void GpioLog(const char *data,unsigned char number){
 	return ;
 #endif
 }
-
 

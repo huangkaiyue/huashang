@@ -8,7 +8,7 @@
 
 //#define DBG_AP_STA
 #ifdef DBG_AP_STA 
-#define DEBUG_AP_STA(fmt, args...) printf("ap sta: " fmt, ## args)
+#define DEBUG_AP_STA(fmt, args...) printf("%s",__func__,fmt, ## args)
 #else   
 #define DEBUG_AP_STA(fmt, args...) { }
 #endif	//end DBG_AP_STA
@@ -16,9 +16,17 @@
 //#define TEST_WIFI
 #ifdef TEST_WIFI
 #define TEST_WIFI_DATA "apcli0    elian:AM=0, ssid=TP-LINK_2294F4, pwd=369852369, user=, cust_data_len=0, cust_data=,"
+#define TEST_WIFI_1 		"apcli0    elian:AM=0, ssid=TURING ROBOT 2, pwd=turingrobot88888, user=, cust_data_len=0, cust_data=,"
 #endif	//end TEST_WIFI
 
-static unsigned char connetState=0;
+#define NEW_GET_WIFI
+#ifdef NEW_GET_WIFI
+#define SMART_CONFIG_HEAD	"apcli0    elian:"
+#endif
+
+#define LOCK_SMART_CONFIG_WIFI		1	//对配网进行上锁
+#define UNLOCK_SMART_CONFIG_WIFI	0	//对配网进行解锁
+static unsigned char connetState=UNLOCK_SMART_CONFIG_WIFI;
 int checkconnetState(void){
 	if(connetState==0)
 		return 0;
@@ -26,18 +34,7 @@ int checkconnetState(void){
 		return -1;
 }
 
-void checkConnectFile(void)
-{
-	if(access("/var/connetc.lock",0) < 0){
-		fopen("/var/connetc.lock","w+");
-	}else{
-		DEBUG_AP_STA("please delete /var/connetc.lock \n");
-		exit(1);
-	}
-}
-
-static int sendSsidPasswd(char *ssid,char *passwd)
-{
+static int sendSsidPasswd(const char *ssid,const char *passwd){
 	int ret=0;
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
@@ -49,6 +46,7 @@ static int sendSsidPasswd(char *ssid,char *passwd)
 	szJSON = cJSON_Print(pItem);
 	ret= SendtoServicesWifi(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
 	return ret ;
 }
 /*******************************************************
@@ -56,15 +54,45 @@ static int sendSsidPasswd(char *ssid,char *passwd)
 参数: 无
 返回值: 无
 ********************************************************/
-int checkInternetFile(void)
-{
+int checkInternetFile(void){
 	if(access("/var/internet.lock",0) < 0){
 		return -1;
 	}
 	return 0;
 }
-static int smartGetSsid(char *smartData,char *ssid,char *passwd)
-{
+#ifdef NEW_GET_WIFI
+static int NewGetSmartConfigWifi(char *smartData,char *ssid,char *passwd){
+	int smartconfig_headlen=strlen(SMART_CONFIG_HEAD);	
+	char wifidata[200]={0};
+	snprintf(wifidata,200,"%s",smartData+smartconfig_headlen);
+	FILE *fplog = fopen("/home/airkiss_wifi.txt","w+");
+	if(fplog){
+		fprintf(fplog,"wifidata:\n%s\n",wifidata);
+		fclose(fplog);
+	}
+	cJSON *pJson = cJSON_Parse((const char *)wifidata);
+	if(NULL == pJson){
+		return -1;
+	}
+	cJSON * pSub = cJSON_GetObjectItem(pJson, "ssid");
+	if(pSub!=NULL){
+		if(strcmp(pSub->valuestring,"")){
+			sprintf(ssid,"%s",pSub->valuestring);
+			pSub = cJSON_GetObjectItem(pJson, "pwd");
+			sprintf(passwd,"%s",pSub->valuestring);
+			FILE *fplog = fopen("/home/airkiss_wifi.txt","a+");
+			if(fplog){
+				fprintf(fplog,"ssid:%s\n",ssid);
+				fprintf(fplog,"passwd:%s\n",passwd);
+				fclose(fplog);
+			}
+			return 0;
+		}
+	}	
+	return -1;
+}
+#else
+static int smartGetSsid(char *smartData,char *ssid,char *passwd){
 	char getssid[64]={0},getpwd[64]={0};
 	char *p = strstr(smartData,"ssid");
 	if(p==NULL)
@@ -74,17 +102,23 @@ static int smartGetSsid(char *smartData,char *ssid,char *passwd)
 	sprintf(ssid,"%s",getssid+5);
 	sprintf(passwd,"%s",getpwd+4);	
 	int len = strlen(ssid);
-	if(len==1)
-	{
+	if(len==1){
 		DEBUG_AP_STA("not find ssid\n");
 		return -1;
 	}
 	ssid[len-1]='\0';
 	len= strlen(passwd);
 	passwd[len-1]='\0';
-	//printf("ssid:%s pwd: %s \n",ssid,passwd);
+	
+	FILE *fplog=NULL;
+	fplog = fopen("/home/airkiss_wifi.txt","a+");
+	if(fplog){
+		fprintf(fplog,"ssid:===(%s)===pwd:===(%s)===\n",ssid,passwd);
+		fclose(fplog);
+	}
 	return 0;
 }
+#endif
 static void createSmartConfigLock(void){
 	fopen("/var/SmartConfig.lock","w+");
 }
@@ -104,28 +138,35 @@ static int SmartConfig(void *arg){
 	char ssid[64]={0},pwd[64]={0};
 	int ret=-1,timeout=0;
 	ConnetWIFI *wifi = (ConnetWIFI *)arg;
-
 	buf = (char *)calloc(512,1);
-	if(buf==NULL)
-	{
+	if(buf==NULL){
 		perror("calloc failed ");
-		return ret ;
+		goto exit0;
 	}	
 	createSmartConfigLock();
 	system("iwpriv apcli0 elian start");
-	while (++timeout<280){	
+	while (++timeout<400){	
 		//必须实时打开管道，才能读取到更新的数据
 		if((fp = popen("iwpriv apcli0 elian result", "r"))==NULL){
 			fprintf(stderr, "%s: iwpriv apcli0 elian result failed !\n", __func__);
 			break;
 		}
+		memset(buf,0,512);
 		fgets(buf, 512, fp);
 		ptr =buf; 
+#ifdef NEW_GET_WIFI
+		if(!NewGetSmartConfigWifi(ptr,ssid,pwd)){
+			DEBUG_AP_STA("smartGetSsid : ssid:%s   pwd:%s\n",ssid,pwd);
+			ret=0;
+			break;
+		}
+#else
 		if(!smartGetSsid(ptr,ssid,pwd)){
 			DEBUG_AP_STA("smartGetSsid : ssid:%s   pwd:%s\n",ssid,pwd);
 			ret=0;
 			break;
 		}
+#endif		
 		usleep(100000);
 		
 		memset(ssid,0,64);
@@ -135,65 +176,67 @@ static int SmartConfig(void *arg){
 	timeout=0;
 	system("iwpriv apcli0 elian stop");
 	system("iwpriv apcli0 elian clear");
-	if(ret==0)
-	{
+	if(ret==0){
 		snprintf(wifi->ssid,64,"%s",ssid);
 		snprintf(wifi->passwd,64,"%s",pwd);
 		wifi->connetEvent(SMART_CONFIG_OK);	//已经接收到ssid 和 passwd
 		sendSsidPasswd(ssid,pwd);
 		delSmartConfigLock();
 		sleep(5);
-		while(++timeout<30){	//等待配网成功后，使能按键
+		while(++timeout<40){	//等待配网成功后，使能按键
 			sleep(1);
 			if(checkInternetFile()){
 				sleep(5);
 				break;
 			}
 		}
+		if(timeout>=40){
+			delInternetLock();		//防止联网进程出现问题，需要手动删除  2017-03-05-22:57
+		}
 	}else{
 		wifi->connetEvent(SMART_CONFIG_FAILED); //没有收到app发送过来的ssid和passwd
 		delSmartConfigLock();
 		delInternetLock();	//上半段解文件锁
 	}
+	free(buf);
+	connetState=UNLOCK_SMART_CONFIG_WIFI;
+exit0:
 	wifi->enableGpio();
 	free(wifi);
 	wifi=NULL;
-	free(buf);
-	connetState=0;
 	return ret;
 }
-int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void))
-{
+int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
 	DEBUG_AP_STA("startSmartConfig...\n");
 	smartConifgLog("startSmartConfig start \n");
-	if(connetState){
+	int ret=-1;
+	if(connetState==LOCK_SMART_CONFIG_WIFI){
 		smartConifgLog("startSmartConfig failed \n");
 		return -1;
 	}
 	ConnetEvent(START_SMARTCONFIG);	//通知用户输入wifi 密码，进行配网
-	int ret=0;
-	connetState=1;
-	createInternetLock();	//上半段上文件锁
+	
+	connetState = LOCK_SMART_CONFIG_WIFI;
 	ConnetWIFI *wifi =(ConnetWIFI *)calloc(1,sizeof(ConnetWIFI));
-	if(wifi==NULL)
-	{
+	if(wifi==NULL){
 		perror("startSmartConfig :calloc failed ");
-		ret=-2;
-		EnableGpio();
-		goto exit0;
+		ret=-1;
+		goto exit1;
 	}
-	wifi->connetEvent=ConnetEvent;
-	wifi->enableGpio=EnableGpio;
+	wifi->connetEvent = ConnetEvent;
+	wifi->enableGpio = EnableGpio;
 	smartConifgLog("startSmartConfig pool_add_task ok\n");
+	createInternetLock();	//上半段上文件锁
 	pool_add_task(SmartConfig, wifi);
-exit0:
-	connetState=0;
+	ret=0;
+	return ret;
+exit1:
+	connetState=UNLOCK_SMART_CONFIG_WIFI;
 	delInternetLock();	//上半段解文件锁
 	return ret;
 }
 
-void startServiceWifi(void)
-{
+void startServiceWifi(void){
 	int ret=0;
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
@@ -203,19 +246,17 @@ void startServiceWifi(void)
 	szJSON = cJSON_Print(pItem);
 	ret= SendtoServicesWifi(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
+	free(szJSON);
 	return ret ;	
 }
 
 #ifdef MAIN_TEST
 #define USAGE "Usage:  ./ap_sta 1 \n"
 
-static void test_ConnetEvent(int event)
-{
+static void test_ConnetEvent(int event){
 	DEBUG_AP_STA("event =%d\n",event);
 }
-int main(int argc,char **argv)
-{
-	checkConnectFile();
+int main(int argc,char **argv){
 	if(argc<2)
 	{
 		DEBUG_AP_STA(USAGE);

@@ -13,8 +13,7 @@ static int play_index = 0;
 I2SST I2S;
 
 //使能发送,先检查当前状态，再操作，防止内核态死锁
-static void set_tx_state(int i2s_fd,int enable)
-{
+static void set_tx_state(int i2s_fd,int enable){
 	if(I2S.tx_enable==0&&enable==1)
 	{
 		I2S.tx_enable=1;
@@ -27,8 +26,7 @@ static void set_tx_state(int i2s_fd,int enable)
 	}
 }
 //使能接收
-static void set_rx_state(int i2s_fd,int enable)
-{
+static void set_rx_state(int i2s_fd,int enable){
 	if(I2S.rx_enable==0&&enable==1){
 		I2S.rx_enable=1;
 		ioctl(i2s_fd, I2S_RX_ENABLE, 0);
@@ -38,8 +36,7 @@ static void set_rx_state(int i2s_fd,int enable)
 		ioctl(i2s_fd, I2S_RX_DISABLE, 0);
 	}
 }
-static int i2s_txbuffer_mmap(int i2s_fd)
-{
+static int i2s_txbuffer_mmap(int i2s_fd){
 	int i;
 	for(i = 0; i < MAX_I2S_PAGE; i++)
 	{
@@ -53,8 +50,7 @@ static int i2s_txbuffer_mmap(int i2s_fd)
 	}
 	return 0;
 }
-static int i2s_rxbuffer_mmap(int i2s_fd)
-{
+static int i2s_rxbuffer_mmap(int i2s_fd){
 	int i;
 	for(i = 0; i < MAX_I2S_PAGE; i++)
 	{
@@ -68,8 +64,7 @@ static int i2s_rxbuffer_mmap(int i2s_fd)
 	return 0;
 }
 
-static int i2s_txbuffer_munmap(void)
-{
+static int i2s_txbuffer_munmap(void){
 	int i;
 	for(i = 0; i < MAX_I2S_PAGE; i++)
 	{
@@ -82,8 +77,7 @@ static int i2s_txbuffer_munmap(void)
 	return 0;
 }	
 
-static int i2s_rxbuffer_munmap(void)
-{
+static int i2s_rxbuffer_munmap(void){
 	int i;
 	for(i = 0; i < MAX_I2S_PAGE; i++)
 	{
@@ -95,11 +89,10 @@ static int i2s_rxbuffer_munmap(void)
 	}
 	return 0;
 }
-/*******************************************************
-清除播放的缓存数据
-*******************************************************/
-static void __clean_play_cache_data(void)
-{
+/*
+@ 清除I2S 播放的缓存数据
+*/
+void CleanI2S_PlayCachedata(void){
 	char *pBuf=NULL;
 	int i = 0;
 	cleanplayLog("cleanplay_start\n");
@@ -114,15 +107,11 @@ static void __clean_play_cache_data(void)
 	}
 	cleanplayLog("cleanplay end\n");
 }
-void clean_play_cache(void){
-	__clean_play_cache_data();
-}
-#define VOL_UP			115				//音量上限
-#define VOL_DWON		90				//音量下限
+#define VOL_UP			120				//音量上限
+#define VOL_DWON		95				//音量下限
 #define VOL_NUM			3				//每次增加
 #define VOL_SET_DATA(x) (x/4)+VOL_DWON	//APP设置值算法
-int SetVol(int dir,int vol)
-{
+int Setwm8960Vol(int dir,int vol){
 	int ret = 0;
 	if(I2S.tx_vol<=VOL_DWON){
 		I2S.tx_vol=VOL_DWON;
@@ -154,7 +143,7 @@ int SetVol(int dir,int vol)
 		ret = -1;
 	}
 	SET_TX_VOL(I2S.i2s_fd,I2S.tx_vol);
-	//printf("SetVol :vol = %d\n",I2S.tx_vol);
+	//printf("Setwm8960Vol :vol = %d\n",I2S.tx_vol);
 	return ret;
 }
 
@@ -174,15 +163,16 @@ void PlayorPause(void){
 void mute_recorde_vol(int change)
 {
 #if 1
-	if(change==102){	//保持跟外面调整的一致
-		if(change==UNMUTE){
-			SET_TX_VOL(I2S.i2s_fd,I2S.tx_vol);
-		}else{
-			change=(change>I2S.tx_vol?I2S.tx_vol:change);
-			SET_TX_VOL(I2S.i2s_fd,change);
-		}
-		usleep(1000);
+	if(change==UNMUTE){
+		printf("UNMUTE change %d tx_vol %d\n",change,I2S.tx_vol);
+		SET_TX_VOL(I2S.i2s_fd,I2S.tx_vol);
+	}else{
+		printf("MUTE change %d tx_vol %d\n",change,I2S.tx_vol);
+		change=(change>I2S.tx_vol?I2S.tx_vol:change);
+		printf("MUTE change %d tx_vol %d\n",change,I2S.tx_vol);
+		SET_TX_VOL(I2S.i2s_fd,change);
 	}
+	usleep(1000);
 #endif
 }
 
@@ -250,8 +240,7 @@ void WriteqttsPcmData(char *data,int len)
 /**********************************************
 获取音频数据
 **********************************************/
-char *i2s_get_data(void)
-{
+char *I2sGetvoicesData(void){
 	static int index_1 = 0;
 	ioctl(I2S.i2s_fd, I2S_GET_AUDIO, &index_1);
 	return shrxbuf[index_1];
@@ -267,12 +256,11 @@ void set_volch(unsigned char ch){
 /********************************************
 初始化wm8960音频接口
 ********************************************/
-void __init_wm8960_voices(void)
-{
+void InitWm8960Voices(void){
 	memset(&I2S,0,sizeof(I2SST));
-	get_vol_size(&(I2S.tx_vol));//获取路由音量和播音人
+	GetVol_formRouteTable(&(I2S.tx_vol));//获取路由音量和播音人
 #ifdef VOICS_CH
-	get_vol_ch(&(I2S.vol_ch));
+	GetVolCh_formRouteTable(&(I2S.vol_ch));
 #endif //end VOICS_CH
 	I2S.tx_rate =RECODE_RATE;
 	I2S.i2s_fd = open(WM8960_NODE_PATH, O_RDWR|O_SYNC); 
@@ -328,15 +316,18 @@ void Mute_voices(unsigned char stat)
 		case UNMUTE:
 			open_wm8960_voices();
 			//SET_MUTE_ENABLE();
-			//mute_recorde_vol(UNMUTE);
+			mute_recorde_vol(UNMUTE);
 			break;
 	}
 }
-int i2s_start_play(unsigned short rate)
-{
+/*
+@ 设置8960 声卡采样率 
+@ rate 采样率值
+@
+*/
+void SetWm8960Rate(unsigned short rate){
 	I2S.play_size=0;
-	if(rate==I2S.tx_rate)  //播放的采样率等于录音采样率，不需要切换
-	{
+	if(rate==I2S.tx_rate){  //播放的采样率等于录音采样率，不需要切换
 		printf("start play rate = %d\n",rate);
 #ifndef CLOSE_VOICE		//保持打开状态
 		Mute_voices(UNMUTE);
@@ -351,16 +342,12 @@ int i2s_start_play(unsigned short rate)
 	I2S.tx_enable=0;
 	set_rx_state(I2S.i2s_fd,1);
 	set_tx_state(I2S.i2s_fd,1);
-	I2S.execute_mode = PLAY_MODE;
-	
+	I2S.execute_mode = PLAY_MODE;	
 	Mute_voices(UNMUTE);
-	return 0;
 }
-void i2s_destory_voices(void)
-{
+void DestoryWm8960Voices(void){
 	char* pBuf;
-	if(I2S.execute_mode == EXTERNAL_LBK2 || I2S.execute_mode == PLAY_MODE)
-	{
+	if(I2S.execute_mode == EXTERNAL_LBK2 || I2S.execute_mode == PLAY_MODE){
 		int i = 0;
 		while(1)   //清除音频DMA数据
 		{

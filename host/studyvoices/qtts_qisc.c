@@ -6,37 +6,11 @@
 #include "qtts_qisc.h"
 #include "config.h"
 
-//#define DBG_QTTS
-#ifdef 	DBG_QTTS 
-#define DEBUG_QTTS(fmt, args...) printf("QTTS: " fmt, ## args)
-#else   
-#define DEBUG_QTTS(fmt, args...) { }
-#endif	//end DBG_AP_STA
-
-typedef struct _MSPLogin
-{
+typedef struct _MSPLogin{
 	char appid[9];
 	char dvc[9];
 }_MspLogin;
 _MspLogin login_config;
-
-#define KB 1024
-#define QTTS_PLAY_SIZE	12*KB
-#define LEN_BUF 1*KB
-#define LEN_TAR 2*KB
-
-#define DOWN_QTTS_QUIT	0
-#define DOWN_QTTS_ING	1
-#define PLAY_QTTS_QUIT	0
-#define PLAY_QTTS_ING	1
-
-//#define VINN_GBK	"vcn=vinn,aue = speex-wb,auf=audio/L16;rate=8000,spd=7,vol = 8,rdn = 3,tte = gbk"
-#define VIMM_GBK	"voice_name=vinn,text_encoding=gbk,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =3"
-#define VIMM_UTF8	"voice_name=vinn,text_encoding=utf8,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =3"
-#ifdef VOICS_CH
-#define VINN_GBK	"voice_name=vixx,text_encoding=gbk,sample_rate=8000,speed=50,volume=50,pitch=40,rdn =3"
-#define VINN_UTF8	"voice_name=vixx,text_encoding=utf8,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =3"
-#endif
 
 typedef struct{
 		unsigned char downState:4,playState:4;
@@ -117,7 +91,7 @@ static void single_to_stereo(char *src,int srclen,char *tar,int *tarlen)
 static void cleanState(void){
 	Qstream->playState=PLAY_QTTS_QUIT;
 }
-void __exitqttsPlay(void){
+int __exitqttsPlay(void){
 	char *msg;
 	int msgSize;
 	Qstream->playState=PLAY_QTTS_QUIT;
@@ -127,17 +101,53 @@ void __exitqttsPlay(void){
 		usleep(100);
 	}
 	DEBUG_QTTS("exitqttsPlay: end (%d) ...\n",getWorkMsgNum(Qstream->qttsList));
+	return 0;
  }
-void putPcmdata(const void *data,int size){
-	char *getdata = (char *)calloc(1,size+1);
-	if(getdata){
-		memcpy(getdata,data,size);
-		putMsgQueue(Qstream->qttsList,getdata,size);	//添加到播放队列
-	}
+static char savebuf[1];
+static unsigned char cacheFlag=0;	
+void initputPcmdata(void){
+	cacheFlag=0;
+	memset(savebuf,0,1);
 }
+void putPcmdata(const void *data,int size){
+	int ret =0;
+	void *newdata=NULL;
+	if(size%2==0&&cacheFlag==0){		//偶数，没有预留
+		newdata= (char *)calloc(1,size);
+		memcpy(newdata,(void *)data,size);
+		ret=size;
+		cacheFlag=0;
+	}else if(size%2==0&&cacheFlag==1){	//偶数，有预留
+		newdata= (char *)calloc(1,size);
+		memcpy(newdata,savebuf,1);
+		memcpy(savebuf,(void *)(data+size-1),1);
+		memcpy(newdata+1,(void *)data,size-1);
+		ret=size;
+		cacheFlag=1;
+	}else if(size%2==1&&cacheFlag==1){	//奇数，有预留
+		newdata= (char *)calloc(1,size+1);
+		memcpy(newdata,savebuf,1);
+		memcpy(newdata+1,(void *)data,size);
+		ret=size+1;
+		cacheFlag=0;
+	}else if(size%2==1&&cacheFlag==0){	//奇数，没有预留
+		newdata= (char *)calloc(1,size-1);
+		memcpy(savebuf,(void *)(data+size-1),1);
+		memcpy(newdata,(void *)data,size-1);
+		ret=size-1;
+		cacheFlag=1;
+	}
+	putMsgQueue(Qstream->qttsList,newdata,ret);	//添加到播放队列
+	
+}
+static unsigned char waitPlay=0;		//前面需要缓存，需要睡眠300ms
  void *play_qtts_data(void *arg){
-	 char *data;
-	 int len;
+	char *data;
+	int len=0;
+	if(waitPlay==0){
+		waitPlay=1;
+		usleep(600000);
+	}
 	 //printf("%s: Qstream->playState 。。。。。。。。。。。。。。。play_qtts_data=%d\n",__func__,Qstream->playState);
 	 while(Qstream->playState){
 	 	//printf("%s: Qstream->playState =%d\n",__func__,Qstream->playState);
@@ -146,18 +156,19 @@ void putPcmdata(const void *data,int size){
 				DEBUG_QTTS("play_qtts_data: exit ...\n");
 				break;
 			}
-			usleep(100);
+			usleep(1000);
 			continue;
 		}
 		if(get_qtts_cache()==0){
 			getMsgQueue(Qstream->qttsList,&data,&len);
-			printf("%s: len =%d\n",__func__,len);
+			//printf("%s: len =%d\n",__func__,len);
 			Qstream->WritePcm(data,len);
 			free(data);
 		}
 	}
 	clean_qtts_cache_2();
 	cleanState();
+	waitPlay=0;
 	DEBUG_QTTS("play_qtts_data : end...\n\n");
 	return NULL;
 }
@@ -166,14 +177,14 @@ void StartPthreadPlay(void){
 	Qstream->downState=DOWN_QTTS_ING;
 	Qstream->playState=PLAY_QTTS_ING;
 	printf("----------------qtts down start----------------\n");
-	
+	pool_add_task(play_qtts_data,NULL);		//启动播放线程
 	usleep(100);
 }
  void WaitPthreadExit(void){
 	while(Qstream->downState==DOWN_QTTS_QUIT){		//等待播放线程退出
 		if(Qstream->playState!=PLAY_QTTS_ING)
 			break;
-		printf("..................... WaitPthreadExit .....................\n ");
+		//printf("..................... WaitPthreadExit .....................\n ");
 		usleep(100*1000);
 	}
 	tolkLog("qtts quit ok\n");
@@ -193,8 +204,7 @@ void SetDownExit(void){
 @返回值:	0 成功
 @			其它	错误码
 ***************************************************************************/
-static int text_to_speech(const char* src_text  ,const char* params)
-{
+static int text_to_speech(const char* src_text  ,const char* params){
 	char* sess_id = NULL;
 	int ret = 0;
 	unsigned int text_len = 0;
@@ -234,8 +244,7 @@ static int text_to_speech(const char* src_text  ,const char* params)
 @参数:	text 文本文件 
 @		VINN_GBK	文本转换语音参数
 ******************************************/
-int Qtts_voices_text(char *text,unsigned char type)
-{
+int Qtts_voices_text(char *text,unsigned char type){
 #ifdef VOICS_CH
 	if(type==QTTS_GBK){
 		if(get_volch()==0)
@@ -259,8 +268,7 @@ int Qtts_voices_text(char *text,unsigned char type)
 #endif
 }
 
-int init_iat_MSPLogin(void WritePcm(char *data,int size))
-{
+int init_iat_MSPLogin(void WritePcm(char *data,int size)){
 	//APPID请勿随意改动
 	//const char* login_configs = "appid = 55253ad2,dvc=hpm10000, work_dir =   .  ";
 	int ret = 0;
@@ -298,12 +306,10 @@ exit:
 	return -1;
 }
 
-void iat_MSPLogout(void)
-{
+void iat_MSPLogout(void){
 	MSPLogout();
 	char *msg;
 	int msgSize;
-	
 	if(Qstream){
 		while(getWorkMsgNum(Qstream->qttsList)){
 			getMsgQueue(Qstream->qttsList,&msg,&msgSize);

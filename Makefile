@@ -11,12 +11,13 @@ KERNEL_PATH =$(SDK_PATH)/linux-2.6.36.x
 OTHEN_LIB=-lmsc463
 SYSTEM_LIB=-lpthread -ldl -lrt  $(SDK_PATH)/lib/libnvram/libnvram-0.9.28.so
 OPEN_LIB= -lz -lcurl -lssl -lcrypto -lmad  -lopencore-amrnb -lsqlite3
-MY_LIB=-lbase463 -lmtkwifi -ldownFile463 -ldemoquick463 -lsystools463
+MY_LIB=-lbase463 -lmtkwifi -ldownFile463 -ldemoquick463 -lsystools463 -lspeakJson -luartmcu -lvo-amrwbenc
+OPENSRC_DIR=/home/openSrc/src
 
-OPEN_INC=-I /home/yue/work0615/demolib/libcurl/curl-7.50.1/output/mips/include/ -I /home/yue/work0615/demolib/sqlite3/sqlite-3.6.17/output/x86/include/
+OPEN_INC=-I $(OPENSRC_DIR)/libcurl/curl-7.50.1/output/mips/include/ -I $(OPENSRC_DIR)/sqlite3/sqlite-3.6.17/output/x86/include/
 OTHEN_INC= -I ./host/StreamPlay/
 KERNEL_INC=-I $(KERNEL_PATH)/drivers/char/i2s/ -I $(KERNEL_PATH)/include/ -I $(KERNEL_PATH)/drivers/char/
-SDK_INC=-I $(SDK_PATH)/lib/libnvram/ 
+SDK_INC=-I $(SDK_PATH)/lib/libnvram/ -I /home/yue/work0615/demolib/amr8k/opensrc/vo-amrwbenc-0.1.3/output/x86/include/vo-amrwbenc/
 
 CFLAGS = -Wall -I ./include $(OTHEN_INC) $(KERNEL_INC) $(SDK_INC) $(OPEN_INC)
 LDFLAGS= $(SYSTEM_LIB) $(OTHEN_LIB) $(OPEN_LIB)  $(MY_LIB)      
@@ -27,7 +28,7 @@ all +=main.o
 all +=log.o
 all +=net/network.o
 all +=net/parseCmd.o
-all +=uart/uart.o
+#all +=uart/uart.o
 #all +=mtkwifiLib/mtkwifi.o
 all +=usrdb/sysdata.o
 
@@ -35,6 +36,7 @@ all +=srvwork/workinter.o
 
 all +=host/voices/wm8960i2s.o
 all +=host/voices/callvoices.o
+all +=host/voices/amrwb-enc.o
 all +=host/voices/message_wav.o
 all +=host/voices/eventVoices.o
 all +=host/voices/gpio_7620.o
@@ -44,6 +46,7 @@ all +=host/sdcard/sqlite.o
 all +=host/sdcard/MusicListDb.o
 all +=host/studyvoices/std_worklist.o
 all +=host/studyvoices/demoSpeech.o
+all +=host/studyvoices/aes.o
 all +=host/studyvoices/check_text_utf8.o
 all +=host/studyvoices/qtts_qisc.o
 all +=host/ap_sta.o

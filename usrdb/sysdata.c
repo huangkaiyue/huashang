@@ -116,13 +116,13 @@ void checkSystemLock(void){
 	char *number = nvram_bufget(RT2860_NVRAM, "SystemLock");
 	int opennumber = (unsigned char)atoi(number);
 	if(opennumber>SYSTEMLOCKNUM){	//检查开机次数
-		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
+		Create_PlayQttsEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
 		sleep(10);
-		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
+		Create_PlayQttsEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
 		sleep(10);
-		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
+		Create_PlayQttsEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
 		sleep(10);
-		QttsPlayEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
+		Create_PlayQttsEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
 		sleep(10);
 		SetSystemTime(1);
 	}
@@ -131,8 +131,8 @@ void checkSystemLock(void){
 #endif
 
 //----------------------------音量-------------------------------------
-//获取音量
-void get_vol_size(unsigned char *size){
+//从路由表当中获取音量
+void GetVol_formRouteTable(unsigned char *size){
 	char *vol = nvram_bufget(RT2860_NVRAM, "VoiceSIZE");
 	if(!strcmp(vol,"")){
 		*size=105;
@@ -141,49 +141,41 @@ void get_vol_size(unsigned char *size){
 	}
 }
 
-//设置音量
-void set_vol_size(unsigned char size){
+//设置音量到路由表当中
+void SaveVol_toRouteTable(unsigned char vol){
 	char buf_s[64]={0};
-	sprintf(buf_s,"%s %d", "nvram_set 2860 VoiceSIZE", size);
+	sprintf(buf_s,"nvram_set 2860 VoiceSIZE %d", vol);
 	system(buf_s);
-	//nvram_bufset(RT2860_NVRAM, "VoiceSIZE",buf_s);
 }
 #ifdef VOICS_CH
 //----------------------------播音人-------------------------------------
 //设置声音选择
-void set_vol_ch(unsigned char ch){
+void SaveVolCh_toRouteTable(unsigned char ch){
 	set_volch(ch);//在线
 	char buf_s[64]={0};
-	sprintf(buf_s,"%s %d", "nvram_set 2860 VoiceCH", ch);
+	sprintf(buf_s,"nvram_set 2860 VoiceCH %d",  ch);
 	system(buf_s);
-	//nvram_bufset(RT2860_NVRAM, "VoiceCH",buf_s);
 }
 
 //获取声音选择
-void get_vol_ch(unsigned char *ch){
+void GetVolCh_formRouteTable(unsigned char *ch){
 	char *buf_ch = nvram_bufget(RT2860_NVRAM, "VoiceCH");
 	*ch = (unsigned char)atoi(buf_ch);
 }
 #endif //end VOICS_CH
 //----------------------------开关机-------------------------------------
-//设置开关机选择
-void set_host_time(int type,unsigned char *time){
+//设置开关机到路由表当中
+void Save_OpenCloseTime_toRouteTable(int type,unsigned char *time){
 	char buf_s[64]={0};
-	if(type==0)
-		sprintf(buf_s,"%s %s", "nvram_set 2860 Closetime", time);
-	else if (type==1)
-		sprintf(buf_s,"%s %s", "nvram_set 2860 Opentime", time);
+	if(type==0)	//关机时间
+		sprintf(buf_s,"nvram_set 2860 Closetime %s", time);
+	else if (type==1)//开机时间
+		sprintf(buf_s,"nvram_set 2860 Opentime %s", time);
 	system(buf_s);
-#if 0
-	if(type==0)
-		nvram_bufset(RT2860_NVRAM, "Closetime",time);
-	else if (type==1)
-		nvram_bufset(RT2860_NVRAM, "Opentime",time);
-#endif
 }
 
-//获取开关机选择
-void get_host_time(int type, char *time){
+//获取开关机时间
+void Get_OpenCloseTime_formRouteTable(int type, char *time){
 	char *buf=NULL;
 	if(type==0){
 		buf= nvram_bufget(RT2860_NVRAM, "Closetime");
@@ -192,5 +184,12 @@ void get_host_time(int type, char *time){
 		buf= nvram_bufget(RT2860_NVRAM, "Opentime");
 	}
 	memcpy(time,buf,strlen(buf));
+}
+
+//关机时候保存图灵的token值到路由表当中
+void Save_TulingToken_toRouteTable(const char *tokenVal){
+	char buf_s[128]={0};
+	sprintf(buf_s,"nvram_set 2860 tokenVal %s", tokenVal);
+	system(buf_s);
 }
 //----------------------------end-------------------------------------

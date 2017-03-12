@@ -4,29 +4,40 @@
 
 #define VERSION "\n12.11-15:00\n"	//版本号
 
-#define TEST_SDK					//测试SDK
+//#define TEST_SDK					//测试SDK
+
+//#define TEST_PLAY_EQ_MUSIC			//������Ч		
+
 
 #ifdef TEST_SDK						//使能命令输入行
 	#define WORK_INTER
 #endif
-//#define CONFIG_ALL
-//#define DATOU_JIANG
-#define QITUTU_SHI
-//#define TANGTANG_LUO
+
+//#define CONFIG_ALL		//全功能
+//#define DATOU_JIANG		//蒋总
+#define QITUTU_SHI		//石总
+//#define TANGTANG_LUO		//罗总
+
 //----------------------功能类-----------------------------------
+
 #define SYSTEMLOCK				//测试版本限制开机次数
-
 #define CLOCESYSTEM				//超时退出
-
 //#define CLOSE_VOICE				//不工作处于关闭音频状态
-
-//#define TULIN_WINT_MUSIC		//图灵过渡音位音乐
-	
 #define SELECT_UDP				//将udp添加到select 当中
+#define SYSVOICE
 
-//#define CHECKNETWORK			//没网不让播放云端
+#define PCM_DATA				//上传pcm数据
+//#define AMR16K_DATA				//上传amr数据
+
+#define MY_HTTP_REQ			//ʹ���Լ�д��http ����ӿ�
+#define TULING_FILE_LOG		//����ͼ��д����־�ļ�
+
 
 #ifdef DATOU_JIANG	//大头---蒋总
+	#define SPEEK_VOICES	//开启对讲功能
+	
+	#define SPEEK_VOICES1	//按键切换会话
+	
 	#define PALY_URL_SD		//下载保存到本地
 
 	#define LOCAL_MP3		//MP3本地播放
@@ -63,7 +74,7 @@
 
 	#define	LED_LR			//LED左右灯以及多按键
 //=====================================================
-	#define VOICS_CH		//播音人选择功能添加
+	//#define VOICS_CH		//播音人选择功能添加
 #endif
 //----------------------测试类-----------------------------------
 
@@ -73,7 +84,7 @@
 
 #define ENABLE_LOG			//使能写入文件log
 
-#define TESTMP3				//测试音频接口
+
 //----------------------用户数据类-------------------------------
 
 #define UDP_BRO_PORT 		20001						// 本地广播端口
