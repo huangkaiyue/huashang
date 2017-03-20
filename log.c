@@ -1,6 +1,9 @@
 #include "comshead.h"
 #include "config.h"
 
+void test_git(void){
+	printf("\n");
+}
 int WriteMp3Data(char *filename,char *data,int size){
 #ifdef ENABLE_LOG
 	FILE *fp = fopen(filename,"w+");
