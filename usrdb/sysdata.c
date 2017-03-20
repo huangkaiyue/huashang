@@ -5,103 +5,7 @@
 #include "host/voices/callvoices.h"
 #include "../host/studyvoices/qtts_qisc.h"
 
-#if 0
-typedef struct {
-	char list[24];
-	char passwd[24];
-}HOST;
-extern HOST host;
 
-HOST host;
-static int NvramGetCamlist(char *camlist,char *passwd){
-	char *nvram_list = nvram_bufget(RT2860_NVRAM, "DMZIPAddress");
-	memcpy(camlist,nvram_list,strlen(nvram_list));
-
-	char *nvram_passwd = nvram_bufget(RT2860_NVRAM, "NTPServerIP");
-	memcpy(passwd,nvram_passwd,strlen(nvram_passwd));
-	if(!strcmp(camlist,""))
-		return -1;
-	return 0;
-}
-static int NvramSetCamlist(char *camlist,char *passwd){
-	char list[64];
-	char pass[64];
-	sprintf(list,"%s %s", "nvram_set 2860 DMZIPAddress", camlist);
-	system(list);
-	
-	sprintf(pass,"%s %s", "nvram_set 2860 NTPServerIP", passwd);
-	system(pass);
-
-	return 0;
-}
-
-int updateSysList(char *list,char *passwd){
-	return NvramGetCamlist(list,passwd);
-}
-void InitSysList(char *frist_camlist,char *camlist_passwd)
-{
-	memset(&host,0,sizeof(host));
-	if(NvramGetCamlist(host.list,host.passwd))
-	{
-		//printf("get host list failed\n");
-		strcpy(host.list,frist_camlist);
-		strcpy(host.passwd,camlist_passwd);
-		NvramSetCamlist(frist_camlist,camlist_passwd);
-	}
-}
-
-#endif
-//----------------------------播放记录-------------------------------------
-#if 0
-//获取播放记录
-static enum{
-	mp3_S=1,
-	story_S,
-	english_S,
-	guoxue_S,
-};
-void get_paly_num(int *size,unsigned char str)
-{
-	char *NUM;
-	switch(str){
-		case mp3_S:
-			NUM = nvram_bufget(RT2860_NVRAM, "playMp3Num");
-			break;
-		case story_S:
-			NUM= nvram_bufget(RT2860_NVRAM, "playStoryNum");
-			break;
-		case english_S:
-			NUM= nvram_bufget(RT2860_NVRAM, "playEnglishNum");
-			break;
-		case guoxue_S:
-			NUM= nvram_bufget(RT2860_NVRAM, "playGuoxueNum");
-			break;
-	}
-	*size = (unsigned char)atoi(NUM);
-}
-
-//设置播放记录
-void set_paly_num(int size,unsigned char str)
-{
-	char buf_s[64]={0};
-	switch(str){
-		case mp3_S:
-			sprintf(buf_s,"%s %d", "nvram_set 2860 playMp3Num", size);
-			break;
-		case story_S:
-			sprintf(buf_s,"%s %d", "nvram_set 2860 playStoryNum", size);
-			break;
-		case english_S:
-			sprintf(buf_s,"%s %d", "nvram_set 2860 playEnglishNum", size);
-			break;
-		case guoxue_S:
-			sprintf(buf_s,"%s %d", "nvram_set 2860 playGuoxueNum", size);
-			break;
-	}
-	system(buf_s);
-	//nvram_bufset(RT2860_NVRAM, "VoiceSIZE",buf_s);
-}
-#endif
 //----------------------------权限次数-------------------------------------
 #ifdef	SYSTEMLOCK
 //设置权限次数
@@ -147,22 +51,6 @@ void SaveVol_toRouteTable(unsigned char vol){
 	sprintf(buf_s,"nvram_set 2860 VoiceSIZE %d", vol);
 	system(buf_s);
 }
-#ifdef VOICS_CH
-//----------------------------播音人-------------------------------------
-//设置声音选择
-void SaveVolCh_toRouteTable(unsigned char ch){
-	set_volch(ch);//在线
-	char buf_s[64]={0};
-	sprintf(buf_s,"nvram_set 2860 VoiceCH %d",  ch);
-	system(buf_s);
-}
-
-//获取声音选择
-void GetVolCh_formRouteTable(unsigned char *ch){
-	char *buf_ch = nvram_bufget(RT2860_NVRAM, "VoiceCH");
-	*ch = (unsigned char)atoi(buf_ch);
-}
-#endif //end VOICS_CH
 //----------------------------开关机-------------------------------------
 //设置开关机到路由表当中
 void Save_OpenCloseTime_toRouteTable(int type,unsigned char *time){

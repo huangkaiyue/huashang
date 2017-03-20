@@ -149,20 +149,19 @@ void EnableCallDev(void){
 	gpio.callbake=1;
 }
 static void ReadSpeekGpio(void){
+	//writeLog((const char * )"/home/read_gpio.txt",(const char * )"start read\n");
 	if (ioctl(gpio.fd,TANG_GET_DATA_3264,&gpio.data) < 0){
 		perror("ioctl");
 		close(gpio.fd);
 		return ;
 	}
-#if 1
 	if((0x01&(gpio.data>>7))==1){
 		gpio.speek_tolk=SPEEK;
+		//writeLog((const char * )"/home/read_gpio.txt",(const char * )"SPEEK state\n");
 	}else{
 		gpio.speek_tolk=TOLK;
+		//writeLog((const char * )"/home/read_gpio.txt",(const char * )"TOLK state\n");
 	}
-#else
-	gpio.speek_tolk=TOLK;
-#endif	
 }
 
 //按键处理事件
@@ -232,31 +231,21 @@ static void signal_handler(int signum)
 				break;
 			case LETFLED_KEY:	//回复键
 				if(gpio.callbake==1){
-					Create_PlaySystemEventVoices(TALK_CONFIRM_OK_PLAY);
-					//Create_PlayQttsEvent("确认消息回复成功，请发上传语音。",QTTS_GBK);
+					Create_PlaySystemEventVoices(TALK_CONFIRM_OK_PLAY);//"确认消息回复成功，请发上传语音。"
 					gpio.callbake==0;
 					Ack_CallDev();
 				}else{
 					if(getEventNum()>0){
 						break;
 					}
-					Create_PlaySystemEventVoices(TALK_CONFIRM_ER_PLAY);
-					//Create_PlayQttsEvent("当前还没有人呼叫你。",QTTS_GBK);
+					Create_PlaySystemEventVoices(TALK_CONFIRM_ER_PLAY);//"当前还没有人呼叫你"
 				}
 				break;
 			case RIGHTLED_KEY:	//bind键
-#ifdef VOICS_CH
-				if(get_volch()==0){
-					SaveVolCh_toRouteTable(1);
-				}else if(get_volch()==1){
-					SaveVolCh_toRouteTable(0);
-				}
-#endif
 				if(gpio.bindsign==BIND_DEV_OK){
 					BindDevToaliyun();
 					Create_PlaySystemEventVoices(BIND_OK_PLAY);
 					gpio.bindsign=BIND_DEV_ER;
-					//Create_PlayQttsEvent("成功处理小伙伴的绑定请求。",QTTS_GBK);
 				}else{
 					Create_PlayQttsEvent("快去邀请小伙伴一起来聊天吧。",QTTS_GBK);
 				}
@@ -267,7 +256,7 @@ static void signal_handler(int signum)
 	else if (signum == GPIO_DOWN){
 		switch(gpio.mount){
 			case RESET_KEY://恢复出厂设置
-				Create_PlaySystemEventVoices(4);
+				Create_PlaySystemEventVoices(4);	//需要修改语音如下:
 				//ResetDefaultRouter();
 				system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
 				break;
@@ -278,7 +267,7 @@ static void signal_handler(int signum)
 				break;
 				
 			case NETWORK_KEY://配网键
-				Net_work();
+				NetKeyDown_ForConfigWifi();
 				break;
 				
 			case SPEEK_KEY://会话键
@@ -286,7 +275,7 @@ static void signal_handler(int signum)
 				ReadSpeekGpio();	//-----bug
 #endif
 				if(gpio.speek_tolk==SPEEK){
-					down_voices_sign();
+					TulingKeyDownSingal();
 				}else{
 					Create_WeixinSpeekEvent(VOLKEYDOWN);
 				}			
@@ -483,7 +472,7 @@ static void signal_handler(int signum)
 				break;
 				
 			case NETWORK_KEY://配网键
-				Net_work();
+				NetKeyDown_ForConfigWifi();
 				break;
 				
 			case SPEEK_KEY://会话键
@@ -493,12 +482,12 @@ static void signal_handler(int signum)
 #endif
 				printf("%d \n",gpio.speek_tolk);
 				if(gpio.speek_tolk==SPEEK){
-					down_voices_sign();
+					TulingKeyDownSingal();
 				}else{
 					Create_WeixinSpeekEvent(VOLKEYDOWN);
 				}
 #else
-				down_voices_sign();
+				TulingKeyDownSingal();
 #endif
 				break;
 			
@@ -570,11 +559,11 @@ static void signal_handler(int signum)
 				break;
 				
 			case NETWORK_KEY://配网键
-				Net_work();
+				NetKeyDown_ForConfigWifi();
 				break;
 				
 			case SPEEK_KEY://会话键
-				down_voices_sign();
+				TulingKeyDownSingal();
 				break;
 		}// end gpio_down
 		DEBUG_GPIO("signal down (%d) !!!\n",gpio.mount);

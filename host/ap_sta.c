@@ -3,38 +3,33 @@
 #include "host/mtkwifi.h"
 #include "nvram.h"
 #include "base/cJSON.h"
+#include "config.h"
 
 //#define MAIN_TEST
 
-//#define DBG_AP_STA
-#ifdef DBG_AP_STA 
-#define DEBUG_AP_STA(fmt, args...) printf("%s",__func__,fmt, ## args)
-#else   
-#define DEBUG_AP_STA(fmt, args...) { }
-#endif	//end DBG_AP_STA
-
-//#define TEST_WIFI
-#ifdef TEST_WIFI
-#define TEST_WIFI_DATA "apcli0    elian:AM=0, ssid=TP-LINK_2294F4, pwd=369852369, user=, cust_data_len=0, cust_data=,"
-#define TEST_WIFI_1 		"apcli0    elian:AM=0, ssid=TURING ROBOT 2, pwd=turingrobot88888, user=, cust_data_len=0, cust_data=,"
-#endif	//end TEST_WIFI
-
-#define NEW_GET_WIFI
-#ifdef NEW_GET_WIFI
-#define SMART_CONFIG_HEAD	"apcli0    elian:"
-#endif
-
-#define LOCK_SMART_CONFIG_WIFI		1	//对配网进行上锁
-#define UNLOCK_SMART_CONFIG_WIFI	0	//对配网进行解锁
 static unsigned char connetState=UNLOCK_SMART_CONFIG_WIFI;
 int checkconnetState(void){
-	if(connetState==0)
+	if(connetState==UNLOCK_SMART_CONFIG_WIFI)
 		return 0;
 	else
 		return -1;
 }
 
-static int sendSsidPasswd(const char *ssid,const char *passwd){
+static void createSmartConfigLock(void){
+	fopen(SMART_CONFIG_FILE_LOCK,"w+");
+}
+
+static void delSmartConfigLock(void){
+	remove(SMART_CONFIG_FILE_LOCK);
+}
+static int createInternetLock(void){
+	fopen(INTEN_NETWORK_FILE_LOCK,"w+");
+}
+static void delInternetLock(void){
+	remove(INTEN_NETWORK_FILE_LOCK);
+}
+
+static int SendSsidPasswd_toNetServer(const char *ssid,const char *passwd){
 	int ret=0;
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
@@ -60,8 +55,7 @@ int checkInternetFile(void){
 	}
 	return 0;
 }
-#ifdef NEW_GET_WIFI
-static int NewGetSmartConfigWifi(char *smartData,char *ssid,char *passwd){
+static int GetSsidAndPasswd(char *smartData,char *ssid,char *passwd){
 	int smartconfig_headlen=strlen(SMART_CONFIG_HEAD);	
 	char wifidata[200]={0};
 	snprintf(wifidata,200,"%s",smartData+smartconfig_headlen);
@@ -91,48 +85,8 @@ static int NewGetSmartConfigWifi(char *smartData,char *ssid,char *passwd){
 	}	
 	return -1;
 }
-#else
-static int smartGetSsid(char *smartData,char *ssid,char *passwd){
-	char getssid[64]={0},getpwd[64]={0};
-	char *p = strstr(smartData,"ssid");
-	if(p==NULL)
-		return -1;
-	//printf("p= %s\n",p);
-	sscanf(p,"%s %s",getssid,getpwd);
-	sprintf(ssid,"%s",getssid+5);
-	sprintf(passwd,"%s",getpwd+4);	
-	int len = strlen(ssid);
-	if(len==1){
-		DEBUG_AP_STA("not find ssid\n");
-		return -1;
-	}
-	ssid[len-1]='\0';
-	len= strlen(passwd);
-	passwd[len-1]='\0';
-	
-	FILE *fplog=NULL;
-	fplog = fopen("/home/airkiss_wifi.txt","a+");
-	if(fplog){
-		fprintf(fplog,"ssid:===(%s)===pwd:===(%s)===\n",ssid,passwd);
-		fclose(fplog);
-	}
-	return 0;
-}
-#endif
-static void createSmartConfigLock(void){
-	fopen("/var/SmartConfig.lock","w+");
-}
 
-static void delSmartConfigLock(void){
-	remove("/var/SmartConfig.lock");
-}
-static int createInternetLock(void){
-	fopen("/var/internet.lock","w+");
-}
-static void delInternetLock(void){
-	remove("/var/internet.lock");
-}
-static int SmartConfig(void *arg){
+static void *RunSmartConfig_Task(void *arg){
   	FILE *fp=NULL;
    	char *buf, *ptr;
 	char ssid[64]={0},pwd[64]={0};
@@ -154,19 +108,12 @@ static int SmartConfig(void *arg){
 		memset(buf,0,512);
 		fgets(buf, 512, fp);
 		ptr =buf; 
-#ifdef NEW_GET_WIFI
-		if(!NewGetSmartConfigWifi(ptr,ssid,pwd)){
-			DEBUG_AP_STA("smartGetSsid : ssid:%s   pwd:%s\n",ssid,pwd);
+
+		if(!GetSsidAndPasswd(ptr,ssid,pwd)){
+			DEBUG_AP_STA("ssid:%s   pwd:%s\n",ssid,pwd);
 			ret=0;
 			break;
 		}
-#else
-		if(!smartGetSsid(ptr,ssid,pwd)){
-			DEBUG_AP_STA("smartGetSsid : ssid:%s   pwd:%s\n",ssid,pwd);
-			ret=0;
-			break;
-		}
-#endif		
 		usleep(100000);
 		
 		memset(ssid,0,64);
@@ -180,7 +127,7 @@ static int SmartConfig(void *arg){
 		snprintf(wifi->ssid,64,"%s",ssid);
 		snprintf(wifi->passwd,64,"%s",pwd);
 		wifi->connetEvent(SMART_CONFIG_OK);	//已经接收到ssid 和 passwd
-		sendSsidPasswd(ssid,pwd);
+		SendSsidPasswd_toNetServer(ssid,pwd);
 		delSmartConfigLock();
 		sleep(5);
 		while(++timeout<40){	//等待配网成功后，使能按键
@@ -207,11 +154,10 @@ exit0:
 	return ret;
 }
 int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
-	DEBUG_AP_STA("startSmartConfig...\n");
-	smartConifgLog("startSmartConfig start \n");
+	WiterSmartConifg_Log("startSmartConfig start \n");
 	int ret=-1;
 	if(connetState==LOCK_SMART_CONFIG_WIFI){
-		smartConifgLog("startSmartConfig failed \n");
+		WiterSmartConifg_Log("startSmartConfig failed \n");
 		return -1;
 	}
 	ConnetEvent(START_SMARTCONFIG);	//通知用户输入wifi 密码，进行配网
@@ -225,9 +171,9 @@ int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
 	}
 	wifi->connetEvent = ConnetEvent;
 	wifi->enableGpio = EnableGpio;
-	smartConifgLog("startSmartConfig pool_add_task ok\n");
+	WiterSmartConifg_Log("startSmartConfig pool_add_task ok\n");
 	createInternetLock();	//上半段上文件锁
-	pool_add_task(SmartConfig, wifi);
+	pool_add_task(RunSmartConfig_Task, wifi);
 	ret=0;
 	return ret;
 exit1:
@@ -300,7 +246,7 @@ int main(int argc,char **argv){
 			break;
 	}
 	DEBUG_AP_STA("connet wifi =%s ssid=%s\n",wifi->ssid,wifi->passwd);
-	hostHonnectNetwork(wifi);
+
 	return 0;
 }
 #endif	//end  MAIN_TEST

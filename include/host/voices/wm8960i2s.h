@@ -30,12 +30,10 @@ extern char play_buf[I2S_PAGE_SIZE+4];
 
 
 typedef struct {
+	unsigned char lockSetRate;
 	unsigned char rx_enable:1,		//接收使能
 	tx_enable:1,					//发送使能
-	execute_mode:6;				//播放模式
-#ifdef VOICS_CH
-	unsigned char vol_ch;			//播音人的选择
-#endif //end VOICS_CH
+	execute_mode:6;					//播放模式
 	unsigned char tx_vol;			//播放音量大小
 	short i2s_fd;					//打开音频设备节点描述符
 	unsigned short tx_rate;			//当前播放采样率
@@ -66,15 +64,10 @@ extern int Setwm8960Vol(int dir,int vol);
 extern int GetVol(void);
 extern void Mute_voices(unsigned char stat);
 extern void mute_recorde_vol(int change);
-extern void SetWm8960Rate(unsigned short rate);
+extern int SetWm8960Rate(unsigned short rate);
 extern char *I2sGetvoicesData(void);
 extern void DestoryWm8960Voices(void);
 extern void InitWm8960Voices(void);
-#ifdef VOICS_CH
-extern int get_volch(void);
-extern void set_volch(unsigned char ch);
-#endif //end VOICS_CH
-
 
 #endif
 

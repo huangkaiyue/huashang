@@ -19,11 +19,6 @@
 //#define VINN_GBK	"vcn=vinn,aue = speex-wb,auf=audio/L16;rate=8000,spd=7,vol = 8,rdn = 3,tte = gbk"
 #define VIMM_GBK	"voice_name=vinn,text_encoding=gbk,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =3"
 #define VIMM_UTF8	"voice_name=vinn,text_encoding=utf8,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =3"
-#ifdef VOICS_CH
-#define VINN_GBK	"voice_name=vixx,text_encoding=gbk,sample_rate=8000,speed=50,volume=50,pitch=40,rdn =3"
-#define VINN_UTF8	"voice_name=vixx,text_encoding=utf8,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =3"
-#endif
-
 
 #define DBG_QTTS
 #ifdef 	DBG_QTTS 

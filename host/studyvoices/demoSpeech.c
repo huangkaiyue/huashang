@@ -317,7 +317,7 @@ exit0:
 int reqTlVoices(int timeout,const char *key,const void * audio,int len,int rate,const char *format,const char *asr,char **text,int *textSize){
 	int ret =0;
 	struct timeval starttime,endtime;
-    	gettimeofday(&starttime,0); 
+    gettimeofday(&starttime,0); 
 	//ret=httpUploadData(timeout,key,(const char *)"beta.app.tuling123.com",audio,len,rate,format,asr,text,textSize);
 	ret=httpUploadData(timeout,key,(const char *)"smartdevice.ai.tuling123.com",audio,len,rate,format,asr,text,textSize);
 	//printf("ret = %d\n",ret);
@@ -330,7 +330,6 @@ int reqTlVoices(int timeout,const char *key,const void * audio,int len,int rate,
 	if(logfp==NULL){
 		char filelog[128]={0},timeStr[128]={0};
 		GetDate(timeStr);
-		mkdir("/log/",0777);
 		sprintf(filelog,"log/%s",timeStr);
 		logfp = fopen(filelog,"w+"); 
 		if(logfp==NULL){
@@ -343,10 +342,8 @@ int reqTlVoices(int timeout,const char *key,const void * audio,int len,int rate,
 		fprintf(logfp,"mtk76xx file rate %d 16bit  type %s\n",16000,"amr");
 	#endif	
 		printf("open log file %s ok\n",filelog);
-	#endif	
-	}
 
-#ifdef TULING_FILE_LOG
+	}
 	fprintf(logfp,"--------------------%d--------------------\n",++requestLogNum);
 
 	fprintf(logfp,"reqTlVoices usr time:  %d.%d\n",(int)timeuse/1000000,(int)timeuse/1000%1000);  
@@ -434,8 +431,6 @@ int reqTlVoices(int timeout,const char *key,const char *audiofile,int audiolen,i
 
 	
 
-    curl_easy_setopt(easy_handle, CURLOPT_VERBOSE, 1L);
-
 	curl_easy_setopt(easy_handle,CURLOPT_FOLLOWLOCATION,1L);
 	curl_easy_setopt(easy_handle,CURLOPT_NOSIGNAL, 1L);
 	curl_easy_setopt(easy_handle, CURLOPT_FORBID_REUSE, 1L);
@@ -493,7 +488,7 @@ int Load_useridAndToken(const char *userId,const char *token){
 }
 
 int InitTuling(const char *userId,const char *token){
-	writeLog((const char * )"/home/tuling_log.txt",(const char * )"init val");
+	writeLog((const char * )"/home/tuling_log.txt",(const char * )"init tuling vaule");
 	writeLog((const char * )"/home/tuling_log.txt",(const char * )userId);
 	writeLog((const char * )"/home/tuling_log.txt",(const char * )token);
 	tulingUser = (TulingUser_t *)calloc(1,sizeof(TulingUser_t));

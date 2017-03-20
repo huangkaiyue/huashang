@@ -245,27 +245,13 @@ static int text_to_speech(const char* src_text  ,const char* params){
 @		VINN_GBK	文本转换语音参数
 ******************************************/
 int Qtts_voices_text(char *text,unsigned char type){
-#ifdef VOICS_CH
-	if(type==QTTS_GBK){
-		if(get_volch()==0)
-			return text_to_speech(text,(const char *)VIMM_GBK);//女童音
-		else
-			return text_to_speech(text,(const char *)VINN_GBK);//男童音
-	}
-	else if(type==QTTS_UTF8){
-		if(get_volch()==0)
-			return text_to_speech(text,(const char *)VIMM_UTF8);//女童音
-		else
-			return text_to_speech(text,(const char *)VINN_UTF8);//男童音
-	}
-#else
+
 	if(type==QTTS_GBK){
 		return text_to_speech(text,(const char *)VIMM_GBK);//女童音
 	}
 	else if(type==QTTS_UTF8){
 		return text_to_speech(text,(const char *)VIMM_UTF8);//女童音
 	}
-#endif
 }
 
 int init_iat_MSPLogin(void WritePcm(char *data,int size)){

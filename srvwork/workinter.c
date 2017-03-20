@@ -80,16 +80,6 @@ void pasreInputCmd(const char *com){
 			open_wm8960_voices();
 			usleep(100);
 		}
-#ifdef VOICS_CH
-		else if(!strcmp(com,"volch0"))
-		{
-			SaveVolCh_toRouteTable(0);
-		}
-		else if(!strcmp(com,"volch1"))
-		{
-			SaveVolCh_toRouteTable(1);
-		}
-#endif //VOICS_CH
 		else if(!strcmp(com,"qtts"))
 		{
 			static char buf[566];
@@ -159,7 +149,7 @@ void pasreInputCmd(const char *com){
 		else if (!strcmp(com, "quit") ||
              		!strcmp(com, "q"))
     	{
-    		clean_resources();
+    		CleanSystemResources();
 			exit(0);
 			return ;
     	}else if (!strcmp(com, "1"))

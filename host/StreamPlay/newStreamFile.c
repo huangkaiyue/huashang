@@ -2,7 +2,7 @@
 #include "base/pool.h"
 #include "base/head_mp3.h"
 #include "StreamFile.h"
-#include "madplay.h"
+#include "mplay.h"
 #include "config.h"
 #include "curldown.h"
 #include "../sdcard/musicList.h"
@@ -116,32 +116,6 @@ static void InputNetStream(char * inputMsg,int inputSize){
 
 static unsigned char like_mp3_sign=0;
 #ifdef PALY_URL_SD
-#if 0
-static void Savemp3File(void){
-	if(CheckSdcardInfo(MP3_SDPATH)){	//内存不足50M删除指定数目的歌曲
-		DelSdcardMp3file(MP3_SDPATH);
-	}
-	char buf[200]={0};
-	if(like_mp3_sign==1){	//收藏到喜爱目录
-		snprintf(buf,200,"cp %s %s%s",URL_SDPATH,MP3_LIKEPATH,st->mp3name);
-		like_mp3_sign=0;
-		InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
-	}else{
-		snprintf(buf,200,"cp %s %s%s",URL_SDPATH,MP3_SDPATH,st->mp3name);
-	}
-	system(buf);
-}
-//长按删除喜爱歌曲
-static void Delmp3File(void){
-	if(like_mp3_sign==2){
-		char buf[200]={0};
-		snprintf(buf,200,"%s%s",MP3_LIKEPATH,st->mp3name);
-		like_mp3_sign=0;
-		remove(buf);
-		DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
-	}
-}
-#else
 int GetFileNameForPath(char *path){
 	int i=0;
 	int size=strlen(path);
@@ -187,7 +161,6 @@ static void Savemp3File(char *filepath){
 	}
 }
 
-#endif
 //喜爱
 void Save_like_music(void){
 	like_mp3_sign=1;
@@ -339,6 +312,9 @@ int NetStreamDownFilePlay(const void *data){
 	st->streamLen=0;
 	st->playSize=0;
 	st->cacheSize=0;
+	WritePlayUrl_Log("play url:\n");
+	WritePlayUrl_Log(play->playfilename);
+	WritePlayUrl_Log("\n");
 #ifndef PALY_URL_SD
 	CopyUrlMessage((Player_t *)data,(Player_t *)&st->player);
 	//snprintf(st->player.playfilename,128,"%s",play->playfilename);
@@ -503,7 +479,6 @@ void PlayUrl(const void *data){
 	char filename[128];
 	Player_t *play =(Player_t *)data;
 	parse_url(play->playfilename, domain, &port, filename);
-	
 	CopyUrlMessage((Player_t *)data,(Player_t *)&st->player);
 	char *buf= (char *)calloc(1,strlen(filename)+1+MP3_PATHLEN);
 	char *likebuf= (char *)calloc(1,strlen(filename)+1+MP3_LIKEPATHLEN);
@@ -525,92 +500,7 @@ void PlayUrl(const void *data){
 	}
 }
 #endif
-#ifdef TEST_PLAY_EQ_MUSIC
-#include "host/voices/WavAmrCon.h"
-#include "host/voices/wm8960i2s.h"
 
-void SetplayWavEixt(void){
-	st->player.playState=MAD_EXIT;
-}
-void TestPlay_EqWavFile(const void *data){
-	Player_t *play =(Player_t *)data;
-	st->player.progress=0;
-	st->streamLen=0;
-	st->playSize=0;
-	
-	unsigned short rate_one=0,rate_two=0;
-	char filepath[256]={0};
-	snprintf(filepath,256,"/media/mmcblk0p1/testmp3/%s",play->playfilename);
-	st->rfp = fopen(filepath,"r");
-	if(st->rfp==NULL){
-		perror("fopen read failed ");
-		return ;
-	}
-	struct wave_pcm_hdr wav;
-	fread(&wav,sizeof(struct wave_pcm_hdr),1,st->rfp);
-	writeLog((const char * )"/home/test_play_wav.txt",(const char *) play->playfilename);
-	char logBuf[128]={0};
-	sprintf(logBuf,"rate %d channel %d",wav.samples_per_sec,wav.channels);
-	if(wav.samples_per_sec>44100){
-		wav.samples_per_sec=44100;
-	}
-	if(wav.channels>2){
-		wav.channels=2;
-	}
-	writeLog((const char * )"/home/test_play_wav.txt",(const char *) logBuf);
-	st->SetI2SRate(wav.samples_per_sec);
-	Mute_voices(UNMUTE);
-	int i=0,pos=0,ret=0,Numbers=0;
-	char cachebuf[2]={0};
-	st->player.playState=MAD_PLAY;
-	while(1){
-		if(st->player.playState==MAD_EXIT)
-			break;
-		pos =0;
-		if(wav.channels==1){
-			for(i=0;i<I2S_PAGE_SIZE;i+=2){
-				ret = fread(cachebuf,1,2,st->rfp);
-				if(ret==0){
-					break;
-				}
-				memcpy(play_buf+pos,cachebuf,2);
-				pos+=2;
-				memcpy(play_buf+pos,cachebuf,2);
-				pos+=2;
-				write_pcm(play_buf);
-			}				
-		}else if(wav.channels==2){
-			ret = fread(play_buf,1,I2S_PAGE_SIZE,st->rfp);
-			if(ret==0){
-				break;
-			}
-			sprintf(logBuf,"play Numbers %d ret=%d ",Numbers++,ret);
-			//writeLog((const char * )"/home/test_play_wav.txt",(const char *) logBuf);
-			write_pcm(play_buf);
-		}
-	}
-	fclose(st->rfp);
-}
-#endif
-
-#ifdef WORK_INTER
-void test_quikSeekTo(void){
-	st->player.progress +=10;
-	if(st->player.progress<=0)
-		st->player.progress=1;
-	else if(st->player.progress >=100)
-		st->player.progress =100;
-	seekToStream(st->player.progress);
-}
-void test_backSeekTo(void){
-	st->player.progress -=10;
-	if(st->player.progress<=0)
-		st->player.progress=1;
-	else if(st->player.progress >=100)
-		st->player.progress =100;
-	seekToStream( st->player.progress);
-}
-#endif
 //获取播放流状态
 void getStreamState(void *data,void StreamState(void *data,Player_t *player)){
 	st->player.vol = st->GetVol();

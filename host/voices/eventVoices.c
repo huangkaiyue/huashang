@@ -1,6 +1,5 @@
 #include "comshead.h"
 #include "host/voices/wm8960i2s.h"
-#include "host/voices/message_wav.h"
 #include "host/studyvoices/std_worklist.h"
 #include "host/studyvoices/prompt_tone.h"
 #include "base/pool.h"
@@ -85,15 +84,13 @@ static int checkNetWorkLive(void){
 	}
 	return -1;
 }
-
 /*******************************************************
 函数功能: 添加网络URL地址到队列当中进行播放
 参数: data 播放歌曲信息，已经malloc申请内存了	
 返回值: 无
 ********************************************************/
 static void __AddNetWork_UrlForPaly(const void *data){
-	playurlLog("url_start\n");
-	playurlLog(VERSION);	//版本时间
+	WritePlayUrl_Log("url_start\n");
 	if(checkNetWorkLive()){	//检查网络
 		return;
 	}
@@ -102,12 +99,13 @@ static void __AddNetWork_UrlForPaly(const void *data){
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		return;
 	}
-	if(GetRecordeLive() == PLAY_WAV_E){
+	if(GetRecordeVoices_PthreadState() == PLAY_WAV_E){
+		WritePlayUrl_Log("add failed ,reocde voices pthread is PLAY_WAV_E\n");
 		//exitqttsPlay();
 		return;
 	}
 	AddworkEvent((const char *)data,0,URL_VOICES_EVENT);
-	playurlLog("add ok\n");
+	WritePlayUrl_Log("add url ok\n");
 }
 #ifdef LOCAL_MP3
 /*******************************************************
@@ -120,7 +118,7 @@ static int __AddLocalMp3ForPaly(const char *localpath){
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		return -1;
 	}
-	if(GetRecordeLive() == PLAY_WAV_E){	//处于播放qtts文件
+	if(GetRecordeVoices_PthreadState() == PLAY_WAV_E){	//处于播放qtts文件
 		DEBUG_EVENT(" PLAY_WAV_E \n");
 		exitqttsPlay();
 		return -1;
@@ -145,7 +143,7 @@ static int GetSdcardMusicNameforPlay(unsigned char menu,const char *path, unsign
 	char filename[64]={0};
 	int ret=-1;
 	if(access(TF_SYS_PATH, F_OK)){	//检查tf卡
-		if(GetRecordeLive()==PAUSE_E)
+		if(GetRecordeVoices_PthreadState()==PAUSE_E)
 			Create_PlaySystemEventVoices(TF_ERROT_PLAY);
 		return ret;
 	}
@@ -179,12 +177,12 @@ static int GetSdcardMusicNameforPlay(unsigned char menu,const char *path, unsign
 #ifdef PALY_URL_SD
 void CreateLikeMusic(void){
 	if(access(TF_SYS_PATH, F_OK)){	//检查tf卡
-		if(GetRecordeLive()==PAUSE_E)	
+		if(GetRecordeVoices_PthreadState()==PAUSE_E)	
 			Create_PlaySystemEventVoices(TF_ERROT_PLAY);
 		return ;
 	}
-	if(GetRecordeLive()!=PLAY_URL_E){	//检查播放状态
-		if(GetRecordeLive()==PAUSE_E){
+	if(GetRecordeVoices_PthreadState()!=PLAY_URL_E){	//检查播放状态
+		if(GetRecordeVoices_PthreadState()==PAUSE_E){
 			//Create_PlaySystemEventVoices(TF_ERROT_PLAY);	//Fix me 当前没有播放音乐
 		}
 		return ;
@@ -194,12 +192,12 @@ void CreateLikeMusic(void){
 }
 void DelLikeMusic(void){
 	if(access(TF_SYS_PATH, F_OK)){	//检查tf卡
-		if(GetRecordeLive()==PAUSE_E)	
+		if(GetRecordeVoices_PthreadState()==PAUSE_E)	
 			Create_PlaySystemEventVoices(TF_ERROT_PLAY);
 		return ;
 	}
-	if(GetRecordeLive()!=PLAY_URL_E){	//检查播放状态
-		if(GetRecordeLive()==PAUSE_E){
+	if(GetRecordeVoices_PthreadState()!=PLAY_URL_E){	//检查播放状态
+		if(GetRecordeVoices_PthreadState()==PAUSE_E){
 			//Create_PlaySystemEventVoices(TF_ERROT_PLAY);	//Fix me 当前没有播放音乐
 		}
 		return ;
@@ -306,40 +304,7 @@ int createPlayEvent(const void *play,unsigned char Mode){
 	__AddNetWork_UrlForPaly(play);
 #endif	
 }
-#ifdef TEST_PLAY_EQ_MUSIC
-/*******************************************************
-函数功能: 测试播放wav 音频文件
-参数: play 本地MP3播放内容
-返回值: 无
-********************************************************/
-void createPlay_wavFileEvent(const void *play){
-	if(checkNetWorkLive()){	//检查网络
-		return;
-	}
-	if(getEventNum()>0||getplayEventNum()>0){
-		DEBUG_EVENT("num =%d \n",getEventNum());
-		return;
-	}
-	if(GetRecordeLive() == PLAY_WAV_E){
-		return;
-	}
-	AddworkEvent((const char *)play,0,TEST_PLAY_EQ_WAV);
-}
-static unsigned char Testmp3sign =0;
-void TestPlay_localMp3Music(void){
-	char filepath[128]={0};
-	if(Testmp3sign>8){
-		Testmp3sign=0;
-	}
-	snprintf(filepath,128,"%stestmp3/test%d.mp3",TF_SYS_PATH,Testmp3sign);
-	printf("filepath = %s\n",filepath);
-	if(access(filepath, F_OK)==F_OK){
-		__AddLocalMp3ForPaly((const char *)filepath);
-	}
-	Testmp3sign++;
-	return;
-}
-#endif
+
 /*******************************************************
 函数功能: 清理URL事件
 参数: 无
@@ -358,10 +323,10 @@ void Create_PlayQttsEvent(const char *txt,int type){
 	if (checkNetWorkLive()){	//检查网络
 		return;
 	}
-	if (GetRecordeLive() == PLAY_URL_E){
+	if (GetRecordeVoices_PthreadState() == PLAY_URL_E){
 		CleanUrlEvent();
 	}
-	if (GetRecordeLive() == PLAY_TULING_E){
+	if (GetRecordeVoices_PthreadState() == PLAY_TULING_E){
 		NetStreamExitFile();
 	}
 	char *TXT = (char *)calloc(1,strlen(txt)+1);
@@ -372,50 +337,41 @@ void Create_PlayQttsEvent(const char *txt,int type){
 }
 
 /*******************************************************
-函数功能: 会话事件
+函数功能: 会话按键按下信号,启动录音 
 参数: 无
 返回值: 无
 ********************************************************/
-void down_voices_sign(void){
-	//tulingLog("tuling_start",GetRecordeLive());
-	if(GetRecordeLive()==START_SPEEK_VOICES||GetRecordeLive()==END_SPEEK_VOICES){
-		//tulingLog("down_voices_sign exit",GetRecordeLive());
+void TulingKeyDownSingal(void){
+	Write_Speekkeylog((const char *)"speekstart",0);
+	if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES){		
+		Write_Speekkeylog((const char *)"START_SPEEK_VOICES",GetRecordeVoices_PthreadState());
 		return;
 	}
-	//tulingLog("GetRecordeLive",GetRecordeLive());
-	if (GetRecordeLive() == PLAY_WAV_E){
-		DEBUG_EVENT("PLAY_WAV_E ...\n");
+	if (GetRecordeVoices_PthreadState() == PLAY_WAV_E){
 		exitqttsPlay();
-#ifdef SYSVOICE
-		if (GetSystemSign() == 0){
-			InterruptSystemVoice();
+		if (GetPlaySystem_VoicesState() == 0){
+			SetPlaySystem_VoiceState(EXIT_SYSTEM_PLAY);
 		}
-#endif
-	}else if (GetRecordeLive() == PLAY_URL_E){
-		DEBUG_EVENT("PLAY_URL_E ...\n");
+		Write_Speekkeylog((const char *)"PLAY_WAV_E",GetRecordeVoices_PthreadState());
+	}else if (GetRecordeVoices_PthreadState() == PLAY_URL_E){
 		CleanUrlEvent();
-	}else{
-		//tulingLog(" checkNetWorkLive ",GetRecordeLive());
-#if 1 		//屏蔽用来调试------------------------------，需要打开		
+		Write_Speekkeylog((const char *)"PLAY_URL_E",GetRecordeVoices_PthreadState());
+	}else{	
 		if (checkNetWorkLive()){	//检查网络
 			exitqttsPlay();		//暂时解决会话过程中，添加系统音导致问题
-			tulingLog(" exitqttsPlay ",GetRecordeLive());
+			Write_Speekkeylog((const char *)"exitqttsPlay",GetRecordeVoices_PthreadState());
 			return;
-		}
-#endif		
+		}	
 		sysMes.localplayname=0;	
-		//tulingLog(" exitqttsPlay ",GetRecordeLive());
 		NetStreamExitFile();
-		//tulingLog("NetStreamExitFile exit ",GetRecordeLive());
-		SetWm8960Rate(RECODE_RATE);
-#if 0
-		Create_PlaySystemEventVoices(KEY_DOWN_PLAY);
-#else
-		start_event_std();
-#endif
-		printf("start recode voices \n");
+		if(SetWm8960Rate(RECODE_RATE)){
+			return ;
+		}
+		StartTuling_RecordeVoices();
+		Write_Speekkeylog((const char *)"StartTuling_RecordeVoices",GetRecordeVoices_PthreadState());
 	}
 }
+
 /*******************************************************
 函数功能: 查看NetManger进程是否存在pid号
 参数: pid_name	进程名字
@@ -431,11 +387,11 @@ static void StartNetServer(void){
 	system("NetManger -t 5 -wifi on &");
 	sleep(1);
 }
-void CacheNetServer(void){
+void CheckNetServer(void){
 	sleep(5);
 	if(judge_pid_exist(get_pid_name)){
-		remove("/var/server.lock");
-		remove("/var/internet.lock");
+		remove(NET_SERVER_FILE_LOCK);
+		remove(INTEN_NETWORK_FILE_LOCK);
 		StartNetServer();
 	}
 }
@@ -444,22 +400,23 @@ void CacheNetServer(void){
 参数: 无
 返回值: 无
 ********************************************************/
-void Net_work(void){
+void NetKeyDown_ForConfigWifi(void){
 	if(judge_pid_exist(get_pid_name)){
-		remove("/var/server.lock");
-		remove("/var/internet.lock");
+		remove(NET_SERVER_FILE_LOCK);
+		remove(INTEN_NETWORK_FILE_LOCK);
 		StartNetServer();
 	}
-	smartConifgLog("smart_start\n");
+	WiterSmartConifg_Log("Network key down ok\n");
 	if(!checkInternetFile()){
-		smartConifgLog("startSmartConfig checkInternetFile failed\n");
+		WiterSmartConifg_Log("startSmartConfig checkInternetFile failed\n");
 		return;
 	}
-	if(GetRecordeLive()==PAUSE_E){
+	if(GetRecordeVoices_PthreadState()==PAUSE_E){//处于播放事件当中，不予许配网
 		disable_gpio();
-		startSmartConfig(Create_PlaySystemEventVoices,enable_gpio);
+		startSmartConfig(Create_PlaySystemEventVoices,enable_gpio);	
+	}else{		
+		WiterSmartConifg_Log("startSmartConfig  failed \n");
 	}
-	smartConifgLog("startSmartConfig Net_work ok\n");
 }
 //关机保存文件和清理工作
 void Close_Mtk76xxSystem(void){
@@ -507,20 +464,10 @@ void Link_NetworkError(void){
 }
 #define TLERNUM 34.0
 static void TaiwanToTulingError(void){
-#if 0
-	char *TxT=getSpeekText();
-	if(TxT==NULL){
-		Create_PlayQttsEvent("能换一个问题问我么。",QTTS_GBK);
-	}else{
-		Create_PlayQttsEvent(TxT,QTTS_UTF8);
-		CleanSpeakJson(TxT);
-	}
-#else
 	char buf[32]={0};
 	int i=(1+(int)(TLERNUM*rand()/(RAND_MAX+1.0)));
 	snprintf(buf,32,"qtts/TulingError%d_8k.amr",i);
-	playsysvoices(buf);
-#endif
+	PlaySystemAmrVoices(buf);
 }
 /*******************************************************
 函数功能: 创建一个播放系统声音事件，
@@ -528,24 +475,24 @@ static void TaiwanToTulingError(void){
 返回值: 无
 ********************************************************/
 void Create_PlaySystemEventVoices(int sys_voices){
-	playsysvoicesLog("playsys_start\n");
+	PlaySystemAmrVoicesLog("playsys_start\n");
 	if((sys_voices==END_SYS_VOICES_PLAY)){	//结束音退出事件
 #ifdef PALY_URL_SD
 		pool_add_task(Close_Mtk76xxSystem,NULL);//关机删除，长时间不用的文件
 #endif
 		cleanQuequeEvent();	//清理队列
-		if(GetRecordeLive()==PLAY_WAV){
+		if(GetRecordeVoices_PthreadState()==PLAY_WAV){
 			exitqttsPlay();	//清理事件
 		}
-		if(GetRecordeLive() ==PLAY_TULING_E){
+		if(GetRecordeVoices_PthreadState() ==PLAY_TULING_E){
 			NetStreamExitFile();
 		}
 	}
-	if(GetRecordeLive() ==PLAY_URL_E){
+	if(GetRecordeVoices_PthreadState() ==PLAY_URL_E){
 		CleanUrlEvent();
 	}
 	AddworkEvent(NULL,sys_voices,SYS_VOICES_EVENT);
-	playsysvoicesLog("playsys voices end \n");
+	PlaySystemAmrVoicesLog("playsys voices end \n");
 }
 /*******************************************************
 函数功能: 系统音事件处理函数
@@ -553,7 +500,7 @@ void Create_PlaySystemEventVoices(int sys_voices){
 返回值: 无
 ********************************************************/
 void Handle_PlaySystemEventVoices(int sys_voices){
-	playsysvoicesLog("playsys voices handle \n");
+	PlaySystemAmrVoicesLog("playsys voices handle \n");
 //----------------------系统有关-----------------------------------------------------
 	switch(sys_voices){
 		case END_SYS_VOICES_PLAY:					//结束音
@@ -592,12 +539,11 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 			break;
 //----------------------重连有关-----------------------------------------------------
 		case REQUEST_FAILED_PLAY:					//重连，请求服务器数据失败
-			playsysvoices(REQUEST_FAILED);
+			PlaySystemAmrVoices(REQUEST_FAILED);
 			break;
 		case UPDATA_END_PLAY:						//更新固件结束
 			play_sys_tices_voices(UPDATA_END);
 			//system("sleep 8 && reboot &");
-			//clean_resources();
 			break;
 		case TIMEOUT_PLAY_LOCALFILE:				//请求服务器超时，播放本地已经录制好的音频
 			TaiwanToTulingError();
@@ -668,15 +614,12 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 			break;
 		case KEY_DOWN_PLAY:			//按键按下	=---正在发送
 			play_sys_tices_voices(KEY_VOICE_DOWN);
-			//start_event_std();
 			break;
 		case PLAY_ERROT_PLAY:			//播放失败
 			play_sys_tices_voices(PLAY_ERROR);
-			//start_event_std();
 			break;
 		case LIKE_ERROT_PLAY:			//
 			play_sys_tices_voices(LIKE_ERROR);
-			//start_event_std();
 			break;
 		case TF_ERROT_PLAY:				//TF加载失败
 			play_sys_tices_voices(TF_ERROR);
@@ -732,14 +675,14 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 			TaiBenToNONetWork();
 			break;
 	}
-	playsysvoicesLog("playsys voices end \n");
+	PlaySystemAmrVoicesLog("playsys voices end \n");
 }
 #ifdef SPEEK_VOICES
 void CreateSpeekEvent(const char *filename){
-	if(GetRecordeLive() ==PLAY_URL_E){
+	if(GetRecordeVoices_PthreadState() ==PLAY_URL_E){
 		CleanUrlEvent();
 	}
-	if(GetRecordeLive() ==PLAY_TULING_E){
+	if(GetRecordeVoices_PthreadState() ==PLAY_TULING_E){
 		NetStreamExitFile();
 	}
 	char *TXT= (char *)calloc(1,strlen(filename)+1);
@@ -820,7 +763,7 @@ static void StopRecorder_AndSendFile(void){
 	time_t t;
 	t = time(NULL);
 #ifdef CACHE_SDCARD
-	sprintf(filepath,"%s%s%d%s",sysMes.sd_path,CACHE_WAV_PATH,(unsigned int)t,".amr");
+	sprintf(filepath,"%s%s%d%s",sysMes.localVoicesPath,CACHE_WAV_PATH,(unsigned int)t,".amr");
 #else
 	sprintf(filepath,"%s%d%s",CACHE_WAV_PATH,(unsigned int)t,".amr");
 #endif
@@ -829,8 +772,7 @@ static void StopRecorder_AndSendFile(void){
 		return;
 	}
 	DEBUG_EVENT("stop save file \n");
-	//Create_PlaySystemEventVoices(SEND_LINK_PLAY);
-	Create_PlaySystemEventVoices(KEY_DOWN_PLAY);
+	Create_PlaySystemEventVoices(KEY_DOWN_PLAY);	//播放微信提示音，表示音频正在发送
 	uploadVoicesToaliyun(filepath,pcmwavhdr.data_size/10+6);
 	//remove(SAVE_WAV_VOICES_DATA);
 }
@@ -847,13 +789,13 @@ void Create_WeixinSpeekEvent(unsigned int gpioState){
 	}else{			//弹起
 	
 	}
-	if(GetRecordeLive() ==PLAY_URL_E){		//打断播放音乐
+	if(GetRecordeVoices_PthreadState() ==PLAY_URL_E){		//打断播放音乐
 		CleanUrlEvent();
 		return;
-	}else if(GetRecordeLive()==PLAY_WAV_E){
+	}else if(GetRecordeVoices_PthreadState()==PLAY_WAV_E){
 		exitqttsPlay();
 		return;
-	}else if(GetRecordeLive() ==PLAY_TULING_E){
+	}else if(GetRecordeVoices_PthreadState() ==PLAY_TULING_E){
 		NetStreamExitFile();
 		return;
 	}
@@ -867,7 +809,7 @@ void Create_WeixinSpeekEvent(unsigned int gpioState){
 void Handle_WeixinSpeekEvent(unsigned int gpioState){
 	int endtime;
 	time_t t;
-	if(gpioState==VOLKEYDOWN&&GetRecordeLive()==RECODE_PAUSE){	//按下
+	if(gpioState==VOLKEYDOWN&&GetRecordeVoices_PthreadState()==RECODE_PAUSE){	//按下
 		DEBUG_EVENT("gpioState(%d)...\n",gpioState);
 		start_speek_wait();
 		if(CreateRecorderFile()){		//创建音频文件节点，将插入到链表当中
@@ -934,6 +876,7 @@ void SaveRecorderVoices(const char *voices_data,int size){
 #ifdef LOCAL_MP3
 static void *waitLoadMusicList(void *arg){
 	int timeout=0;
+	char dirBuf[128]={0};
 	sleep(10);
 	while(++timeout<20){
 		if(!access(TF_SYS_PATH, F_OK)){		//检查tf卡
@@ -941,8 +884,12 @@ static void *waitLoadMusicList(void *arg){
 		}
 		sleep(1);
 	}
+	snprintf(dirBuf,128,"%s",MP3_LIKEPATH);
+	if(access(MP3_LIKEPATH, F_OK)){			//创建喜马拉雅目录
+		mkdir(MP3_LIKEPATH,0777);	
+	}
 	SysOnloadMusicList((const char *)TF_SYS_PATH,(const char *)TF_MP3_PATH,(const char *)TF_STORY_PATH,(const char *)TF_ENGLISH_PATH,(const char *)TF_GUOXUE_PATH);
-	CacheNetServer();	//检查网络服务
+	CheckNetServer();	//检查网络服务
 	if(sysMes.netstate==NETWORK_UNKOWN){
 		sysMes.netstate=NETWORK_ER;
 		enable_gpio();
@@ -965,63 +912,13 @@ void InitMtkPlatfrom76xx(void){
 	speek->file_len=0;
 	pthread_mutex_init(&speek->mutex, NULL);
 #endif
-#if 0	//id和token测试ok
-		char token[64]={"772f32e9-1a8a-46fe-95ed-76b405e71fca"};
-		char *user_id  = "ai22334455667780";
-#endif
-#if 0
-		char token[64]={"b3346661-ee10-4d46-ad1e-5b35bf2a824e"};
-		char *user_id  = "ai00000000000015";
-#endif
-#if 0
-		char token[64]={"de693565-b4ab-49d2-8376-7bb01d799d6f"};
-		char *user_id  = "ai00000000000016";
-#endif
-#if 0
-		char token[64]={"2f3f51f9-0488-454a-aff8-5063860e8c5c"};
-		char *user_id  = "ai00000000000017";
-#endif
-#if 0
-		char token[64]={"954689a2-1203-4eca-bd59-7ce690c9f0c2"};
-		char *user_id  = "ai2000000000000";
-#endif
-#if 0	//id和token测试ok //beta
-		char token[64]={"8589b8c9-c1a8-4492-8c26-f5f2586493ab"};
-		char *user_id  = "aia0000000000002";
-#endif
 
-#if 0	//smart  id和token 测试ok smart
-		char token[64]={"63c5dc4b-ccff-48cd-b112-eff5426ca3e8"};
-		char *user_id  = "ai123456789ababab";
-#endif
-#if 1   //idoítoken2aê?ok //smart
-        char token[64]={"b825f483-d5be-4a6f-a1bb-80be3de187e5"};
-        char *user_id  = "ai123456789abab12";
-#endif
-
-	InitTuling((const char *) user_id,(const char *) token);	//userId需要保存到路由表当中 ，token 也需要保存
-	
 	InitMtk76xx_gpio();
 	InitWm8960Voices();
 #ifndef TEST_SDK
-	playsysvoices(START_SYS_VOICES);//开机启动音
+	PlaySystemAmrVoices(START_SYS_VOICES);//开机启动音
 #endif
 	initStream(ack_playCtr,WritePcmData,SetWm8960Rate,GetVol);
-
-#ifdef TEST_PLAY_EQ_MUSIC
-/*
-	sleep(20);
-	Player_t play;
-	memset(&play,0,sizeof(Player_t));
-	sprintf(play.playfilename,"%s","sony/Track04.wav");
-	TestPlay_EqWavFile((const void *)&play);
-	sprintf(play.playfilename,"%s","sony/Track02.wav");
-	TestPlay_EqWavFile((const void *)&play);
-
-	sprintf(play.playfilename,"%s","AP/曲目26.wav");
-	TestPlay_EqWavFile((const void *)&play);
-*/	
-#endif
 
 	InitEventMsgPthread();
 	InitRecord_VoicesPthread();

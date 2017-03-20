@@ -2,11 +2,7 @@
 #define _CONFIG_H_
 //----------------------ç‰ˆæœ¬ç±»-----------------------------------
 
-#define VERSION "\n12.11-15:00\n"	//ç‰ˆæœ¬å·
-
 //#define TEST_SDK					//æµ‹è¯•SDK
-
-//#define TEST_PLAY_EQ_MUSIC			//²âÊÔÒôĞ§		
 
 
 #ifdef TEST_SDK						//ä½¿èƒ½å‘½ä»¤è¾“å…¥è¡Œ
@@ -24,7 +20,6 @@
 #define CLOCESYSTEM				//è¶…æ—¶é€€å‡º
 //#define CLOSE_VOICE				//ä¸å·¥ä½œå¤„äºå…³é—­éŸ³é¢‘çŠ¶æ€
 #define SELECT_UDP				//å°†udpæ·»åŠ åˆ°select å½“ä¸­
-#define SYSVOICE
 
 #define PCM_DATA				//ä¸Šä¼ pcmæ•°æ®
 //#define AMR16K_DATA				//ä¸Šä¼ amræ•°æ®
@@ -44,7 +39,6 @@
 
 	#define	LED_LR			//LEDå·¦å³ç¯ä»¥åŠå¤šæŒ‰é”®
 
-	//#define VOICS_CH		//æ’­éŸ³äººé€‰æ‹©åŠŸèƒ½æ·»åŠ 
 #endif
 #ifdef QITUTU_SHI	//çŸ³æ€»---å¥½å¥‡å…”
 	#define CLOCKTOALIYUN	//é˜¿é‡Œäº‘é—¹é’Ÿ
@@ -59,7 +53,6 @@
 
 	#define	LED_LR			//LEDå·¦å³ç¯ä»¥åŠå¤šæŒ‰é”®
 
-	//#define VOICS_CH		//æ’­éŸ³äººé€‰æ‹©åŠŸèƒ½æ·»åŠ 
 #endif
 #ifdef CONFIG_ALL	//å…¨åŠŸèƒ½
 	#define CLOCKTOALIYUN	//é˜¿é‡Œäº‘é—¹é’Ÿ
@@ -74,7 +67,6 @@
 
 	#define	LED_LR			//LEDå·¦å³ç¯ä»¥åŠå¤šæŒ‰é”®
 //=====================================================
-	//#define VOICS_CH		//æ’­éŸ³äººé€‰æ‹©åŠŸèƒ½æ·»åŠ 
 #endif
 //----------------------æµ‹è¯•ç±»-----------------------------------
 
@@ -127,6 +119,23 @@
 
 #define SYSTEMLOCKNUM	500		//é™åˆ¶æ¬¡æ•°
 
+
+//#define TEST_PLAY_EQ_MUSIC			//²âÊÔÒôĞ§		
+//#define PCM_TEST						//²âÊÔ±£´æpcmÎÄ¼ş
+
+
+#define TULING_PLAY_TEXT_WEIXIN_FAILED	"Ğ¡ÅóÓÑ°ó¶¨Ê§°Ü£¬ÇëÖØĞÂÔÚÎ¢ĞÅ½çÃæÊäÈëÒª°ó¶¨µÄÉè±¸ºÅ¡£"
+
+
+#define NET_SERVER_FILE_LOCK			"/var/server.lock"		//¿ª»úÁªÍø½ø³ÌÎÄ¼şËø
+
+#define INTEN_NETWORK_FILE_LOCK			"/var/internet.lock"	//Á¬½ÓÎÄ¼şËø£¬ºÍÁªÍø½ø³Ìµ±ÖĞ£¬É¨ÃèºÍÁ¬½Ó¹ı³Ìµ±ÖĞÆğµ½Ò»¸ö»¥³âÎÄ¼şËø×÷ÓÃ£¬·ÀÖ¹Õâ±ß½ø³ÌÔÚÅäÍø×´Ì¬£¬ÁªÍø½ø³Ì½øĞĞÉ¨ÃèºÍÁ¬½Ó
+
+#define SMART_CONFIG_FILE_LOCK			"/var/SmartConfig.lock"	//ÅäÍøÎÄ¼şËø,·ÀÖ¹µÚ¿ª»ú¹ı³Ì×Ô¶¯Á¬½ÓÍøÂç³åÍ»
+
+#define LOCAL_SERVER_FILE_LOCK			"/var/localserver.lock"	//±¾µØ·şÎñÆ÷ÎÄ¼şËø
+
+#define ENABLE_RECV_NETWORK_FILE_LOCK	"/var/startNet.lock"	//Ê¹ÄÜ½ÓÊÕÎÄ¼şËø
 #endif
 
 

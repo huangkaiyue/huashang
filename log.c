@@ -13,13 +13,13 @@ int WriteMp3Data(char *filename,char *data,int size){
 	return 0;
 #endif	
 }
-void playurlLog(const char *data){
+void WritePlayUrl_Log(const char *data){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	if(!strcmp(data,"url_start\n")){
-		fp =fopen("/home/url.log","w+");
+		fp =fopen("/log/url.log","w+");
 	}else{
-		fp =fopen("/home/url.log","a+");
+		fp =fopen("/log/url.log","a+");
 	}
 	
 	if(NULL == fp ){
@@ -32,13 +32,13 @@ void playurlLog(const char *data){
 #endif	
 }
 
-void smartConifgLog(const char *data){
+void WiterSmartConifg_Log(const char *data){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	if(!strcmp(data,"smart_start\n")){
-		fp =fopen("/home/smartconfig.log","w+");
+		fp =fopen("/log/smartconfig.log","w+");
 	}else{
-		fp =fopen("/home/smartconfig.log","a+");
+		fp =fopen("/log/smartconfig.log","a+");
 	}
 	
 	if(NULL == fp ){
@@ -51,13 +51,13 @@ void smartConifgLog(const char *data){
 	return ;
 #endif
 }
-void playsysvoicesLog(const char *data){
+void PlaySystemAmrVoicesLog(const char *data){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	if(!strcmp(data,"playsys_start\n")){
-		fp =fopen("/home/playsysvoices.log","w+");
+		fp =fopen("/home/PlaySystemAmrVoices.log","w+");
 	}else{
-		fp =fopen("/home/playsysvoices.log","a+");
+		fp =fopen("/home/PlaySystemAmrVoices.log","a+");
 	}
 	
 	if(NULL == fp ){
@@ -219,14 +219,14 @@ void JsonLog(const char *data){
 	return ;
 #endif
 }
-void tulingLog(const char *data,unsigned char err){
+void RequestTulingLog(const char *data,unsigned char err){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	char buf[128];
 	if(!strcmp(data,"tuling_start")){
-		fp =fopen("/home/tuling.log","w+");
+		fp =fopen("/home/request_tuling.log","w+");
 	}else{
-		fp =fopen("/home/tuling.log","a+");
+		fp =fopen("/home/request_tuling.log","a+");
 	}
 	sprintf(buf,"err:%d %s\n",err,data);
 	if(NULL == fp ){
@@ -299,4 +299,46 @@ void GpioLog(const char *data,unsigned char number){
 	return ;
 #endif
 }
+void WriteLocalserver_Version(const char *versionMessage){
+	FILE *fp = fopen("/log/localerverVersion.log","w+");
+	if(fp){
+		fwrite(versionMessage,1,strlen(versionMessage),fp);//写入当前版本
+		fclose(fp);
+	}	
+}
+void Write_Speekkeylog(const char *data,int num){
+	FILE *fp = NULL;
+	char buf[128];
+	if(!strcmp(data,"speekstart")){
+		fp = fopen("/log/Speekkeylog.log","w+");
+	}else{
+		fp = fopen("/log/Speekkeylog.log","a+");
+	}
+	if(NULL == fp ){
+		return ;
+    }
+	snprintf(buf,128,"%s %d\n",data,num);
+	int size = strlen(buf);
+    fwrite(buf,1,size,fp);
+  	fflush(fp);
+	fclose(fp);
+}
 
+
+void test_Save_VoicesPackt_function_log(const char *data,int value){
+	FILE *fp = NULL;
+	char buf[128];
+	if(!strcmp(data,"start")){
+		fp = fopen("/log/Save_VoicesPackt_function.log","w+");
+	}else{
+		fp = fopen("/log/Save_VoicesPackt_function.log","a+");
+	}
+	if(NULL == fp ){
+		return ;
+    }
+	snprintf(buf,128,"%s %d\n",data,value);
+	int size = strlen(buf);
+    fwrite(buf,1,size,fp);
+  	fflush(fp);
+	fclose(fp);
+}

@@ -5,6 +5,7 @@
 #include "host/voices/WavAmrCon.h"
 #include "config.h"
 
+static unsigned char systemsign=0;
 #if 1
 void WriteqttsPcmData(char *data,int len){
 	int i=0;
@@ -33,18 +34,14 @@ void WritePcmData(char *data,int size){
 	I2S.play_size +=size;
 }
 #endif
-#ifdef SYSVOICE
-static unsigned char systemsign=0;
-void InterruptSystemVoice(void){
-	systemsign=1;
+
+void SetPlaySystem_VoiceState(unsigned char state){
+	systemsign=state;
 }
-static void PlaySystemVoice(void){
-	systemsign=0;
-}
-int GetSystemSign(void){
+int GetPlaySystem_VoicesState(void){
 	return systemsign;
 }
-#endif
+
 #if 0
 void playWavVoices(char *path)
 {
@@ -77,7 +74,7 @@ void playWavVoices(char *path)
 	write_pcm(play_buf);
 }
 #else
-void playAmrVoices(const char *filename){
+static void playAmrVoices(const char *filename){
 	char *outfile ="speek.wav";
 	AmrToWav8k(filename,(const char *)outfile);
 	int r_size=0,pos=0;
@@ -88,11 +85,9 @@ void playAmrVoices(const char *filename){
 		return;
 	}
 	start_event_play_wav(3);
-#ifdef SYSVOICE
-	PlaySystemVoice();
-#endif
+	SetPlaySystem_VoiceState(START_SYSTEM_PLAY);
 	fseek(fp,WAV_HEAD,SEEK_SET);		//跳过wav头部	
-	playsysvoicesLog("playsys amr start \n");
+	PlaySystemAmrVoicesLog("playsys amr start \n");
 	while(1){
 		r_size= fread(readbuf,1,2,fp);
 		if(r_size==0){
@@ -107,26 +102,22 @@ void playAmrVoices(const char *filename){
 		memcpy(play_buf+pos,readbuf,2);
 		pos+=2;
 		if(pos==I2S_PAGE_SIZE){
-			playsysvoicesLog("playsys amr while \n");
+			PlaySystemAmrVoicesLog("playsys amr while \n");
 			write_pcm(play_buf);
 			pos=0;
 		}
-#ifdef SYSVOICE
-		if(GetSystemSign()==1){
+		if(GetPlaySystem_VoicesState()==1){
 			CleanI2S_PlayCachedata();		//清理
 			stopclean();	//最后一片数据丢掉
 			break;
-		}
-#endif	
+		}	
 	}
-	playsysvoicesLog("playsys amr end \n");
+	PlaySystemAmrVoicesLog("playsys amr end \n");
 	fclose(fp);
 	memset(play_buf,0,pos);
 	stait_qtts_cache();
 	CleanI2S_PlayCachedata();
-#ifdef SYSVOICE
-	InterruptSystemVoice();
-#endif
+	SetPlaySystem_VoiceState(EXIT_SYSTEM_PLAY);
 	if(strstr(filename,"TuLin_Wint_8K")){
 		return ;
 	}
@@ -148,13 +139,13 @@ void playspeekVoices(const char *filename){
 #endif	//end CLOSE_VOICE
 }
 #endif
-void playsysvoices(char *filePath){
+void PlaySystemAmrVoices(char *filePath){
 	char path[128];
-	playsysvoicesLog("playsysvoices start \n");
+	PlaySystemAmrVoicesLog("PlaySystemAmrVoices start \n");
 	SetWm8960Rate(RECODE_RATE);
 	if(strstr(filePath,"no_voices_8K")||strstr(filePath,"start_haha_talk_8k")){
 	}else{
-		playsysvoicesLog("playsysvoices while start \n");
+		PlaySystemAmrVoicesLog("PlaySystemAmrVoices while start \n");
 		while(1){
 			start_event_play_wav(4);
 			if(get_qtts_cache()==1){
@@ -166,10 +157,10 @@ void playsysvoices(char *filePath){
 				break;
 			usleep(1000);
 		}	//----fix me
-		playsysvoicesLog("playsysvoices while end\n");
+		PlaySystemAmrVoicesLog("PlaySystemAmrVoices while end\n");
 		sleep(1);
 	}
-	snprintf(path,128,"%s%s",sysMes.sd_path,filePath);
+	snprintf(path,128,"%s%s",sysMes.localVoicesPath,filePath);
 	printf("system voice path : %s\n",path);
 	playAmrVoices(path);
 #ifdef CLOSE_VOICE
@@ -191,15 +182,15 @@ void playsysvoices(char *filePath){
 *********************************************************/
 void play_sys_tices_voices(char *filePath){
 	char path[128]={0};
-	snprintf(path,128,"%s%s",sysMes.sd_path,filePath);
+	snprintf(path,128,"%s%s",sysMes.localVoicesPath,filePath);
 	SetWm8960Rate(RECODE_RATE);
 	if(strstr(path,"TuLin_Wint_8K")){ 
 		mute_recorde_vol(105);
 	}
 #if 1
-	playsysvoicesLog("playsys voices start \n");
+	PlaySystemAmrVoicesLog("playsys voices start \n");
 	playAmrVoices(path);
-	playsysvoicesLog("playsys voices end \n");
+	PlaySystemAmrVoicesLog("playsys voices end \n");
 #else
 	playWavVoices(path);
 #endif

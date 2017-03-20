@@ -5,7 +5,6 @@
 #include "base/pool.h"
 #include "base/queWorkCond.h"
 #include "host/voices/callvoices.h"
-#include "host/voices/message_wav.h"
 #include "host/voices/wm8960i2s.h"
 #include "qtts_qisc.h"
 #include "config.h"
@@ -13,38 +12,21 @@
 #include "../sdcard/musicList.h"
 #include "../voices/gpio_7620.h"
 
-//static char *key = "a2f6808bf85a693e1bde2069c8b7fd79";
-//static char *key = "21868a0cd8806ee2ba5eab6181f0add7";//tang : change 2016.4.26 for from chang key 
 static const char *key = "b1833040534a6bfd761215154069ea58";
+static WorkQueue *EventQue;
 
 typedef struct {
 	int  len:24,type:8;
 }EventMsg_t;
-static WorkQueue *EventQue;
 
-//#define TEST_SAVE_MP3
-#ifdef TEST_SAVE_MP3
-static int test_mp3file=0;
-void test_save_mp3file(char *mp3_data,int size){
-	FILE * fp;	//tang :change 2016-2-22 add mp3 
-	char buf[32]={0};
-	sprintf(buf,"%s%d%s","/mnt/test/text",test_mp3file++,".amr");
-	fp = fopen(buf,"w+");
-	if(fp ==NULL){
-		perror("test_save_mp3file: fopen failed ");
-		return ;
-	}
-	fwrite(mp3_data,size,1,fp);
-	fclose(fp);
-}
-#endif
 
 #define TLJSONERNUM 9.0
-static void TaiBenToTulingJsonEr(void){
+//解析图灵请求错误内容，播放本地已经录制好的音频
+static void playTulingRequestErrorVoices(void){
 	char buf[32]={0};
 	int i=(1+(int) (TLJSONERNUM*rand()/(RAND_MAX+1.0)));
 	snprintf(buf,32,"qtts/TulingJsonEr%d_8k.amr",i);
-	playsysvoices(buf);
+	PlaySystemAmrVoices(buf);
 }
 /*******************************************
 @函数功能:	json解析服务器数据
@@ -74,78 +56,83 @@ static int parseJson_string(const char * pMsg){
 	}
 	ack_TlingCtr(pMsg);
 	DEBUG_STD_MSG("code : %d\n", pSub->valueint);
+#if 1	
 	switch(pSub->valueint){
-		case 40007:
-			PlayTuLingTaibenQtts("token值错误 ,正在更新数据。",QTTS_GBK);
-			goto exit;
-		case 40001:
-		case 40003:
-		case 40004:
-		case 40005:		
-		case 40006:	
-		case 305000:
-		case 302000:
-		case 200000:
-		case 40002:
-#if 1
-			TaiBenToTulingJsonEr();
-#else
-			playsysvoices(ERROR_40002);
-#endif
+		case 40001:	//参数为空
+		case 40002:	//音频为空
+		case 40003:	//参数缺失
+		case 40004: //参数不是标准的 json 文本
+		case 40005:	//无法解析该音频文件	
+		case 40006:	//参数错误
+		case 40007: //无效的 Key
+		case 40008:
+		case 40009:	//访问受限
+		case 40010:	//Token 错误 ,播放图灵错误内容
+			goto exit1;
+		case 40011: //非法请求
+		case 40012:	//服务受限
+		case 40013: //缺少 Token
+			playTulingRequestErrorVoices();
 			goto exit;
 	}
+#endif	
 	pSub = cJSON_GetObjectItem(pJson, "info");		//返回结果
     if(NULL == pSub){
 		DEBUG_STD_MSG("get info failed\n");
 		goto exit;
     }
-	printf("info: %s\n",pSub->valuestring);			//语音识别出来的汉字
+	DEBUG_STD_MSG("info: %s\n",pSub->valuestring);			//语音识别出来的汉字
 	if(CheckinfoText_forContorl((const char *)pSub->valuestring)){
 		goto exit;
 	}
+exit1:	
 	pSub = cJSON_GetObjectItem(pJson, "text");		//解析到说话的内容
 	if(NULL == pSub){
 		DEBUG_STD_MSG("get text failed\n");
 		goto exit;
 	}
-	printf("text: %s\n",pSub->valuestring);
+	DEBUG_STD_MSG("text: %s\n",pSub->valuestring);
 	pSub = cJSON_GetObjectItem(pJson, "ttsUrl");		//解析到说话的内容的链接地址，需要下载播放
-    if(NULL == pSub){
+    if(NULL == pSub||(!strcmp(pSub->valuestring,""))){	//如果出现空的链接地址，直接跳出
 		DEBUG_STD_MSG("get fileUrl failed\n");
 		goto exit;
     }
-	printf("ttsUrl: %s \n",pSub->valuestring);
+	DEBUG_STD_MSG("ttsUrl: %s \n",pSub->valuestring);
 	char *ttsURL= (char *)calloc(1,strlen(pSub->valuestring)+1);
 	if(ttsURL==NULL){
 		perror("calloc error !!!");
 		goto exit;
 	}
 	sprintf(ttsURL,"%s",pSub->valuestring);
-	printf("ttsURL:%s\n",ttsURL);
+	DEBUG_STD_MSG("ttsURL:%s\n",ttsURL);
 	
-	pSub = cJSON_GetObjectItem(pJson, "fileUrl"); 	//返回结果
-	if(NULL == pSub){
-		tulingLog(ttsURL,1);
-		cleanplayEvent(0);
+	pSub = cJSON_GetObjectItem(pJson, "fileUrl"); 	//检查是否有mp3歌曲返回，如果有
+	if(NULL == pSub){	//直接播放语义之后的结果
+		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
 		AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
 		err=0;
 		goto exit0;
-	}else{
-		Player_t *App=(Player_t *)calloc(1,sizeof(Player_t));
-		if(App==NULL){
+	}else{				//识别出有语义结果和mp3链接地址结果，先播放前面的语义内容，再播放mp3链接地址内容
+		if(!strcmp(pSub->valuestring,"")){//如果出现空的链接地址，直接跳出
+			free(ttsURL);
+			goto exit;
+		}
+		Player_t *player=(Player_t *)calloc(1,sizeof(Player_t));
+		if(player==NULL){
 			perror("calloc error !!!");
 			free(ttsURL);
 			goto exit;
 		}
-		snprintf(App->playfilename,128,"%s",pSub->valuestring);
-		snprintf(App->musicname,64,"%s","speek");
-		App->musicTime = 0;
-		cleanplayEvent(0);
+		snprintf(player->playfilename,128,"%s",pSub->valuestring);
+		snprintf(player->musicname,64,"%s","speek");
+		player->musicTime = 0;
+		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
 		AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
-		AddDownEvent((const char *)App,TULING_URL_VOICES);
+		AddDownEvent((const char *)player,TULING_URL_VOICES);
 		err=0;
 		goto exit0;
 	}
+	
 exit:
 	pause_record_audio(28);
 exit0:
@@ -153,53 +140,6 @@ exit0:
 	return err;
 }
 
-/*******************************************************
-@函数功能:	上传数据到服务器并获取到回复
-@参数:	voicesdata 上传数据
-@		len	上传数据大小
-@		voices_type	数据类型
-********************************************************/
-static void TaiBenToTulingQuestEr(void){
-	int i=(1+(int) (5.0*rand()/(RAND_MAX+1.0)));
-	switch(i){
-		case 1:
-			Create_PlaySystemEventVoices(REQUEST_FAILED_PLAY);	//播放请求服务器数据失败
-			break;
-#ifdef QITUTU_SHI
-		case 2:
-			createPlayEvent((const void *)"xiai",PLAY_NEXT);
-			break;
-#else
-		case 3:
-			createPlayEvent((const void *)"mp3",PLAY_NEXT);
-			break;
-		case 4:
-			createPlayEvent((const void *)"story",PLAY_NEXT);
-			break;
-		case 5:
-			createPlayEvent((const void *)"guoxue",PLAY_NEXT);
-			break;
-		case 6:
-			createPlayEvent((const void *)"english",PLAY_NEXT);
-			break;
-#endif
-	}
-}
-/*
-*单独测试图灵的接口
-*/
-static void test_tulingApi_andDownerrorFile(void){
-	cJSON *root;
-	root=cJSON_CreateObject();
-	cJSON_AddNumberToObject(root,"code",10);
-	cJSON_AddStringToObject(root,"info","testetest");
-	cJSON_AddStringToObject(root,"text","testetest");
-	cJSON_AddStringToObject(root,"ttsUrl","http://opentest.tuling123.com/file/8caf0b37-3359-4b85-b06b-aec080ab1d69.pcm1");
-	char *text=cJSON_Print(root);
-	cJSON_Delete(root);
-	//free(text);
-	AddworkEvent(text,0,STUDY_WAV_EVENT);
-}
 
 /*
 @ 将录制的语音上传到图灵服务器
@@ -210,22 +150,22 @@ static void test_tulingApi_andDownerrorFile(void){
 void ReqTulingServer(const char *voicesdata,int len,const char *voices_type,const char* asr,int rate){
 	int textSize = 0, err = 0;
 	char *text = NULL;
-	printf("up voices data ...(len=%d)\n", len);
+	DEBUG_STD_MSG("up voices data ...(len=%d)\n", len);
 	err = reqTlVoices(8,key,(const void *)voicesdata, len, rate, voices_type,\
 			asr,&text,&textSize);
-	if (err == -1)
-	{	//请求服务器失败
+	if (err == -1){	//请求服务器失败
 		Create_PlaySystemEventVoices(REQUEST_FAILED_PLAY);//播放请求服务器数据失败
 		goto exit1;
 	}
-	else if (err == 1)
-	{
+	else if (err == 1){
+#ifdef TEST_ERROR_TULING	
+		test_tulingApi_andDownerrorFile();
+#else
 		Create_PlaySystemEventVoices(TIMEOUT_PLAY_LOCALFILE);//播放本地已经录制好的文件
-		//test_tulingApi_andDownerrorFile();
+#endif		
 		goto exit1;
 	}
-	if (text)
-	{
+	if (text){
 		AddworkEvent(text,0,STUDY_WAV_EVENT);
 	}
 	return ;
@@ -280,6 +220,10 @@ int AddworkEvent(const char *eventMsg,int  len,int  type){
 	msg->type = type;
 	return putMsgQueue(EventQue,eventMsg,msgSize);
 }
+/*
+@ 
+@ 获取队列当中事件数
+*/
 int getEventNum(void){
 	return getWorkMsgNum(EventQue);
 }
@@ -324,7 +268,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 		case SET_RATE_EVENT:		//URL清理事件
 			event_lock=1;			//受保护状态事件
 			eventlockLog("eventlock_start\n",event_lock);
-			cleanplayEvent(1);
+			SetMainQueueLock(MAIN_QUEUE_LOCK);
 			//cleanQuequeEvent();
 			NetStreamExitFile();
 			SetWm8960Rate(RECODE_RATE);
@@ -335,18 +279,18 @@ static void HandleEventMessage(const char *data,int msgSize){
 			break;
 			
 		case URL_VOICES_EVENT:		//URL网络播放事件
-			playurlLog("url play\n");
-			cleanplayEvent(0);		
+			WritePlayUrl_Log("handler url voices event \n");
+			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		
 			NetStreamExitFile();
 			start_event_play_url();
-			playurlLog("NetStreamExitFile\n");
+			WritePlayUrl_Log("start add url to mainQueue for play\n");
 			AddDownEvent((const char *)data,URL_VOICES_EVENT);
 			sleep(3);
 			break;
 			
 #ifdef 	LOCAL_MP3
 		case LOCAL_MP3_EVENT:		//本地音乐播放事件
-			cleanplayEvent(0);		//去除清理锁
+			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
 			NetStreamExitFile();
 			start_event_play_url();
 			AddDownEvent((const char *)data,LOCAL_MP3_EVENT);
@@ -355,7 +299,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 #endif
 #ifdef TEST_PLAY_EQ_MUSIC
 		case TEST_PLAY_EQ_WAV:
-			cleanplayEvent(0);		//去除清理锁
+			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
 			SetplayWavEixt();
 			start_event_play_url();
 			AddDownEvent((const char *)data,TEST_PLAY_EQ_WAV);		

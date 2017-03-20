@@ -7,11 +7,10 @@ SDK_PATH=/home/7620sdk/7688/sdk4300_20140916/RT288x_SDK/source
 #SDK_PATH=/home/7620sdk/7688/sdk4300_20140916/RT288x_SDK/uart_source7688
 KERNEL_PATH =$(SDK_PATH)/linux-2.6.36.x
 
-#OTHEN_LIB=-lmsc463 -lTLRobot342
 OTHEN_LIB=-lmsc463
 SYSTEM_LIB=-lpthread -ldl -lrt  $(SDK_PATH)/lib/libnvram/libnvram-0.9.28.so
-OPEN_LIB= -lz -lcurl -lssl -lcrypto -lmad  -lopencore-amrnb -lsqlite3
-MY_LIB=-lbase463 -lmtkwifi -ldownFile463 -ldemoquick463 -lsystools463 -lspeakJson -luartmcu -lvo-amrwbenc
+OPEN_LIB= -lz -lcurl -lssl -lcrypto -lmad  -lopencore-amrnb -lsqlite3 
+MY_LIB=-lbase463  -ldownFile463 -ldemoquick463 -lsystools463 -lspeakJson -luartmcu -lvo-amrwbenc -lDemoDecodeMp3
 OPENSRC_DIR=/home/openSrc/src
 
 OPEN_INC=-I $(OPENSRC_DIR)/libcurl/curl-7.50.1/output/mips/include/ -I $(OPENSRC_DIR)/sqlite3/sqlite-3.6.17/output/x86/include/
@@ -26,13 +25,12 @@ LDFLAGS= $(SYSTEM_LIB) $(OTHEN_LIB) $(OPEN_LIB)  $(MY_LIB)
 TAR = localserver
 all +=main.o
 all +=log.o
+all +=testInterface.o
 all +=net/network.o
 all +=net/parseCmd.o
 #all +=uart/uart.o
 #all +=mtkwifiLib/mtkwifi.o
 all +=usrdb/sysdata.o
-
-all +=srvwork/workinter.o
 
 all +=host/voices/wm8960i2s.o
 all +=host/voices/callvoices.o
@@ -51,8 +49,6 @@ all +=host/studyvoices/check_text_utf8.o
 all +=host/studyvoices/qtts_qisc.o
 all +=host/ap_sta.o
 
-#all +=host/StreamPlay/madplayer.o
-all +=host/StreamPlay/Decode.o
 all +=host/StreamPlay/newStreamFile.o
 all +=host/StreamPlay/downMp3.o
 

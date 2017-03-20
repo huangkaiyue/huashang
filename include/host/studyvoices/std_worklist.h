@@ -4,7 +4,7 @@
 
 #define DBG_STD_MSG
 #ifdef DBG_STD_MSG
-#define DEBUG_STD_MSG(fmt, args...) printf("std worklist: " fmt, ## args)
+#define DEBUG_STD_MSG(fmt, args...) printf("%s:" ,__func__,fmt, ## args)
 #else   
 #define DEBUG_STD_MSG(fmt, args...) { }
 #endif	//end DBG_STD_MSG

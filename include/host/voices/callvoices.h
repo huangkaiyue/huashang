@@ -2,6 +2,10 @@
 #define _CALLVOICES_H
 
 #include "base/pool.h"
+
+#define KB	1024
+
+
 //----------------------音频事件---------------------------------------
 #define START_SPEEK_VOICES 		1  	//录音、语音识别
 #define START_TAIK_MESSAGE		2	//短消息,发送给其它设备(app/其它主机)
@@ -115,13 +119,11 @@
 #define NETWORK_ERR_VOICES_5	5
 
 
-typedef struct sys_message{
-	unsigned char recorde_live;
-	unsigned char oldrecorde_live;
-	char sd_path[20];
-	int Playlocaltime;
+typedef struct{
 	unsigned char localplayname;
 	unsigned char netstate;		//板子连接外部网络状态
+	int Playlocaltime;			//记录板子最后一次未使用时间，用来和当前时间比较，10分钟提示用户长时间未使用
+	char localVoicesPath[20];
 }SysMessage;
 extern SysMessage sysMes;
 //--------------------eventVoices.c----------------------------------------
@@ -152,16 +154,14 @@ static enum{
 };
 
 //--------------------callvoices.c-----------------------------------------
-extern void start_event_std(void);
+extern void StartTuling_RecordeVoices(void);
 extern void end_event_std(void);
 extern void start_event_play_wav(int i);
 extern void start_event_play_url(void);
 extern void pause_record_audio(int i);
-extern int GetRecordeLive(void);
+extern int GetRecordeVoices_PthreadState(void);
 #ifdef TIMEOUT_CHECK
-extern void exit_handle_event(void);
 extern void start_event_talk_message(void);
-extern void keep_recorde_live(int change);
 #endif
 extern int SetSystemTime(unsigned char outtime);
 
@@ -171,8 +171,8 @@ extern void ExitRecord_Voicespthread(void);
 extern int createPlayEvent(const void *play,unsigned char Mode);
 extern void CleanUrlEvent(void);
 extern void Create_PlayQttsEvent(const char *txt,int type);
-extern void down_voices_sign(void);
-extern void Net_work(void);
+extern void TulingKeyDownSingal(void);
+extern void NetKeyDown_ForConfigWifi(void);
 extern void Create_PlaySystemEventVoices(int sys_voices);
 extern void Handle_PlaySystemEventVoices(int sys_voices);
 extern void InitMtkPlatfrom76xx(void);
@@ -180,5 +180,14 @@ extern void CleanMtkPlatfrom76xx(void);
 extern void Create_WeixinSpeekEvent(unsigned int gpioState);
 extern void Handle_WeixinSpeekEvent(unsigned int gpioState);
 extern void SaveRecorderVoices(const char *voices_data,int size);
+
+
+
+//--------------------message_wav.c-----------------------------------------------
+#define START_SYSTEM_PLAY		0
+#define EXIT_SYSTEM_PLAY		1
+
+extern void play_sys_tices_voices(char *filePath);
+extern void exitqttsPlay(void);
 
 #endif

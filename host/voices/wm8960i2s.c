@@ -245,23 +245,12 @@ char *I2sGetvoicesData(void){
 	ioctl(I2S.i2s_fd, I2S_GET_AUDIO, &index_1);
 	return shrxbuf[index_1];
 }
-#ifdef VOICS_CH
-int get_volch(void){
-	return I2S.vol_ch; 
-}
-void set_volch(unsigned char ch){
-	I2S.vol_ch=ch;
-}
-#endif //end VOICS_CH
 /********************************************
 初始化wm8960音频接口
 ********************************************/
 void InitWm8960Voices(void){
 	memset(&I2S,0,sizeof(I2SST));
 	GetVol_formRouteTable(&(I2S.tx_vol));//获取路由音量和播音人
-#ifdef VOICS_CH
-	GetVolCh_formRouteTable(&(I2S.vol_ch));
-#endif //end VOICS_CH
 	I2S.tx_rate =RECODE_RATE;
 	I2S.i2s_fd = open(WM8960_NODE_PATH, O_RDWR|O_SYNC); 
 	if(I2S.i2s_fd<0)
@@ -324,26 +313,34 @@ void Mute_voices(unsigned char stat)
 @ 设置8960 声卡采样率 
 @ rate 采样率值
 @
-*/
-void SetWm8960Rate(unsigned short rate){
+*/
+int SetWm8960Rate(unsigned short rate){
 	I2S.play_size=0;
+	if(I2S.lockSetRate==1){
+		return -1;
+	}
+	I2S.lockSetRate=1;
 	if(rate==I2S.tx_rate){  //播放的采样率等于录音采样率，不需要切换
 		printf("start play rate = %d\n",rate);
 #ifndef CLOSE_VOICE		//保持打开状态
 		Mute_voices(UNMUTE);
 #endif
-		return -1;
+		I2S.lockSetRate=0;
+		return 0;
 	}
+	
 	Mute_voices(MUTE);
 	set_rx_state(I2S.i2s_fd,0);		//先关闭发送和接收，切换采样率
 	set_tx_state(I2S.i2s_fd,0);
 	SET_RATE(I2S.i2s_fd,rate);		//设置采样率
-	I2S.tx_rate=rate;	//生效采样率
 	I2S.tx_enable=0;
 	set_rx_state(I2S.i2s_fd,1);
 	set_tx_state(I2S.i2s_fd,1);
 	I2S.execute_mode = PLAY_MODE;	
 	Mute_voices(UNMUTE);
+	I2S.tx_rate=rate;				//生效采样率
+	I2S.lockSetRate=0;
+	return 0;
 }
 void DestoryWm8960Voices(void){
 	char* pBuf;

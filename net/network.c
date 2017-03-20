@@ -324,10 +324,13 @@ int SendtoaliyunServices(const void *msg,int size)
 }
 
 #endif
-static void checkNetFile(void)
-{
-	if(access("/var/startNet.lock",0) < 0){
-		fopen("/var/startNet.lock","w+");
+//使能联网文件锁
+static void EnableNetworkFile_lock(void){
+	if(access(ENABLE_RECV_NETWORK_FILE_LOCK,0) < 0){
+		FILE *fp = fopen(ENABLE_RECV_NETWORK_FILE_LOCK,"w+");
+		if(fp){
+			fclose(fp);
+		}
 	}
 }
 
@@ -356,7 +359,7 @@ void init_videoServer(void)
 	}
 	init_addr(&ctrSer->wifiAddr, IP,  20003);
 	//GetNetState();
-	checkNetFile();
+	EnableNetworkFile_lock();
 #endif
 #ifdef SPEEK_VOICES
 	init_addr(&ctrSer->speekAddr, IP,  SPEEK_PORT);

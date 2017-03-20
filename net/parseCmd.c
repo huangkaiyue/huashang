@@ -2,7 +2,7 @@
 #include "base/pool.h"
 #include "base/cJSON.h"
 #include "network.h"
-#include "madplay.h"
+#include "mplay.h"
 #include "StreamFile.h"
 #include "host/voices/wm8960i2s.h"
 #include "../host/studyvoices/qtts_qisc.h"
@@ -110,28 +110,6 @@ void ack_VolCtr(char *dir,int data)
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
-#ifdef VOICS_CH
-/*
-@函数功能:	男女音处理以及返回函数
-@参数:	size 男女音标志位
-@		1	男音
-@		0	女音
-*/
-void ack_chCtr(int sockfd,int type)
-{
-	char* szJSON = NULL;
-	cJSON* pItem = NULL;
-	pItem = cJSON_CreateObject();
-	cJSON_AddStringToObject(pItem, "handler", "setvoices");	
-	cJSON_AddNumberToObject(pItem, "type", type); 
-	cJSON_AddStringToObject(pItem, "status","ok");
-	szJSON = cJSON_Print(pItem);
-	DEBUG_TCP("ack_chCtr: %s\n",szJSON);
-	send_ctrl_ack(sockfd,szJSON,strlen(szJSON));
-	cJSON_Delete(pItem);
-	free(szJSON);
-}
-#endif //end VOICS_CH
 /*
 @函数功能:	开关机返回函数
 @参数:	size 男女音标志位
@@ -434,22 +412,6 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			ack_VolCtr("no",GetVol());//----------->设置固定音量
 		}
 	}//end vol 音量大小
-#ifdef VOICS_CH
-	else if(!strcmp(pSub->valuestring,"setvoices")){
-		pSub = cJSON_GetObjectItem(pJson, "type");
-		if(NULL == pSub){
-			DEBUG_TCP("get vol failed\n");
-			goto exit;
-		}
-		if(pSub->valueint==1){
-			SaveVolCh_toRouteTable(0);
-			ack_chCtr(sockfd,1);//----------->女音
-		}else if (pSub->valueint==2){
-			SaveVolCh_toRouteTable(1);
-			ack_chCtr(sockfd,0);//----------->男音
-		}
-	}//end setvoices
-#endif	//end VOICS_CH
 	else if(!strcmp(pSub->valuestring,"lock")){
 		pSub = cJSON_GetObjectItem(pJson, "state");
 		if(NULL == pSub){
@@ -519,13 +481,11 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	}//end mplayer 播放器信息
 	else if(!strcmp(pSub->valuestring,"host")){
 		pSub = cJSON_GetObjectItem(pJson, "type");
-		if(NULL == pSub)
-		{
+		if(NULL == pSub){
 			DEBUG_TCP("get vol failed\n");
 			goto exit;
 		}
-		if(!strcmp(pSub->valuestring,"open"))
-		{
+		if(!strcmp(pSub->valuestring,"open")){
 			//定时开机
 			char *stropenTime = cJSON_GetObjectItem(pJson, "time")->valuestring;
 			DEBUG_TCP("stropenTime = %s\n",stropenTime);
@@ -649,7 +609,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	else if (!strcmp(pSub->valuestring,"binddev")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(!strcmp(pSub->valuestring,"failed")){
-			//Create_PlayQttsEvent("成功收到小伙伴的绑定请求。",QTTS_GBK);
+			Create_PlayQttsEvent(TULING_PLAY_TEXT_WEIXIN_FAILED,QTTS_GBK);
 		}else if(!strcmp(pSub->valuestring,"ask")){
 			EnableBindDev();
 			Create_PlaySystemEventVoices(BIND_SSID_PLAY);
@@ -666,8 +626,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}else if(!strcmp(pSub->valuestring,"failed")){	//发送失败
 			Create_PlaySystemEventVoices(21);
 		}else if(!strcmp(pSub->valuestring,"timeout")){	//发送失败
-			Create_PlaySystemEventVoices(SEND_LINK_ER_PLAY);
-			//Create_PlayQttsEvent("当前网络环境差，语音发送失败，请检查网络。",QTTS_GBK);
+			Create_PlaySystemEventVoices(SEND_LINK_ER_PLAY);//"当前网络环境差，语音发送失败，请检查网络。"
 		}
 	}
 	else if (!strcmp(pSub->valuestring,"clock")){
@@ -693,12 +652,17 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}
 	}else if(!strcmp(pSub->valuestring,"getdev")){	//微信获取设备信息
 		ack_alluserCtr(sockfd,get_battery(),get_charge());
-	}else if (!strcmp(pSub->valuestring,"tuling")){
-		char *userId= cJSON_GetObjectItem(pJson, "userid")->valuestring;
-		char *token= cJSON_GetObjectItem(pJson, "token")->valuestring;
-		Load_useridAndToken((const char *) userId,(const char *) token);
-	}
+	}
 #endif	
+	else if (!strcmp(pSub->valuestring,"tuling")){
+		writeLog((const char * )"/home/tuling_log.txt","recv tuling val\n");
+		pSub = cJSON_GetObjectItem(pJson, "userId");
+		if(pSub){
+			char *userId= pSub->valuestring;
+			char *token= cJSON_GetObjectItem(pJson, "token")->valuestring;
+			Load_useridAndToken((const char *) userId,(const char *) token);
+		}
+	}
 exit:
 	cJSON_Delete(pJson);
 	return 0;

@@ -13,6 +13,8 @@
 #include "host/studyvoices/prompt_tone.h"
 
 static WorkQueue *DownEvent=NULL;
+static unsigned char mainQueLock=0;
+
 /*
 @添加播放/下载 歌曲时间
 @data :添加消息数据  msgSize:消息的大小
@@ -25,19 +27,20 @@ int AddDownEvent(const char *data,int msgSize){
 int getplayEventNum(void){
 	return getWorkMsgNum(DownEvent);
 }
-static unsigned char clean_sign=0;
-//清除播放事件
-void cleanplayEvent(unsigned char type){
-	clean_sign=type;
-}
 
-void clean_resources(void){
+//设置主线程队列资源锁
+void SetMainQueueLock(unsigned char lock){
+	mainQueLock=lock;
+}
+//退出清除资源
+void CleanSystemResources(void){
 	CleanMtkPlatfrom76xx();
 	clean_videoServer();
 	pool_destroy();
 	AddDownEvent((const char *)"baibai",QUIT_MAIN);
 	printf("clean resources finished \n");
 }
+
 /*
 * 加载传进来的参数,提取qtts 系统语音路径等
 */
@@ -45,8 +48,11 @@ static void loadLocalServer(int argc,const char *argv[]){
 	int i;
 	char *aliUrl=NULL;
 	int sleeptime=3;
-	if(argc<2){
-		printf("localServer -qttspath /home/\n");
+	char *token=NULL;
+	char *user_id  = NULL;
+	
+	if(argc<4){
+		printf("localServer -qttspath /home/ -t 3 -userid xxxxxx -token xxxxxx\n");
 		exit(1);
 	}	
 	memset(&sysMes,0,sizeof(SysMessage));
@@ -54,10 +60,16 @@ static void loadLocalServer(int argc,const char *argv[]){
 		int lastarg = i==argc-1;
 		if(!strcmp(argv[i],"-qttspath") && !lastarg){
 			char *qttspath = argv[i+1];
-			memcpy(sysMes.sd_path,qttspath,strlen(qttspath));
+			memcpy(sysMes.localVoicesPath,qttspath,strlen(qttspath));
 		}else if(!strcmp(argv[i],"-t") && !lastarg){
       	  	printf("i :%d sleeptime: %s\n",argc,argv[i+1]);
 			sleeptime = atoi(argv[i+1]);
+		}else if(!strcmp(argv[i],"-userid") && !lastarg){
+			user_id = argv[i+1];
+		}else if(!strcmp(argv[i],"-token") && !lastarg){
+			token = argv[i+1];
+		}else if(!strcmp(argv[i],"-v") && !lastarg){
+			WriteLocalserver_Version((const char *)argv[i+1]);
 		}
 	}
 	
@@ -66,7 +78,8 @@ static void loadLocalServer(int argc,const char *argv[]){
 	sysMes.netstate=NETWORK_UNKOWN;	//开机不属于未知网络状态
 	sysMes.Playlocaltime=time(&t);
 	set_pthread_sigblock();
-	pool_init(4);
+	pool_init(4);	
+	InitTuling((const char *) user_id,(const char *) token);	//userId需要保存到路由表当中 ，token 也需要保存
 	InitMtkPlatfrom76xx();
 	sleep(sleeptime);	//增加一定睡眠时间，防止加载sdcard和sock冲突，导致udp sock不能通信
 	DownEvent = initQueue();
@@ -90,8 +103,7 @@ static void loadLocalServer(int argc,const char *argv[]){
 //自动播放下一首歌曲 musicType 播放歌曲类型(用来区分目录标识)
 static void autoPlayNextMusic(unsigned char musicType){
 	setAutoPlayMusicTime();
-	switch(musicType)
-	{
+	switch(musicType){
 		case mp3:
 			createPlayEvent((const void *)"mp3", PLAY_NEXT);
 			break;
@@ -109,45 +121,33 @@ static void autoPlayNextMusic(unsigned char musicType){
 		break;
 	}	
 } 
-//检查文件锁，防止多次启动进程
-static void checkFileLock(void)
-{
-	if (access("/var/localserver.lock", 0) < 0)
-	{
-		fopen("/var/localserver.lock", "w+");
+//检查文件锁，防止配网、启动联网脚本导致多次启动进程
+static void checkFileLock(void){
+	if (access(LOCAL_SERVER_FILE_LOCK, 0) < 0){
+		FILE *fp =fopen(LOCAL_SERVER_FILE_LOCK, "w+");
+		if(fp){	
+			fclose(fp);
+		}
 	}
-	else
-	{
-		printf("please delete /var/localserver.lock \n");
+	else{
+		printf("please delete %s \n",LOCAL_SERVER_FILE_LOCK);
 		exit(1);
 	}
 }
 
-int main(int argc, char **argv)
-{   
+int main(int argc, char **argv){   
 	checkFileLock();
-#if 1
 	loadLocalServer(argc,argv);
-#else
-	sleep(20);
-	init_videoServer();
-	while(1){
-		sleep(1);
-	}
-#endif
 	char *msg=NULL;
 	int event=0;
-	while(1)
-	{
+	while(1){
 		getMsgQueue(DownEvent,&msg,&event);
-		if (clean_sign == 1)
-		{
+		if (mainQueLock == MAIN_QUEUE_LOCK){
 			free((void *)msg);
 			usleep(100);
 			continue;
 		}
-		switch(event)
-		{
+		switch(event){
 			case URL_VOICES_EVENT:	//url播放
 				//start_event_play_url();		//暂时解决图灵播放mp3.状态不对问题
 				#ifdef PALY_URL_SD
@@ -157,8 +157,8 @@ int main(int argc, char **argv)
 				#endif
 				free((void *)msg);
 				break;
-			case TULING_URL_VOICES:	//url播放
-				usleep(1800*1000);
+			case TULING_URL_VOICES:	//播放图灵 语音点歌、故事 url文件
+				usleep(1800*1000);	
 				start_event_play_url();		//暂时解决图灵播放mp3.状态不对问题
 				#ifdef PALY_URL_SD
 					PlayUrl((const void *)msg);
@@ -167,10 +167,10 @@ int main(int argc, char **argv)
 				#endif
 				free((void *)msg);
 				break;
-			case TULING_URL_MAIN:	//图灵播放
+			case TULING_URL_MAIN:	//播放图灵 tts文件
 				//start_play_tuling();
 				if(PlayTulingText((const char*)msg)){
-					cleanplayEvent(1);		//清理后面mp3播放
+					SetMainQueueLock(MAIN_QUEUE_LOCK);		//清理后面mp3播放
 				}
 				free((void *)msg);
 				break;
