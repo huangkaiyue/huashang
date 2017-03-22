@@ -19,7 +19,6 @@ static void  tulingEndDown(int downLen){
 }
 
 void downTulingMp3(const char *url){
-	printf("start down tuling mp3 \n");
 #ifdef TEST_DOWNFILE
 	test_playTuingPcmFile();
 #else

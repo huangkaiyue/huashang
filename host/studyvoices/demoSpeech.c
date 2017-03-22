@@ -458,10 +458,10 @@ int reqTlVoices(int timeout,const char *key,const char *audiofile,int audiolen,i
 @ 无
 */
 void updateTokenValue(const char *token){
+	Write_tulinglog((const char * )token);
 	int size = sizeof(tulingUser->token);
 	memset(tulingUser->token,0,size);
 	snprintf(tulingUser->token,size,"%s",token);
-	//writeLog((const char * )"/home/tuling_log.txt",(const char * )token);
 }
 /*
 @ 获取token值，保存到路由表当中
@@ -475,8 +475,9 @@ void GetTokenValue(char *token){
 @ 
 */
 int Load_useridAndToken(const char *userId,const char *token){
-	writeLog((const char * )"/home/tuling_log.txt",(const char * )userId);
-	writeLog((const char * )"/home/tuling_log.txt",(const char * )token);
+	Write_tulinglog((const char * )"update tuling vaule");
+	Write_tulinglog((const char * )userId);
+	Write_tulinglog((const char * )token);
 	if(!strcmp(userId,"12345678")){
 		return -1;
 	}
@@ -488,9 +489,9 @@ int Load_useridAndToken(const char *userId,const char *token){
 }
 
 int InitTuling(const char *userId,const char *token){
-	writeLog((const char * )"/home/tuling_log.txt",(const char * )"init tuling vaule");
-	writeLog((const char * )"/home/tuling_log.txt",(const char * )userId);
-	writeLog((const char * )"/home/tuling_log.txt",(const char * )token);
+	Write_tulinglog((const char * )"init tuling vaule");
+	Write_tulinglog((const char * )userId);
+	Write_tulinglog((const char * )token);
 	tulingUser = (TulingUser_t *)calloc(1,sizeof(TulingUser_t));
 	if(tulingUser==NULL){
 		return -1;

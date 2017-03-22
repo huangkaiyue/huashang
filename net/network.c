@@ -237,7 +237,7 @@ static void recv_ctrlMsg(Server *ser,char recvbuf[])
 					break;
 				}else{
 					ServerLog("recv_ctrlMsg \n");
-					tcpLog(recvbuf);
+					RecvTcp_dataLog(recvbuf);
 					handler_CtrlMsg(ser->fd_A[i],recvbuf,ret,NULL);
 				}  
 			}

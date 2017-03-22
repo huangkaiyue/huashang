@@ -187,7 +187,7 @@ void StartPthreadPlay(void){
 		//printf("..................... WaitPthreadExit .....................\n ");
 		usleep(100*1000);
 	}
-	tolkLog("qtts quit ok\n");
+	PlayQtts_log("qtts quit ok\n");
 	Qstream->playState=PLAY_QTTS_QUIT;
 }
 int GetplayState(void){

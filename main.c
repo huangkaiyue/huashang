@@ -52,7 +52,7 @@ static void loadLocalServer(int argc,const char *argv[]){
 	char *user_id  = NULL;
 	
 	if(argc<4){
-		printf("localServer -qttspath /home/ -t 3 -userid xxxxxx -token xxxxxx\n");
+		printf("localServer -qttspath /home/ -t 3 -userId xxxxxx -token xxxxxx -v xxx\n");
 		exit(1);
 	}	
 	memset(&sysMes,0,sizeof(SysMessage));
@@ -64,7 +64,7 @@ static void loadLocalServer(int argc,const char *argv[]){
 		}else if(!strcmp(argv[i],"-t") && !lastarg){
       	  	printf("i :%d sleeptime: %s\n",argc,argv[i+1]);
 			sleeptime = atoi(argv[i+1]);
-		}else if(!strcmp(argv[i],"-userid") && !lastarg){
+		}else if(!strcmp(argv[i],"-userId") && !lastarg){
 			user_id = argv[i+1];
 		}else if(!strcmp(argv[i],"-token") && !lastarg){
 			token = argv[i+1];

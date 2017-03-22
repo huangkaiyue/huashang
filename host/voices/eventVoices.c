@@ -90,7 +90,7 @@ static int checkNetWorkLive(void){
 返回值: 无
 ********************************************************/
 static void __AddNetWork_UrlForPaly(const void *data){
-	WritePlayUrl_Log("url_start\n");
+	WritePlayUrl_Log("url start add \n");
 	if(checkNetWorkLive()){	//检查网络
 		return;
 	}
@@ -129,9 +129,7 @@ static int __AddLocalMp3ForPaly(const char *localpath){
 		return -1;
 	}
 	sprintf(URL,"%s",localpath);
-	DEBUG_EVENT("URL : %s \n",URL);
-	AddworkEvent(URL,0,LOCAL_MP3_EVENT);
-	return 0;
+	return AddworkEvent(URL,0,LOCAL_MP3_EVENT);
 }
 /*
 @ 根据目录菜单和路径获取本地sdcatd 歌曲名字进行播放
@@ -406,16 +404,16 @@ void NetKeyDown_ForConfigWifi(void){
 		remove(INTEN_NETWORK_FILE_LOCK);
 		StartNetServer();
 	}
-	WiterSmartConifg_Log("Network key down ok\n");
+	WiterSmartConifg_Log("Network key down","ok");
 	if(!checkInternetFile()){
-		WiterSmartConifg_Log("startSmartConfig checkInternetFile failed\n");
+		WiterSmartConifg_Log("startSmartConfig checkInternetFile","failed");
 		return;
 	}
 	if(GetRecordeVoices_PthreadState()==PAUSE_E){//处于播放事件当中，不予许配网
 		disable_gpio();
 		startSmartConfig(Create_PlaySystemEventVoices,enable_gpio);	
 	}else{		
-		WiterSmartConifg_Log("startSmartConfig  failed \n");
+		WiterSmartConifg_Log("startSmartConfig  failed ","is not PAUSE_E");
 	}
 }
 //关机保存文件和清理工作

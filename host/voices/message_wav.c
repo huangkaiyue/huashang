@@ -232,14 +232,14 @@ void PlayQttsText(char *text,unsigned char type){
 		return;
 	}
 	sprintf(textbuf,"%s%s",text,",");	//文本尾部添加",",保证文本播报出来
-	tolkLog("tolk qtts start\n");
+	PlayQtts_log("paly qtts start\n");
 	Qtts_voices_text(textbuf,type);
 	free(textbuf);
 #else
 	Qtts_voices_text(text,type);
 #endif
 	if(I2S.qttsend==1){
-		tolkLog("tolk qtts qttsend == 1\n");
+		PlayQtts_log("paly qtts qttsend == 1\n");
 #if 1
 		Mute_voices(MUTE);
 #endif
@@ -254,10 +254,10 @@ void PlayQttsText(char *text,unsigned char type){
 		write_pcm(play_buf);
 		I2S.qttspos =0;
 	}
-	tolkLog("tolk qtts clean\n");
+	PlayQtts_log("paly qtts clean\n");
 #ifdef CLOSE_VOICE
 	usleep(800*1000);
-	tolkLog("tolk qtts pause\n");
+	PlayQtts_log("paly qtts pause\n");
 	pause_record_audio(18);	//退出播放状态
 	CleanI2S_PlayCachedata();		//清理
 	usleep(1000*1000);
@@ -270,18 +270,18 @@ void PlayQttsText(char *text,unsigned char type){
 
 /********************************************************
 @ 函数功能:	播放图灵数据
-@ text:文本		type:文本类型
+@ url:图灵发送
 @ 返回值: 0 正常退出 -1非正常退出
 *********************************************************/
 int PlayTulingText(const char *url)
 {
 	//stait_qtts_cache();
 	SetWm8960Rate(RECODE_RATE);
-	tolkLog("tolk tuling start\n");
+	PlayQtts_log("paly tuling start\n");
 	downTulingMp3((const char*)url);
-	tolkLog("tolk tuling end\n");
+	PlayQtts_log("paly tuling end\n");
 	if(I2S.qttsend==1){
-		tolkLog("tolk qtts qttsend == 1\n");
+		PlayQtts_log("paly qtts qttsend == 1\n");
 #if 1
 		Mute_voices(MUTE);	//-----bug
 #endif
@@ -299,7 +299,7 @@ int PlayTulingText(const char *url)
 	}
 #ifdef CLOSE_VOICE
 	usleep(800*1000);
-	tolkLog("tolk tuling pause\n");
+	PlayQtts_log("paly tuling pause\n");
 	pause_record_audio(21);	//退出播放状态
 	CleanI2S_PlayCachedata();		//清理
 	usleep(1000*1000);

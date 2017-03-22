@@ -46,7 +46,6 @@ static int parseJson_string(const char * pMsg){
 	cJSON *pSub = cJSON_GetObjectItem(pJson, "token");//获取token的值，用于下一次请求时上传的校验值
 	if(pSub!=NULL){
 		//暂时定义，用于临时存放校验值，每请求一次服务器都返回token
-		writeLog((const char * )"/home/tuling_log.txt",(const char * )pSub->valuestring);
 		updateTokenValue((const char *) pSub->valuestring);
 	}
     pSub = cJSON_GetObjectItem(pJson, "code");
@@ -208,13 +207,12 @@ int event_lock=0;
 int AddworkEvent(const char *eventMsg,int  len,int  type){
 	int msgSize=0;
 	if(event_lock){
-		DEBUG_STD_MSG("AddworkEvent event_lock =%d\n",event_lock); // 写入 type event_lock a+
-		eventlockLog("event_lock add error\n",event_lock);
-		return ;
+		WriteEventlockLog("event_lock add error\n",event_lock);
+		return -1;
 	}
 	if(type!=LOCAL_MP3_EVENT)	//不为本地播放清理播放上下曲
 		sysMes.localplayname=0;
-	eventlockLog("event_lock add ok\n",event_lock);
+	WriteEventlockLog("event_lock add ok\n",event_lock);
 	EventMsg_t *msg =(EventMsg_t *)(&msgSize);
 	msg->len = len;
 	msg->type = type;
@@ -267,7 +265,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			
 		case SET_RATE_EVENT:		//URL清理事件
 			event_lock=1;			//受保护状态事件
-			eventlockLog("eventlock_start\n",event_lock);
+			WriteEventlockLog("eventlock_start\n",event_lock);
 			SetMainQueueLock(MAIN_QUEUE_LOCK);
 			//cleanQuequeEvent();
 			NetStreamExitFile();
@@ -275,7 +273,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			event_lock=0;
 			sysMes.localplayname=0;
 			pause_record_audio(31);
-			eventlockLog("eventlock end\n",event_lock);
+			WriteEventlockLog("eventlock end\n",event_lock);
 			break;
 			
 		case URL_VOICES_EVENT:		//URL网络播放事件

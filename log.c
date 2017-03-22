@@ -1,25 +1,13 @@
 #include "comshead.h"
 #include "config.h"
 
-int WriteMp3Data(char *filename,char *data,int size){
-#ifdef ENABLE_LOG
-	FILE *fp = fopen(filename,"w+");
-	if(NULL == fp ){
-		return -1;
-    }
-    fwrite(data,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-	return 0;
-#endif	
-}
 void WritePlayUrl_Log(const char *data){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
-	if(!strcmp(data,"url_start\n")){
-		fp =fopen("/log/url.log","w+");
+	if(!strcmp(data,"url start add \n")){
+		fp =fopen("/log/playurl.log","w+");
 	}else{
-		fp =fopen("/log/url.log","a+");
+		fp =fopen("/log/playurl.log","a+");
 	}
 	
 	if(NULL == fp ){
@@ -32,32 +20,14 @@ void WritePlayUrl_Log(const char *data){
 #endif	
 }
 
-void WiterSmartConifg_Log(const char *data){
-#ifdef ENABLE_LOG	
-	FILE *fp = NULL;
-	if(!strcmp(data,"smart_start\n")){
-		fp =fopen("/log/smartconfig.log","w+");
-	}else{
-		fp =fopen("/log/smartconfig.log","a+");
-	}
-	
-	if(NULL == fp ){
-		return ;
-    }
-	int size = strlen(data);
-    fwrite(data,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-	return ;
-#endif
-}
+
 void PlaySystemAmrVoicesLog(const char *data){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	if(!strcmp(data,"playsys_start\n")){
-		fp =fopen("/home/PlaySystemAmrVoices.log","w+");
+		fp =fopen("/log/PlaySystemAmrVoices.log","w+");
 	}else{
-		fp =fopen("/home/PlaySystemAmrVoices.log","a+");
+		fp =fopen("/log/PlaySystemAmrVoices.log","a+");
 	}
 	
 	if(NULL == fp ){
@@ -74,9 +44,9 @@ void cleanplayLog(const char *data){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	if(!strcmp(data,"cleanplay_start\n")){
-		fp =fopen("/home/cleanplay.log","w+");
+		fp =fopen("/log/cleanplay.log","w+");
 	}else{
-		fp =fopen("/home/cleanplay.log","a+");
+		fp =fopen("/log/cleanplay.log","a+");
 	}
 	
 	if(NULL == fp ){
@@ -86,17 +56,16 @@ void cleanplayLog(const char *data){
     fwrite(data,1,size,fp);
   	fflush(fp);
 	fclose(fp);
-	return ;
 #endif
 }
-void eventlockLog(const char *data,int lock){
+void WriteEventlockLog(const char *data,int lock){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	char buf[128];
 	if(!strcmp(data,"eventlock_start\n")){
-		fp =fopen("/home/eventlock.log","w+");
+		fp =fopen("/log/eventlock.log","w+");
 	}else{
-		fp =fopen("/home/eventlock.log","a+");
+		fp =fopen("/log/eventlock.log","a+");
 	}
 	sprintf(buf,"%s%d %s","lock:",lock,data);
 	if(NULL == fp ){
@@ -106,7 +75,6 @@ void eventlockLog(const char *data,int lock){
     fwrite(buf,1,size,fp);
   	fflush(fp);
 	fclose(fp);
-	return ;
 #endif
 }
 void handleeventLog(const char *data,unsigned char msgSize){
@@ -114,9 +82,9 @@ void handleeventLog(const char *data,unsigned char msgSize){
 	FILE *fp = NULL;
 	char buf[128];
 	if(!strcmp(data,"handleevent_start\n")){
-		fp =fopen("/home/handleevent.log","w+");
+		fp =fopen("/log/handleevent.log","w+");
 	}else{
-		fp =fopen("/home/handleevent.log","a+");
+		fp =fopen("/log/handleevent.log","a+");
 	}
 	sprintf(buf,"%s%d %s","lock:",msgSize,data);
 	if(NULL == fp ){
@@ -129,13 +97,13 @@ void handleeventLog(const char *data,unsigned char msgSize){
 	return ;
 #endif
 }
-void tolkLog(const char *data){
+void PlayQtts_log(const char *data){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	if(!strcmp(data,"tolk_start\n")){
-		fp =fopen("/home/tolk.log","w+");
+		fp =fopen("/log/playQtts.log","w+");
 	}else{
-		fp =fopen("/home/tolk.log","a+");
+		fp =fopen("/log/playQtts.log","a+");
 	}
 	if(NULL == fp ){
 		return ;
@@ -151,9 +119,9 @@ void udpLog(const char *data){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	if(!strcmp(data,"udp_start\n")){
-		fp =fopen("/home/udp_log.log","w+");
+		fp =fopen("/log/udp_log.log","w+");
 	}else{
-		fp =fopen("/home/udp_log.log","a+");
+		fp =fopen("/log/udp_log.log","a+");
 	}
 	if(NULL == fp ){
 		return ;
@@ -165,13 +133,13 @@ void udpLog(const char *data){
 	return ;
 #endif
 }
-void tcpLog(const char *data){
+void RecvTcp_dataLog(const char *data){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	if(!strcmp(data,"tcp_start\n")){
-		fp =fopen("/home/tcp_log.log","w+");
+		fp =fopen("/log/tcpdata.log","w+");
 	}else{
-		fp =fopen("/home/tcp_log.log","a+");
+		fp =fopen("/log/tcpdata.log","a+");
 	}
 	if(NULL == fp ){
 		return ;
@@ -187,9 +155,9 @@ void TimeLog(const char *data){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	if(!strcmp(data,"time_start\n")){
-		fp =fopen("/home/time_log.log","w+");
+		fp =fopen("/log/time_log.log","w+");
 	}else{
-		fp =fopen("/home/time_log.log","a+");
+		fp =fopen("/log/time_log.log","a+");
 	}
 	if(NULL == fp ){
 		return ;
@@ -201,32 +169,15 @@ void TimeLog(const char *data){
 	return ;
 #endif
 }
-void JsonLog(const char *data){
-#ifdef ENABLE_LOG	
-	FILE *fp = NULL;
-	if(!strcmp(data,"json_start\n")){
-		fp =fopen("/home/json.log","w+");
-	}else{
-		fp =fopen("/home/json.log","a+");
-	}
-	if(NULL == fp ){
-		return ;
-    }
-	int size = strlen(data);
-    fwrite(data,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-	return ;
-#endif
-}
+
 void RequestTulingLog(const char *data,unsigned char err){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	char buf[128];
 	if(!strcmp(data,"tuling_start")){
-		fp =fopen("/home/request_tuling.log","w+");
+		fp =fopen("/log/request_tuling.log","w+");
 	}else{
-		fp =fopen("/home/request_tuling.log","a+");
+		fp =fopen("/log/request_tuling.log","a+");
 	}
 	sprintf(buf,"err:%d %s\n",err,data);
 	if(NULL == fp ){
@@ -244,9 +195,9 @@ void musicdbLog(const char *data,const char *filename){
 	FILE *fp = NULL;
 	char buf[128];
 	if(!strcmp(data,"musicdb_start\n")){
-		fp =fopen("/home/musicdb.log","w+");
+		fp =fopen("/log/musicdb.log","w+");
 	}else{
-		fp =fopen("/home/musicdb.log","a+");
+		fp =fopen("/log/musicdb.log","a+");
 	}
 	sprintf(buf,"%s%s %s\n","name:",data,filename);
 	if(NULL == fp ){
@@ -264,9 +215,9 @@ void UartLog(const char *data,unsigned char number){
 	FILE *fp = NULL;
 	char buf[128];
 	if(!strcmp(data,"uart_start\n")){
-		fp =fopen("/home/uart.log","w+");
+		fp =fopen("/log/uart.log","w+");
 	}else{
-		fp =fopen("/home/uart.log","a+");
+		fp =fopen("/log/uart.log","a+");
 	}
 	sprintf(buf,"%s: 0x%x\n",data,number);
 	if(NULL == fp ){
@@ -284,9 +235,9 @@ void GpioLog(const char *data,unsigned char number){
 	FILE *fp = NULL;
 	char buf[128];
 	if(!strcmp(data,"uart_start\n")){
-		fp =fopen("/home/gpio.log","w+");
+		fp =fopen("/log/gpio.log","w+");
 	}else{
-		fp =fopen("/home/gpio.log","a+");
+		fp =fopen("/log/gpio.log","a+");
 	}
 	sprintf(buf,"%s%s %x\n",data,"gpio:",number);
 	if(NULL == fp ){
@@ -341,4 +292,28 @@ void test_Save_VoicesPackt_function_log(const char *data,int value){
     fwrite(buf,1,size,fp);
   	fflush(fp);
 	fclose(fp);
+}
+
+void Write_tulinglog(const char *logStr){
+	writeLog((const char * )"/log/tuling_log.txt",logStr);
+}
+
+void WiterSmartConifg_Log(const char *data1,const char *data2){
+#ifdef ENABLE_LOG	
+	FILE *fplog = NULL;
+	if(!strcmp(data2,"start")){
+		fplog =fopen("/log/smartconfig.log","w+");
+	}else{
+		fplog =fopen("/log/smartconfig.log","a+");
+	}
+	
+	if(NULL == fplog ){
+		return ;
+    }
+	if(fplog){
+		fprintf(fplog,"%s--->%s\n",data1,data2);
+		fclose(fplog);
+	}
+	return ;
+#endif
 }

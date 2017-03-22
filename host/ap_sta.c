@@ -16,14 +16,20 @@ int checkconnetState(void){
 }
 
 static void createSmartConfigLock(void){
-	fopen(SMART_CONFIG_FILE_LOCK,"w+");
+	FILE *fp = fopen(SMART_CONFIG_FILE_LOCK,"w+");
+	if(fp){
+		fclose(fp);
+	}
 }
 
 static void delSmartConfigLock(void){
 	remove(SMART_CONFIG_FILE_LOCK);
 }
 static int createInternetLock(void){
-	fopen(INTEN_NETWORK_FILE_LOCK,"w+");
+	FILE *fp =fopen(INTEN_NETWORK_FILE_LOCK,"w+");
+	if(fp){
+		fclose(fp);
+	}
 }
 static void delInternetLock(void){
 	remove(INTEN_NETWORK_FILE_LOCK);
@@ -50,7 +56,7 @@ static int SendSsidPasswd_toNetServer(const char *ssid,const char *passwd){
 返回值: 无
 ********************************************************/
 int checkInternetFile(void){
-	if(access("/var/internet.lock",0) < 0){
+	if(access(INTEN_NETWORK_FILE_LOCK,0) < 0){
 		return -1;
 	}
 	return 0;
@@ -59,11 +65,7 @@ static int GetSsidAndPasswd(char *smartData,char *ssid,char *passwd){
 	int smartconfig_headlen=strlen(SMART_CONFIG_HEAD);	
 	char wifidata[200]={0};
 	snprintf(wifidata,200,"%s",smartData+smartconfig_headlen);
-	FILE *fplog = fopen("/home/airkiss_wifi.txt","w+");
-	if(fplog){
-		fprintf(fplog,"wifidata:\n%s\n",wifidata);
-		fclose(fplog);
-	}
+	WiterSmartConifg_Log("wifidata:",wifidata);
 	cJSON *pJson = cJSON_Parse((const char *)wifidata);
 	if(NULL == pJson){
 		return -1;
@@ -74,12 +76,7 @@ static int GetSsidAndPasswd(char *smartData,char *ssid,char *passwd){
 			sprintf(ssid,"%s",pSub->valuestring);
 			pSub = cJSON_GetObjectItem(pJson, "pwd");
 			sprintf(passwd,"%s",pSub->valuestring);
-			FILE *fplog = fopen("/home/airkiss_wifi.txt","a+");
-			if(fplog){
-				fprintf(fplog,"ssid:%s\n",ssid);
-				fprintf(fplog,"passwd:%s\n",passwd);
-				fclose(fplog);
-			}
+			WiterSmartConifg_Log(ssid,passwd);
 			return 0;
 		}
 	}	
@@ -154,10 +151,10 @@ exit0:
 	return ret;
 }
 int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
-	WiterSmartConifg_Log("startSmartConfig start \n");
+	WiterSmartConifg_Log("startSmartConfig ","start");
 	int ret=-1;
 	if(connetState==LOCK_SMART_CONFIG_WIFI){
-		WiterSmartConifg_Log("startSmartConfig failed \n");
+		WiterSmartConifg_Log("startSmartConfig  ","failed");
 		return -1;
 	}
 	ConnetEvent(START_SMARTCONFIG);	//通知用户输入wifi 密码，进行配网
@@ -171,7 +168,7 @@ int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
 	}
 	wifi->connetEvent = ConnetEvent;
 	wifi->enableGpio = EnableGpio;
-	WiterSmartConifg_Log("startSmartConfig pool_add_task ok\n");
+	WiterSmartConifg_Log("startSmartConfig ","pool_add_task ok");
 	createInternetLock();	//上半段上文件锁
 	pool_add_task(RunSmartConfig_Task, wifi);
 	ret=0;

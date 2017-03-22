@@ -95,8 +95,7 @@ static void test_brocastCtr(int sockfd,struct sockaddr_in *peer,char *recvdata){
 @		0	音量减
 @		1	音量加
 */
-void ack_VolCtr(char *dir,int data)
-{
+void ack_VolCtr(char *dir,int data){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
 	pItem = cJSON_CreateObject();
@@ -117,8 +116,7 @@ void ack_VolCtr(char *dir,int data)
 @		1	关
 @		recvdata 开关机时间
 */
-void ack_hostCtr(int sockfd,char *recvdata,char *type)
-{
+void ack_hostCtr(int sockfd,char *recvdata,char *type){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
 	char buffer[32];
@@ -139,8 +137,7 @@ void ack_hostCtr(int sockfd,char *recvdata,char *type)
 @参数:	recvdata 电池电量
 */
 //ack_batteryCtr(get_battery(),get_charge());
-void ack_batteryCtr(int recvdata,int power)
-{
+void ack_batteryCtr(int recvdata,int power){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
 	pItem = cJSON_CreateObject();
@@ -154,8 +151,7 @@ void ack_batteryCtr(int recvdata,int power)
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
-void ack_TlingCtr(char *recvdata)
-{
+void ack_TlingCtr(char *recvdata){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
 	pItem = cJSON_CreateObject();
@@ -173,8 +169,7 @@ void ack_TlingCtr(char *recvdata)
 @参数:	recvdata 电池电量
 */
 //ack_alluserCtr(new_fd,get_battery(),get_charge());
-void ack_alluserCtr(const int sockfd,int state,int power)
-{
+void ack_alluserCtr(const int sockfd,int state,int power){
 	char stropenTime[10]={0};
 	char strcloseTime[10]={0};
 	char* szJSON = NULL;
@@ -190,7 +185,6 @@ void ack_alluserCtr(const int sockfd,int state,int power)
 	cJSON_AddStringToObject(pItem, "status","ok");
 	szJSON = cJSON_Print(pItem);
 	DEBUG_TCP("ack_alluserCtr: %s\n",szJSON);
-	JsonLog(szJSON);
 	send_ctrl_ack(sockfd,szJSON,strlen(szJSON));
 #ifdef SPEEK_VOICES
 	SendtoaliyunServices(szJSON,strlen(szJSON));	//发送给微信
@@ -198,8 +192,7 @@ void ack_alluserCtr(const int sockfd,int state,int power)
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
-static void CreateState(cJSON* pItem,unsigned char playState)
-{
+static void CreateState(cJSON* pItem,unsigned char playState){
 	if(playState==STREAM_EXIT){
 		cJSON_AddStringToObject(pItem, "state","stop");
 	}else if(playState==STREAM_PLAY){
@@ -210,8 +203,7 @@ static void CreateState(cJSON* pItem,unsigned char playState)
 		cJSON_AddStringToObject(pItem, "state","switch");
 	}
 }
-void ack_allplayerCtr(void *data,Player_t *player)
-{
+void ack_allplayerCtr(void *data,Player_t *player){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
 	int sockfd = *(int *)data;
@@ -233,30 +225,8 @@ void ack_allplayerCtr(void *data,Player_t *player)
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
-typedef struct{
-	char *url;
-	char *state;
-}AckState;
 
-#if 0
-void ack_playCtr(char *url,unsigned char state)
-{
-	char* szJSON = NULL;
-	cJSON* pItem = NULL;
-	pItem = cJSON_CreateObject();
-	cJSON_AddStringToObject(pItem, "handler", "mplayer");
-	CreateState(pItem,state);
-	cJSON_AddStringToObject(pItem, "url",url);
-	cJSON_AddStringToObject(pItem, "status","ok");
-	szJSON = cJSON_Print(pItem);
-	DEBUG_TCP("ack_playCtr: %s\n",szJSON);
-	sendAll_Ack(szJSON,strlen(szJSON));
-	cJSON_Delete(pItem);
-	free(szJSON);
-}
-#else
-void ack_playCtr(int nettype,Player_t *play,unsigned char playState)
-{
+void ack_playCtr(int nettype,Player_t *play,unsigned char playState){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
 	pItem = cJSON_CreateObject();
@@ -282,9 +252,8 @@ void ack_playCtr(int nettype,Player_t *play,unsigned char playState)
 	cJSON_Delete(pItem);
 	free(szJSON);
 }	
-#endif
-void ack_gpioCtr(int recvdata)
-{
+
+void ack_gpioCtr(int recvdata){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
 	pItem = cJSON_CreateObject();
@@ -298,8 +267,7 @@ void ack_gpioCtr(int recvdata)
 	free(szJSON);
 }
 
-void GetNetState(void)
-{
+void GetNetState(void){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
 	pItem = cJSON_CreateObject();
@@ -319,7 +287,6 @@ void uploadVoicesToaliyun(const char *filename,int fileSize){
 	cJSON_AddStringToObject(pItem, "filename",filename);
 	cJSON_AddNumberToObject(pItem, "fileSize",fileSize);
 	szJSON = cJSON_Print(pItem);
-	JsonLog(szJSON);
 	SendtoaliyunServices(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
 	free(szJSON);
@@ -336,8 +303,7 @@ void BindDevToaliyun(void){
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
-void Ack_CallDev(int recvdata)
-{
+void Ack_CallDev(int recvdata){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
 	pItem = cJSON_CreateObject();
@@ -345,7 +311,6 @@ void Ack_CallDev(int recvdata)
 	cJSON_AddStringToObject(pItem, "status","cancel");
 	szJSON = cJSON_Print(pItem);
 	DEBUG_TCP("ack_gpioCtr: %s\n",szJSON);
-	JsonLog(szJSON);
 	SendtoaliyunServices(szJSON,strlen(szJSON));	//发送给微信
 	cJSON_Delete(pItem);
 	free(szJSON);
@@ -359,8 +324,8 @@ void CloseSystemSignToaliyun(void){
 	cJSON_AddStringToObject(pItem, "handler", "clock");
 	cJSON_AddStringToObject(pItem, "status","close");
 	szJSON = cJSON_Print(pItem);
-	JsonLog(szJSON);
 	SendtoaliyunServices(szJSON,strlen(szJSON));
+	test_clock_Interfaces((const char * )szJSON);
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
@@ -375,7 +340,6 @@ void SetClockToaliyun(unsigned char clocknum,unsigned char state,const char *tim
 	cJSON_AddStringToObject(pItem, "time",time);
 	cJSON_AddStringToObject(pItem, "ringPath",ringPath);
 	szJSON = cJSON_Print(pItem);
-	JsonLog(szJSON);
 	SendtoaliyunServices(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
 	free(szJSON);
@@ -648,14 +612,16 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			usleep(500*1000);
 			SocSendMenu(3,0);
 			usleep(100*1000);
+			test_clock_Interfaces(time_open);
 			SocSendMenu(7,time_open);	//设置闹钟开机时间
+			test_clock_Interfaces("ok");
 		}
 	}else if(!strcmp(pSub->valuestring,"getdev")){	//微信获取设备信息
 		ack_alluserCtr(sockfd,get_battery(),get_charge());
 	}
 #endif	
 	else if (!strcmp(pSub->valuestring,"tuling")){
-		writeLog((const char * )"/home/tuling_log.txt","recv tuling val\n");
+		Write_tulinglog("recv tuling val\n");
 		pSub = cJSON_GetObjectItem(pJson, "userId");
 		if(pSub){
 			char *userId= pSub->valuestring;

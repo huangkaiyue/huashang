@@ -4,14 +4,13 @@
 
 //#define TEST_SDK					//测试SDK
 
-
 #ifdef TEST_SDK						//使能命令输入行
 	#define WORK_INTER
 #endif
 
 //#define CONFIG_ALL		//全功能
-//#define DATOU_JIANG		//蒋总
-#define QITUTU_SHI		//石总
+#define DATOU_JIANG		//蒋总
+//#define QITUTU_SHI		//石总
 //#define TANGTANG_LUO		//罗总
 
 //----------------------功能类-----------------------------------
@@ -104,8 +103,9 @@
 #define TF_ENGLISH_PATH		"english/"					//本地英语路径
 #endif
 #endif
-#ifdef PALY_URL_SD
+
 #define URL_SDPATH				"/home/cache.tmp"		//url缓存路径
+#ifdef PALY_URL_SD
 #ifdef TEST_SDK	
 	#define MP3_SDPATH			"/mnt/neirong/music/"			//url保存路径
 	#define MP3_LIKEPATH		"/mnt/neirong/ximalaya/"		//url喜爱路径

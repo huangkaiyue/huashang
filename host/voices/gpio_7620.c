@@ -149,7 +149,7 @@ void EnableCallDev(void){
 	gpio.callbake=1;
 }
 static void ReadSpeekGpio(void){
-	//writeLog((const char * )"/home/read_gpio.txt",(const char * )"start read\n");
+	//writeLog((const char * )"/log/read_gpio.txt",(const char * )"start read\n");
 	if (ioctl(gpio.fd,TANG_GET_DATA_3264,&gpio.data) < 0){
 		perror("ioctl");
 		close(gpio.fd);
@@ -157,10 +157,10 @@ static void ReadSpeekGpio(void){
 	}
 	if((0x01&(gpio.data>>7))==1){
 		gpio.speek_tolk=SPEEK;
-		//writeLog((const char * )"/home/read_gpio.txt",(const char * )"SPEEK state\n");
+		//writeLog((const char * )"/log/read_gpio.txt",(const char * )"SPEEK state\n");
 	}else{
 		gpio.speek_tolk=TOLK;
-		//writeLog((const char * )"/home/read_gpio.txt",(const char * )"TOLK state\n");
+		//writeLog((const char * )"/log/read_gpio.txt",(const char * )"TOLK state\n");
 	}
 }
 

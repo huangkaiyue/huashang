@@ -195,7 +195,7 @@ void TestPlay_EqWavFile(const void *data){
 	}
 	struct wave_pcm_hdr wav;
 	fread(&wav,sizeof(struct wave_pcm_hdr),1,st->rfp);
-	writeLog((const char * )"/home/test_play_wav.txt",(const char *) play->playfilename);
+	writeLog((const char * )"/log/test_play_wav.txt",(const char *) play->playfilename);
 	char logBuf[128]={0};
 	sprintf(logBuf,"rate %d channel %d",wav.samples_per_sec,wav.channels);
 	if(wav.samples_per_sec>44100){
@@ -204,7 +204,7 @@ void TestPlay_EqWavFile(const void *data){
 	if(wav.channels>2){
 		wav.channels=2;
 	}
-	writeLog((const char * )"/home/test_play_wav.txt",(const char *) logBuf);
+	writeLog((const char * )"/log/test_play_wav.txt",(const char *) logBuf);
 	st->SetI2SRate(wav.samples_per_sec);
 	Mute_voices(UNMUTE);
 	int i=0,pos=0,ret=0,Numbers=0;
@@ -232,7 +232,7 @@ void TestPlay_EqWavFile(const void *data){
 				break;
 			}
 			sprintf(logBuf,"play Numbers %d ret=%d ",Numbers++,ret);
-			//writeLog((const char * )"/home/test_play_wav.txt",(const char *) logBuf);
+			//writeLog((const char * )"/log/test_play_wav.txt",(const char *) logBuf);
 			write_pcm(play_buf);
 		}
 	}
@@ -259,3 +259,13 @@ void test_backSeekTo(void){
 }
 #endif
 
+
+void test_clock_Interfaces(const char *time){
+	FILE *fp =fopen("/media/mmcblk0p1/testclock.txt","a+");
+	char buf[128]={0};
+	sprintf(buf,"test clock %s \n",time);
+	if(fp){
+		fwrite(buf,strlen(buf),1,fp);
+		fclose(fp);
+	}
+}

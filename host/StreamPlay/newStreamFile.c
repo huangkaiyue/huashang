@@ -13,7 +13,7 @@ Mp3Stream *st=NULL;
 int __safe_fread(char *data,int input_size){
 	int ret=0,r_size=0;
 	if(st->rfp==NULL){
-		st->rfp = fopen("/home/cache.tmp","r");
+		st->rfp = fopen(URL_SDPATH,"r");
 		if(st->rfp==NULL){
 			perror("fopen read failed ");
 			return -1;
@@ -175,7 +175,7 @@ static void *NetplayStreamMusic(void *arg){
 	unsigned short rate_one=0,rate_two=0;
 	pthread_mutex_lock(&st->mutex);
 	if(st->rfp==NULL){
-		st->rfp = fopen("/home/cache.tmp","r");
+		st->rfp = fopen(URL_SDPATH,"r");
 		if(st->rfp==NULL){
 			perror("fopen read failed ");
 			pthread_mutex_unlock(&st->mutex);
@@ -230,7 +230,7 @@ static void *NetplayStreamMusic(void *arg){
 static void NetStartDown(const char *filename,int streamLen){
 	DEBUG_STREAM("filename =%s streamLen=%d\n",filename,streamLen);
 	if(st->wfp==NULL){
-		st->wfp = fopen("/home/cache.tmp","w+");
+		st->wfp = fopen(URL_SDPATH,"w+");
 		if(st->wfp==NULL){
 			perror("fopen write failed ");
 			return ;
@@ -277,9 +277,9 @@ void NetStreamExitFile(void){
 	//DEBUG_STREAM("NetStreamExitFile start (%d)...\n",getDownState());
 	if(getDownState()==DOWN_ING){		//退出下载
 		quitDownFile();
-		eventlockLog("eventlock exit down\n",5);
+		WriteEventlockLog("eventlock exit down\n",5);
 	}
-	eventlockLog("rate \n",st->rate);
+	WriteEventlockLog("rate \n",st->rate);
 	//DEBUG_STREAM("=====NetStreamExitFile getDownState (%d)...\n",st->player.playState);
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//退出播放
 		pthread_mutex_lock(&st->mutex);
@@ -289,12 +289,12 @@ void NetStreamExitFile(void){
 		memset(st->player.musicname,0,64);
 		DecodeExit();
 		pthread_mutex_unlock(&st->mutex);
-		eventlockLog("eventlock exit mp3\n",5);
+		WriteEventlockLog("eventlock exit mp3\n",5);
 		DEBUG_STREAM("NetStreamExitFile while ...\n");
 		usleep(100);
 	}
 	DEBUG_STREAM("NetStreamExitFile end ...\n");
-	eventlockLog("eventlock exit end\n",5);
+	WriteEventlockLog("eventlock exit end\n",5);
 }
 
 //拷贝推送过来的信息
