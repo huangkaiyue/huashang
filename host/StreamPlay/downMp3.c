@@ -8,6 +8,7 @@ extern  void *play_qtts_data(void *arg);
 static void tulingStartDown(const char *filename,int streamLen){
 	initputPcmdata();
 	printf("filename =%s streamLen=%d\n",filename,streamLen);
+	setPlayAudioSize(streamLen);
 }
 //获取到流数据
 static void  tulingGetStreamData(const char *data,int size){

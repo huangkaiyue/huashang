@@ -1,6 +1,7 @@
 #include "comshead.h"
 #include "config.h"
 
+
 void WritePlayUrl_Log(const char *data){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
@@ -293,6 +294,7 @@ void test_Save_VoicesPackt_function_log(const char *data,int value){
   	fflush(fp);
 	fclose(fp);
 }
+
 
 void Write_tulinglog(const char *logStr){
 	writeLog((const char * )"/log/tuling_log.txt",logStr);

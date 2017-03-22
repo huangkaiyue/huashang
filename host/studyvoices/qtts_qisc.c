@@ -105,9 +105,19 @@ int __exitqttsPlay(void){
  }
 static char savebuf[1];
 static unsigned char cacheFlag=0;	
+static int cacheSize=0;
+static int audioSize=0;
+
 void initputPcmdata(void){
 	cacheFlag=0;
 	memset(savebuf,0,1);
+	cacheSize =0;
+	audioSize=0;
+}
+
+
+void setPlayAudioSize(int downSize){
+	audioSize = downSize;
 }
 void putPcmdata(const void *data,int size){
 	int ret =0;
@@ -137,6 +147,7 @@ void putPcmdata(const void *data,int size){
 		ret=size-1;
 		cacheFlag=1;
 	}
+	cacheSize+=ret;
 	putMsgQueue(Qstream->qttsList,newdata,ret);	//添加到播放队列
 	
 }
@@ -150,6 +161,10 @@ static unsigned char waitPlay=0;		//前面需要缓存，需要睡眠300ms
 	}
 	 //printf("%s: Qstream->playState 。。。。。。。。。。。。。。。play_qtts_data=%d\n",__func__,Qstream->playState);
 	 while(Qstream->playState){
+	 	if(cacheSize<audioSize/2){
+			usleep(100000);
+			continue;
+		}	
 	 	//printf("%s: Qstream->playState =%d\n",__func__,Qstream->playState);
 	 	if(getWorkMsgNum(Qstream->qttsList)==0){
 			if(Qstream->downState==DOWN_QTTS_QUIT){
