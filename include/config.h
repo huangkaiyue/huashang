@@ -9,8 +9,8 @@
 #endif
 
 //#define CONFIG_ALL		//å…¨åŠŸèƒ½
-#define DATOU_JIANG		//è’‹æ€»
-//#define QITUTU_SHI		//çŸ³æ€»
+//#define DATOU_JIANG		//è’‹æ€»
+#define QITUTU_SHI		//çŸ³æ€»
 //#define TANGTANG_LUO		//ç½—æ€»
 
 //----------------------åŠŸèƒ½ç±»-----------------------------------
@@ -20,10 +20,10 @@
 //#define CLOSE_VOICE				//ä¸å·¥ä½œå¤„äºå…³é—­éŸ³é¢‘çŠ¶æ€
 #define SELECT_UDP				//å°†udpæ·»åŠ åˆ°select å½“ä¸­
 
-#define PCM_DATA				//ä¸Šä¼ pcmæ•°æ®
-//#define AMR16K_DATA				//ä¸Šä¼ amræ•°æ®
+//#define PCM_DATA				//ä¸Šä¼ pcmæ•°æ®
+#define AMR16K_DATA				//ä¸Šä¼ amræ•°æ®
 
-#define MY_HTTP_REQ			//Ê¹ÓÃ×Ô¼ºĞ´µÄhttp ÇëÇó½Ó¿Ú
+//#define MY_HTTP_REQ			//Ê¹ÓÃ×Ô¼ºĞ´µÄhttp ÇëÇó½Ó¿Ú
 #define TULING_FILE_LOG		//¿ªÆôÍ¼ÁéĞ´ÈëÈÕÖ¾ÎÄ¼ş
 
 
@@ -138,4 +138,6 @@
 #define ENABLE_RECV_NETWORK_FILE_LOCK	"/var/startNet.lock"	//Ê¹ÄÜ½ÓÊÕÎÄ¼şËø
 #endif
 
+
+//#define TEST_ERROR_TULING
 

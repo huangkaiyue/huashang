@@ -36,7 +36,6 @@ struct wave_pcm_hdr pcmwavhdr = {
 static char amr_data[12*KB];
 #endif
 
-#ifdef MY_HTTP_REQ
 //将录制的8k语音转换成16k语音
 static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen){
 	int pos=0,npos=0;
@@ -47,7 +46,6 @@ static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen)
 		npos+=2;
 	}
 }
-#else
 static int PcmVoice8kTo16k_File(const char *inputdata,const char *outfilename,int inputLen){
 	FILE *fp=NULL;
 	fp = fopen(outfilename,"w+");
@@ -62,7 +60,6 @@ static int PcmVoice8kTo16k_File(const char *inputdata,const char *outfilename,in
 	fclose(fp);
 	return 0;
 }	
-#endif
 /*****************************************************
 *获取状态
 *****************************************************/
@@ -172,6 +169,7 @@ static void Start_uploadVoicesData(void){
 	memcpy(buf_voices,&pcmwavhdr,WAV_HEAD); 			//写音频头
 	if(WavToAmr8k((const char *)buf_voices,amr_data,&amr_size)){	//转换成amr格式
 		DEBUG_VOICES_ERROR("enc failed \n");
+		return ;
 	}
 	ReqTulingServer((const char *)amr_data,amr_size,"amr","3",RECODE_RATE);
 #endif
@@ -198,10 +196,20 @@ static void Start_uploadVoicesData(void){
 	pcmwavhdr.data_size = len_voices*2;
 	pcmwavhdr.samples_per_sec=16000;
 	memcpy(pcm_voices16k,&pcmwavhdr,WAV_HEAD);			//写音频头
+
+#ifdef MY_HTTP_REQ
 	if(WavAmr16k((const char *)pcm_voices16k,amr_data,&amr_size)){	//转换成amr格式
+		return ;
 		DEBUG_VOICES_ERROR("enc failed \n");
 	}
 	ReqTulingServer((const char *)amr_data,amr_size,"amr","3",RECODE_RATE*2);
+#else
+	if(WavAmr16kFile((const void *)pcm_voices16k,(void *)"./amr16k.cache",&amr_size)){
+		return ;
+	}
+	ReqTulingServer((const char *)"./amr16k.cache",amr_size,"amr","3",RECODE_RATE*2);
+#endif
+
 #endif
 
 }

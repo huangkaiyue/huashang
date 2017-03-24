@@ -15,7 +15,7 @@ void test_tulingApi_andDownerrorFile(void){
 	cJSON_AddNumberToObject(root,"code",10);
 	cJSON_AddStringToObject(root,"info","testetest");
 	cJSON_AddStringToObject(root,"text","testetest");
-	cJSON_AddStringToObject(root,"ttsUrl","http://opentest.tuling123.com/file/8caf0b37-3359-4b85-b06b-aec080ab1d69.pcm1");
+	cJSON_AddStringToObject(root,"ttsUrl","http://smartdevice.ai.tuling123.com/file2/ace2b7b9-df01-4554-95b2-6a3d5189b0b0.pcm");
 	char *text=cJSON_Print(root);
 	cJSON_Delete(root);
 	AddworkEvent(text,0,STUDY_WAV_EVENT);
@@ -169,7 +169,10 @@ void betaServer_OkUserId_And_token(void){
 		char token[64]={"b825f483-d5be-4a6f-a1bb-80be3de187e5"};
 		char *user_id  = "ai123456789abab12";
 #endif
-
+#if 0	//beta ok
+char token[64]={"fa750125-cb6d-4259-b667-278c32f2eece"};	
+char *user_id  = "airhwrhwrhw00104";
+#endif
 }
 
 #ifdef TEST_PLAY_EQ_MUSIC
@@ -260,12 +263,16 @@ void test_backSeekTo(void){
 #endif
 
 
-void test_clock_Interfaces(const char *time){
+void test_clock_Interfaces(const char *str){
 	FILE *fp =fopen("/media/mmcblk0p1/testclock.txt","a+");
 	char buf[128]={0};
-	sprintf(buf,"test clock %s \n",time);
+	sprintf(buf,"test clock %s \n",str);
 	if(fp){
+		fwrite(buf,"123",3,fp);
 		fwrite(buf,strlen(buf),1,fp);
+		fflush(fp);
 		fclose(fp);
 	}
 }
+
+

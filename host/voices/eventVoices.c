@@ -417,7 +417,7 @@ void NetKeyDown_ForConfigWifi(void){
 	}
 }
 //关机保存文件和清理工作
-void Close_Mtk76xxSystem(void){
+void *Close_Mtk76xxSystem(void *arg){
 	char token[64]={0};
 	GetTokenValue(token);
 	Save_TulingToken_toRouteTable((const char *)token);
@@ -430,6 +430,7 @@ void Close_Mtk76xxSystem(void){
 	SaveSystemPlayNum();
 	DelSdcardMp3file(MP3_SDPATH);
 #endif	
+	return NULL;
 }
 //连接成功设置工作指示灯,更新muc时间
 void Link_NetworkOk(void){

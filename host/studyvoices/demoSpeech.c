@@ -379,15 +379,11 @@ static void process_data(void *buffer, size_t size, size_t nmemb, void *user_p){
 
 int reqTlVoices(int timeout,const char *key,const char *audiofile,int audiolen,int rate,const char *format,const char *tts,char **result,int *res_len){ 	
 	RequestData_t requestData;
-	requestData.ret=1;
-#if 1
+	requestData.ret=0;
+	requestData.text=NULL;
+	struct timeval starttime,endtime;
+	gettimeofday(&starttime,0); 
 	CURLcode code;
-#else
-	CURLcode code = curl_global_init(CURL_GLOBAL_DEFAULT);
-	if(code != CURLE_OK){
-        printf("init libcurl failed.");
-    }
-#endif
     struct curl_slist *http_headers = NULL;
     struct curl_httppost *post = NULL;
     struct curl_httppost *last = NULL;
@@ -398,17 +394,10 @@ int reqTlVoices(int timeout,const char *key,const char *audiofile,int audiolen,i
     
 	char *upjson = aifiJson(key,audiolen,rate,format,tts);
 	printf("upjson = %s\n",upjson);
-#if 0
-    curl_formadd(&post,&last,
-                 CURLFORM_COPYNAME,"parameters",
-                 CURLFORM_COPYCONTENTS,"{\"key\":\"059b24d6e4ab9267f4728690711daa54\",\"userid\":\"FC2DDF1DF77BD9451E63C922B45FA779\",\"rate\":16000,\"format\":\"asr\",\"len\":90400,\"asr\":\"0\",\"tts\":\"0\",\"token\":\"0203f029-3d94-44ff-8429-bcc7c6250105\",\"elapsedtime\":\"true\"}",
-                 CURLFORM_END);
-#else
+
     curl_formadd(&post,&last,
                  CURLFORM_COPYNAME,"parameters",
                  CURLFORM_COPYCONTENTS,upjson,CURLFORM_END);
-	
-#endif    
 
     curl_formadd(&post, &last,
                  CURLFORM_COPYNAME,"speech",
@@ -420,8 +409,8 @@ int reqTlVoices(int timeout,const char *key,const char *audiofile,int audiolen,i
     
     curl_easy_setopt(easy_handle, CURLOPT_HTTPHEADER, http_headers);
     //curl_easy_setopt(easy_handle, CURLOPT_URL, "http://test79.ai.tuling123.com/speechapi/speech/speechapi");
-    curl_easy_setopt(easy_handle, CURLOPT_URL, "http://beta.app.tuling123.com/speechapi/speech/speechapi");
-    //curl_easy_setopt(easy_handle, CURLOPT_URL, "http://smartdevice.ai.tuling123.com/speechapi/speech/speechapi");
+    //curl_easy_setopt(easy_handle, CURLOPT_URL, "http://beta.app.tuling123.com/speechapi/speech/speechapi");
+    curl_easy_setopt(easy_handle, CURLOPT_URL, "http://smartdevice.ai.tuling123.com/speechapi/speech/speechapi");
     curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data);
     curl_easy_setopt(easy_handle, CURLOPT_HTTPPOST,post);
 //    curl_easy_setopt(easy_handle, CURLOPT_PROXY, "localhost:8888");
@@ -439,14 +428,56 @@ int reqTlVoices(int timeout,const char *key,const char *audiofile,int audiolen,i
     code = curl_easy_perform(easy_handle);
     *result= requestData.text;
 	*res_len = requestData.len;
-    //curl_easy_setopt(easy_handle, CURLOPT_HEADERDATA, fp); //å°†è¿”å›žçš„htmlä¸»ä½“æ•°æ®è¾“å‡ºåˆ°fpæŒ‡å‘çš„æ–‡ä»¶
+
+	gettimeofday(&endtime,0);
+	double timeuse = 1000000*(endtime.tv_sec - starttime.tv_sec) + endtime.tv_usec - starttime.tv_usec;
+	//³ýÒÔ1000Ôò½øÐÐºÁÃë¼ÆÊ±£¬Èç¹û³ýÒÔ1000000Ôò½øÐÐÃë¼¶±ð¼ÆÊ±£¬Èç¹û³ýÒÔ1Ôò½øÐÐÎ¢Ãî¼¶±ð¼ÆÊ±
+	//printf("reqTlVoices usr time:  %d.%d\n",(int)timeuse/1000000,(int)timeuse/1000%1000);  
+
+#ifdef TULING_FILE_LOG
+		if(logfp==NULL){
+			char filelog[128]={0},timeStr[128]={0};
+			GetDate(timeStr);
+			sprintf(filelog,"log/%s",timeStr);
+			logfp = fopen(filelog,"w+"); 
+			if(logfp==NULL){
+				printf("open failed \n");
+				return -1;
+			}
+	#ifndef AMR16K_DATA	
+			fprintf(logfp,"mtk76xx  libcurl upload file rate %d 16bit  type %s\n",16000,"pcm");
+	#else
+			fprintf(logfp,"mtk76xx libcurl upload file rate %d 16bit  type %s\n",16000,"amr");
+	#endif	
+			fprintf(logfp,"upload url: http://smartdevice.ai.tuling123.com/speechapi/speech/speechapi\n");
+			printf("open log file %s ok\n",filelog);
+	
+		}
+		char writedate[128]={0};
+		GetDate(writedate);
+		fprintf(logfp,"--request numeber %d date %s-------\n",++requestLogNum,writedate);
+	
+		fprintf(logfp,"reqTlVoices usr time:  %d.%d\n",(int)timeuse/1000000,(int)timeuse/1000%1000);  
+		fprintf(logfp,"userId:%s--->json:\n%s\n",tulingUser->user_id,upjson);
+		if(requestData.text){
+			fprintf(logfp,"%s\n",requestData.text);
+		}else{
+			fprintf(logfp,"%s\n","requst failed");
+			requestData.ret=1;
+		}
+		fflush(logfp);
+#endif			
     //printf("len ret.data = %s \n",requestData.len,requestData.text);
-    
+    //if(code != CURLE_OK){
+	//	fprintf(logfp,"CURLE failed \n");
+	//	requestData.ret=1;
+	//}
     curl_slist_free_all(http_headers);
     curl_formfree(post);
     curl_easy_cleanup(easy_handle);
     //curl_global_cleanup();
     free(upjson);
+	//requestData.ret=1;
 	return requestData.ret;
 }
 

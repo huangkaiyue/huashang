@@ -3,7 +3,7 @@
 #include "config.h"
 #include "host/voices/wm8960i2s.h"
 
-extern  void *play_qtts_data(void *arg);
+
 //开始下载, 接口兼容，需要去掉streamLen
 static void tulingStartDown(const char *filename,int streamLen){
 	initputPcmdata();
@@ -24,7 +24,6 @@ void downTulingMp3(const char *url){
 	test_playTuingPcmFile();
 #else
 	setDowning();
-	StartPthreadPlay();
 	RequestTulingLog("downTulingMp3 start",1);
 	demoDownFile(url,15,tulingStartDown,tulingGetStreamData,tulingEndDown);
 	SetDownExit();

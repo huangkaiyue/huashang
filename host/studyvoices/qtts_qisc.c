@@ -105,19 +105,22 @@ int __exitqttsPlay(void){
  }
 static char savebuf[1];
 static unsigned char cacheFlag=0;	
-static int cacheSize=0;
-static int audioSize=0;
 
+typedef struct{
+	int cacheSize;
+	int audioSize;
+}DownTuling_t;
+
+static DownTuling_t down;
 void initputPcmdata(void){
+	Qstream->downState=DOWN_QTTS_ING;
 	cacheFlag=0;
 	memset(savebuf,0,1);
-	cacheSize =0;
-	audioSize=0;
+	memset(&down,0,sizeof(DownTuling_t));
 }
 
-
 void setPlayAudioSize(int downSize){
-	audioSize = downSize;
+	down.audioSize = downSize;
 }
 void putPcmdata(const void *data,int size){
 	int ret =0;
@@ -147,25 +150,18 @@ void putPcmdata(const void *data,int size){
 		ret=size-1;
 		cacheFlag=1;
 	}
-	cacheSize+=ret;
+	if(down.cacheSize>down.audioSize/2&&Qstream->playState!=PLAY_QTTS_ING){
+		StartPthreadPlay();
+	}
+	down.cacheSize+=ret;
 	putMsgQueue(Qstream->qttsList,newdata,ret);	//添加到播放队列
 	
 }
-static unsigned char waitPlay=0;		//前面需要缓存，需要睡眠300ms
- void *play_qtts_data(void *arg){
+void *play_qtts_data(void *arg){
 	char *data;
 	int len=0;
-	if(waitPlay==0){
-		waitPlay=1;
-		usleep(600000);
-	}
-	 //printf("%s: Qstream->playState 。。。。。。。。。。。。。。。play_qtts_data=%d\n",__func__,Qstream->playState);
-	 while(Qstream->playState){
-	 	if(cacheSize<audioSize/2){
-			usleep(100000);
-			continue;
-		}	
-	 	//printf("%s: Qstream->playState =%d\n",__func__,Qstream->playState);
+	while(Qstream->playState){
+		//printf("%s: Qstream->playState =%d\n",__func__,Qstream->playState);
 	 	if(getWorkMsgNum(Qstream->qttsList)==0){
 			if(Qstream->downState==DOWN_QTTS_QUIT){
 				DEBUG_QTTS("play_qtts_data: exit ...\n");
@@ -183,15 +179,12 @@ static unsigned char waitPlay=0;		//前面需要缓存，需要睡眠300ms
 	}
 	clean_qtts_cache_2();
 	cleanState();
-	waitPlay=0;
 	DEBUG_QTTS("play_qtts_data : end...\n\n");
 	return NULL;
 }
 
 void StartPthreadPlay(void){
-	Qstream->downState=DOWN_QTTS_ING;
 	Qstream->playState=PLAY_QTTS_ING;
-	printf("----------------qtts down start----------------\n");
 	pool_add_task(play_qtts_data,NULL);		//启动播放线程
 	usleep(100);
 }
@@ -239,6 +232,7 @@ static int text_to_speech(const char* src_text  ,const char* params){
 		return ret;
 	}
 	StartPthreadPlay();
+	Qstream->downState=DOWN_QTTS_ING;
 	while(GetplayState()){
 		const void *data = QTTSAudioGet(sess_id, &audio_len, &synth_status, &ret);
 		if (NULL != data){

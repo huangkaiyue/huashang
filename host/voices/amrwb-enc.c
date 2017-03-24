@@ -102,6 +102,64 @@ int WavAmr16k(const void *data,void *outdata,int *size){
 	E_IF_exit(amr);
 	return 0;
 }
+
+int WavAmr16kFile(const void *data,void *outfile,int *size){
+	int mode = 8;
+	int dtx = 0;
+	struct wave_pcm_hdr *hdr=NULL;
+	FILE *out=NULL;
+	int inputSize,outsize=0;
+	uint8_t* inputBuf;
+	int format, sampleRate, channels, bitsPerSample,AllSize=0,readSize=0;
+	hdr = (struct wave_pcm_hdr *)data;
+
+	if(hdr->samples_per_sec!=16000){
+		return -1;
+	}
+	if(hdr->channels!=1){
+		return -1;
+	}
+	channels = hdr->channels;
+	inputSize = hdr->channels*2*320;
+	inputBuf = (uint8_t*) malloc(inputSize);
+
+	AllSize = hdr->data_size;
+	void  *amr=NULL;
+	amr = E_IF_init();
+	out = fopen(outfile, "wb");
+	if(out==NULL){
+		return -1;
+	}
+	fwrite("#!AMR-WB\n", 1, 9, out);
+	readSize+=sizeof(struct wave_pcm_hdr);
+	outsize+=9;
+	int eixt=1;
+	while (eixt) {
+		int read, i, n;
+		short buf[320];
+		uint8_t outbuf[500];
+		if(readSize+inputSize>AllSize){
+			inputSize = AllSize-readSize;
+			printf("============readSize = %d inputSize =%d AllSize=%d\n",readSize,inputSize,AllSize);
+			eixt=0;	
+		}
+		readSize +=inputSize;
+		memcpy(inputBuf,data+readSize,inputSize);	
+		for (i = 0; i < inputSize/2; i++) {
+			const uint8_t* in = &inputBuf[2*channels*i];
+			buf[i] = in[0] | (in[1] << 8);
+		}
+		n = E_IF_encode(amr, mode, buf, outbuf, dtx);
+		fwrite(outbuf, 1, n, out);
+		outsize+=n;
+	}
+	*size=outsize;
+	free(inputBuf);
+	fclose(out);
+	E_IF_exit(amr);
+	return 0;
+}
+
 #ifdef MAIN_AMR_16K
 int main(int argc, char *argv[]) {
 

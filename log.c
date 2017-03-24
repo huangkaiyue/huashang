@@ -295,7 +295,6 @@ void test_Save_VoicesPackt_function_log(const char *data,int value){
 	fclose(fp);
 }
 
-
 void Write_tulinglog(const char *logStr){
 	writeLog((const char * )"/log/tuling_log.txt",logStr);
 }
