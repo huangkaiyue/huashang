@@ -107,7 +107,7 @@ static void playAmrVoices(const char *filename){
 			write_pcm(play_buf);
 			pos=0;
 		}
-		if(GetPlaySystem_VoicesState()==1){
+		if(GetPlaySystem_VoicesState()==EXIT_SYSTEM_PLAY){
 			CleanI2S_PlayCachedata();		//清理
 			stopclean();	//最后一片数据丢掉
 			break;

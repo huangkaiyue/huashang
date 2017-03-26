@@ -46,6 +46,7 @@ static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen)
 		npos+=2;
 	}
 }
+//将8k语音转换成16k语音，并写入到文件当中
 static int PcmVoice8kTo16k_File(const char *inputdata,const char *outfilename,int inputLen){
 	FILE *fp=NULL;
 	fp = fopen(outfilename,"w+");
@@ -118,7 +119,7 @@ void pause_record_audio(int i){
 void start_event_talk_message(void){
 	SetRecordeVoices_PthreadState(START_TAIK_MESSAGE);
 }
-
+//播放按键误触发产生的声音
 static void TaiBenToTulingNOVoices(void){
 	int i=(1+(int) (10.0*rand()/(RAND_MAX+1.0)));
 	switch(i){

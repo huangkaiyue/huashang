@@ -114,7 +114,12 @@ static void InputNetStream(char * inputMsg,int inputSize){
 	pthread_mutex_unlock(&st->mutex);
 }
 
-static unsigned char like_mp3_sign=0;
+#define LOVE_MP3_UNKOWN_EVENT				0		//未知状态
+#define LOVE_MP3_SAVE_LOVE_MP3_EVENT		1		//添加喜爱
+#define LOVE_MP3_DELETE_EVENT				2		//删除喜爱
+#define DEFAULT_SAVE_MP3_EVENT				3		//默认保存mp3文件
+
+static unsigned char like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;
 #ifdef PALY_URL_SD
 int GetFileNameForPath(char *path){
 	int i=0;
@@ -129,20 +134,20 @@ int GetFileNameForPath(char *path){
 	}
 	return (size-strlen(p)+1);
 }
-static void Savemp3File(char *filepath){
+static void SaveLoveMp3File(char *filepath){
 	char buf[200]={0};
 	if(CheckSdcardInfo(MP3_SDPATH)){	//内存不足50M删除指定数目的歌曲
 		DelSdcardMp3file(MP3_SDPATH);
 	}
 	switch(like_mp3_sign){
-		case 1:		//添加喜爱
+		case LOVE_MP3_SAVE_LOVE_MP3_EVENT:		//添加喜爱
 			snprintf(buf,200,"cp %s %s%s",filepath,MP3_LIKEPATH,st->mp3name);
-			like_mp3_sign=0;
+			like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;
 			system(buf);
 			InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
 			break;
-		case 2:		//删除喜爱
-			like_mp3_sign=0;
+		case LOVE_MP3_DELETE_EVENT:		//删除喜爱
+			like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;
 			if(!strcmp(st->mp3name,"")){	//等于空
 				int size=GetFileNameForPath(filepath);
 				memcpy(st->mp3name,filepath+size,strlen(filepath));
@@ -151,23 +156,22 @@ static void Savemp3File(char *filepath){
 			if(DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name)==0)
 				remove(filepath);
 			break;
-		case 3:
-			like_mp3_sign=0;
-			break;
-		default:
+		case DEFAULT_SAVE_MP3_EVENT:	//默认保存到sdcard 当中
 			snprintf(buf,200,"cp %s %s%s",URL_SDPATH,MP3_SDPATH,st->mp3name);
 			system(buf);
+			break;
+		default:	
 			break;
 	}
 }
 
 //喜爱
 void Save_like_music(void){
-	like_mp3_sign=1;
+	like_mp3_sign=LOVE_MP3_SAVE_LOVE_MP3_EVENT;
 }
 
 void Del_like_music(void){
-	like_mp3_sign=2;
+	like_mp3_sign=LOVE_MP3_DELETE_EVENT;
 }
 #endif
 //播放网络流音频文件
@@ -215,7 +219,7 @@ static void *NetplayStreamMusic(void *arg){
 #endif
 #ifdef PALY_URL_SD
 	if(st->cacheSize==st->streamLen){	//下载结束
-		Savemp3File(URL_SDPATH);
+		SaveLoveMp3File(URL_SDPATH);
 	}
 #endif
 	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//发送结束状态
@@ -462,10 +466,8 @@ void playLocalMp3(const char *mp3file){
 			st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);
 		}
 #endif
-	if(like_mp3_sign==0)
-		like_mp3_sign=3;
 #ifdef PALY_URL_SD
-	Savemp3File(mp3file);		//删除喜爱歌曲
+	SaveLoveMp3File(mp3file);		//删除喜爱歌曲
 #endif
 	cleanStreamData(st);	//状态切换是否加锁
 	DEBUG_STREAM("exit play ok (%d)\n",get_playstate());

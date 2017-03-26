@@ -18,22 +18,83 @@ static int led_system_type;
 #define GVOL_SUB 	VOL_SUB
 #define ONCEVOL		//音量加一次
 
+#ifndef ONCEVOL
+#define VOLWAITTIME		300*1000	//音量加减时间间隔
+#define VOLKEY_CHANG	2			//长按时间
+static int volstart_time=0;
+static unsigned char voltype=VOLKEYUP;
+static unsigned char KeyNum=0;
+static void handlevolandnext(void){
+	time_t t;
+	int volendtime=0;
+	int ret;
+	while(1){
+		volendtime=time(&t);
+		printf("volendtime-volstart_time = %d\n",volendtime-volstart_time);
+		if((volendtime-volstart_time)<VOLKEY_CHANG){
+			if(voltype==VOLKEYUP){
+				//下一曲
+				if(KeyNum==ADDVOL_KEY){
+					createPlayEvent((const void *)"xiai",PLAY_NEXT);	//下一曲
+				}else if(KeyNum==SUBVOL_KEY){
+					createPlayEvent((const void *)"xiai",PLAY_PREV);	//上一曲
+				}
+				break;
+			}
+			usleep(10*1000);
+			continue;
+		}else if((volendtime-volstart_time)<5){
+			if(voltype==VOLKEYUP){
+				break;
+			}
+			if(KeyNum==ADDVOL_KEY){
+				ret = Setwm8960Vol(VOL_ADD,0);	//音量加
+			}else if(KeyNum==SUBVOL_KEY){
+				ret = Setwm8960Vol(VOL_SUB,0);	//音量减
+			}
+			if(ret==1){	//音量加满了
+				break;
+			}
+			//音量加
+			usleep(VOLWAITTIME);
+		}else{
+			break;
+		}
+	}
+	KeyNum=0;
+}
+/*
+@ 复用按键接口，短按切换歌曲，长按设置音量加
+@ 
+@
+*/
+static void VolAndNextKey(unsigned char state,unsigned char dir){
+	time_t t;
+	if(KeyNum==0||dir==KeyNum){
+		if(state==VOLKEYDOWN){	//按下
+			volstart_time=time(&t);
+			voltype=VOLKEYDOWN;
+			KeyNum=dir;
+			pool_add_task(handlevolandnext,NULL);
+		}else{			//弹起
+			voltype=VOLKEYUP;
+		}
+	}
+}
+#endif
+
 //开关音频驱动函数
-void open_wm8960_voices(void)
-{
+void open_wm8960_voices(void){
 	ioctl(gpio.fd, TANG_GPIO3924_OPEN);
 }
-void close_wm8960_voices(void)
-{
+void close_wm8960_voices(void){
 	ioctl(gpio.fd, TANG_GPIO3924_CLOSE);
 }
 //系统灯开关
-void open_sys_led(void)
-{
+void open_sys_led(void){
 	ioctl(gpio.fd, TANG_LED_CLOSE);	//close 三极管 为关闭
 }
-void close_sys_led(void)
-{
+void close_sys_led(void){
 	ioctl(gpio.fd, TANG_LED_OPEN);
 }
 void Led_vigue_open(void){
@@ -135,6 +196,29 @@ static void GetWifiName_AndIpaddressPlay(void){
 		Create_PlayQttsEvent(buf,QTTS_GBK);
 	}
 }
+//按键按下绑定用户请求
+static void keyDownAck_userBind(void){
+	if(gpio.bindsign==BIND_DEV_OK){
+		BindDevToaliyun();
+		Create_PlaySystemEventVoices(BIND_OK_PLAY);
+		gpio.bindsign=BIND_DEV_ER;
+	}else{//没有接收到绑定请求
+		Create_PlayQttsEvent("快去邀请小伙伴一起来聊天吧。",QTTS_GBK);
+	}
+}
+//响应微信呼叫请求
+static void Ack_WeixinCall(void){
+	if(gpio.callbake==1){
+		Create_PlaySystemEventVoices(TALK_CONFIRM_OK_PLAY);//"确认消息回复成功，请发上传语音。"
+		gpio.callbake==0;
+		Ack_CallDev();
+	}else{
+		if(getEventNum()==0){	//防止添加的事件太多
+			Create_PlaySystemEventVoices(TALK_CONFIRM_ER_PLAY);//"当前还没有人呼叫你"
+		}
+	}
+}
+
 //串口开关
 static void enableUart(void){
 	if (ioctl(gpio.fd, TANG_UART_OPEN) < 0) {
@@ -193,7 +277,7 @@ static void signal_handler(int signum){
 		return ;
 	}
 	lock_msgEv();
-	if (signum == GPIO_UP){
+	if (signum == GPIO_UP){			//短按按键事件
 		switch(gpio.mount){
 			case NETWORK_KEY:		//播报WiFi名
 				GetWifiName_AndIpaddressPlay();
@@ -214,23 +298,23 @@ static void signal_handler(int signum){
 				}
 				break;
 #ifdef 	LOCAL_MP3
-			case ADDVOL_KEY:	//play last
+			case ADDVOL_KEY:	//短按播放喜爱内容,下一曲
 				keydown_flashingLED();
-#ifdef ONCEVOL
+#ifdef ONCEVOL	
 				createPlayEvent((const void *)"xiai",PLAY_PREV);
 #else
 				VolAndNextKey(VOLKEYUP,ADDVOL_KEY);
 #endif
 				GpioLog("key up",ADDVOL_KEY);
 				break;
-			case SUBVOL_KEY:	//play next
+			case SUBVOL_KEY:	//短按播放喜爱内容,上一曲
 				keydown_flashingLED();
 #ifdef ONCEVOL
 				createPlayEvent((const void *)"xiai",PLAY_NEXT);
 #else
-				GpioLog("key up",SUBVOL_KEY);
-#endif
 				VolAndNextKey(VOLKEYUP,SUBVOL_KEY);
+#endif
+				GpioLog("key up",SUBVOL_KEY);
 				break;
 #endif
 			case RESERVE_KEY1:	//播放、暂停
@@ -241,30 +325,15 @@ static void signal_handler(int signum){
 				CreateLikeMusic();
 				break;
 			case LETFLED_KEY:	//回复键
-				if(gpio.callbake==1){
-					Create_PlaySystemEventVoices(TALK_CONFIRM_OK_PLAY);//"确认消息回复成功，请发上传语音。"
-					gpio.callbake==0;
-					Ack_CallDev();
-				}else{
-					if(getEventNum()>0){
-						break;
-					}
-					Create_PlaySystemEventVoices(TALK_CONFIRM_ER_PLAY);//"当前还没有人呼叫你"
-				}
+				Ack_WeixinCall();
 				break;
 			case RIGHTLED_KEY:	//bind键
-				if(gpio.bindsign==BIND_DEV_OK){
-					BindDevToaliyun();
-					Create_PlaySystemEventVoices(BIND_OK_PLAY);
-					gpio.bindsign=BIND_DEV_ER;
-				}else{
-					Create_PlayQttsEvent("快去邀请小伙伴一起来聊天吧。",QTTS_GBK);
-				}
+				keyDownAck_userBind();
 				break;
 		}
 		DEBUG_GPIO("signal up (%d) !!!\n",gpio.mount);
 	}// end gpio_up
-	else if (signum == GPIO_DOWN){
+	else if (signum == GPIO_DOWN){	//长按按键事件
 		switch(gpio.mount){
 			case RESET_KEY://恢复出厂设置
 				Create_PlaySystemEventVoices(4);	//需要修改语音如下:
@@ -295,7 +364,8 @@ static void signal_handler(int signum){
 			case RESERVE_KEY1://预留键
 				break;
 #ifdef	LED_LR
-			case ADDVOL_KEY:	//vol +
+			case ADDVOL_KEY:	//长按音量加
+				keydown_flashingLED();
 #ifdef ONCEVOL
 				Setwm8960Vol(GVOL_ADD,0);
 #else
@@ -304,7 +374,8 @@ static void signal_handler(int signum){
 				ack_VolCtr("add",GetVol());		//----------->音量减
 				GpioLog("key down",ADDVOL_KEY);
 				break;
-			case SUBVOL_KEY:	//vol -
+			case SUBVOL_KEY:	//长按音量减
+				keydown_flashingLED();
 #ifdef ONCEVOL
 				Setwm8960Vol(GVOL_SUB,0);
 #else
@@ -316,7 +387,7 @@ static void signal_handler(int signum){
 			case LETFLED_KEY:	//play next
 				break;
 #endif
-			case RESERVE_KEY3:	//play last
+			case RESERVE_KEY3:	//长按，删除收藏歌曲
 				DelLikeMusic();
 				break;
 		}// end gpio_down
@@ -343,7 +414,7 @@ static void signal_handler(int signum){
 	lock_msgEv();
 	if (signum == GPIO_UP){
 		switch(gpio.mount){
-			case NETWORK_KEY:		//播报WiFi名
+			case NETWORK_KEY:		//短按播报WiFi名
 				GetWifiName_AndIpaddressPlay();
 				break;
 
@@ -595,8 +666,7 @@ static int gpio_set_dir(int r){
 	}
 }
 //使能按键函数
-void enable_gpio(void)
-{
+void enable_gpio(void){
 	ralink_gpio_reg_info info;
 	gpio_set_dir(gpio6332);
 #ifdef	LED_LR
@@ -734,8 +804,7 @@ void InitMtk76xx_gpio(void){
 	enableResetgpio();	//使能恢复出厂设置按键 (防止开机出现死机现象，无法操作)
 }
 //去使能按键
-void disable_gpio(void)
-{
+void disable_gpio(void){
 	if (ioctl(gpio.fd, RALINK_GPIO_DISABLE_INTP) < 0) {
 		perror("disable ioctl");
 		close(gpio.fd);
@@ -744,15 +813,13 @@ void disable_gpio(void)
 	enableResetgpio();	//使能恢复出厂设置按键
 }
 //清除GPIO
-void CleanMtk76xx_gpio(void)
-{
+void CleanMtk76xx_gpio(void){
 	//close_sys_led();
 	disable_gpio();
 	close(gpio.fd);
 }
 #ifdef MAIN
-int main(void)
-{
+int main(void){
 	InitMtk76xx_gpio();
 	DEBUG_GPIO("InitMtk76xx_gpio \n");
 	open_wm8960_voices();

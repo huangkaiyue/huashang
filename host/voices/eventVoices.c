@@ -207,68 +207,7 @@ void DelLikeMusic(void){
 	Del_like_music();
 }
 #endif
-#define VOLWAITTIME		300*1000	//音量加减时间间隔
-#define VOLKEY_CHANG	2			//长按时间
-static int volstart_time=0;
-static unsigned char voltype=VOLKEYUP;
-static unsigned char KeyNum=0;
-static void handlevolandnext(void){
-	time_t t;
-	int volendtime=0;
-	int ret;
-	while(1){
-		volendtime=time(&t);
-		printf("volendtime-volstart_time = %d\n",volendtime-volstart_time);
-		if((volendtime-volstart_time)<VOLKEY_CHANG){
-			if(voltype==VOLKEYUP){
-				//下一曲
-				if(KeyNum==ADDVOL_KEY){
-					createPlayEvent((const void *)"xiai",PLAY_NEXT);	//下一曲
-				}else if(KeyNum==SUBVOL_KEY){
-					createPlayEvent((const void *)"xiai",PLAY_PREV);	//上一曲
-				}
-				break;
-			}
-			usleep(10*1000);
-			continue;
-		}else if((volendtime-volstart_time)<5){
-			if(voltype==VOLKEYUP){
-				break;
-			}
-			if(KeyNum==ADDVOL_KEY){
-				ret = Setwm8960Vol(VOL_ADD,0);	//音量加
-			}else if(KeyNum==SUBVOL_KEY){
-				ret = Setwm8960Vol(VOL_SUB,0);	//音量减
-			}
-			if(ret==1){	//音量加满了
-				break;
-			}
-			//音量加
-			usleep(VOLWAITTIME);
-		}else{
-			break;
-		}
-	}
-	KeyNum=0;
-}
-/*
-@ 复用按键接口，短按切换歌曲，长按设置音量加
-@ 
-@
-*/
-void VolAndNextKey(unsigned char state,unsigned char dir){
-	time_t t;
-	if(KeyNum==0||dir==KeyNum){
-		if(state==VOLKEYDOWN){	//按下
-			volstart_time=time(&t);
-			voltype=VOLKEYDOWN;
-			KeyNum=dir;
-			pool_add_task(handlevolandnext,NULL);
-		}else{			//弹起
-			voltype=VOLKEYUP;
-		}
-	}
-}
+
 //设置自动播放模式下，记录的起始时间
 void setAutoPlayMusicTime(void){
 	time_t t;
@@ -911,7 +850,6 @@ static void *waitLoadMusicList(void *arg){
 } 
 #endif
 
-
 /******************************************************************
 初始化8960音频芯片，开启8K录音和播放双工模式,初始化gpio，播放开机启动音
 *******************************************************************/
@@ -955,4 +893,3 @@ void CleanMtkPlatfrom76xx(void){
 	CleanEventMsgPthread();
 	cleanStream();
 }
-
