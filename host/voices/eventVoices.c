@@ -54,6 +54,8 @@ static void TaiBenToNONetWork(void){
 			break;
 	}
 }
+
+
 /*
 @ 设置网络状态
 @ 
@@ -173,6 +175,7 @@ static int GetSdcardMusicNameforPlay(unsigned char menu,const char *path, unsign
 #endif
 
 #ifdef PALY_URL_SD
+//收藏歌曲
 void CreateLikeMusic(void){
 	if(access(TF_SYS_PATH, F_OK)){	//检查tf卡
 		if(GetRecordeVoices_PthreadState()==PAUSE_E)	
@@ -318,6 +321,9 @@ void CleanUrlEvent(void){
 返回值: 无
 ********************************************************/
 void Create_PlayQttsEvent(const char *txt,int type){
+	if(GetRecordeVoices_PthreadState() == PLAY_WAV){	//解决在智能会话过程当中，添加播放系统语音、播放wifi 名字导致的死机现象  2017-3-26 
+		return ;
+	}
 	if (checkNetWorkLive()){	//检查网络
 		return;
 	}
@@ -355,11 +361,19 @@ void TulingKeyDownSingal(void){
 		CleanUrlEvent();
 		Write_Speekkeylog((const char *)"PLAY_URL_E",GetRecordeVoices_PthreadState());
 	}else{	
+#if 1	
 		if (checkNetWorkLive()){	//检查网络
 			exitqttsPlay();		//暂时解决会话过程中，添加系统音导致问题
 			Write_Speekkeylog((const char *)"exitqttsPlay",GetRecordeVoices_PthreadState());
 			return;
 		}	
+#endif		
+		if(getTuling_playunLock()==TULING_PLAY_LOCK){
+			printf("is tuling play lock \n");
+			exit_tulingplay();
+			return ;
+		}
+
 		sysMes.localplayname=0;	
 		NetStreamExitFile();
 		if(SetWm8960Rate(RECODE_RATE)){

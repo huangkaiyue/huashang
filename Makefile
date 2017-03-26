@@ -27,6 +27,7 @@ TAR = localserver
 all +=main.o
 all +=log.o
 all +=testInterface.o
+all +=srvwork/workinter.o
 all +=net/network.o
 all +=net/parseCmd.o
 #all +=uart/uart.o

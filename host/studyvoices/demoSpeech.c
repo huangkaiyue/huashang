@@ -414,7 +414,7 @@ int reqTlVoices(int timeout,const char *key,const char *audiofile,int audiolen,i
     curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data);
     curl_easy_setopt(easy_handle, CURLOPT_HTTPPOST,post);
 //    curl_easy_setopt(easy_handle, CURLOPT_PROXY, "localhost:8888");
-	curl_easy_setopt(easy_handle, CURLOPT_VERBOSE, 1L);
+	//curl_easy_setopt(easy_handle, CURLOPT_VERBOSE, 1L);
     curl_easy_setopt(easy_handle,CURLOPT_TIMEOUT,timeout);
     curl_easy_setopt(easy_handle,CURLOPT_CONNECTTIMEOUT,5);
 

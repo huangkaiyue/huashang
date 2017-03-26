@@ -23,6 +23,7 @@ void WriteqttsPcmData(char *data,int len){
 			I2S.qttspos=0;
 		}
 	}
+	return 0;
 }
 void WritePcmData(char *data,int size){
 	if(I2S.play_size==I2S_PAGE_SIZE)//fix me end is < do?
@@ -273,9 +274,9 @@ void PlayQttsText(char *text,unsigned char type){
 @ url:图灵发送
 @ 返回值: 0 正常退出 -1非正常退出
 *********************************************************/
-int PlayTulingText(const char *url)
-{
+int PlayTulingText(const char *url){
 	//stait_qtts_cache();
+	start_event_play_wav(5);
 	SetWm8960Rate(RECODE_RATE);
 	PlayQtts_log("paly tuling start\n");
 	downTulingMp3((const char*)url);

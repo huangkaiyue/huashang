@@ -88,8 +88,7 @@ void Led_System_vigue_open(void){
 void Led_System_vigue_close(void){
 	led_system_type=LED_VIGUE_CLOSE;
 }
-static void led_left_right(unsigned char type,unsigned char io)
-{
+static void led_left_right(unsigned char type,unsigned char io){
 	switch(type){
 		case left:
 			if(io==closeled)
@@ -105,6 +104,14 @@ static void led_left_right(unsigned char type,unsigned char io)
 			break;
 	}
 }
+//按下按键，闪烁LED 
+void keydown_flashingLED(void){
+	led_left_right(left,closeled);
+	led_left_right(right,closeled);
+	usleep(100000);
+	led_left_right(left,openled);
+	led_left_right(right,openled);
+}
 void led_lr_oc(unsigned char type){
 	switch(type){
 		case openled:	//开
@@ -117,6 +124,17 @@ void led_lr_oc(unsigned char type){
 			break;
 	}
 }
+//获取wifi 名字并播放
+static void GetWifiName_AndIpaddressPlay(void){
+	char buf[128]={0};
+	char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
+	char IP[20]={0};
+	GetNetworkcardIp((char * )"apcli0",IP);
+	if(strlen(wifi)>0){
+		snprintf(buf,128,"已连接 wifi %s  IP地址是 %s",wifi,IP);
+		Create_PlayQttsEvent(buf,QTTS_GBK);
+	}
+}
 //串口开关
 static void enableUart(void){
 	if (ioctl(gpio.fd, TANG_UART_OPEN) < 0) {
@@ -126,17 +144,14 @@ static void enableUart(void){
 	DEBUG_GPIO("enableUart..\n");
 }
 //锁函数
-static void lock_msgEv(void)
-{
+static void lock_msgEv(void){
 	gpio.sig_lock=1;
 	
 }
-static void unlock_msgEv(void)
-{
+static void unlock_msgEv(void){
 	gpio.sig_lock=0;
 }
-static int check_lock_msgEv(void)
-{
+static int check_lock_msgEv(void){
 	if(gpio.sig_lock==1){
 		return -1;
 	}
@@ -167,10 +182,7 @@ static void ReadSpeekGpio(void){
 //按键处理事件
 //-------------------------------------------QITUTU_SHI--------------------------------------------
 #ifdef QITUTU_SHI
-static void signal_handler(int signum)
-{
-	char buf[128]={0};
-	char *wifi=NULL;
+static void signal_handler(int signum){
 	//拿到底层按键事件号码
 	if (ioctl(gpio.fd, TANG_GET_NUMBER,&gpio.mount) < 0){
 		perror("ioctl");
@@ -184,11 +196,7 @@ static void signal_handler(int signum)
 	if (signum == GPIO_UP){
 		switch(gpio.mount){
 			case NETWORK_KEY:		//播报WiFi名
-				wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
-				if(strlen(wifi)>0){
-					snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
-					Create_PlayQttsEvent(buf,QTTS_GBK);
-				}
+				GetWifiName_AndIpaddressPlay();
 				break;
 				
 			case RESERVE_KEY2:
@@ -207,6 +215,7 @@ static void signal_handler(int signum)
 				break;
 #ifdef 	LOCAL_MP3
 			case ADDVOL_KEY:	//play last
+				keydown_flashingLED();
 #ifdef ONCEVOL
 				createPlayEvent((const void *)"xiai",PLAY_PREV);
 #else
@@ -215,6 +224,7 @@ static void signal_handler(int signum)
 				GpioLog("key up",ADDVOL_KEY);
 				break;
 			case SUBVOL_KEY:	//play next
+				keydown_flashingLED();
 #ifdef ONCEVOL
 				createPlayEvent((const void *)"xiai",PLAY_NEXT);
 #else
@@ -227,6 +237,7 @@ static void signal_handler(int signum)
 				keyStreamPlay();
 				break;
 			case RESERVE_KEY3:	//play last
+				keydown_flashingLED();
 				CreateLikeMusic();
 				break;
 			case LETFLED_KEY:	//回复键
@@ -319,10 +330,7 @@ static void signal_handler(int signum)
 #endif
 //----------------------------------------DATOU_JIANG-----------------------------------------------
 #ifdef DATOU_JIANG
-static void signal_handler(int signum)
-{
-	char buf[128]={0};
-	char *wifi=NULL;
+static void signal_handler(int signum){
 	//拿到底层按键事件号码
 	if (ioctl(gpio.fd, TANG_GET_NUMBER,&gpio.mount) < 0){
 		perror("ioctl");
@@ -336,11 +344,7 @@ static void signal_handler(int signum)
 	if (signum == GPIO_UP){
 		switch(gpio.mount){
 			case NETWORK_KEY:		//播报WiFi名
-				wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
-				if(strlen(wifi)>0){
-					snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
-					Create_PlayQttsEvent(buf,QTTS_GBK);
-				}
+				GetWifiName_AndIpaddressPlay();
 				break;
 
 			case SPEEK_KEY:
@@ -520,10 +524,7 @@ static void signal_handler(int signum)
 #endif
 //------------------------------------TANGTANG_LUO-------------------------------------------------
 #ifdef TANGTANG_LUO
-static void signal_handler(int signum)
-{
-	char buf[128]={0};
-	char *wifi=NULL;
+static void signal_handler(int signum){
 	//拿到底层按键事件号码
 	if (ioctl(gpio.fd, TANG_GET_NUMBER,&gpio.mount) < 0){
 		perror("ioctl");
@@ -537,11 +538,7 @@ static void signal_handler(int signum)
 	if (signum == GPIO_UP){
 		switch(gpio.mount){
 			case NETWORK_KEY:		//播报WiFi名
-				wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
-				if(strlen(wifi)>0){
-					snprintf(buf,128,"%s%s","已连接 wifi ",wifi);
-					Create_PlayQttsEvent(buf,QTTS_GBK);
-				}
+				GetWifiName_AndIpaddressPlay();
 				break;
 
 			case SPEEK_KEY:

@@ -15,6 +15,7 @@
 #define DOWN_QTTS_ING	1
 #define PLAY_QTTS_QUIT	0
 #define PLAY_QTTS_ING	1
+#define PLAY_QTTS_WAIT	2
 
 //#define VINN_GBK	"vcn=vinn,aue = speex-wb,auf=audio/L16;rate=8000,spd=7,vol = 8,rdn = 3,tte = gbk"
 #define VIMM_GBK	"voice_name=vinn,text_encoding=gbk,sample_rate=8000,speed=50,volume=50,pitch=50,rdn =3"

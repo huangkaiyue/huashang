@@ -11,9 +11,23 @@
 #include "host/sdcard/musicList.h"
 #include "config.h"
 #include "host/studyvoices/prompt_tone.h"
-
+#ifdef WORK_INTER
+#include "srvwork/workinter.h"
+#endif
 static WorkQueue *DownEvent=NULL;
 static unsigned char mainQueLock=0;
+
+static unsigned char playTuling_lock=0;
+
+void SetTuling_playLock(void){
+	playTuling_lock=TULING_PLAY_LOCK;
+}
+void SetTuling_playunLock(void){
+	playTuling_lock=TULING_PLAY_UNLOCK;
+}
+unsigned char getTuling_playunLock(void){
+	return playTuling_lock;
+}
 
 /*
 @添加播放/下载 歌曲时间
@@ -172,6 +186,7 @@ int main(int argc, char **argv){
 				if(PlayTulingText((const char*)msg)){
 					SetMainQueueLock(MAIN_QUEUE_LOCK);		//清理后面mp3播放
 				}
+				SetTuling_playunLock();
 				free((void *)msg);
 				break;
 			case LOCAL_MP3_EVENT:	//本地播放

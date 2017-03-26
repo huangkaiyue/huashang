@@ -108,6 +108,7 @@ exit1:
 	pSub = cJSON_GetObjectItem(pJson, "fileUrl"); 	//检查是否有mp3歌曲返回，如果有
 	if(NULL == pSub){	//直接播放语义之后的结果
 		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
+		SetTuling_playLock();	//切换到播放url状态，按键按下，需要退出播放  2017.3.24 修复播放状态不对bug
 		AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
 		err=0;
 		goto exit0;
@@ -126,6 +127,8 @@ exit1:
 		snprintf(player->musicname,64,"%s","speek");
 		player->musicTime = 0;
 		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
+		Write_tulinglog((const char *)"play url:");
+		Write_tulinglog((const char *)pSub->valuestring);
 		AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
 		AddDownEvent((const char *)player,TULING_URL_VOICES);
 		err=0;

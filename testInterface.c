@@ -3,6 +3,8 @@
 #include "host/voices/WavAmrCon.h"
 #include "host/voices/callvoices.h"
 #include "base/cJSON.h"
+#include "host/StreamPlay/StreamFile.h"
+
 #include "config.h"
 
 #ifdef TEST_ERROR_TULING
@@ -275,4 +277,60 @@ void test_clock_Interfaces(const char *str){
 	}
 }
 
+static unsigned char playIndex=0;
+
+#define TEST_START_ADD	1
+#define TEST_STOP_ADD	2
+#define TEST_SINGLE_ADD	3
+
+static unsigned char play_state=0;
+static unsigned char test_pthread=0;
+static char play_index_buf[5][128]={"http://smartdevice.ai.tuling123.com/file1/85de323e-8c3b-4daa-b0d7-87ec47600c5a.pcm",
+	"http://smartdevice.ai.tuling123.com/file1/c8a5652c-1d1d-4bf1-8ef7-5748312147ea.pcm",
+	"http://smartdevice.ai.tuling123.com/file1/e3b8e324-d93e-44a9-86e5-92ba4d6cb5c5.pcm",
+	"http://smartdevice.ai.tuling123.com/file1/3f4a98d5-63e8-4547-b70d-96c9f558db48.pcm",
+	"http://smartdevice.ai.tuling123.com/file1/3baf3631-1182-486d-960a-3dbfef9cfc44.pcm",
+	"http://smartdevice.ai.tuling123.com/file1/83ba4cd1-4ce8-4816-92ce-20821e9b2c6a.pcm"};
+
+static void addplay_urlFile(void){
+	char *url = play_index_buf[playIndex];
+	char *ttsURL= (char *)calloc(1,strlen(url)+1);
+	sprintf(ttsURL,"%s",url);
+	SetMainQueueLock(MAIN_QUEUE_UNLOCK);
+	SetTuling_playLock();	//切换到播放url状态，按键按下，需要退出播放  2017.3.24 修复播放状态不对bug
+	AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
+	if(++playIndex==5){
+		playIndex=0;
+	}
+}
+static void *test_play_tulUrl(void){
+	while(test_pthread){	
+		switch(play_state){
+			case TEST_START_ADD:
+				addplay_urlFile();
+				break;
+			case TEST_SINGLE_ADD:
+				play_state=TEST_STOP_ADD;
+				addplay_urlFile();
+				break;
+			case TEST_STOP_ADD:
+				break;
+		}
+		sleep(8);
+	}
+}
+void test_start_playurl(void){
+	play_state=TEST_START_ADD;
+	if(test_pthread)
+		return ;
+	test_pthread=1;
+	pool_add_task(test_play_tulUrl,NULL);
+}
+void test_stop_playurl(void){
+	play_state=TEST_STOP_ADD;
+}
+
+void test_single_playurl(void){
+	play_state=TEST_SINGLE_ADD;
+}
 

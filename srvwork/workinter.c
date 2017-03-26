@@ -26,6 +26,17 @@ void test_ConnetEvent(int event){
 @
 */
 void pasreInputCmd(const char *com){
+	if (!strcmp(com, "1")){
+		test_start_playurl();
+	}else if(!strcmp(com, "2")){
+		test_stop_playurl();
+	}else if(!strcmp(com, "3")){
+		test_single_playurl();
+	}
+}
+
+#if 0
+void pasreInputCmd(const char *com){
  		if (!strcmp(com, "lsmen") ||
         	!strcmp(com, "mem"))
     	{
@@ -55,10 +66,6 @@ void pasreInputCmd(const char *com){
 		else if(!strcmp(com,"subvol"))
 		{
 			Setwm8960Vol(0,0);
-		}
-		else if(!strcmp(com,"version"))
-		{
-			printf("==============>%s<=============\n",VERSION);
 		}
 		else if(!strcmp(com,"gwifi"))
 		{
@@ -91,17 +98,7 @@ void pasreInputCmd(const char *com){
 		{
 			createPlayEvent((const void *)"testmp3",1);
 		}
-		else if(!strcmp(com,"scanwifi"))
-		{
-			char msg[1500]={0};
-			int len;
-			mtk76xxScanWifi(msg,&len);
-			printf("msg = %s len=%d \n",msg,len);
-		}
-		else if(!strcmp(com,"readwifi"))
-		{
-			ReadWifi();
-		}
+
 		else if(!strcmp(com,"url")){
 			//createPlayEvent((const void *)"http://fdfs.xmcdn.com/group7/M01/A3/8D/wKgDX1d2Rr6w3CegABHDHZzUiUs448.mp3",1);
 			Player_t *App=(Player_t *)calloc(1,sizeof(Player_t));
@@ -140,11 +137,6 @@ void pasreInputCmd(const char *com){
 			test_quikSeekTo();
 		}else if(!strcmp(com,"prev")){
 			test_backSeekTo();
-		}else if(!strcmp(com,"amr")){
-			WavtoAmrfile("/mnt/qtts/","/mnt/amr/",0);
-			//createPlayEvent((const void *)"story",PLAY_NEXT);
-			sleep(5);
-			WavtoAmrfile("/mnt/qtts/","/mnt/amr/",1);
 		}
 		else if (!strcmp(com, "quit") ||
              		!strcmp(com, "q"))
@@ -212,5 +204,6 @@ void pasreInputCmd(const char *com){
 			printf(IMHELP);
 		}
 }
+#endif
 
 #endif	//end WORK_INTER

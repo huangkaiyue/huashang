@@ -83,6 +83,8 @@ static void single_to_stereo(char *src,int srclen,char *tar,int *tarlen)
 	*tarlen = pos;
 }
 #endif
+
+
 /****************************************************
 @函数功能:	播放qtts转换数据
 @参数:	data 数据
@@ -98,6 +100,7 @@ int __exitqttsPlay(void){
 	while(getWorkMsgNum(Qstream->qttsList)){
 		getMsgQueue(Qstream->qttsList,&msg,&msgSize);
 		free(msg);
+		printf("%s: wait exit ..............\n",__func__);
 		usleep(100);
 	}
 	DEBUG_QTTS("exitqttsPlay: end (%d) ...\n",getWorkMsgNum(Qstream->qttsList));
@@ -113,7 +116,6 @@ typedef struct{
 
 static DownTuling_t down;
 void initputPcmdata(void){
-	Qstream->downState=DOWN_QTTS_ING;
 	cacheFlag=0;
 	memset(savebuf,0,1);
 	memset(&down,0,sizeof(DownTuling_t));
@@ -150,9 +152,6 @@ void putPcmdata(const void *data,int size){
 		ret=size-1;
 		cacheFlag=1;
 	}
-	if(down.cacheSize>down.audioSize/2&&Qstream->playState!=PLAY_QTTS_ING){
-		StartPthreadPlay();
-	}
 	down.cacheSize+=ret;
 	putMsgQueue(Qstream->qttsList,newdata,ret);	//添加到播放队列
 	
@@ -160,7 +159,7 @@ void putPcmdata(const void *data,int size){
 void *play_qtts_data(void *arg){
 	char *data;
 	int len=0;
-	while(Qstream->playState){
+	while(Qstream->playState==PLAY_QTTS_ING){
 		//printf("%s: Qstream->playState =%d\n",__func__,Qstream->playState);
 	 	if(getWorkMsgNum(Qstream->qttsList)==0){
 			if(Qstream->downState==DOWN_QTTS_QUIT){
@@ -185,6 +184,7 @@ void *play_qtts_data(void *arg){
 
 void StartPthreadPlay(void){
 	Qstream->playState=PLAY_QTTS_ING;
+	Qstream->downState=DOWN_QTTS_ING;
 	pool_add_task(play_qtts_data,NULL);		//启动播放线程
 	usleep(100);
 }
@@ -192,10 +192,11 @@ void StartPthreadPlay(void){
 	while(Qstream->downState==DOWN_QTTS_QUIT){		//等待播放线程退出
 		if(Qstream->playState!=PLAY_QTTS_ING)
 			break;
-		//printf("..................... WaitPthreadExit .....................\n ");
+		printf("..................... WaitPthreadExit .....................\n ");
 		usleep(100*1000);
 	}
 	PlayQtts_log("qtts quit ok\n");
+	printf("..................... WaitPthreadExit ok.....................\n ");
 	Qstream->playState=PLAY_QTTS_QUIT;
 }
 int GetplayState(void){

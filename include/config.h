@@ -4,8 +4,9 @@
 
 //#define TEST_SDK					//测试SDK
 
+//#define WORK_INTER
+
 #ifdef TEST_SDK						//使能命令输入行
-	#define WORK_INTER
 #endif
 
 //#define CONFIG_ALL		//全功能
@@ -20,8 +21,8 @@
 //#define CLOSE_VOICE				//不工作处于关闭音频状态
 #define SELECT_UDP				//将udp添加到select 当中
 
-//#define PCM_DATA				//上传pcm数据
-#define AMR16K_DATA				//上传amr数据
+#define PCM_DATA				//上传pcm数据
+//#define AMR16K_DATA				//上传amr数据
 
 //#define MY_HTTP_REQ			//ʹ���Լ�д��http ����ӿ�
 #define TULING_FILE_LOG		//����ͼ��д����־�ļ�
