@@ -8,7 +8,7 @@ SDK_PATH=/home/7620sdk/7688/sdk4300_20140916/RT288x_SDK/source
 KERNEL_PATH =$(SDK_PATH)/linux-2.6.36.x
 
 OTHEN_LIB=-lmsc463
-SYSTEM_LIB=-ldl -lrt  $(SDK_PATH)/lib/libnvram/libnvram-0.9.28.so
+SYSTEM_LIB=-ldl -lpthread -lrt  $(SDK_PATH)/lib/libnvram/libnvram-0.9.28.so
 OPEN_LIB= -lz -lcurl -lssl -lcrypto -lmad  -lopencore-amrnb -lsqlite3 
 MY_LIB=-lbase463  -ldownFile463 -ldemoquick463 -lsystools463  -luartmcu -lvo-amrwbenc -lDemoDecodeMp3
 OPENSRC_DIR=/home/openSrc/src
