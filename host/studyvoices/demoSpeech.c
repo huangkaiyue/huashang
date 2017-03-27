@@ -167,7 +167,7 @@ static int httpUploadData(int timeout,const char *key,const char *hostaddr,const
 	}
 	alarm(timeout);
 #endif	
-//	if(++reqNum>=10){
+	if(++reqNum>=10){
 		if(reqNum<15){
 			reqNum=0;
 		}
@@ -177,7 +177,7 @@ static int httpUploadData(int timeout,const char *key,const char *hostaddr,const
 		}
 		reqNum=0;
 		snprintf(ServerIp,20,"%s",(char *)inet_ntoa(*((struct in_addr *)host->h_addr)));
-//	}
+	}
 	DEBUG_SPEEK("hostaddr=%s ip=%s \n",hostaddr,ServerIp);
 	tulingUser->sock = create_client(ServerIp,(int)HTTP_PORT);
 

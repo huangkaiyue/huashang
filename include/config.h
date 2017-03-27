@@ -24,7 +24,7 @@
 #define PCM_DATA				//涓婁紶pcm鏁版嵁
 //#define AMR16K_DATA				//涓婁紶amr鏁版嵁
 
-//#define MY_HTTP_REQ			//使用自己写的http 请求接口
+#define MY_HTTP_REQ			//使用自己写的http 请求接口
 #define TULING_FILE_LOG		//开启图灵写入日志文件
 
 

@@ -162,7 +162,7 @@ static void TaiBenToTulingNOVoices(void){
 static void Start_uploadVoicesData(void){
 	start_event_play_wav(1);		//播放过渡音，等待上传语音识别结果
 	pool_add_task(play_sys_tices_voices,TULING_WINT);
-	usleep(100);	
+	usleep(1000*1000);	
 	DEBUG_VOICES("len_voices = %d  \n",len_voices);
 #ifdef AMR8k_DATA		
 	pcmwavhdr.size_8 = (len_voices+36);

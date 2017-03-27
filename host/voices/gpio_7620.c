@@ -196,6 +196,7 @@ static void GetWifiName_AndIpaddressPlay(void){
 		Create_PlayQttsEvent(buf,QTTS_GBK);
 	}
 }
+#ifdef QITUTU_SHI 
 //按键按下绑定用户请求
 static void keyDownAck_userBind(void){
 	if(gpio.bindsign==BIND_DEV_OK){
@@ -218,6 +219,7 @@ static void Ack_WeixinCall(void){
 		}
 	}
 }
+#endif
 
 //串口开关
 static void enableUart(void){
