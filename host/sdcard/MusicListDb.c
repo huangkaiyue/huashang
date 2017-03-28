@@ -220,8 +220,14 @@ static int table_result(void *args,int nRow,int nColumn,char **dbResult){
 	}
 	printf( "all cloumn: %d records  netmusic->playindex = %d\n", nRow ,netmusic->playindex);	
 	int res = netmusic->playindex*nColumn+nColumn-1;
+	if(dbResult [res+2]==NULL){
+		return -1;
+	}
+	if(!strcmp(dbResult [res+2],"")){
+		return -1;
+	}
 	snprintf(getMusicname,128,dbResult [res+2]);	//二是去掉表头
-#if 1
+#if 0
 	for( i = 0; i < nRow ; i++ )  { 		
 			for( j = 0 ; j < nColumn; j++ )  {  
 				if(netmusic->playindex==i){

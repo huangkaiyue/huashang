@@ -16,7 +16,7 @@ static int led_system_type;
 
 #define GVOL_ADD 	VOL_ADD
 #define GVOL_SUB 	VOL_SUB
-#define ONCEVOL		//音量加一次
+//#define ONCEVOL		//音量加一次
 
 #ifndef ONCEVOL
 #define VOLWAITTIME		300*1000	//音量加减时间间隔
@@ -320,6 +320,7 @@ static void signal_handler(int signum){
 				break;
 #endif
 			case RESERVE_KEY1:	//播放、暂停
+				keydown_flashingLED();	
 				keyStreamPlay();
 				break;
 			case RESERVE_KEY3:	//play last

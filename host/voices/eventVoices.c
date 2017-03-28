@@ -147,25 +147,26 @@ static int GetSdcardMusicNameforPlay(unsigned char menu,const char *path, unsign
 			Create_PlaySystemEventVoices(TF_ERROT_PLAY);
 		return ret;
 	}
+	int len =snprintf(buf,128,"%s%s",TF_SYS_PATH,path);
 	if(menu==xiai){		//获取喜爱目录下的歌曲路径名
-		PlayxiaiMusic((const char *)TF_SYS_PATH,path,filename, playMode);
-	}
-	else{				//获取客户自定义存放歌曲路径名
+		if(PlayxiaiMusic((const char *)TF_SYS_PATH,path,filename, playMode)){
+			Create_PlaySystemEventVoices(LIKE_ERROT_PLAY);
+			return ret;
+		}
+		if(!strcmp(filename,"")){//获取的路径名为空，直接退出
+			Create_PlaySystemEventVoices(LIKE_ERROT_PLAY);
+			return ret;
+		}
+	}else{				//获取客户自定义存放歌曲路径名
 		if(GetSdcardMusic((const char *)TF_SYS_PATH,path,filename, playMode)){
 			Create_PlaySystemEventVoices(PLAY_ERROT_PLAY);
 			return ret;
 		}
+		if(!strcmp(filename,"")){//获取的路径名为空，直接退出
+			return ret;
+		}
 	}
-	snprintf(buf,128,"%s%s",TF_SYS_PATH,path);
-	if((menu==xiai)&&CheckFileNum(buf)){	 //喜爱目录为空,提示用户收藏歌曲
-		Create_PlaySystemEventVoices(LIKE_ERROT_PLAY);
-		return ret;
-	}
-	if(!strcmp(filename,"")){				//获取的路径名为空，直接退出
-		//Create_PlaySystemEventVoices(PLAY_ERROT_PLAY);
-		return ret;
-	}
-	snprintf(buf,128,"%s%s",buf,filename);
+	snprintf(buf+len,128-len,"%s",filename);
 	printf("filepath = %s\n",buf);
 	ret=__AddLocalMp3ForPaly((const char *)buf);			//添加歌曲到队列播放
 	if(ret==0)
