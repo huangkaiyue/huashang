@@ -206,7 +206,7 @@ static int table_result(void *args,int nRow,int nColumn,char **dbResult){
 	int result, i, j, index;
 	// dbResult 前面第一行数据是字段名称，从 nColumn 索引开始才是真正的数据  
 	if(nRow==0){
-		return -1;
+		return -2;
 	}
 	index = nColumn; 
 	if(netmusic->playMode==PLAY_NEXT){

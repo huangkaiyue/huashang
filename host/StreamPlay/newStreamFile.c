@@ -140,12 +140,23 @@ static void SaveLoveMp3File(char *filepath){
 		DelSdcardMp3file(MP3_SDPATH);
 	}
 	switch(like_mp3_sign){
+	#if 0
 		case LOVE_MP3_SAVE_LOVE_MP3_EVENT:		//添加喜爱
 			snprintf(buf,200,"cp %s %s%s",filepath,MP3_LIKEPATH,st->mp3name);
 			like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;
 			system(buf);
 			InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
 			break;
+	#else
+		case LOVE_MP3_SAVE_LOVE_MP3_EVENT:		//添加喜爱
+			if(strcmp(st->mp3name,"")){
+				snprintf(buf,200,"cp %s %s%s",filepath,MP3_LIKEPATH,st->mp3name);
+				system(buf);
+				InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
+			}	
+			like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;	
+			break;
+	#endif
 		case LOVE_MP3_DELETE_EVENT:		//删除喜爱
 			like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;
 			if(!strcmp(st->mp3name,"")){	//等于空

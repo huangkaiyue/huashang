@@ -149,12 +149,12 @@ static int GetSdcardMusicNameforPlay(unsigned char menu,const char *path, unsign
 	}
 	int len =snprintf(buf,128,"%s%s",TF_SYS_PATH,path);
 	if(menu==xiai){		//获取喜爱目录下的歌曲路径名
-		if(PlayxiaiMusic((const char *)TF_SYS_PATH,path,filename, playMode)){
+		if(PlayxiaiMusic((const char *)TF_SYS_PATH,path,filename, playMode) == -2){
 			Create_PlaySystemEventVoices(LIKE_ERROT_PLAY);
 			return ret;
 		}
 		if(!strcmp(filename,"")){//获取的路径名为空，直接退出
-			Create_PlaySystemEventVoices(LIKE_ERROT_PLAY);
+			//Create_PlaySystemEventVoices(LIKE_ERROT_PLAY);
 			return ret;
 		}
 	}else{				//获取客户自定义存放歌曲路径名

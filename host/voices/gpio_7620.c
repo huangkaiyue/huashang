@@ -16,7 +16,7 @@ static int led_system_type;
 
 #define GVOL_ADD 	VOL_ADD
 #define GVOL_SUB 	VOL_SUB
-//#define ONCEVOL		//音量加一次
+#define ONCEVOL		//音量加一次
 
 #ifndef ONCEVOL
 #define VOLWAITTIME		300*1000	//音量加减时间间隔
