@@ -265,10 +265,91 @@ static void ReadSpeekGpio(void){
 	}
 }
 
+
+
+//用于按键长短按复用，主要用于音量加减与上下曲按键复用
+typedef struct 
+{
+	unsigned char PthreadState;
+	unsigned int key_number;	//按键号
+	unsigned int key_state;		//按键状态:按下/弹起
+	
+	struct timeval time_start,time_end;
+}key_mutiple_t;
+
+#define PthreadState_exit 	0
+#define PthreadState_run	1
+
+
+void mus_vol_mutiplekey_Thread(void *arg){
+	time_t t;
+	int volendtime=0;
+	int ret;
+	unsigned int time_ms = 0;
+	key_mutiple_t *mutiplekey = (key_mutiple_t *)arg;
+	
+	while(1){
+		
+		gettimeofday(&mutiplekey->time_end,0);
+		time_ms = 1000000*(mutiplekey->time_end.tv_sec - mutiplekey->time_start.tv_sec) + mutiplekey->time_end.tv_usec - mutiplekey->time_start.tv_usec;
+		time_ms /= 1000;
+
+		printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
+		
+		if(time_ms < 500){
+			if(mutiplekey->key_state == VOLKEYUP)
+			{
+				if(mutiplekey->key_number == ADDVOL_KEY){
+					printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
+					createPlayEvent((const void *)"xiai",PLAY_NEXT);
+				}
+				else{
+					printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
+					createPlayEvent((const void *)"xiai",PLAY_PREV);
+				}
+	
+				break;
+
+			}
+			usleep(100 * 1000);
+			continue;
+		}
+		
+
+		if(time_ms >=500){
+			
+			printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
+			if(mutiplekey->key_state == VOLKEYUP)
+				break;
+
+			if(mutiplekey->key_number == ADDVOL_KEY){
+				printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
+				if(Setwm8960Vol(VOL_ADD,0) == -1)
+					break;
+			}
+				
+
+			else{
+				printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
+				if(Setwm8960Vol(VOL_SUB,0) == -1)
+					break;
+			}
+
+			usleep(400 * 1000);
+		}
+
+	}
+	mutiplekey->PthreadState = PthreadState_exit;
+}
+
+
 //按键处理事件
 //-------------------------------------------QITUTU_SHI--------------------------------------------
 #ifdef QITUTU_SHI
 static void signal_handler(int signum){
+
+	static key_mutiple_t mutiple_key_SUB,mutiple_key_ADD,mutiple_key_speek;
+
 	//拿到底层按键事件号码
 	if (ioctl(gpio.fd, TANG_GET_NUMBER,&gpio.mount) < 0){
 		perror("ioctl");
@@ -302,21 +383,39 @@ static void signal_handler(int signum){
 #ifdef 	LOCAL_MP3
 			case ADDVOL_KEY:	//短按播放喜爱内容,下一曲
 				keydown_flashingLED();
-#ifdef ONCEVOL	
+#if 1
+
+	#ifdef ONCEVOL	 
 				createPlayEvent((const void *)"xiai",PLAY_PREV);
-#else
+	#else
 				VolAndNextKey(VOLKEYUP,ADDVOL_KEY);
-#endif
+	#endif
+
+#else
+
+				mutiple_key_ADD.key_number = ADDVOL_KEY;
+				mutiple_key_ADD.key_state  = VOLKEYUP;
+
+#endif 
 				GpioLog("key up",ADDVOL_KEY);
 				break;
 			case SUBVOL_KEY:	//短按播放喜爱内容,上一曲
 				keydown_flashingLED();
-#ifdef ONCEVOL
+#if 1
+
+	#ifdef ONCEVOL
 				createPlayEvent((const void *)"xiai",PLAY_NEXT);
-#else
+	#else
 				VolAndNextKey(VOLKEYUP,SUBVOL_KEY);
+	#endif
+
+#else
+
+				mutiple_key_SUB.key_number = SUBVOL_KEY;
+				mutiple_key_SUB.key_state  = VOLKEYUP;
 #endif
 				GpioLog("key up",SUBVOL_KEY);
+
 				break;
 #endif
 			case RESERVE_KEY1:	//播放、暂停
@@ -369,21 +468,47 @@ static void signal_handler(int signum){
 #ifdef	LED_LR
 			case ADDVOL_KEY:	//长按音量加
 				keydown_flashingLED();
-#ifdef ONCEVOL
+
+#if 1
+
+	#ifdef ONCEVOL
 				Setwm8960Vol(GVOL_ADD,0);
-#else
+	#else
 				VolAndNextKey(VOLKEYDOWN,ADDVOL_KEY);
-#endif
+	#endif
+#else 
+
+				mutiple_key_ADD.key_state  = VOLKEYDOWN;
+				mutiple_key_ADD.key_number = ADDVOL_KEY;
+				if(mutiple_key_ADD.PthreadState == PthreadState_run)
+					break;
+				mutiple_key_ADD.PthreadState = PthreadState_run;
+				gettimeofday(&mutiple_key_ADD.time_start,0);
+				pool_add_task(mus_vol_mutiplekey_Thread,(void *)&mutiple_key_ADD);
+#endif 
 				ack_VolCtr("add",GetVol());		//----------->音量减
 				GpioLog("key down",ADDVOL_KEY);
 				break;
 			case SUBVOL_KEY:	//长按音量减
 				keydown_flashingLED();
-#ifdef ONCEVOL
+
+#if 1
+
+	#ifdef ONCEVOL
 				Setwm8960Vol(GVOL_SUB,0);
-#else
+	#else
 				VolAndNextKey(VOLKEYDOWN,SUBVOL_KEY);
-#endif
+	#endif
+
+#else
+				mutiple_key_SUB.key_state  = VOLKEYDOWN;
+				mutiple_key_SUB.key_number = SUBVOL_KEY;
+				gettimeofday(&mutiple_key_SUB.time_start,0);
+				if(mutiple_key_SUB.PthreadState == PthreadState_run)
+					break;
+				mutiple_key_SUB.PthreadState = PthreadState_run;
+				pool_add_task(mus_vol_mutiplekey_Thread,(void *)&mutiple_key_SUB);
+#endif 
 				ack_VolCtr("sub",GetVol());		//----------->音量减
 				GpioLog("key down",SUBVOL_KEY);
 				break;

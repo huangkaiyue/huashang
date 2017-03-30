@@ -20,6 +20,13 @@
 #define RSIZE    				8    	//
 
 
+
+#define VOL_UP			120				//音量上限
+#define VOL_DWON		95				//音量下限
+#define VOL_NUM			3				//每次增加
+#define VOL_SET_DATA(x) (x/4)+VOL_DWON	//APP设置值算法
+
+
 #define VOL_SUB 0
 #define VOL_ADD 1
 #define VOL_SET 2

@@ -107,10 +107,7 @@ void CleanI2S_PlayCachedata(void){
 	}
 	cleanplayLog("cleanplay end\n");
 }
-#define VOL_UP			120				//音量上限
-#define VOL_DWON		95				//音量下限
-#define VOL_NUM			3				//每次增加
-#define VOL_SET_DATA(x) (x/4)+VOL_DWON	//APP设置值算法
+
 int Setwm8960Vol(int dir,int vol){
 	int ret = 0;
 	if(I2S.tx_vol<=VOL_DWON){
