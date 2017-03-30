@@ -612,9 +612,9 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			usleep(500*1000);
 			SocSendMenu(3,0);
 			usleep(100*1000);
-			test_clock_Interfaces(time_open);
+			test_Clock_saveLoute((const char *)time_open);
 			SocSendMenu(7,time_open);	//设置闹钟开机时间
-			test_clock_Interfaces("ok");
+	
 		}
 	}else if(!strcmp(pSub->valuestring,"getdev")){	//微信获取设备信息
 		ack_alluserCtr(sockfd,get_battery(),get_charge());

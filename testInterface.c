@@ -4,6 +4,7 @@
 #include "host/voices/callvoices.h"
 #include "base/cJSON.h"
 #include "host/StreamPlay/StreamFile.h"
+#include "nvram.h"
 
 #include "config.h"
 
@@ -275,6 +276,13 @@ void test_clock_Interfaces(const char *str){
 		fflush(fp);
 		fclose(fp);
 	}
+}
+void test_Clock_saveLoute(const char *clockTime){
+#if 0	
+	char buf_s[128]={0};
+	sprintf(buf_s,"nvram_set 2860 testclock %s", clockTime);
+	system(buf_s);
+#endif	
 }
 
 static unsigned char playIndex=0;
