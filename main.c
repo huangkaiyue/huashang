@@ -183,7 +183,7 @@ int main(int argc, char **argv){
 				break;
 			case TULING_URL_MAIN:	//播放图灵 tts文件
 				//start_play_tuling();
-				if(PlayTulingText((const char*)msg)){
+				if(PlayTulingText((const char*)msg)){		//异常退出，需要清理后面的url播放事件
 					SetMainQueueLock(MAIN_QUEUE_LOCK);		//清理后面mp3播放
 				}
 				SetTuling_playunLock();
