@@ -48,6 +48,7 @@
 #define TULING_URL_MAIN			11		//图灵URL事件
 #define TULING_URL_VOICES		12		//图灵mp3事件
 #define TEST_PLAY_EQ_WAV		13		//测试播放wav音频文件
+#define WEIXIN_DOWN_MP3_EVENT	14		//微信端下载歌曲事件
 
 //----------------------系统音---------------------------------------
 #define END_SYS_VOICES_PLAY			1	//结束音

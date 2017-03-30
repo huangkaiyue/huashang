@@ -192,6 +192,7 @@ void CreateLikeMusic(void){
 	printf("CreateLikeMusic like music add \n");
 	Save_like_music();
 }
+//删除喜爱内容
 void DelLikeMusic(void){
 	if(access(TF_SYS_PATH, F_OK)){	//检查tf卡
 		if(GetRecordeVoices_PthreadState()==PAUSE_E)	
@@ -206,6 +207,16 @@ void DelLikeMusic(void){
 	}
 	printf("Del_like_music like music sub \n");
 	Del_like_music();
+}
+//创建保存微信下载mp3 事件到主线程队列当中
+void Create_SaveWeixinDownMp3_EventToMainQueue(const char *saveFileName){
+	int len = strlen(saveFileName);
+	char *filename=(char *)calloc(1,len+1);
+	if(filename){
+		snprintf(filename,len+1,"%s",saveFileName);
+		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
+		AddDownEvent((const char *)filename,WEIXIN_DOWN_MP3_EVENT);
+	}
 }
 #endif
 
@@ -382,7 +393,7 @@ void *Close_Mtk76xxSystem(void *arg){
 
 #ifdef PALY_URL_SD	
 	SaveSystemPlayNum();
-	DelSdcardMp3file(MP3_SDPATH);
+	//DelSdcardMp3file(MP3_SDPATH);		//默认不存储歌曲，关机清除接口也去掉(关机时间太快，没有及时执行这个接口，导致sdcard损坏)
 #endif	
 	return NULL;
 }

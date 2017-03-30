@@ -628,6 +628,14 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			char *token= cJSON_GetObjectItem(pJson, "token")->valuestring;
 			Load_useridAndToken((const char *) userId,(const char *) token);
 		}
+	}else if(!strcmp(pSub->valuestring,"downmp3")){	//微信端下载歌曲事件，已经下载到 /Down/ 目录下
+		char *status= cJSON_GetObjectItem(pJson, "status")->valuestring;
+		if(!strcmp(status,"ok")){	//已经下载完
+			char *cacheMp3file= cJSON_GetObjectItem(pJson, "mp3file")->valuestring;
+			Create_SaveWeixinDownMp3_EventToMainQueue(cacheMp3file);
+		}else{
+		}
+
 	}
 exit:
 	cJSON_Delete(pJson);

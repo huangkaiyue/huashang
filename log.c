@@ -16,6 +16,7 @@ void WritePlayUrl_Log(const char *data){
     }
 	int size = strlen(data);
     fwrite(data,1,size,fp);
+	fwrite("\n",1,1,fp);
   	fflush(fp);
 	fclose(fp);
 #endif	
@@ -195,11 +196,7 @@ void musicdbLog(const char *data,const char *filename){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	char buf[128];
-	if(!strcmp(data,"musicdb_start\n")){
-		fp =fopen("/log/musicdb.log","w+");
-	}else{
-		fp =fopen("/log/musicdb.log","a+");
-	}
+	fp =fopen("/log/musicdb.log","a+");
 	sprintf(buf,"%s%s %s\n","name:",data,filename);
 	if(NULL == fp ){
 		return ;

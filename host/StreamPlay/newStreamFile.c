@@ -150,9 +150,12 @@ static void SaveLoveMp3File(char *filepath){
 	#else
 		case LOVE_MP3_SAVE_LOVE_MP3_EVENT:		//添加喜爱
 			if(strcmp(st->mp3name,"")){
-				snprintf(buf,200,"cp %s %s%s",filepath,MP3_LIKEPATH,st->mp3name);
-				system(buf);
-				InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
+				//插入数据库成功
+				if(InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name)==0){
+					snprintf(buf,200,"cp %s %s%s",filepath,MP3_LIKEPATH,st->mp3name);
+					system(buf);
+				}
+				
 			}	
 			like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;	
 			break;
@@ -168,8 +171,8 @@ static void SaveLoveMp3File(char *filepath){
 				remove(filepath);
 			break;
 		case DEFAULT_SAVE_MP3_EVENT:	//默认保存到sdcard 当中
-			snprintf(buf,200,"cp %s %s%s",URL_SDPATH,MP3_SDPATH,st->mp3name);
-			system(buf);
+			//snprintf(buf,200,"cp %s %s%s",URL_SDPATH,MP3_SDPATH,st->mp3name);
+			//system(buf);
 			break;
 		default:	
 			break;
@@ -513,7 +516,23 @@ void PlayUrl(const void *data){
 	}
 }
 #endif
-
+//cacheFilename :微信端下载缓存的路径  /Down/xxxxxxxxxx.mp3
+void HandlerWeixinDownMp3(const char *cacheFilename){
+	char rumCmd[200]={0};
+	char *filename= STRSTR(cacheFilename,'/');	//获取后缀文件名
+	if(!strcmp(filename,"")){
+		goto exit1;
+	}
+	WritePlayUrl_Log(cacheFilename);
+	WritePlayUrl_Log(filename);
+	keydown_flashingLED();
+	if(InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)filename)==0){	//插入数据库成功
+		snprintf(rumCmd,200,"cp %s %s%s",cacheFilename,MP3_LIKEPATH,filename);
+		system(rumCmd);
+	}
+exit1:	
+	remove(cacheFilename);
+}
 //获取播放流状态
 void getStreamState(void *data,void StreamState(void *data,Player_t *player)){
 	st->player.vol = st->GetVol();
