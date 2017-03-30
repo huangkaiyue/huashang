@@ -17,6 +17,7 @@ static int led_system_type;
 #define GVOL_ADD 	VOL_ADD
 #define GVOL_SUB 	VOL_SUB
 #define ONCEVOL		//音量加一次
+//#define SINGLE_ADD_AND_PLAY		//单步加音量或切换歌曲
 
 #ifndef ONCEVOL
 #define VOLWAITTIME		300*1000	//音量加减时间间隔
@@ -383,7 +384,7 @@ static void signal_handler(int signum){
 #ifdef 	LOCAL_MP3
 			case ADDVOL_KEY:	//短按播放喜爱内容,下一曲
 				keydown_flashingLED();
-#if 1
+#ifdef SINGLE_ADD_AND_PLAY		//单步加音量或切换歌曲
 
 	#ifdef ONCEVOL	 
 				createPlayEvent((const void *)"xiai",PLAY_PREV);
@@ -401,7 +402,7 @@ static void signal_handler(int signum){
 				break;
 			case SUBVOL_KEY:	//短按播放喜爱内容,上一曲
 				keydown_flashingLED();
-#if 1
+#ifdef SINGLE_ADD_AND_PLAY		//单步加音量或切换歌曲
 
 	#ifdef ONCEVOL
 				createPlayEvent((const void *)"xiai",PLAY_NEXT);
@@ -469,7 +470,8 @@ static void signal_handler(int signum){
 			case ADDVOL_KEY:	//长按音量加
 				keydown_flashingLED();
 
-#if 1
+#ifdef SINGLE_ADD_AND_PLAY		//单步加音量或切换歌曲
+
 
 	#ifdef ONCEVOL
 				Setwm8960Vol(GVOL_ADD,0);
@@ -492,7 +494,7 @@ static void signal_handler(int signum){
 			case SUBVOL_KEY:	//长按音量减
 				keydown_flashingLED();
 
-#if 1
+#ifdef SINGLE_ADD_AND_PLAY		//单步加音量或切换歌曲
 
 	#ifdef ONCEVOL
 				Setwm8960Vol(GVOL_SUB,0);
