@@ -206,11 +206,13 @@ int main(int argc, char **argv){
 				free((void *)msg);
 				usleep(1000);
 				break;
-#endif				
+#endif			
+#ifdef PALY_URL_SD
 			case WEIXIN_DOWN_MP3_EVENT:	//微信端下载歌曲事件	
 				HandlerWeixinDownMp3((const void *)msg);
 				free((void *)msg);
 				break;
+#endif				
 			case QUIT_MAIN:
 				printf("end main !!!\n");
 				goto exit0;

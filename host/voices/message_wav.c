@@ -277,7 +277,7 @@ void PlayQttsText(char *text,unsigned char type){
 int PlayTulingText(const char *url){
 	//stait_qtts_cache();
 	start_event_play_wav(5);
-	SetWm8960Rate(RECODE_RATE);
+	SetWm8960Rate(RECODE_RATE); 
 	PlayQtts_log("paly tuling start\n");
 	downTulingMp3((const char*)url);
 	PlayQtts_log("paly tuling end\n");

@@ -336,7 +336,7 @@ void mus_vol_mutiplekey_Thread(void *arg){
 					break;
 			}
 
-			usleep(400 * 1000);
+			usleep(300 * 1000);
 		}
 
 	}
@@ -454,7 +454,7 @@ static void signal_handler(int signum){
 				break;
 				
 			case SPEEK_KEY://»á»°¼ü
-#ifdef	SPEEK_VOICES1
+#ifdef	SPEEK_VOICES1 
 				ReadSpeekGpio();	//-----bug
 #endif
 				if(gpio.speek_tolk==SPEEK){

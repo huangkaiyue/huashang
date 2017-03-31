@@ -516,6 +516,9 @@ void PlayUrl(const void *data){
 	}
 }
 #endif
+
+
+#ifdef PALY_URL_SD
 //cacheFilename :微信端下载缓存的路径  /Down/xxxxxxxxxx.mp3
 void HandlerWeixinDownMp3(const char *cacheFilename){
 	char rumCmd[200]={0};
@@ -533,6 +536,7 @@ void HandlerWeixinDownMp3(const char *cacheFilename){
 exit1:	
 	remove(cacheFilename);
 }
+#endif
 //获取播放流状态
 void getStreamState(void *data,void StreamState(void *data,Player_t *player)){
 	st->player.vol = st->GetVol();

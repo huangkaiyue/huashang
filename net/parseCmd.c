@@ -632,7 +632,9 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		char *status= cJSON_GetObjectItem(pJson, "status")->valuestring;
 		if(!strcmp(status,"ok")){	//已经下载完
 			char *cacheMp3file= cJSON_GetObjectItem(pJson, "mp3file")->valuestring;
+#ifdef PALY_URL_SD			
 			Create_SaveWeixinDownMp3_EventToMainQueue(cacheMp3file);
+#endif
 		}else{
 		}
 
