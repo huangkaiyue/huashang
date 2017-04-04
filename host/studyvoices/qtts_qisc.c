@@ -192,11 +192,11 @@ void StartPthreadPlay(void){
 	while(Qstream->downState==DOWN_QTTS_QUIT){		//等待播放线程退出
 		if(Qstream->playState!=PLAY_QTTS_ING)
 			break;
-		printf("..................... WaitPthreadExit .....................\n ");
+		//printf("..................... WaitPthreadExit .....................\n ");
 		usleep(100*1000);
 	}
 	PlayQtts_log("qtts quit ok\n");
-	printf("..................... WaitPthreadExit ok.....................\n ");
+	//printf("..................... WaitPthreadExit ok.....................\n ");
 	Qstream->playState=PLAY_QTTS_QUIT;
 }
 int GetplayState(void){

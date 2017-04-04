@@ -35,7 +35,7 @@ static void delInternetLock(void){
 	remove(INTEN_NETWORK_FILE_LOCK);
 }
 
-static int SendSsidPasswd_toNetServer(const char *ssid,const char *passwd){
+static int SendSsidPasswd_toNetServer(const char *ssid,const char *passwd,int random){
 	int ret=0;
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
@@ -44,6 +44,7 @@ static int SendSsidPasswd_toNetServer(const char *ssid,const char *passwd){
 	cJSON_AddNumberToObject(pItem, "event",SMART_CONFIG_OK);
 	cJSON_AddStringToObject(pItem, "ssid",ssid);
 	cJSON_AddStringToObject(pItem, "passwd",passwd);
+	cJSON_AddNumberToObject(pItem, "random",random);
 	szJSON = cJSON_Print(pItem);
 	ret= SendtoServicesWifi(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
@@ -61,7 +62,7 @@ int checkInternetFile(void){
 	}
 	return 0;
 }
-static int GetSsidAndPasswd(char *smartData,char *ssid,char *passwd){
+static int GetSsidAndPasswd(char *smartData,char *ssid,char *passwd,int *random){
 	int smartconfig_headlen=strlen(SMART_CONFIG_HEAD);	
 	char wifidata[200]={0};
 	snprintf(wifidata,200,"%s",smartData+smartconfig_headlen);
@@ -76,6 +77,11 @@ static int GetSsidAndPasswd(char *smartData,char *ssid,char *passwd){
 			sprintf(ssid,"%s",pSub->valuestring);
 			pSub = cJSON_GetObjectItem(pJson, "pwd");
 			sprintf(passwd,"%s",pSub->valuestring);
+			pSub = cJSON_GetObjectItem(pJson, "random");
+			if(pSub){
+				printf("recv random = %d\n",pSub->valueint);
+				*random=pSub->valueint;
+			}
 			WiterSmartConifg_Log(ssid,passwd);
 			return 0;
 		}
@@ -88,6 +94,7 @@ static void *RunSmartConfig_Task(void *arg){
    	char *buf, *ptr;
 	char ssid[64]={0},pwd[64]={0};
 	int ret=-1,timeout=0;
+	int random=0;
 	ConnetWIFI *wifi = (ConnetWIFI *)arg;
 	buf = (char *)calloc(512,1);
 	if(buf==NULL){
@@ -106,7 +113,7 @@ static void *RunSmartConfig_Task(void *arg){
 		fgets(buf, 512, fp);
 		ptr =buf; 
 
-		if(!GetSsidAndPasswd(ptr,ssid,pwd)){
+		if(!GetSsidAndPasswd(ptr,ssid,pwd,&random)){
 			DEBUG_AP_STA("ssid:%s   pwd:%s\n",ssid,pwd);
 			ret=0;
 			break;
@@ -123,8 +130,8 @@ static void *RunSmartConfig_Task(void *arg){
 	if(ret==0){
 		snprintf(wifi->ssid,64,"%s",ssid);
 		snprintf(wifi->passwd,64,"%s",pwd);
-		wifi->connetEvent(SMART_CONFIG_OK);	//已经接收到ssid 和 passwd
-		SendSsidPasswd_toNetServer(ssid,pwd);
+		//wifi->connetEvent(SMART_CONFIG_OK);	//已经接收到ssid 和 passwd
+		SendSsidPasswd_toNetServer(ssid,pwd,random);
 		delSmartConfigLock();
 		sleep(5);
 		while(++timeout<40){	//等待配网成功后，使能按键
