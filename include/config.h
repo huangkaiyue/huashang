@@ -121,7 +121,7 @@
 #define SYSTEMLOCKNUM	500		//闄愬埗娆℃暟
 
 
-#define DEBUG_SYSTEM_IP					//开启按键按下语音播放wifi 和IP 地址功能
+//#define DEBUG_SYSTEM_IP					//开启按键按下语音播放wifi 和IP 地址功能
 //#define TEST_PLAY_EQ_MUSIC			//测试音效		
 //#define PCM_TEST						//测试保存pcm文件
 

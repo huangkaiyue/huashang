@@ -4,6 +4,9 @@
 #include "i2s_ctrl.h"
 #include "config.h"
 
+
+#define WM8960_NODE_PATH	"/dev/i2s0"
+
 #define RECODE_RATE 			8000 
 #define AUDIO_RX_VOICE 			118  	//录音大小
 #ifdef TEST_SDK
@@ -34,7 +37,6 @@
 #define VOL_SET 2
 
 
-extern void *shrxbuf[MAX_I2S_PAGE];
 extern char play_buf[I2S_PAGE_SIZE+4];
 
 
@@ -46,7 +48,7 @@ typedef struct {
 	unsigned char tx_vol;			//播放音量大小
 	short i2s_fd;					//打开音频设备节点描述符
 	unsigned short tx_rate;			//当前播放采样率
-	unsigned short play_size;
+	unsigned short play_size;		//原始数据播放大小，当达到I2S_PAGE_SIZE ,才能往内核里面写
 	unsigned short qttspos;
 	unsigned char qttsend;
 	unsigned char old_vol:7,cache_vol:1;//tang : change 2015-12-2 for save vol

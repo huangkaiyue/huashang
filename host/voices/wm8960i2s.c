@@ -3,13 +3,11 @@
 #include "host/voices/wm8960i2s.h"
 #include "config.h"
 
-#define WM8960_NODE_PATH	"/dev/i2s0"
-
-void *shtxbuf[MAX_I2S_PAGE];
-void *shrxbuf[MAX_I2S_PAGE];
-char play_buf[I2S_PAGE_SIZE+4];
-
+static void *shtxbuf[MAX_I2S_PAGE];
+static void *shrxbuf[MAX_I2S_PAGE];
 static int play_index = 0;
+
+char play_buf[I2S_PAGE_SIZE+4];
 I2SST I2S;
 
 //使能发送,先检查当前状态，再操作，防止内核态死锁
@@ -38,8 +36,7 @@ static void set_rx_state(int i2s_fd,int enable){
 }
 static int i2s_txbuffer_mmap(int i2s_fd){
 	int i;
-	for(i = 0; i < MAX_I2S_PAGE; i++)
-	{
+	for(i = 0; i < MAX_I2S_PAGE; i++){
 		shtxbuf[i] = mmap(0, I2S_PAGE_SIZE, PROT_WRITE, MAP_SHARED, i2s_fd, i*I2S_PAGE_SIZE);
 		if (shtxbuf[i] == MAP_FAILED)
 		{
@@ -52,11 +49,9 @@ static int i2s_txbuffer_mmap(int i2s_fd){
 }
 static int i2s_rxbuffer_mmap(int i2s_fd){
 	int i;
-	for(i = 0; i < MAX_I2S_PAGE; i++)
-	{
+	for(i = 0; i < MAX_I2S_PAGE; i++){
 		shrxbuf[i] = mmap(0, I2S_PAGE_SIZE, PROT_READ, MAP_SHARED, i2s_fd, i*I2S_PAGE_SIZE);
-		if (shrxbuf[i] == MAP_FAILED)
-		{
+		if (shrxbuf[i] == MAP_FAILED){
 			printf("i2scmd:failed to mmap..\n");
 			return-1;
 		}
@@ -66,10 +61,8 @@ static int i2s_rxbuffer_mmap(int i2s_fd){
 
 static int i2s_txbuffer_munmap(void){
 	int i;
-	for(i = 0; i < MAX_I2S_PAGE; i++)
-	{
-		if(munmap(shtxbuf[i], I2S_PAGE_SIZE)!=0)
-		{
+	for(i = 0; i < MAX_I2S_PAGE; i++){
+		if(munmap(shtxbuf[i], I2S_PAGE_SIZE)!=0){
 			printf("i2scmd : munmap i2s mmap faild\n");
 			return-1;
 		}
@@ -79,10 +72,8 @@ static int i2s_txbuffer_munmap(void){
 
 static int i2s_rxbuffer_munmap(void){
 	int i;
-	for(i = 0; i < MAX_I2S_PAGE; i++)
-	{
-		if(munmap(shrxbuf[i], I2S_PAGE_SIZE)!=0)
-		{
+	for(i = 0; i < MAX_I2S_PAGE; i++){
+		if(munmap(shrxbuf[i], I2S_PAGE_SIZE)!=0){
 			printf("i2scmd : munmap i2s mmap faild\n");
 			return-1;
 		}
@@ -96,8 +87,7 @@ void CleanI2S_PlayCachedata(void){
 	char *pBuf=NULL;
 	int i = 0;
 	cleanplayLog("cleanplay_start\n");
-	while(1)   //清除音频DMA数据
-	{
+	while(1){   //清除音频DMA数据
 		ioctl(I2S.i2s_fd, I2S_PUT_AUDIO, &i);
 		pBuf = shtxbuf[i];
 		memset(pBuf, 0, I2S_PAGE_SIZE); 
@@ -113,8 +103,7 @@ int Setwm8960Vol(int dir,int vol){
 	if(I2S.tx_vol<=VOL_DWON){
 		I2S.tx_vol=VOL_DWON;
 	}
-	switch(dir)
-	{
+	switch(dir){
 		case VOL_SUB:
 			I2S.tx_vol-=VOL_NUM;
 			break;
@@ -176,8 +165,7 @@ void mute_recorde_vol(int change)
 /********************************************
 写入pcm数据给音频接口
 ********************************************/
-void write_pcm(char *buf)
-{
+void write_pcm(char *buf){
 	char *pBuf;
 	int play_index = 0;
 #if defined(CONFIG_I2S_MMAP)	
@@ -190,18 +178,6 @@ void write_pcm(char *buf)
 	ioctl(I2S.i2s_fd, I2S_PUT_AUDIO, pBuf);	
 #endif	//end defined(CONFIG_I2S_MMAP)
 }
-#if 0
-void WritePcmData(char *data,int size)
-{
-	if(I2S.play_size==I2S_PAGE_SIZE)//fix me end is < do?
-	{
-		I2S.play_size=0;
-		write_pcm(play_buf);
-	}
-	memcpy(play_buf+I2S.play_size,data,size);
-	I2S.play_size +=size;
-}
-#endif
 void clean_qtts_cache(void){
 	I2S.qttsend=1;
 }
@@ -343,12 +319,10 @@ void DestoryWm8960Voices(void){
 	char* pBuf;
 	if(I2S.execute_mode == EXTERNAL_LBK2 || I2S.execute_mode == PLAY_MODE){
 		int i = 0;
-		while(1)   //清除音频DMA数据
-		{
+		while(1){   //清除音频DMA数据
 			ioctl(I2S.i2s_fd, I2S_PUT_AUDIO, &i);
 			pBuf = shtxbuf[i];
-			if(*pBuf==0&&*(pBuf+1)==0&&*(pBuf+2)==0)
-			{
+			if(*pBuf==0&&*(pBuf+1)==0&&*(pBuf+2)==0){
 				printf("__clean_voices : shtxbuf is empty\n");
 				break;
 			}
