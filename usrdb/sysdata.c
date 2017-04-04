@@ -28,7 +28,7 @@ void checkSystemLock(void){
 		sleep(10);
 		Create_PlayQttsEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
 		sleep(10);
-		SetSystemTime(1);
+		SetMucClose_Time(1);
 	}
 	setSystemLock((opennumber+1));
 }

@@ -106,6 +106,9 @@
 #define SYSTEMOUTTIME	15*MIN
 #define PLAYOUTTIME		60*MIN
 #define ERRORTIME		30*24*60*MIN
+
+#define LONG_TIME_NOT_USER_MUTE_VOICES	10		//10s不用 mute音频
+
 //--------------------------------------------------------
 
 #define NETWORK_OK 0		//连接外网成功
@@ -164,7 +167,7 @@ extern int GetRecordeVoices_PthreadState(void);
 #ifdef TIMEOUT_CHECK
 extern void start_event_talk_message(void);
 #endif
-extern int SetSystemTime(unsigned char outtime);
+extern int SetMucClose_Time(unsigned char closeTime);
 
 extern void InitRecord_VoicesPthread(void);
 extern void ExitRecord_Voicespthread(void);

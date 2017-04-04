@@ -107,7 +107,7 @@ void CleanI2S_PlayCachedata(void){
 	}
 	cleanplayLog("cleanplay end\n");
 }
-
+//app设置音量大小接口
 int Setwm8960Vol(int dir,int vol){
 	int ret = 0;
 	if(I2S.tx_vol<=VOL_DWON){
@@ -121,7 +121,7 @@ int Setwm8960Vol(int dir,int vol){
 		case VOL_ADD:
 			I2S.tx_vol+=VOL_NUM;
 			break;
-		case VOL_SET:
+		case VOL_SET:	//适配app 0-99音量大小刻度算法
 			if(vol==0)
 				I2S.tx_vol=0;
 			else
@@ -165,7 +165,7 @@ void mute_recorde_vol(int change)
 		SET_TX_VOL(I2S.i2s_fd,I2S.tx_vol);
 	}else{
 		printf("MUTE change %d tx_vol %d\n",change,I2S.tx_vol);
-		change=(change>I2S.tx_vol?I2S.tx_vol:change);
+		change=(change>I2S.tx_vol?change:I2S.tx_vol);
 		printf("MUTE change %d tx_vol %d\n",change,I2S.tx_vol);
 		SET_TX_VOL(I2S.i2s_fd,change);
 	}

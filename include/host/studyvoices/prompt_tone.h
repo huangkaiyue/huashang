@@ -84,7 +84,7 @@
 #define MSG_VOICES			"qtts/MSG_VOICES_8k.amr"		//叮咚
 
 #define TULING_DIDI			"qtts/TuLin_Di_8K.amr"			//叮
-#define TULING_WINT			"qtts/TuLin_Wint_8K.amr"		//请稍等
+#define TULING_WINT			"qtts/TuLin_Wint_8K.amr"		//请稍等  
 #define TULING_WINTXUNFEI	"qtts/TuLin_WintXunfei_8K.amr"	//这个问题有点难，我在问我的智慧爷爷
 #define TULING_HAHAXIONG	"qtts/TuLin_Hahaxiong_8K.amr"	//我叫哈哈熊，聪明又可爱的哈哈熊
 #define LOW_BATTERY			"qtts/low_battery_8K.amr"

@@ -273,11 +273,11 @@ exit0:
 	return ;
 }
 //关机，将当前系统时间发送给MCU
-int SetSystemTime(unsigned char outtime){
+int SetMucClose_Time(unsigned char closeTime){
 	time_t timep;
 	struct tm *p;
 	time(&timep);
-	char syscloseTime[64];
+	char syscloseTime[64]={0};
 	SocSendMenu(3,0);
 	usleep(100*1000);
 	p=localtime(&timep); /*取得当地时间*/
@@ -286,8 +286,8 @@ int SetSystemTime(unsigned char outtime){
 	}else{
 		p->tm_hour=(p->tm_hour)+8;
 	}
-	sprintf(syscloseTime,"%d:%d",(p->tm_hour),(p->tm_min)+outtime);
-	printf("SetSystemTime : %s\n",syscloseTime);
+	sprintf(syscloseTime,"%d:%d",(p->tm_hour),(p->tm_min)+closeTime);
+	printf("SetMucClose_Time : %s\n",syscloseTime);
 	SocSendMenu(2,syscloseTime);
 	return 0;
 }
@@ -306,19 +306,19 @@ static void *PthreadRecordVoices(void *arg){
 	while(GetRecordeVoices_PthreadState()!=RECODE_STOP){
 #ifdef CLOCESYSTEM
 		endtime=time(&t);
-		if((endtime-starttime)>ERRORTIME){
+		if((endtime-starttime)>ERRORTIME){	//开机时候，没有获取网络时间，导致时间差过大
 			starttime=time(&t);
 			sysMes.Playlocaltime=time(&t);
 		}else{
 			if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
-				if((endtime-starttime)==10){
+				if((endtime-starttime)==LONG_TIME_NOT_USER_MUTE_VOICES){	//10s 之后，不用关闭音频
 					printf("=============MUTE====%d===========\n",endtime-starttime);
 					Mute_voices(MUTE);
 				}
-				if((endtime-starttime)==SYSTEMOUTSIGN){		//长时间不触发事件，则关闭
+				if((endtime-starttime)==SYSTEMOUTSIGN){		//第一次长时间不触发事件，则关闭
 					SetRecordeVoices_PthreadState(TIME_SIGN);
 				}
-				if((endtime-starttime)>SYSTEMOUTTIME){		//长时间不触发事件，则关闭
+				if((endtime-starttime)>SYSTEMOUTTIME){		//第二次长时间不触发事件，则直接关机
 					SetRecordeVoices_PthreadState(TIME_OUT);
 					TimeLog("TIME_OUT\n");
 				}
@@ -347,22 +347,22 @@ static void *PthreadRecordVoices(void *arg){
 				break;
 #endif
 #ifdef CLOCESYSTEM
-			case TIME_SIGN:
+			case TIME_SIGN:		//提示休息很久了
 				//PlayTuLingTaibenQtts("小朋友快来跟我玩，跟我说话聊天吧。",QTTS_GBK);
 				play_sys_tices_voices(SPEEK_WARNING);
 				sleep(1);
 				break;
 				
-			case PLAY_OUT:
-				SetSystemTime(1);
-				SetRecordeVoices_PthreadState(PLAY_URL);
-				sysMes.Playlocaltime=time(&t);
-				break;
-				
-			case TIME_OUT:				//超时退出
-				SetSystemTime(1);
+			case TIME_OUT:		//挂起超时退出
+				SetMucClose_Time(1);	//设置一分钟后关机
 				pause_record_audio(2);
 				starttime=time(&t);
+				break;
+				
+			case PLAY_OUT:		//播放超时退出
+				SetMucClose_Time(1);	//设置一分钟后关机
+				SetRecordeVoices_PthreadState(PLAY_URL);
+				sysMes.Playlocaltime=time(&t);
 				break;
 #endif
 			default:

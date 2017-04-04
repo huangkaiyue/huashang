@@ -130,6 +130,9 @@ static void autoPlayNextMusic(unsigned char musicType){
 		case guoxue:
 			createPlayEvent((const void *)"guoxue", PLAY_NEXT);
 			break;
+		case xiai:
+			createPlayEvent((const void *)"xiai", PLAY_NEXT);
+			break;
 		default:
 			sysMes.localplayname=0;
 		break;
