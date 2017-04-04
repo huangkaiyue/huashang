@@ -4,7 +4,7 @@
 #include "nvram.h"
 #include "host/voices/callvoices.h"
 #include "../host/studyvoices/qtts_qisc.h"
-
+#include "host/voices/wm8960i2s.h"
 
 //----------------------------权限次数-------------------------------------
 #ifdef	SYSTEMLOCK
@@ -39,7 +39,7 @@ void checkSystemLock(void){
 void GetVol_formRouteTable(unsigned char *size){
 	char *vol = nvram_bufget(RT2860_NVRAM, "VoiceSIZE");
 	if(!strcmp(vol,"")){
-		*size=105;
+		*size=SYSTEM_DEFALUT_VOL;
 	}else{
 		*size = (unsigned char)atoi(vol);
 	}

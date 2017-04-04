@@ -190,10 +190,12 @@ void led_lr_oc(unsigned char type){
 static void GetWifiName_AndIpaddressPlay(void){
 	char buf[128]={0};
 	char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
+#ifdef DEBUG_SYSTEM_IP
 	char IP[20]={0};
 	GetNetworkcardIp((char * )"apcli0",IP);
+	snprintf(buf,128,"已连接 wifi %s  IP地址是 %s",wifi,IP);
+#endif
 	if(strlen(wifi)>0){
-		snprintf(buf,128,"已连接 wifi %s  IP地址是 %s",wifi,IP);
 		Create_PlayQttsEvent(buf,QTTS_GBK);
 	}
 }

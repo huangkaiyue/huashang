@@ -186,7 +186,7 @@ void play_sys_tices_voices(char *filePath){
 	snprintf(path,128,"%s%s",sysMes.localVoicesPath,filePath);
 	SetWm8960Rate(RECODE_RATE);
 	if(strstr(path,"TuLin_Wint_8K")){ 
-		mute_recorde_vol(105);
+		mute_recorde_vol(PLAY_PASUSE_VOICES_VOL);
 	}
 #if 1
 	PlaySystemAmrVoicesLog("playsys voices start \n");
