@@ -378,6 +378,9 @@ void keyStreamPlay(void){
 		DecodePause();
 		PlayorPause();
 		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
+	}else if(st->player.playState==MAD_EXIT){
+		createPlayEvent((const void * )"xiai",xiai);//暂停状态，添加歌曲到喜爱目录下播放
+		usleep(1000);//防止添加按键太快		
 	}
 }
 //进度条控制播放 
