@@ -4,7 +4,7 @@
 
 //#define TEST_SDK					//测试SDK
 
-//#define WORK_INTER
+#define WORK_INTER
 
 #ifdef TEST_SDK						//使能命令输入行
 #endif

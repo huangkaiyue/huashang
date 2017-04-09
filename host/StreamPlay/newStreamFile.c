@@ -137,7 +137,7 @@ int GetFileNameForPath(char *path){
 static void SaveLoveMp3File(char *filepath){
 	char buf[200]={0};
 	if(CheckSdcardInfo(MP3_SDPATH)){	//内存不足50M删除指定数目的歌曲
-		DelSdcardMp3file(MP3_SDPATH);
+		return ;
 	}
 	switch(like_mp3_sign){
 	#if 0
@@ -239,7 +239,7 @@ static void *NetplayStreamMusic(void *arg){
 	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//发送结束状态
 	cleanStreamData(st);	//状态切换是否加锁
 	
-	pause_record_audio(23);
+	pause_record_audio();
 	DEBUG_STREAM("exit play ok (%d)\n",get_playstate());
 	return NULL;
 }
@@ -380,7 +380,7 @@ void keyStreamPlay(void){
 		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	}else if(st->player.playState==MAD_EXIT){
 #ifdef LOCAL_MP3
-		createPlayEvent((const void * )"xiai",PLAY_NEXT);//暂停状态，添加歌曲到喜爱目录下播放
+		Create_playMusicEvent((const void * )"xiai",PLAY_NEXT);//暂停状态，添加歌曲到喜爱目录下播放
 		usleep(1000);//防止添加按键太快	
 #endif		
 	}

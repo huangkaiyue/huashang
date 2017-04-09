@@ -10,19 +10,17 @@
 #define START_SPEEK_VOICES 		1  	//录音、语音识别
 #define START_TAIK_MESSAGE		2	//短消息,发送给其它设备(app/其它主机)
 #define RECODE_PAUSE 			3 	//录音挂起
-//#define PLAY_STD_VOICES			4	//播放识别音
-//#define PLAY_MP3				5	//播放mp3文件音
-#define PLAY_WAV				6	//播放wav原始数据音
-#define END_SPEEK_VOICES		7	//结束录音
-#define PLAY_URL				8	//播放url数据
-#define TIME_OUT				9	//关闭系统
-#define TIME_SIGN				12	//长时间无事件
-#define PLAY_OUT				13	//关闭系统
-#define SPEEK_WAIT				14	//对讲事件
-#define PLAY_TULING				15	//播放图灵
+#define PLAY_WAV				4	//播放wav原始数据音
+#define END_SPEEK_VOICES		5	//结束录音
+#define PLAY_URL				6	//播放url数据
+#define TIME_OUT				7	//关闭系统
+#define TIME_SIGN				8	//长时间无事件
+#define PLAY_OUT				9	//关闭系统
+#define SPEEK_WAIT				10	//对讲事件
+#define PLAY_TULING				11	//播放图灵
 
-#define RECODE_STOP 			10  //录音停止,退出整个录音线程
-#define RECODE_EXIT_FINNISH		11	//录音正常退出
+#define RECODE_STOP 			12  //录音停止,退出整个录音线程
+#define RECODE_EXIT_FINNISH		13	//录音正常退出
 
 //#define DBG_VOICES
 #ifdef DBG_VOICES
@@ -44,11 +42,11 @@
 #define LOCAL_MP3_EVENT			7
 #define SPEEK_VOICES_EVENT		8		//接收到语音消息	
 #define TALK_EVENT_EVENT		9		//对讲事件
-#define QUIT_MAIN				10		//退出main函数
+#define QUIT_MAIN			10		//退出main函数
 #define TULING_URL_MAIN			11		//图灵URL事件
 #define TULING_URL_VOICES		12		//图灵mp3事件
 #define TEST_PLAY_EQ_WAV		13		//测试播放wav音频文件
-#define WEIXIN_DOWN_MP3_EVENT	14		//微信端下载歌曲事件
+#define WEIXIN_DOWN_MP3_EVENT		14		//微信端下载歌曲事件
 
 //----------------------系统音---------------------------------------
 #define END_SYS_VOICES_PLAY			1	//结束音
@@ -95,7 +93,9 @@
 #define UPDATA_ERROR_PLAY			45	//更新固件错误。
 
 
-
+#define AI_KEY_TALK_ERROR			46
+#define MIN_10_NOT_USER_WARN			47
+#define TULING_WAIT_VOICES			48
 //---------------------------------------------------------
 #define VOICES_MIN	13200	//是否是大于0.5秒的音频，采样率16000、量化位16位
 #define VOICES_ERR	1000	//误触发
@@ -134,14 +134,6 @@ extern SysMessage sysMes;
 
 #define XIMALA_MUSIC_DIRNAME	"ximalaya/"	//喜马拉雅收藏的歌曲目录名		
 
-#define START_SPEEK_E	START_SPEEK_VOICES 		  	//录音、语音识别
-#define PAUSE_E			RECODE_PAUSE 				//录音挂起
-#define PLAY_WAV_E		PLAY_WAV					//播放wav原始数据音
-#define END_SPEEK_E		END_SPEEK_VOICES			//结束录音
-#define PLAY_URL_E		PLAY_URL					//播放url数据
-#define START_TAIK_MESSAGE_E START_TAIK_MESSAGE
-#define PLAY_TULING_E 	PLAY_TULING
-
 #define DBG_EVENT
 #ifdef DBG_EVENT  
 #define DEBUG_EVENT(fmt, args...) printf("%s:" ,__func__,fmt, ## args)  
@@ -159,10 +151,10 @@ static enum{
 
 //--------------------callvoices.c-----------------------------------------
 extern void StartTuling_RecordeVoices(void);
-extern void end_event_std(void);
-extern void start_event_play_wav(int i);
+extern void StopTuling_RecordeVoices(void);
+extern void start_event_play_wav(void);
 extern void start_event_play_url(void);
-extern void pause_record_audio(int i);
+extern void pause_record_audio(void);
 extern int GetRecordeVoices_PthreadState(void);
 #ifdef TIMEOUT_CHECK
 extern void start_event_talk_message(void);
@@ -172,11 +164,21 @@ extern int SetMucClose_Time(unsigned char closeTime);
 extern void InitRecord_VoicesPthread(void);
 extern void ExitRecord_Voicespthread(void);
 //--------------------eventVoices.c-----------------------------------------------
-extern int createPlayEvent(const void *play,unsigned char Mode);
-extern void CleanUrlEvent(void);
+
+typedef struct{
+	int file_len;
+	FILE *savefilefp;
+	int Starttime;	//录制微信对讲起始时间，用来检查文件录制长度，防止录制太短的音频
+	pthread_mutex_t mutex;
+}Speek_t;
+extern void ShortKeyDown_ForPlayWifiMessage(void);
+extern void LongNetKeyDown_ForConfigWifi(void);
+extern void  setAutoPlayMusicTime(void);
+
+extern int Create_playMusicEvent(const void *play,unsigned char Mode);
+extern void Create_CleanUrlEvent(void);
 extern void Create_PlayQttsEvent(const char *txt,int type);
 extern void TulingKeyDownSingal(void);
-extern void NetKeyDown_ForConfigWifi(void);
 extern void Create_PlaySystemEventVoices(int sys_voices);
 extern void Handle_PlaySystemEventVoices(int sys_voices);
 extern void InitMtkPlatfrom76xx(void);
@@ -188,10 +190,16 @@ extern void SaveRecorderVoices(const char *voices_data,int size);
 
 
 //--------------------message_wav.c-----------------------------------------------
-#define START_SYSTEM_PLAY		0
-#define EXIT_SYSTEM_PLAY		1
+#define INTERRUPT_PLAY_WAV		1		//打断当前播放wav 音频文件
+#define START_PLAY_WAV			0		//开始播放wav原始数据
 
-extern void play_sys_tices_voices(char *filePath);
-extern void exitqttsPlay(void);
+
+#define PLAY_IS_COMPLETE		1		//完整播放   ---->适用在智能会话过渡音当中，不允许打断
+#define PLAY_IS_INTERRUPT		2		//可以打断播放
+
+
+extern void PlaySystemAmrVoices(const char *filePath);
+extern void play_waitVoices(const char *filepath);
+extern void ExitPlay_WavVoices(void);
 
 #endif

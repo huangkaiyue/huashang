@@ -13,32 +13,30 @@
 
 #define SD_MIN		50
 
-int CheckFileNum(char * sdpath){
+int CheckDirexistFiletype(const char * dir,const char *type){
 	int ret = -1;
 	DIR *dirptr = NULL;
 	struct dirent *entry;
-	if((dirptr = opendir(sdpath)) == NULL)	
-	{  
+	if((dirptr = opendir(dir)) == NULL)	{  
 		printf("open dir !\n"); 
 		return ret;	
 	}
-	while (entry = readdir(dirptr))  
-	{  
+	while (entry = readdir(dirptr)){  
 		//去除当前目录和上一级目录
 		if( !strcmp(entry->d_name,".")||!strcmp(entry->d_name,"..") ){
 			continue;
 		}
-		if(strstr(entry->d_name,".mp3")){
+		if(strstr(entry->d_name,type)){
 			ret = 0;
 			break;
 		}
 	}
+	closedir(dirptr);
 	return ret;
 }
 
 //是否小于SD剩余空间下限大小
-void CheckSdcardInfo(char * sdpath)
-{
+void CheckSdcardInfo(char * sdpath){
 	int Capacity =0;
 	GetStorageInfo(sdpath,&Capacity,FREE);
 	if(Capacity<SD_MIN)
@@ -47,8 +45,7 @@ void CheckSdcardInfo(char * sdpath)
 		return 0;
 }
 //删除长时间不用的文件
-void DelSdcardMp3file(char * sdpath)
-{
+void DelSdcardMp3file(char * sdpath){
 	char filepath[128]={0};
 	int delmp3Num=0;
 	struct stat Mp3info;
@@ -57,13 +54,11 @@ void DelSdcardMp3file(char * sdpath)
 	time_t timep;
 	
 	time(&timep);
-	if((dirptr = opendir(sdpath)) == NULL)	
-	{  
+	if((dirptr = opendir(sdpath)) == NULL){  
 		printf("open dir !\n"); 
 		return ;	
 	}
-	while (entry = readdir(dirptr))  
-	{  
+	while (entry = readdir(dirptr)){  
 		//去除当前目录和上一级目录
 		if( !strcmp(entry->d_name,".")||!strcmp(entry->d_name,"..") ){
 			continue;
@@ -79,7 +74,7 @@ void DelSdcardMp3file(char * sdpath)
 		if((timep-Mp3info.st_ctime)<FILETIME){
 			continue;
 		}else{			//删除长时间不用的文件
-			if( remove(filepath) == 0){
+			if(remove(filepath) == 0){
 				printf("Removed %s.\n", filepath);
 				//DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)entry->d_name);
 				delmp3Num++;

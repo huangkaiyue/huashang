@@ -9,6 +9,10 @@
 #define DEBUG_STD_MSG(fmt, args...) { }
 #endif	//end DBG_STD_MSG
 
+typedef struct {
+	int  len:24,type:8;
+}EventMsg_t;
+
 extern void ReqTulingServer(const char *voicesdata,int len,const char *voices_type,const char* asr,int rate);
 extern int AddworkEvent(const char *databuf,int  len,int  type);
 extern int getEventNum(void);

@@ -35,7 +35,7 @@ static void tulingStartDown(const char *filename,int streamLen){
 
 //获取到流数据
 static void  tulingGetStreamData(const char *data,int size){
-	putPcmdata((const void *)data,size);
+	putPcmStreamToQueue((const void *)data,size);
 }
 
 //结束下载
@@ -73,6 +73,7 @@ void downTulingMp3(const char *url){
 #ifdef TEST_DOWNFILE
 	test_playTuingPcmFile();
 #else
+	exitTuling = TULING_PLAY_ING;
 	setDowning();
 	StartPthreadPlay();
 	RequestTulingLog("downTulingMp3 start",1);
@@ -108,10 +109,9 @@ void downTulingMp3(const char *url){
 			break;
 		}
 		printf("%s: %d\n",__func__,ret);
-		WriteqttsPcmData(data,ret);
+		WriteStreamPcmData(data,ret);
 		printf("%s: write ok %d\n",__func__,ret);
 	}
-	clean_qtts_cache_2();
 exit1:	
 	exitTuling=EXIT_TULING_PLAY;
 	printf("--------------downTulingMp3 exit mp3 -------------\n");

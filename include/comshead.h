@@ -21,6 +21,7 @@
 #include <memory.h>
 #include <time.h>
 
+#include <stdbool.h>
 #include <termios.h>
 #include <linux/input.h>
 

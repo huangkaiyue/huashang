@@ -151,19 +151,7 @@ void ack_batteryCtr(int recvdata,int power){
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
-void ack_TlingCtr(char *recvdata){
-	char* szJSON = NULL;
-	cJSON* pItem = NULL;
-	pItem = cJSON_CreateObject();
-	cJSON_AddStringToObject(pItem, "handler", "tuling");
-	cJSON_AddStringToObject(pItem, "tulinfo",recvdata);
-	cJSON_AddStringToObject(pItem, "status","ok");
-	szJSON = cJSON_Print(pItem);
-	printf("ack_batteryCtr: %s\n",szJSON);
-	sendAll_Ack(szJSON,strlen(szJSON));
-	cJSON_Delete(pItem);
-	free(szJSON);
-}
+
 /*
 @函数功能:	所有信息返回函数
 @参数:	recvdata 电池电量
@@ -423,10 +411,10 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 				}else if(!strcmp(musicname,"test.mp3")){
 					TestPlay_localMp3Music();
 				}else{
-					createPlayEvent(player,0);
+					Create_playMusicEvent(player,0);
 				}
 #else	
-				createPlayEvent(player,0);
+				Create_playMusicEvent(player,0);
 #endif
 				
 			}
@@ -435,7 +423,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			StreamPause();
 		}else if (!strcmp(pSub->valuestring,"stop")){
 			//mute_recorde_vol(MUTE);
-			CleanUrlEvent();
+			Create_CleanUrlEvent();
 		}else if (!strcmp(pSub->valuestring,"play")){
 			//mute_recorde_vol(UNMUTE);
 			StreamPlay();
@@ -526,7 +514,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			Create_PlaySystemEventVoices(UPDATA_ERROR_PLAY);
 		}else if(!strcmp(pSub->valuestring,"end")){ 	//更新固件结束
 			//Create_PlayQttsEvent("更新固件结束。",QTTS_GBK);
-			Create_PlaySystemEventVoices(6);
+			Create_PlaySystemEventVoices(UPDATA_END_PLAY);
 		}
 	}//  end updateImage                // end----------->由版本监测进程发送过来
 	else if(!strcmp(pSub->valuestring,"newImage")){	// app端确认还是取消更新操作
@@ -586,9 +574,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	else if (!strcmp(pSub->valuestring,"uploadfile")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(!strcmp(pSub->valuestring,"ok")){			//发送成功
-			//Create_PlaySystemEventVoices(20);
 		}else if(!strcmp(pSub->valuestring,"failed")){	//发送失败
-			Create_PlaySystemEventVoices(21);
 		}else if(!strcmp(pSub->valuestring,"timeout")){	//发送失败
 			Create_PlaySystemEventVoices(SEND_LINK_ER_PLAY);//"当前网络环境差，语音发送失败，请检查网络。"
 		}

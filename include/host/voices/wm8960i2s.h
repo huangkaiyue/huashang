@@ -49,8 +49,6 @@ typedef struct {
 	short i2s_fd;					//打开音频设备节点描述符
 	unsigned short tx_rate;			//当前播放采样率
 	unsigned short play_size;		//原始数据播放大小，当达到I2S_PAGE_SIZE ,才能往内核里面写
-	unsigned short qttspos;
-	unsigned char qttsend;
 	unsigned char old_vol:7,cache_vol:1;//tang : change 2015-12-2 for save vol
 }I2SST;
 
@@ -69,7 +67,7 @@ extern I2SST I2S;
 
 extern void write_pcm(char *buf);
 extern void WritePcmData(char *data,int size);
-extern void WriteqttsPcmData(char *data,int len);
+extern void WriteStreamPcmData(char *data,int len);
 extern void CleanI2S_PlayCachedata(void);
 extern int Setwm8960Vol(int dir,int vol);
 extern int GetVol(void);

@@ -12,8 +12,7 @@
 static char buf_voices[STD_RECODE_SIZE];
 static char pcm_voices16k[STD_RECODE_SIZE_16K];
 static int len_voices = 0;
-static unsigned char recorde_live;
-static unsigned char oldrecorde_live;
+static unsigned char recorde_live=0;
 
 //默认音频头部数据
 struct wave_pcm_hdr pcmwavhdr = {
@@ -84,14 +83,14 @@ void StartTuling_RecordeVoices(void){
 /*****************************************************
 *结束语音识别状态
 *****************************************************/
-void end_event_std(void){
+void StopTuling_RecordeVoices(void){
 	if(GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES)
 		SetRecordeVoices_PthreadState(END_SPEEK_VOICES);
 }
 /*****************************************************
 *进入播放wav原始数据状态
 *****************************************************/
-void start_event_play_wav(int i){
+void start_event_play_wav(void){
 	SetRecordeVoices_PthreadState(PLAY_WAV);
 }
 void start_speek_wait(void){
@@ -109,7 +108,7 @@ void start_event_play_url(void){
 /*****************************************************
 *暂停录音状态
 *****************************************************/
-void pause_record_audio(int i){	
+void pause_record_audio(void){	
 	SetRecordeVoices_PthreadState(RECODE_PAUSE);
 }
 
@@ -119,50 +118,16 @@ void pause_record_audio(int i){
 void start_event_talk_message(void){
 	SetRecordeVoices_PthreadState(START_TAIK_MESSAGE);
 }
-//播放按键误触发产生的声音
-static void TaiBenToTulingNOVoices(void){
-	int i=(1+(int) (10.0*rand()/(RAND_MAX+1.0)));
-	switch(i){
-		case 1:
-			PlaySystemAmrVoices(NO_VOICES);
-			break;
-		case 2:
-			PlaySystemAmrVoices(NO_VOICES_1);
-			break;
-		case 3:
-			PlaySystemAmrVoices(NO_VOICES_2);
-			break;
-		case 4:
-			PlaySystemAmrVoices(NO_VOICES_3);
-			break;
-		case 5:
-			PlaySystemAmrVoices(NO_VOICES_4);
-			break;
-		case 6:
-			PlaySystemAmrVoices(NO_VOICES_5);
-			break;
-		case 7:
-			PlaySystemAmrVoices(NO_VOICES_6);
-			break;
-		case 8:
-			PlaySystemAmrVoices(NO_VOICES_7);
-			break;
-		case 9:
-			PlaySystemAmrVoices(NO_VOICES_8);
-			break;
-		case 10:
-			PlaySystemAmrVoices(NO_VOICES_9);
-			break;
-	}
-}
 /****************************************
 @函数功能:	开始上传语音到服务器
 @参数:	无
 *****************************************/
 static void Start_uploadVoicesData(void){
-	start_event_play_wav(1);		//播放过渡音，等待上传语音识别结果
-	pool_add_task(play_sys_tices_voices,TULING_WINT);
-	usleep(1000*1000);	
+	//start_event_play_wav();		//播放过渡音，等待上传语音识别结果
+	mute_recorde_vol(PLAY_PASUSE_VOICES_VOL);
+	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
+	Create_PlaySystemEventVoices(TULING_WAIT_VOICES);
+	usleep(200);	
 	DEBUG_VOICES("len_voices = %d  \n",len_voices);
 #ifdef AMR8k_DATA		
 	pcmwavhdr.size_8 = (len_voices+36);
@@ -255,9 +220,7 @@ static void Save_VoicesPackt(const char *data,int size){
 			goto exit1;	//误触发
 		}
 		else{	//VOICES_ERR --->VOICES_MIN 区间的音频，认定为无效音频
-			if(GetRecordeVoices_PthreadState() !=PLAY_WAV){
-				TaiBenToTulingNOVoices();
-			}
+			Create_PlaySystemEventVoices(AI_KEY_TALK_ERROR);
 			test_Save_VoicesPackt_function_log((const char *)"TaiBenToTulingNOVoices ",len_voices);
 			goto exit1;
 		}
@@ -265,7 +228,7 @@ static void Save_VoicesPackt(const char *data,int size){
 	}
 	return ;
 exit1:
-	pause_record_audio(1);
+	pause_record_audio();
 exit0:
 	memset(buf_voices,0,len_voices);
 	len_voices = 0;
@@ -348,14 +311,13 @@ static void *PthreadRecordVoices(void *arg){
 #endif
 #ifdef CLOCESYSTEM
 			case TIME_SIGN:		//提示休息很久了
-				//PlayTuLingTaibenQtts("小朋友快来跟我玩，跟我说话聊天吧。",QTTS_GBK);
-				play_sys_tices_voices(SPEEK_WARNING);
+				Create_PlaySystemEventVoices(MIN_10_NOT_USER_WARN);
 				sleep(1);
 				break;
 				
 			case TIME_OUT:		//挂起超时退出
 				SetMucClose_Time(1);	//设置一分钟后关机
-				pause_record_audio(2);
+				pause_record_audio();
 				starttime=time(&t);
 				break;
 				

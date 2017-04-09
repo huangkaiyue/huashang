@@ -1,15 +1,13 @@
 #ifndef _QTTS_QISC_H
 #define _QTTS_QISC_H
 
+#include <stdio.h>
 #include "config.h"
 
 #define QTTS_GBK	0
 #define QTTS_UTF8	1
 
-#define KB 1024
-#define QTTS_PLAY_SIZE	12*KB
-#define LEN_BUF 1*KB
-#define LEN_TAR 2*KB
+
 
 #define DOWN_QTTS_QUIT	0
 #define DOWN_QTTS_ING	1
@@ -23,7 +21,7 @@
 
 #define DBG_QTTS
 #ifdef 	DBG_QTTS 
-#define DEBUG_QTTS(fmt, args...) printf("QTTS: " fmt, ## args)
+#define DEBUG_QTTS(fmt, args...) printf("%s: " ,__func__,fmt, ## args)
 #else   
 #define DEBUG_QTTS(fmt, args...) { }
 #endif	//end DBG_AP_STA
@@ -33,6 +31,5 @@ extern int Qtts_voices_text(char *text,unsigned char type);
 extern int init_iat_MSPLogin(void WritePcm(char *data,int size));
 
 extern void iat_MSPLogout(void);
-//extern void play_qtts_data(char *data,int len);
 
 #endif

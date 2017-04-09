@@ -136,11 +136,10 @@ int Setwm8960Vol(int dir,int vol){
 int GetVol(void){
 	return (int)I2S.tx_vol;
 }
-void stopclean(void){
-	//ioctl(I2S.i2s_fd, I2S_TX_STOP, 0);
+void StopplayI2s(void){
 	ioctl(I2S.i2s_fd, I2S_STOP_WM8960, 0);
 }
-void cleanstop(void){
+void StartplayI2s(void){
 	ioctl(I2S.i2s_fd, I2S_START_WM8960, 0);
 }
 void PlayorPause(void){
@@ -178,38 +177,8 @@ void write_pcm(char *buf){
 	ioctl(I2S.i2s_fd, I2S_PUT_AUDIO, pBuf);	
 #endif	//end defined(CONFIG_I2S_MMAP)
 }
-void clean_qtts_cache(void){
-	I2S.qttsend=1;
-}
-void clean_qtts_cache_2(void){
-	I2S.qttsend=2;
-}
-void stait_qtts_cache(void){
-	I2S.qttsend=0;
-}
-int get_qtts_cache(void){
-	return I2S.qttsend;
-}
-#if 0
-void WriteqttsPcmData(char *data,int len)
-{
-	int i=0;
-	for(i=0;i<len;i+=2){
-		memcpy(play_buf+I2S.qttspos,data+i,2);
-		I2S.qttspos += 2;
-		memcpy(play_buf+I2S.qttspos,data+i,2);
-		I2S.qttspos += 2;
-		if(I2S.qttsend==1){
-			I2S.qttspos=0;
-			break;
-		}
-		if(I2S.qttspos==I2S_PAGE_SIZE){
-			write_pcm(play_buf);
-			I2S.qttspos=0;
-		}
-	}
-}
-#endif
+
+
 /**********************************************
 获取音频数据
 **********************************************/

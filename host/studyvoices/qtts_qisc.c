@@ -4,6 +4,7 @@
 #include "msp_errors.h"
 #include "base/queWorkCond.h"
 #include "qtts_qisc.h"
+#include "host/voices/callvoices.h"
 #include "config.h"
 
 typedef struct _MSPLogin{
@@ -19,112 +20,33 @@ typedef struct{
 }QttsStream_t;
 static QttsStream_t *Qstream=NULL;
 
-#if 0
-/*******************************************************
-函数功能: 单声道转双声道
-参数:	dest_files 输出文件 src_files输入文件
-返回值: 0 转换成功 -1 转换失败
-********************************************************/
-int voices_single_to_stereo(char *dest_files,char *src_files)
-{
-	FILE  *fd_q,*fd_w;
-	size_t read_size;
-	int size = 0,pos= 0;
-	char buf[LEN_BUF],tar[LEN_TAR];
-	fd_q = fopen(src_files,"r");
-	fseek(fd_q, WAV_HEAD, SEEK_SET);
-	if (NULL == fd_q)
-	{
-		printf("open file src_voices error\n");
-		return -1;
+void __ExitQueueQttsPlay(void){
+	if(Qstream->playState==PLAY_QTTS_QUIT){
+		printf("%s : current is play exit ...........\n",__func__);
+		return ;
 	}
-	fd_w = fopen(dest_files,"w+");
-	if (NULL == fd_w)
-	{
-		printf("open file dest_voices error\n");
-		return -1;
-	}
-	while(1)
-	{
-		read_size=fread(buf, 1,LEN_BUF, fd_q);
-		if(read_size==0)
-		{
+	Qstream->playState=PLAY_QTTS_WAIT;
+	Qstream->downState=DOWN_QTTS_QUIT;
+	while(1){
+		if(Qstream->playState==PLAY_QTTS_QUIT){
 			break;
 		}
-		while(read_size != size)
-		{
-			memcpy(tar+pos,buf+size,2);
-			pos += 2;
-			memcpy(tar+pos,buf+size,2);
-			size += 2;
-			pos += 2;
-		}
-		//printf("voices size =%d,len =%d\n",size,len);
-      	fwrite(tar, 2*read_size, 1,fd_w);
-		pos= 0;
-		size = 0;
+		printf("%s : wait exit Qstream->playState=%d\n",__func__,Qstream->playState);
+		usleep(10*1000);	//等待播放线程退出
 	}
-	fclose(fd_q);
-	fclose(fd_w);
-	return 0;
-}
-
-static void single_to_stereo(char *src,int srclen,char *tar,int *tarlen)
-{
-	int i=0;
-	int pos=0;
-	for(i=0; i<srclen; i+=2)
-	{
-		memcpy(tar+pos,src+i,2);
-		pos += 2;
-		memcpy(tar+pos,src+i,2);
-		pos += 2;
-	}
-	*tarlen = pos;
-}
-#endif
-
-
-/****************************************************
-@函数功能:	播放qtts转换数据
-@参数:	data 数据
-@		len	数据大小
-*****************************************************/
-static void cleanState(void){
-	Qstream->playState=PLAY_QTTS_QUIT;
-}
-int __exitqttsPlay(void){
-	char *msg;
-	int msgSize;
-	Qstream->playState=PLAY_QTTS_QUIT;
-	while(getWorkMsgNum(Qstream->qttsList)){
-		getMsgQueue(Qstream->qttsList,&msg,&msgSize);
-		free(msg);
-		printf("%s: wait exit ..............\n",__func__);
-		usleep(100);
-	}
-	DEBUG_QTTS("exitqttsPlay: end (%d) ...\n",getWorkMsgNum(Qstream->qttsList));
-	return 0;
+	printf("%s: qtts list------>%d ...\n",__func__,getWorkMsgNum(Qstream->qttsList));
  }
 static char savebuf[1];
 static unsigned char cacheFlag=0;	
-
-typedef struct{
-	int cacheSize;
-	int audioSize;
-}DownTuling_t;
-
-static DownTuling_t down;
 void initputPcmdata(void){
 	cacheFlag=0;
 	memset(savebuf,0,1);
-	memset(&down,0,sizeof(DownTuling_t));
 }
 
 void setPlayAudioSize(int downSize){
-	down.audioSize = downSize;
 }
-void putPcmdata(const void *data,int size){
+//将下载到的pcm单声道数据添加到队列当中
+void putPcmStreamToQueue(const void *data,int size){
 	int ret =0;
 	void *newdata=NULL;
 	if(size%2==0&&cacheFlag==0){		//偶数，没有预留
@@ -152,56 +74,59 @@ void putPcmdata(const void *data,int size){
 		ret=size-1;
 		cacheFlag=1;
 	}
-	down.cacheSize+=ret;
 	putMsgQueue(Qstream->qttsList,newdata,ret);	//添加到播放队列
 	
 }
-void *play_qtts_data(void *arg){
+static void *GetQueue_Voices_Forplay(void *arg){
 	char *data;
 	int len=0;
 	while(Qstream->playState==PLAY_QTTS_ING){
-		//printf("%s: Qstream->playState =%d\n",__func__,Qstream->playState);
 	 	if(getWorkMsgNum(Qstream->qttsList)==0){
 			if(Qstream->downState==DOWN_QTTS_QUIT){
-				DEBUG_QTTS("play_qtts_data: exit ...\n");
+				printf("%s start exit \n",__func__);
 				break;
 			}
 			usleep(1000);
 			continue;
 		}
-		if(get_qtts_cache()==0){
+		printf("%s : write pcm\n",__func__);
+		getMsgQueue(Qstream->qttsList,&data,&len);
+		Qstream->WritePcm(data,len);
+		free(data);
+	}
+	if(Qstream->playState==PLAY_QTTS_WAIT){	//被外部事件设置异常退出,需要清除消息队列里面音频数据
+		while(getWorkMsgNum(Qstream->qttsList)){
 			getMsgQueue(Qstream->qttsList,&data,&len);
-			//printf("%s: len =%d\n",__func__,len);
-			Qstream->WritePcm(data,len);
 			free(data);
+			printf("%s: wait exit ..............\n",__func__);
+			usleep(100);
 		}
 	}
-	clean_qtts_cache_2();
-	cleanState();
-	DEBUG_QTTS("play_qtts_data : end...\n\n");
+	
+	Qstream->playState=PLAY_QTTS_QUIT;
+	printf("%s exit ok\n",__func__);
 	return NULL;
 }
 
 void StartPthreadPlay(void){
 	Qstream->playState=PLAY_QTTS_ING;
 	Qstream->downState=DOWN_QTTS_ING;
-	pool_add_task(play_qtts_data,NULL);		//启动播放线程
+	pool_add_task(GetQueue_Voices_Forplay,NULL);		//启动播放线程
 	usleep(100);
 }
- void WaitPthreadExit(void){
+//正常情况下等待播放线程退出
+void WaitPthreadExit(void){
 	while(Qstream->downState==DOWN_QTTS_QUIT){		//等待播放线程退出
-		if(Qstream->playState!=PLAY_QTTS_ING)
+		if(Qstream->playState==PLAY_QTTS_QUIT||Qstream->playState==PLAY_QTTS_WAIT)
 			break;
 		//printf("..................... WaitPthreadExit .....................\n ");
 		usleep(100*1000);
 	}
-	PlayQtts_log("qtts quit ok\n");
-	//printf("..................... WaitPthreadExit ok.....................\n ");
 	Qstream->playState=PLAY_QTTS_QUIT;
+	PlayQtts_log("qtts quit ok\n");
+	printf("..................... WaitPthreadExit ok.....................\n ");
 }
-int GetplayState(void){
-	return Qstream->playState;
-} 
+
 void SetDownExit(void){
 	Qstream->downState= DOWN_QTTS_QUIT;
 }
@@ -233,18 +158,18 @@ static int text_to_speech(const char* src_text  ,const char* params){
 		return ret;
 	}
 	StartPthreadPlay();
-	Qstream->downState=DOWN_QTTS_ING;
-	while(GetplayState()){
+	while(Qstream->downState==DOWN_QTTS_ING){
 		const void *data = QTTSAudioGet(sess_id, &audio_len, &synth_status, &ret);
 		if (NULL != data){
-			putPcmdata(data,audio_len);
+			putPcmStreamToQueue(data,audio_len);
 		}
 		usleep(100*1000);
 		if (synth_status==2|| ret!= 0){		//退出
-			SetDownExit();
 			break;
 		}
+		printf("%s: down file %d\n",__func__,Qstream->downState);
 	}
+	Qstream->downState= DOWN_QTTS_QUIT;
 	WaitPthreadExit();
 	ret = QTTSSessionEnd(sess_id, NULL);
 	return ret;

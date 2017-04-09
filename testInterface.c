@@ -8,6 +8,35 @@
 
 #include "config.h"
 
+#if 0
+#define LEVEL_PLAY_NETWORK_0		0		//播放当前连接名字
+#define LEVEL_PLAY_QTTS_1		1
+#define LEVEL_PLAY_WEIXIN_SPEEK_1	1
+#define LEVEL_PLAY_SYSTEM_VOICES_1	1
+#define LEVEL_PLAY_NETWORK_URL_1	1
+#define LEVEL_PLAY_SDCARD_MUSIC_1	1
+#define LEVEL_RECODER_WEIXIN_2		2	
+#define LEVEL_RECODER_AI_SPEEK_2	2
+int checkPlayVoicesWorkState(int checkLevel){
+	if(checkNetWorkLive()){	//检查网络
+		return -1;
+	}
+	if(getEventNum()>0||getplayEventNum()>0){//防止添加过快
+		DEBUG_EVENT("num =%d \n",getEventNum());
+		return -1;
+	}
+	int playState = GetRecordeVoices_PthreadState();
+	if(playState>checkLevel){
+		return -1;
+	}
+	switch(playState){
+		case PLAY_WAV:	//执行相应的退出，并切换工作状态
+			WritePlayUrl_Log("add failed ,reocde voices pthread is PLAY_WAV\n");
+			break;
+	}
+}
+#endif
+
 #ifdef TEST_ERROR_TULING
 /*
 *单独测试图灵的接口
@@ -117,7 +146,7 @@ void createPlay_wavFileEvent(const void *play){
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		return;
 	}
-	if(GetRecordeVoices_PthreadState() == PLAY_WAV_E){
+	if(GetRecordeVoices_PthreadState() == PLAY_WAV){
 		return;
 	}
 	AddworkEvent((const char *)play,0,TEST_PLAY_EQ_WAV);
@@ -341,4 +370,72 @@ void test_stop_playurl(void){
 void test_single_playurl(void){
 	play_state=TEST_SINGLE_ADD;
 }
+
+#if 0
+#define KB 1024
+#define QTTS_PLAY_SIZE	12*KB
+#define LEN_BUF 1*KB
+#define LEN_TAR 2*KB
+/*******************************************************
+函数功能: 单声道转双声道
+参数:	dest_files 输出文件 src_files输入文件
+返回值: 0 转换成功 -1 转换失败
+********************************************************/
+int voices_single_to_stereo(char *dest_files,char *src_files){
+	FILE  *fd_q,*fd_w;
+	size_t read_size;
+	int size = 0,pos= 0;
+	char buf[LEN_BUF],tar[LEN_TAR];
+	fd_q = fopen(src_files,"r");
+	fseek(fd_q, WAV_HEAD, SEEK_SET);
+	if (NULL == fd_q)
+	{
+		printf("open file src_voices error\n");
+		return -1;
+	}
+	fd_w = fopen(dest_files,"w+");
+	if (NULL == fd_w)
+	{
+		printf("open file dest_voices error\n");
+		return -1;
+	}
+	while(1)
+	{
+		read_size=fread(buf, 1,LEN_BUF, fd_q);
+		if(read_size==0)
+		{
+			break;
+		}
+		while(read_size != size)
+		{
+			memcpy(tar+pos,buf+size,2);
+			pos += 2;
+			memcpy(tar+pos,buf+size,2);
+			size += 2;
+			pos += 2;
+		}
+		//printf("voices size =%d,len =%d\n",size,len);
+      	fwrite(tar, 2*read_size, 1,fd_w);
+		pos= 0;
+		size = 0;
+	}
+	fclose(fd_q);
+	fclose(fd_w);
+	return 0;
+}
+
+static void single_to_stereo(char *src,int srclen,char *tar,int *tarlen)
+{
+	int i=0;
+	int pos=0;
+	for(i=0; i<srclen; i+=2)
+	{
+		memcpy(tar+pos,src+i,2);
+		pos += 2;
+		memcpy(tar+pos,src+i,2);
+		pos += 2;
+	}
+	*tarlen = pos;
+}
+#endif
 

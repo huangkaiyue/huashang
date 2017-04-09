@@ -1,7 +1,6 @@
 PATH=/opt/buildroot-gcc463/usr/bin/
 CROSS_COMPILE	=$(PATH)mipsel-linux-
 CC=$(CROSS_COMPILE)gcc
-#CC=gcc
 
 SDK_PATH=/home/7620sdk/7688/sdk4300_20140916/RT288x_SDK/source
 #SDK_PATH=/home/7620sdk/7688/sdk4300_20140916/RT288x_SDK/uart_source7688
@@ -36,7 +35,7 @@ all +=usrdb/sysdata.o
 
 all +=host/voices/wm8960i2s.o
 all +=host/voices/callvoices.o
-all +=host/voices/amrwb-enc.o
+#all +=host/voices/amrwb-enc.o
 all +=host/voices/message_wav.o
 all +=host/voices/eventVoices.o
 all +=host/voices/gpio_7620.o

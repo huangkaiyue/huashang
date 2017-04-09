@@ -66,7 +66,7 @@ static void loadLocalServer(int argc,const char *argv[]){
 	char *user_id  = NULL;
 	
 	if(argc<4){
-		printf("localServer -qttspath /home/ -t 3 -userId xxxxxx -token xxxxxx -v xxx\n");
+		printf("localserver -qttspath /home/ -t 3 -userId xxxxxx -token xxxxxx -v xxx\n");
 		exit(1);
 	}	
 	memset(&sysMes,0,sizeof(SysMessage));
@@ -119,19 +119,19 @@ static void autoPlayNextMusic(unsigned char musicType){
 	setAutoPlayMusicTime();
 	switch(musicType){
 		case mp3:
-			createPlayEvent((const void *)"mp3", PLAY_NEXT);
+			Create_playMusicEvent((const void *)"mp3", PLAY_NEXT);
 			break;
 		case story:
-			createPlayEvent((const void *)"story", PLAY_NEXT);
+			Create_playMusicEvent((const void *)"story", PLAY_NEXT);
 			break;
 		case english:
-			createPlayEvent((const void *)"english", PLAY_NEXT);
+			Create_playMusicEvent((const void *)"english", PLAY_NEXT);
 			break;
 		case guoxue:
-			createPlayEvent((const void *)"guoxue", PLAY_NEXT);
+			Create_playMusicEvent((const void *)"guoxue", PLAY_NEXT);
 			break;
 		case xiai:
-			createPlayEvent((const void *)"xiai", PLAY_NEXT);
+			Create_playMusicEvent((const void *)"xiai", PLAY_NEXT);
 			break;
 		default:
 			sysMes.localplayname=0;
@@ -185,7 +185,6 @@ int main(int argc, char **argv){
 				free((void *)msg);
 				break;
 			case TULING_URL_MAIN:	//播放图灵 tts文件
-				//start_play_tuling();
 				if(PlayTulingText((const char*)msg)){		//异常退出，需要清理后面的url播放事件
 					SetMainQueueLock(MAIN_QUEUE_LOCK);		//清理后面mp3播放
 				}

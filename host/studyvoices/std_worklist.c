@@ -15,11 +15,6 @@
 static const char *key = "b1833040534a6bfd761215154069ea58";
 static WorkQueue *EventQue;
 
-typedef struct {
-	int  len:24,type:8;
-}EventMsg_t;
-
-
 #define TLJSONERNUM 9.0
 //解析图灵请求错误内容，播放本地已经录制好的音频
 static void playTulingRequestErrorVoices(void){
@@ -28,6 +23,48 @@ static void playTulingRequestErrorVoices(void){
 	snprintf(buf,32,"qtts/TulingJsonEr%d_8k.amr",i);
 	PlaySystemAmrVoices(buf);
 }
+/*
+@ 将录制的语音上传到图灵服务器
+@ voicesdata 声音数据 len声音长度 voices_type 音频格式(amr/pcm) 
+  asr 请求格式(0:pcm 3:amr) rate:声音采样率
+@ 无
+*/
+void ReqTulingServer(const char *voicesdata,int len,const char *voices_type,const char* asr,int rate){
+	int textSize = 0, err = 0;
+	char *text = NULL;
+	DEBUG_STD_MSG("up voices data ...(len=%d)\n", len);
+	err = reqTlVoices(8,key,(const void *)voicesdata, len, rate, voices_type,\
+			asr,&text,&textSize);
+	if (err == -1){	//请求服务器失败
+		Create_PlaySystemEventVoices(REQUEST_FAILED_PLAY);//播放请求服务器数据失败
+		goto exit1;
+	}
+	else if (err == 1){
+#ifdef TEST_ERROR_TULING	
+		test_tulingApi_andDownerrorFile();
+#else
+		Create_PlaySystemEventVoices(TIMEOUT_PLAY_LOCALFILE);//播放本地已经录制好的文件
+#endif		
+		goto exit1;
+	}
+	if (text){
+		AddworkEvent(text,0,STUDY_WAV_EVENT);
+	}
+	return ;
+exit1:
+#ifdef QITUTU_SHI
+	Led_System_vigue_close();
+#endif
+#ifdef TANGTANG_LUO
+	Led_System_vigue_close();
+#endif
+#ifdef DATOU_JIANG
+	led_lr_oc(closeled);
+#endif
+	pause_record_audio();
+	return;
+}
+
 /*******************************************
 @函数功能:	json解析服务器数据
 @参数:	pMsg	服务器数据
@@ -53,7 +90,6 @@ static int parseJson_string(const char * pMsg){
 		DEBUG_STD_MSG("get code failed\n");
 		goto exit;
 	}
-	ack_TlingCtr(pMsg);
 	DEBUG_STD_MSG("code : %d\n", pSub->valueint);
 #if 1	
 	switch(pSub->valueint){
@@ -136,53 +172,10 @@ exit1:
 	}
 	
 exit:
-	pause_record_audio(28);
+	pause_record_audio();
 exit0:
 	cJSON_Delete(pJson);
 	return err;
-}
-
-
-/*
-@ 将录制的语音上传到图灵服务器
-@ voicesdata 声音数据 len声音长度 voices_type 音频格式(amr/pcm) 
-  asr 请求格式(0:pcm 3:amr) rate:声音采样率
-@ 无
-*/
-void ReqTulingServer(const char *voicesdata,int len,const char *voices_type,const char* asr,int rate){
-	int textSize = 0, err = 0;
-	char *text = NULL;
-	DEBUG_STD_MSG("up voices data ...(len=%d)\n", len);
-	err = reqTlVoices(8,key,(const void *)voicesdata, len, rate, voices_type,\
-			asr,&text,&textSize);
-	if (err == -1){	//请求服务器失败
-		Create_PlaySystemEventVoices(REQUEST_FAILED_PLAY);//播放请求服务器数据失败
-		goto exit1;
-	}
-	else if (err == 1){
-#ifdef TEST_ERROR_TULING	
-		test_tulingApi_andDownerrorFile();
-#else
-		Create_PlaySystemEventVoices(TIMEOUT_PLAY_LOCALFILE);//播放本地已经录制好的文件
-#endif		
-		goto exit1;
-	}
-	if (text){
-		AddworkEvent(text,0,STUDY_WAV_EVENT);
-	}
-	return ;
-exit1:
-#ifdef QITUTU_SHI
-	Led_System_vigue_close();
-#endif
-#ifdef TANGTANG_LUO
-	Led_System_vigue_close();
-#endif
-#ifdef DATOU_JIANG
-	led_lr_oc(closeled);
-#endif
-	pause_record_audio(27);
-	return;
 }
 /******************************************************
 @函数功能:	学习音事件处理函数
@@ -230,7 +223,7 @@ int getEventNum(void){
 }
 /*
 @ 
-@ 清除队列里面多余的时间
+@ 清除队列里面多余的事件
 */
 void cleanQuequeEvent(void){
 	char *msg;
@@ -255,15 +248,12 @@ static void HandleEventMessage(const char *data,int msgSize){
 	switch(cur->type){
 		case STUDY_WAV_EVENT:		//会话事件
 			runJsonEvent(data);
-			//pause_record_audio(29);
 			break;
 			
 		case SYS_VOICES_EVENT:		//系统音事件
-			start_event_play_wav(7);
+			start_event_play_wav();
 			Handle_PlaySystemEventVoices(cur->len);
-			if(cur->len==TULING_WINT_PLAY)
-				break;
-			pause_record_audio(30);
+			pause_record_audio();
 			break;
 			
 		case SET_RATE_EVENT:		//URL清理事件
@@ -275,7 +265,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			SetWm8960Rate(RECODE_RATE);
 			event_lock=0;
 			sysMes.localplayname=0;
-			pause_record_audio(31);
+			pause_record_audio();
 			WriteEventlockLog("eventlock end\n",event_lock);
 			break;
 			
@@ -307,14 +297,14 @@ static void HandleEventMessage(const char *data,int msgSize){
 			break;
 #endif			
 		case QTTS_PLAY_EVENT:		//QTTS事件
-			PlayTuLingTaibenQtts(data,cur->len);
+			PlayQttsText(data,cur->len);
 			free((void *)data);
 			break;
 			
 #ifdef SPEEK_VOICES	
 		case SPEEK_VOICES_EVENT:	//接收到语音消息	
 			playspeekVoices(data);
-			pause_record_audio(31);
+			pause_record_audio();
 			remove(data);
 			usleep(1000);
 			free((void *)data);
@@ -352,7 +342,7 @@ static void CleanEventMessage(const char *data,int msgSize){
 */
 void InitEventMsgPthread(void){
 	EventQue = InitCondWorkPthread(HandleEventMessage);
-	init_iat_MSPLogin(WriteqttsPcmData);
+	init_iat_MSPLogin(WriteStreamPcmData);
 }
 /*
 @  清除事件处理消息线程

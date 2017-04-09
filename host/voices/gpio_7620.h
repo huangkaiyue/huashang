@@ -81,6 +81,7 @@ extern void open_wm8960_voices(void);
 extern void close_wm8960_voices(void);
 extern void led_lr_oc(unsigned char type);
 extern void Led_System_vigue_open(void);
+extern void Led_System_vigue_close(void);
 extern void enable_gpio(void);
 extern void InitMtk76xx_gpio(void);
 extern void disable_gpio(void);
