@@ -556,7 +556,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	}
 #ifdef SPEEK_VOICES
 	else if (!strcmp(pSub->valuestring,"speek")){
-		CreateSpeekEvent((const char *)cJSON_GetObjectItem(pJson, "file")->valuestring);
+		CreatePlayWeixinVoicesSpeekEvent((const char *)cJSON_GetObjectItem(pJson, "file")->valuestring);
 	}
 	else if (!strcmp(pSub->valuestring,"binddev")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
@@ -587,7 +587,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			if(cJSON_GetObjectItem(pJson, "path")!=NULL){
 				path=cJSON_GetObjectItem(pJson, "path")->valuestring;
 			}
-			CreateSpeekEvent(path);
+			CreatePlayWeixinVoicesSpeekEvent(path);
 		}else if(!strcmp(pSub->valuestring,"close")){	//关闭设置开机时间
 			//
 			char *time_open=NULL;

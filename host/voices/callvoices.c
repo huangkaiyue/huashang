@@ -97,7 +97,7 @@ void start_speek_wait(void){
 	SetRecordeVoices_PthreadState(SPEEK_WAIT);
 }
 void start_play_tuling(void){
-	SetRecordeVoices_PthreadState(PLAY_TULING);
+	SetRecordeVoices_PthreadState(PLAY_DING_VOICES);
 }
 /*****************************************************
 *进入播放URL状态
@@ -125,9 +125,9 @@ void start_event_talk_message(void){
 static void Start_uploadVoicesData(void){
 	//start_event_play_wav();		//播放过渡音，等待上传语音识别结果
 	mute_recorde_vol(PLAY_PASUSE_VOICES_VOL);
-	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
 	Create_PlaySystemEventVoices(TULING_WAIT_VOICES);
-	usleep(200);	
+	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
+	usleep(200);
 	DEBUG_VOICES("len_voices = %d  \n",len_voices);
 #ifdef AMR8k_DATA		
 	pcmwavhdr.size_8 = (len_voices+36);

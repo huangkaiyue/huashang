@@ -130,6 +130,7 @@ static int checkPlayNetwork_endVoices(void){
 	int ret=-1;
 	if(playWavState==INTERRUPT_PLAY_WAV){
 		pause_record_audio();		//退出播放状态
+		CleanI2S_PlayCachedata();	//清理
 		StopplayI2s();				//最后一片数据丢掉
 		memset(play_buf,0,I2S_PAGE_SIZE);
 		ret=-1;

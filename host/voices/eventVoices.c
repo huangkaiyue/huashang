@@ -164,6 +164,13 @@ static int __AddNetWork_UrlForPaly(const void *data){
 	if(GetRecordeVoices_PthreadState() == PLAY_WAV){
 		WritePlayUrl_Log("add failed ,reocde voices pthread is PLAY_WAV\n");
 		goto exit0;
+	}else if(GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
+		goto exit0;
+	}
+	if(getTuling_playunLock()==TULING_PLAY_LOCK){
+		printf("is tuling play lock \n");
+		exit_tulingplay();
+		goto exit0;
 	}
 	WritePlayUrl_Log("add url ok\n");
 	return AddworkEvent((const char *)data,0,URL_VOICES_EVENT);
@@ -190,6 +197,13 @@ static int __AddLocalMp3ForPaly(const char *localpath){
 	if(GetRecordeVoices_PthreadState() == PLAY_WAV){	//处于播放qtts文件
 		DEBUG_EVENT(" PLAY_WAV \n");
 		ExitPlay_WavVoices();
+		return -1;
+	}else if(GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
+		return -1;
+	}
+	if(getTuling_playunLock()==TULING_PLAY_LOCK){
+		printf("is tuling play lock \n");
+		exit_tulingplay();
 		return -1;
 	}
 	char *URL= (char *)calloc(1,strlen(localpath)+1);
@@ -292,6 +306,9 @@ void Create_PlayQttsEvent(const char *txt,int type){
 		exit_tulingplay();
 		return ;
 	}
+	if (GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
+		return ;
+	}
 	if(GetRecordeVoices_PthreadState() == PLAY_WAV){	//解决在智能会话过程当中，添加播放系统语音、播放wifi 名字导致的死机现象  2017-3-26 
 		printf("%s: current is play wav\n",__func__);
 		return ;
@@ -302,9 +319,6 @@ void Create_PlayQttsEvent(const char *txt,int type){
 	}	
 	if (GetRecordeVoices_PthreadState() == PLAY_URL){	//当前播放歌曲
 		Create_CleanUrlEvent();
-	}
-	if (GetRecordeVoices_PthreadState() == PLAY_TULING){
-		NetStreamExitFile();
 	}
 	char *TXT = (char *)calloc(1,strlen(txt)+1);
 	if (TXT){
@@ -325,8 +339,10 @@ void TulingKeyDownSingal(void){
 	if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES){		
 		Write_Speekkeylog((const char *)"START_SPEEK_VOICES",GetRecordeVoices_PthreadState());
 		return;
-	}
-	if (GetRecordeVoices_PthreadState() == PLAY_WAV){//处于播放wav原始数据状态
+	}	
+	if (GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
+		return ;
+	}else if (GetRecordeVoices_PthreadState() == PLAY_WAV){//处于播放wav原始数据状态
 		ExitPlay_WavVoices();
 		Write_Speekkeylog((const char *)"PLAY_WAV",GetRecordeVoices_PthreadState());
 	}
@@ -436,11 +452,19 @@ void Create_PlaySystemEventVoices(int sys_voices){
 		if(GetRecordeVoices_PthreadState()==PLAY_WAV){
 			ExitPlay_WavVoices();	//清理事件
 		}
-		if(GetRecordeVoices_PthreadState() ==PLAY_TULING){
+		if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
 			NetStreamExitFile();
 		}
 	}
+	if(getTuling_playunLock()==TULING_PLAY_LOCK){
+		printf("is tuling play lock \n");
+		exit_tulingplay();
+		return ;
+	}
 	if(GetRecordeVoices_PthreadState() ==PLAY_URL){
+		return ;
+	}
+	else if(GetRecordeVoices_PthreadState() ==PLAY_URL){
 		Create_CleanUrlEvent();
 	}else if(GetRecordeVoices_PthreadState()==PLAY_WAV){
 		ExitPlay_WavVoices();		
@@ -622,14 +646,20 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 }
 //-------end--------播放系统声音有关的、事件的产生、消费处理-----------------------------------------------------
 #ifdef SPEEK_VOICES
-void CreateSpeekEvent(const char *filename){
+//播放微信发送过来语音文件
+void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
+	if(getTuling_playunLock()==TULING_PLAY_LOCK){
+		printf("is tuling play lock \n");
+		exit_tulingplay();
+		goto exit0;
+	}
 	if(GetRecordeVoices_PthreadState() == PLAY_WAV){	//解决在智能会话过程当中，添加微信发送过来的语音导致的死机现象  2017-4-26 
 		goto exit0;
 	}
 	if(GetRecordeVoices_PthreadState() ==PLAY_URL){
 		Create_CleanUrlEvent();
 	}
-	if(GetRecordeVoices_PthreadState() ==PLAY_TULING){
+	if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
 		NetStreamExitFile();
 	}
 	char *TXT= (char *)calloc(1,strlen(filename)+1);
@@ -639,7 +669,7 @@ void CreateSpeekEvent(const char *filename){
 			printf("add play amr voices failed ,and remove file \n");
 			goto exit0;
 		}
-		return;
+		goto exit0;
 	}
 exit0:
 	remove(filename);
@@ -731,8 +761,8 @@ void Create_WeixinSpeekEvent(unsigned int gpioState){
 	}else if(GetRecordeVoices_PthreadState()==PLAY_WAV){
 		ExitPlay_WavVoices();
 		return;
-	}else if(GetRecordeVoices_PthreadState() ==PLAY_TULING){
-		NetStreamExitFile();
+	}else if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
+		//NetStreamExitFile();
 		return;
 	}
 	DEBUG_EVENT("state %d\n",gpioState);

@@ -17,8 +17,7 @@
 #define TIME_SIGN				8	//长时间无事件
 #define PLAY_OUT				9	//关闭系统
 #define SPEEK_WAIT				10	//对讲事件
-#define PLAY_TULING				11	//播放图灵
-
+#define PLAY_DING_VOICES		11	//播放过渡音
 #define RECODE_STOP 			12  //录音停止,退出整个录音线程
 #define RECODE_EXIT_FINNISH		13	//录音正常退出
 
