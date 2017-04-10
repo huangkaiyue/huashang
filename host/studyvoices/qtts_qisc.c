@@ -25,12 +25,12 @@ void __ExitQueueQttsPlay(void){
 		printf("%s : current is play exit ...........\n",__func__);
 		return ;
 	}
-	Qstream->playState=PLAY_QTTS_WAIT;
 	Qstream->downState=DOWN_QTTS_QUIT;
 	while(1){
 		if(Qstream->playState==PLAY_QTTS_QUIT){
 			break;
 		}
+		Qstream->playState=PLAY_QTTS_WAIT;
 		printf("%s : wait exit Qstream->playState=%d\n",__func__,Qstream->playState);
 		usleep(10*1000);	//等待播放线程退出
 	}
@@ -117,7 +117,7 @@ void StartPthreadPlay(void){
 //正常情况下等待播放线程退出
 void WaitPthreadExit(void){
 	while(Qstream->downState==DOWN_QTTS_QUIT){		//等待播放线程退出
-		if(Qstream->playState==PLAY_QTTS_QUIT||Qstream->playState==PLAY_QTTS_WAIT)
+		if(Qstream->playState==PLAY_QTTS_QUIT)
 			break;
 		//printf("..................... WaitPthreadExit .....................\n ");
 		usleep(100*1000);
@@ -131,6 +131,11 @@ void SetDownExit(void){
 	Qstream->downState= DOWN_QTTS_QUIT;
 }
 
+void exitStreamPlayOk(){
+	Qstream->downState= DOWN_QTTS_QUIT;
+	Qstream->playState= PLAY_QTTS_QUIT;
+
+}
 /***************************************************************************
 @函数功能:	文本转换语音
 @参数:	src_text 文本文件 
@@ -140,10 +145,11 @@ void SetDownExit(void){
 ***************************************************************************/
 static int text_to_speech(const char* src_text  ,const char* params){
 	char* sess_id = NULL;
-	int ret = 0;
+	int ret = -1;
 	unsigned int text_len = 0;
 	unsigned int audio_len = 0;
 	int synth_status = 1;
+	
 	DEBUG_QTTS("\ntext_to_speech :begin to synth...\n");
 	text_len = (unsigned int)strlen(src_text);
 	sess_id = QTTSSessionBegin(params, &ret);
@@ -157,7 +163,6 @@ static int text_to_speech(const char* src_text  ,const char* params){
 		QTTSSessionEnd(sess_id, "TextPutError");
 		return ret;
 	}
-	StartPthreadPlay();
 	while(Qstream->downState==DOWN_QTTS_ING){
 		const void *data = QTTSAudioGet(sess_id, &audio_len, &synth_status, &ret);
 		if (NULL != data){
@@ -172,7 +177,7 @@ static int text_to_speech(const char* src_text  ,const char* params){
 	Qstream->downState= DOWN_QTTS_QUIT;
 	WaitPthreadExit();
 	ret = QTTSSessionEnd(sess_id, NULL);
-	return ret;
+	return 0;
 }
 /****************************************
 @函数功能:	文本转换语音参数选择

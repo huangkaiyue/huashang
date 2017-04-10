@@ -27,6 +27,8 @@ void WriteStreamPcmData(char *data,int len){
 		}
 		if(playWav_pos+4>I2S_PAGE_SIZE){
 			printf(".......................error write data ................\n");
+			playWav_pos=0;
+			continue;
 		}
 		memcpy(play_buf+playWav_pos,data+i,2);
 		playWav_pos += 2;
@@ -63,9 +65,9 @@ static void PlaySignleWavVoices(const char *playfilename,unsigned char playMode)
 			if(pos>0){
 				memset(play_buf+pos,0,I2S_PAGE_SIZE-pos);		//清空上一次尾部杂音,并播放尾音
 				write_pcm(play_buf);
-				pause_record_audio();
-				CleanI2S_PlayCachedata();
 			}
+			pause_record_audio();
+			CleanI2S_PlayCachedata();
 			break;
 		}
 		memcpy(play_buf+pos,readbuf,2);
@@ -83,6 +85,7 @@ static void PlaySignleWavVoices(const char *playfilename,unsigned char playMode)
 			break;
 		}	
 	}
+	//CleanI2S_PlayCachedata();
 	fclose(fp);
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	return 0;
@@ -90,11 +93,16 @@ static void PlaySignleWavVoices(const char *playfilename,unsigned char playMode)
 //播放单声道amr格式音频数据
 static void playAmrVoices(const char *filename,unsigned char playMode){
 	char *outfile ="speek.wav";
-	start_event_play_wav();
 	AmrToWav8k(filename,(const char *)outfile);
 	PlaySignleWavVoices((const char *)outfile,playMode);
 	remove(outfile);
 }
+static void __playAmrVoices(const char *filePath,unsigned char playMode){
+	char path[128]={0};
+	snprintf(path,128,"%s%s",sysMes.localVoicesPath,filePath);
+	playAmrVoices(path,playMode);
+}
+
 #ifdef SPEEK_VOICES
 /********************************************************
 @ 播放接收到手机发送的对讲消息
@@ -106,12 +114,6 @@ void playspeekVoices(const char *filename){
 	remove(filename);
 }
 #endif
-static void __playAmrVoices(const char *filePath,unsigned char playMode){
-	char path[128]={0};
-	snprintf(path,128,"%s%s",sysMes.localVoicesPath,filePath);
-	SetWm8960Rate(RECODE_RATE);
-	playAmrVoices(path,playMode);
-}
 /********************************************************
 @ 函数功能:	播放系统音
 @ filePath:	路径
@@ -127,8 +129,9 @@ void play_waitVoices(const char *filePath){
 }
 //检查播放网路下载音频文件尾音
 static int checkPlayNetwork_endVoices(void){
-	int ret=-1;
+	int ret=0;
 	if(playWavState==INTERRUPT_PLAY_WAV){
+		Mute_voices(MUTE);
 		pause_record_audio();		//退出播放状态
 		CleanI2S_PlayCachedata();	//清理
 		StopplayI2s();				//最后一片数据丢掉
@@ -152,7 +155,7 @@ static int checkPlayNetwork_endVoices(void){
 @ 返回值: 无
 *********************************************************/
 void PlayQttsText(char *text,unsigned char type){
-	start_event_play_wav();
+	StartPthreadPlay();
 	SetWm8960Rate(RECODE_RATE);
 	char *textbuf= (char *)calloc(1,strlen(text)+2);
 	if(textbuf==NULL){
@@ -162,11 +165,13 @@ void PlayQttsText(char *text,unsigned char type){
 	SetPlayWavState(START_PLAY_WAV);
 	sprintf(textbuf,"%s%s",text,",");	//文本尾部添加",",保证文本播报出来
 	PlayQtts_log("paly qtts start\n");
+	printf("start pkay qtts \n");
 	Qtts_voices_text(textbuf,type);
 	free(textbuf);
 	checkPlayNetwork_endVoices();
 	return ;
 exit:
+	exitStreamPlayOk();
 	pause_record_audio();
 }
 /********************************************************
@@ -175,9 +180,9 @@ exit:
 @ 返回值: 0 正常退出 -1非正常退出
 *********************************************************/
 int PlayTulingText(const char *url){
-	start_event_play_wav();
-	SetWm8960Rate(RECODE_RATE); 
 	SetPlayWavState(START_PLAY_WAV);
+	StartPthreadPlay();
+	SetWm8960Rate(RECODE_RATE); 
 	downTulingMp3((const char*)url);
 	return checkPlayNetwork_endVoices();
 }	

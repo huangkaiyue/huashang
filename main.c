@@ -17,18 +17,6 @@
 static WorkQueue *DownEvent=NULL;
 static unsigned char mainQueLock=0;
 
-static unsigned char playTuling_lock=0;
-
-void SetTuling_playLock(void){
-	playTuling_lock=TULING_PLAY_LOCK;
-}
-void SetTuling_playunLock(void){
-	playTuling_lock=TULING_PLAY_UNLOCK;
-}
-unsigned char getTuling_playunLock(void){
-	return playTuling_lock;
-}
-
 /*
 @添加播放/下载 歌曲时间
 @data :添加消息数据  msgSize:消息的大小

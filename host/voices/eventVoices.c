@@ -76,20 +76,22 @@ static void CheckNetServer(void){
 }
 //短按键按下获取wifi 名字并播放
 void ShortKeyDown_ForPlayWifiMessage(void){
-	char buf[128]={0};
-	char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
-	if(strlen(wifi)<=0){
-		printf("read wifi failed \n");
-		return ;
-	}
+	if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
+		char buf[128]={0};
+		char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
+		if(strlen(wifi)<=0){
+			printf("read wifi failed \n");
+			return ;
+		}
 #ifdef DEBUG_SYSTEM_IP
-	char IP[20]={0};
-	GetNetworkcardIp((char * )"apcli0",IP);
-	snprintf(buf,128,"已连接 wifi %s  IP地址是 %s",wifi,IP);
+		char IP[20]={0};
+		GetNetworkcardIp((char * )"apcli0",IP);
+		snprintf(buf,128,"已连接 wifi %s  IP地址是 %s",wifi,IP);
 #else
-	snprintf(buf,128,"已连接 wifi %s ",wifi);
+		snprintf(buf,128,"已连接 wifi %s ",wifi);
 #endif	
-	Create_PlayQttsEvent(buf,QTTS_GBK);
+		Create_PlayQttsEvent(buf,QTTS_GBK);
+	}
 }
 
 /*******************************************************
@@ -301,19 +303,14 @@ void Create_CleanUrlEvent(void){
 返回值: 无
 ********************************************************/
 void Create_PlayQttsEvent(const char *txt,int type){
-	if(getTuling_playunLock()==TULING_PLAY_LOCK){
-		printf("is tuling play lock \n");
-		exit_tulingplay();
-		return ;
-	}
-	if (GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
-		return ;
-	}
 	if(GetRecordeVoices_PthreadState() == PLAY_WAV){	//解决在智能会话过程当中，添加播放系统语音、播放wifi 名字导致的死机现象  2017-3-26 
 		printf("%s: current is play wav\n",__func__);
 		return ;
 	}
-	
+
+	if (GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
+		return ;
+	}
 	if (checkNetWorkLive()){	//检查网络
 		return;
 	}	
@@ -461,7 +458,10 @@ void Create_PlaySystemEventVoices(int sys_voices){
 		exit_tulingplay();
 		return ;
 	}
-	if(GetRecordeVoices_PthreadState() ==PLAY_URL){
+	if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
+		return;
+	}
+	else if(GetRecordeVoices_PthreadState() ==PLAY_URL){
 		return ;
 	}
 	else if(GetRecordeVoices_PthreadState() ==PLAY_URL){
@@ -469,6 +469,10 @@ void Create_PlaySystemEventVoices(int sys_voices){
 	}else if(GetRecordeVoices_PthreadState()==PLAY_WAV){
 		ExitPlay_WavVoices();		
 	}
+	AddworkEvent(NULL,sys_voices,SYS_VOICES_EVENT);
+}
+//添加播放过渡音事件
+void Create_PlayTulingWaitVoices(int sys_voices){
 	AddworkEvent(NULL,sys_voices,SYS_VOICES_EVENT);
 }
 /*******************************************************
@@ -641,6 +645,7 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 			break;
 		case TULING_WAIT_VOICES:
 			play_waitVoices(TULING_WINT);
+			printf("%s: play wait voices ok\n",__func__);
 			break;
 	}
 }

@@ -247,20 +247,19 @@ static void HandleEventMessage(const char *data,int msgSize){
 	handleeventLog("handleevent_start\n",cur->type);
 	switch(cur->type){
 		case STUDY_WAV_EVENT:		//会话事件
+			start_event_play_wav();
 			runJsonEvent(data);
 			break;
 			
 		case SYS_VOICES_EVENT:		//系统音事件
 			start_event_play_wav();
 			Handle_PlaySystemEventVoices(cur->len);
-			pause_record_audio();
 			break;
 			
 		case SET_RATE_EVENT:		//URL清理事件
 			event_lock=1;			//受保护状态事件
 			WriteEventlockLog("eventlock_start\n",event_lock);
 			SetMainQueueLock(MAIN_QUEUE_LOCK);
-			//cleanQuequeEvent();
 			NetStreamExitFile();
 			SetWm8960Rate(RECODE_RATE);
 			event_lock=0;
@@ -297,12 +296,14 @@ static void HandleEventMessage(const char *data,int msgSize){
 			break;
 #endif			
 		case QTTS_PLAY_EVENT:		//QTTS事件
+			start_event_play_wav();
 			PlayQttsText(data,cur->len);
 			free((void *)data);
 			break;
 			
 #ifdef SPEEK_VOICES	
 		case SPEEK_VOICES_EVENT:	//接收到语音消息	
+			start_event_play_wav();
 			playspeekVoices(data);
 			pause_record_audio();
 			remove(data);

@@ -125,8 +125,8 @@ void start_event_talk_message(void){
 static void Start_uploadVoicesData(void){
 	//start_event_play_wav();		//播放过渡音，等待上传语音识别结果
 	mute_recorde_vol(PLAY_PASUSE_VOICES_VOL);
-	Create_PlaySystemEventVoices(TULING_WAIT_VOICES);
 	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
+	Create_PlayTulingWaitVoices(TULING_WAIT_VOICES);
 	usleep(200);
 	DEBUG_VOICES("len_voices = %d  \n",len_voices);
 #ifdef AMR8k_DATA		
@@ -275,7 +275,7 @@ static void *PthreadRecordVoices(void *arg){
 		}else{
 			if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
 				if((endtime-starttime)==LONG_TIME_NOT_USER_MUTE_VOICES){	//10s 之后，不用关闭音频
-					printf("=============MUTE====%d===========\n",endtime-starttime);
+					printf("%s: MUTE wm8960====%d===========\n",__func__,endtime-starttime);
 					Mute_voices(MUTE);
 				}
 				if((endtime-starttime)==SYSTEMOUTSIGN){		//第一次长时间不触发事件，则关闭
