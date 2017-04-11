@@ -11,7 +11,8 @@
 *********************************************************/
 int CheckinfoText_forContorl(const char *text){
 	int ret = -1;
-	if(strstr(text,"本地歌曲")){
+	if(strstr(text,"本地歌曲")){		
+		SetplayNetwork_unLock();
 #ifdef TANGTANG_LUO
 		PlaySystemAmrVoices(NO_MUSIC);
 #else
@@ -29,7 +30,8 @@ int CheckinfoText_forContorl(const char *text){
 	}
 #ifdef DATOU_JIANG
 	else if(strstr(text,"本地故事")){
-		pause_record_audio();
+		pause_record_audio();		
+		SetplayNetwork_unLock();
 		ret=Create_playMusicEvent((const void *)"story",1);
 		if(ret == -1){
 			PlaySystemAmrVoices(NO_STORY);
@@ -37,20 +39,23 @@ int CheckinfoText_forContorl(const char *text){
 		return 0;
 	}
 #endif
-	else if(strstr(text,"名字")||strstr(text,"你是谁")){
+	else if(strstr(text,"名字")||strstr(text,"你是谁")){		
+		SetplayNetwork_unLock();
 		PlaySystemAmrVoices(TULING_HAHAXIONG);
 		return 0;
 	}
 	else if(strstr(text,"音量")){
 		if((strstr(text,"加")&&strstr(text,"减"))||(strstr(text,"大")&&strstr(text,"小")))
 			return -1;
-		else if(strstr(text,"加")||strstr(text,"大")){
+		else if(strstr(text,"加")||strstr(text,"大")){			
+			SetplayNetwork_unLock();
 			Setwm8960Vol(VOL_ADD,0);
 			PlaySystemAmrVoices(VOICE_ADD);
 			ack_VolCtr("add",GetVol());//----------->音量减
 			return 0;
 		}
-		else if(strstr(text,"减")||strstr(text,"小")){
+		else if(strstr(text,"减")||strstr(text,"小")){			
+			SetplayNetwork_unLock();
 			Setwm8960Vol(VOL_SUB,0);
 			PlaySystemAmrVoices(VOICE_SUB);
 			ack_VolCtr("sub",GetVol());//----------->音量减

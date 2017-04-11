@@ -75,18 +75,18 @@ static int parseJson_string(const char * pMsg){
 	int err=-1;
 	if(NULL == pMsg){
 		return -1;
-    	}
-    	cJSON * pJson = cJSON_Parse(pMsg);
+    }
+    cJSON * pJson = cJSON_Parse(pMsg);
 	if(NULL == pJson){
-       		return -1;
-    	}
+    	return -1;
+    }
 	cJSON *pSub = cJSON_GetObjectItem(pJson, "token");//获取token的值，用于下一次请求时上传的校验值
 	if(pSub!=NULL){
 		//暂时定义，用于临时存放校验值，每请求一次服务器都返回token
 		updateTokenValue((const char *) pSub->valuestring);
 	}
-    	pSub = cJSON_GetObjectItem(pJson, "code");
-    	if(NULL == pSub){
+    pSub = cJSON_GetObjectItem(pJson, "code");
+    if(NULL == pSub){
 		DEBUG_STD_MSG("get code failed\n");
 		goto exit0;
 	}
@@ -117,9 +117,9 @@ static int parseJson_string(const char * pMsg){
 		DEBUG_STD_MSG("get info failed\n");
 		goto exit0;
     	}
-	DEBUG_STD_MSG("info: %s\n",pSub->valuestring);			//语音识别出来的汉字
+	DEBUG_STD_MSG("info: %s\n",pSub->valuestring);			//语音识别出来的汉字	
 	if(!CheckinfoText_forContorl((const char *)pSub->valuestring)){
-		err=0;
+		err=-1;	//正确加载里面的文字内容，播放系统音
 		goto exit0;
 	}
 exit1:	
@@ -179,7 +179,7 @@ exit0:
 @参数:	data 数据 len 数据大小
 *******************************************************/
 static void runJsonEvent(const char *data){
-	SetTuling_playLock();	//切换到播放url状态，按键按下，需要退出播放  2017.3.24 修复播放状态不对bug
+	SetplayNetwork_Lock();	
 	start_event_play_wav();
 #ifdef QITUTU_SHI
 	Led_System_vigue_close();
@@ -192,7 +192,6 @@ static void runJsonEvent(const char *data){
 #endif
 	if(parseJson_string(data)){
 		printf("parse json data or get resource failed \n");
-		SetTuling_playunLock();
 		pause_record_audio();
 		
 	}
@@ -299,7 +298,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			break;
 #endif			
 		case QTTS_PLAY_EVENT:		//QTTS事件
-			SetTuling_playLock();	//切换到播放url状态，按键按下，需要退出播放  2017.3.24 修复播放状态不对bug
+			SetplayNetwork_Lock();	
 			PlayQttsText(data,cur->len);
 			free((void *)data);
 			break;

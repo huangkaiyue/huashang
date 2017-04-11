@@ -24,27 +24,32 @@ int GetPlayNetworkState(void){
 }
 void ExitPlayNetworkState(void){
 	SetPlayNetworkState(INTERRUPT_PLAY_WAV);
-	exit_tulingplay();
+	ExitPlayNetworkPlay();
 }
 int WriteStreamPcmData(char *data,int len){
 	int i=0;
 	for(i=0;i<len;i+=2){
+		memcpy(play_buf+playNetwork_pos,data+i,2);
+		playNetwork_pos += 2;
+		memcpy(play_buf+playNetwork_pos,data+i,2);
+		playNetwork_pos += 2;
+
 		if(playNetwork_pos==I2S_PAGE_SIZE){
 			write_pcm(play_buf);
 			playNetwork_pos=0;
 		}
+		if(playNetworkState==INTERRUPT_PLAY_WAV){
+			playNetwork_pos=0;
+			return -1;
+		}
+#if 0		
 		if(playNetwork_pos+4>I2S_PAGE_SIZE){
 			printf(".......................error write data ................\n");
 			playNetwork_pos=0;
 			continue;
 		}
-		memcpy(play_buf+playNetwork_pos,data+i,2);
-		playNetwork_pos += 2;
-		memcpy(play_buf+playNetwork_pos,data+i,2);
-		playNetwork_pos += 2;
-		if(playNetworkState==INTERRUPT_PLAY_WAV){
-			return -1;
-		}
+#endif		
+
 	}
 	return 0;
 }
@@ -156,14 +161,14 @@ void playspeekVoices(const char *filename){
 void PlaySystemAmrVoices(const char *filePath){
 	__playAmrVoices(filePath,PLAY_IS_INTERRUPT);
 }
-
+//播放过渡音，不允许打断
 void play_waitVoices(const char *filePath){
 	__playAmrVoices(filePath,PLAY_IS_COMPLETE);
 }
 //检查播放网路下载音频文件尾音
 static int checkPlayNetwork_endVoices(void){
 	int ret=0;
-	if(playWavState==INTERRUPT_PLAY_WAV){
+	if(playNetworkState==INTERRUPT_PLAY_WAV){
 		Mute_voices(MUTE);
 		pause_record_audio();		//退出播放状态
 		CleanI2S_PlayCachedata();	//清理
@@ -179,9 +184,9 @@ static int checkPlayNetwork_endVoices(void){
 		pause_record_audio();		//退出播放状态
 		CleanI2S_PlayCachedata();	//清理
 	}
-	playNetwork_pos =0;	
+	playNetworkState =0;	
 	SetPlayNetworkState(START_PLAY_WAV);
-	SetTuling_playunLock();
+	SetplayNetwork_unLock();
 	return ret;
 }
 /********************************************************
@@ -208,7 +213,7 @@ void PlayQttsText(char *text,unsigned char type){
 	checkPlayNetwork_endVoices();
 	return ;
 exit:
-	SetTuling_playunLock();
+	SetplayNetwork_unLock();
 	pause_record_audio();
 }
 /********************************************************
@@ -219,7 +224,7 @@ exit:
 int PlayTulingText(const char *url){
 	if(safeSetPlayNetworkState(START_PLAY_WAV)){
 		SetPlayNetworkState(START_PLAY_WAV);
-		SetTuling_playunLock();
+		SetplayNetwork_unLock();
 		return -1;
 	}
 	SetWm8960Rate(RECODE_RATE); 

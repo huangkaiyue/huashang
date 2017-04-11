@@ -1,13 +1,14 @@
 #include "comshead.h"
 #include "base/pool.h"
-#include "config.h"
+#include "curldown.h"
 #include "host/voices/wm8960i2s.h"
+#include "config.h"
 
 #define EXIT_TULING_PLAY 		0	//退出图灵播放
 #define TULING_PLAY_ING 		1	//正在播放下载内容
 #define WAIT_TULING_PLAY_EXIT 	2	//等待退出图灵
 
-//#define DEBUG_DOWN_MP3
+#define DEBUG_DOWN_MP3
 #ifdef DEBUG_DOWN_MP3  
 #define DEBUG_DOWN(fmt, args...)     printf("%s: "fmt,__func__, ## args)
 #else   
@@ -17,26 +18,29 @@
 
 static unsigned char playTuling_lock=0;
 
-void SetTuling_playLock(void){
-	playTuling_lock=TULING_PLAY_LOCK;
+void SetplayNetwork_Lock(void){
+	playTuling_lock=PLAY_NETWORK_VOICES_LOCK;
 }
-void SetTuling_playunLock(void){
-	playTuling_lock=TULING_PLAY_UNLOCK;
+//设置在线播放上锁
+void SetplayNetwork_unLock(void){
+	playTuling_lock=PLAY_NETWORK_VOICES_UNLOCK;
 }
-unsigned char getTuling_playunLock(void){
+unsigned char GetplayNetwork_LockState(void){
 	return playTuling_lock;
 }
 
-void exit_tulingplay(void){
+void ExitPlayNetworkPlay(void){
+	__ExitQueueQttsPlay();
 	while(1){
-		unsigned char playTuling_lock = getTuling_playunLock();
-		if(playTuling_lock==TULING_PLAY_UNLOCK){
+		unsigned char playTuling_lock = GetplayNetwork_LockState();
+		if(playTuling_lock==PLAY_NETWORK_VOICES_UNLOCK){
 			break;
 		}
-		usleep(100);
-		DEBUG_DOWN("waiting exit network play \n");
-		SetDownExit();
-		__ExitQueueQttsPlay();
+		usleep(1000);
+		//DEBUG_DOWN("waiting exit network play \n");
+		if(getDownState()==DOWN_ING){		//退出下载
+			quitDownFile();
+		}
 	}
 	DEBUG_DOWN("exit ok \n");
 }
@@ -61,6 +65,7 @@ static void  tulingEndDown(int downLen){
 
 void downTulingMp3(const char *url){
 	setDowning();
+	StartPthreadPlay();
 	RequestTulingLog("downTulingMp3 start",1);
 	DEBUG_DOWN("start down tuling file \n");
 	demoDownFile(url,15,tulingStartDown,tulingGetStreamData,tulingEndDown);

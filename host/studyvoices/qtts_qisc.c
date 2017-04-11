@@ -21,8 +21,17 @@ typedef struct{
 static QttsStream_t *Qstream=NULL;
 
 void __ExitQueueQttsPlay(void){
-	Qstream->playState=PLAY_QTTS_WAIT;
-	Qstream->downState= DOWN_QTTS_QUIT;
+	char *data=NULL;
+	int len=0;
+	printf("%s clean queue list\n",__func__);
+	Qstream->playState=PLAY_QTTS_QUIT;
+	//被外部事件设置异常退出,需要清除消息队列里面音频数据
+	while(getWorkMsgNum(Qstream->qttsList)){
+		getMsgQueue(Qstream->qttsList,&data,&len);
+		free(data);
+		printf("%s: wait exit ..............\n",__func__);
+		usleep(100);
+	}
  }
 static char savebuf[1];
 static unsigned char cacheFlag=0;	
@@ -68,6 +77,8 @@ void putPcmStreamToQueue(const void *data,int size){
 static void *GetQueue_Voices_Forplay(void *arg){
 	char *data;
 	int len=0;
+	printf("%s: start run pthread\n",__func__);
+	Qstream->playState=PLAY_QTTS_ING;
 	while(Qstream->playState==PLAY_QTTS_ING){
 	 	if(getWorkMsgNum(Qstream->qttsList)==0){
 			if(Qstream->downState==DOWN_QTTS_QUIT){
@@ -79,43 +90,27 @@ static void *GetQueue_Voices_Forplay(void *arg){
 		}
 		printf("%s : write pcm\n",__func__);
 		getMsgQueue(Qstream->qttsList,&data,&len);
-		free(data);
 		if(Qstream->WritePcm(data,len)){
+			free(data);
 			break;
 		}
+		free(data);
 	}
-	if(Qstream->playState==PLAY_QTTS_WAIT){	//被外部事件设置异常退出,需要清除消息队列里面音频数据
-		while(getWorkMsgNum(Qstream->qttsList)){
-			getMsgQueue(Qstream->qttsList,&data,&len);
-			free(data);
-			printf("%s: wait exit ..............\n",__func__);
-			usleep(100);
-		}
-	}
-	
-	Qstream->playState=PLAY_QTTS_QUIT;
 	printf("%s exit ok\n",__func__);
 	return NULL;
 }
 
-int StartPthreadPlay(void){
-	if(Qstream->playState==PLAY_QTTS_WAIT){
-		Qstream->downState=DOWN_QTTS_QUIT;
-		return -1;
-	}
-	Qstream->playState=PLAY_QTTS_ING;
-	Qstream->downState=DOWN_QTTS_ING;
+void StartPthreadPlay(void){
 	pool_add_task(GetQueue_Voices_Forplay,NULL);		//启动播放线程
 	usleep(100);
-	return 0;
 }
 //正常情况下等待播放线程退出
 void WaitPthreadExit(void){
 	Qstream->downState= DOWN_QTTS_QUIT;
-	while(Qstream->downState==DOWN_QTTS_QUIT){		//等待播放线程退出
+	while(1){		//等待播放线程退出
 		if(Qstream->playState==PLAY_QTTS_QUIT)
 			break;
-		//printf("..................... WaitPthreadExit .....................\n ");
+		printf("%s: Qstream->playState = %d Qstream->downState=%d\n",__func__,Qstream->playState,Qstream->downState);
 		usleep(100*1000);
 	}
 	Qstream->playState=PLAY_QTTS_QUIT;
@@ -135,9 +130,6 @@ static int text_to_speech(const char* src_text  ,const char* params){
 	unsigned int text_len = 0;
 	unsigned int audio_len = 0;
 	int synth_status = 1;
-	if(StartPthreadPlay()){
-		return -1;
-	}
 	DEBUG_QTTS("\ntext_to_speech :begin to synth...\n");
 	text_len = (unsigned int)strlen(src_text);
 	sess_id = QTTSSessionBegin(params, &ret);
@@ -151,6 +143,8 @@ static int text_to_speech(const char* src_text  ,const char* params){
 		QTTSSessionEnd(sess_id, "TextPutError");
 		return ret;
 	}
+	StartPthreadPlay();
+	Qstream->downState=DOWN_QTTS_ING;
 	while(Qstream->downState==DOWN_QTTS_ING){
 		const void *data = QTTSAudioGet(sess_id, &audio_len, &synth_status, &ret);
 		if (NULL != data){

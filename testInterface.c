@@ -334,7 +334,7 @@ static void addplay_urlFile(void){
 	char *ttsURL= (char *)calloc(1,strlen(url)+1);
 	sprintf(ttsURL,"%s",url);
 	SetMainQueueLock(MAIN_QUEUE_UNLOCK);
-	SetTuling_playLock();	//切换到播放url状态，按键按下，需要退出播放  2017.3.24 修复播放状态不对bug
+	SetplayNetwork_Lock();	
 	AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
 	if(++playIndex==5){
 		playIndex=0;

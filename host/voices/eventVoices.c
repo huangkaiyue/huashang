@@ -163,7 +163,7 @@ static int __AddNetWork_UrlForPaly(const void *data){
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		goto exit0;
 	}
-	if(getTuling_playunLock()==TULING_PLAY_LOCK){
+	if(GetplayNetwork_LockState()==PLAY_NETWORK_VOICES_LOCK){
 		printf("is tuling play lock \n");
 		goto exit0;
 	}
@@ -195,7 +195,7 @@ static int __AddLocalMp3ForPaly(const char *localpath){
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		return -1;
 	}
-	if(getTuling_playunLock()==TULING_PLAY_LOCK){
+	if(GetplayNetwork_LockState()==PLAY_NETWORK_VOICES_LOCK){
 		printf("is tuling play lock \n");
 		return -1;
 	}
@@ -338,7 +338,7 @@ void TulingKeyDownSingal(void){
 	if (GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
 		return ;
 	}
-	if(getTuling_playunLock()==TULING_PLAY_LOCK){
+	if(GetplayNetwork_LockState()==PLAY_NETWORK_VOICES_LOCK){
 		printf("is tuling play lock \n");
 		ExitPlayNetworkState();
 		return ;
@@ -450,7 +450,7 @@ void Create_PlaySystemEventVoices(int sys_voices){
 			NetStreamExitFile();
 		}
 	}
-	if(getTuling_playunLock()==TULING_PLAY_LOCK){
+	if(GetplayNetwork_LockState()==PLAY_NETWORK_VOICES_LOCK){
 		printf("is tuling play lock \n");
 		ExitPlayNetworkState();
 	}
@@ -646,7 +646,7 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 #ifdef SPEEK_VOICES
 //播放微信发送过来语音文件
 void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
-	if(getTuling_playunLock()==TULING_PLAY_LOCK){
+	if(GetplayNetwork_LockState()==PLAY_NETWORK_VOICES_LOCK){
 		printf("is tuling play lock \n");
 		ExitPlayNetworkState();
 		goto exit0;
