@@ -7,6 +7,12 @@
 #define TULING_PLAY_ING 		1	//正在播放下载内容
 #define WAIT_TULING_PLAY_EXIT 	2	//等待退出图灵
 
+//#define DEBUG_DOWN_MP3
+#ifdef DEBUG_DOWN_MP3  
+#define DEBUG_DOWN(fmt, args...)     printf("%s: "fmt,__func__, ## args)
+#else   
+#define DEBUG_DOWN(fmt, args...) { }  
+#endif  
 
 
 static unsigned char playTuling_lock=0;
@@ -28,11 +34,11 @@ void exit_tulingplay(void){
 			break;
 		}
 		usleep(100);
-		printf("%s: exit tulingplay ..............\n",__func__);
+		DEBUG_DOWN("waiting exit network play \n");
 		SetDownExit();
 		__ExitQueueQttsPlay();
 	}
-	printf("%s exit ok\n",__func__);
+	DEBUG_DOWN("exit ok \n");
 }
 
 
@@ -56,9 +62,11 @@ static void  tulingEndDown(int downLen){
 void downTulingMp3(const char *url){
 	setDowning();
 	RequestTulingLog("downTulingMp3 start",1);
+	DEBUG_DOWN("start down tuling file \n");
 	demoDownFile(url,15,tulingStartDown,tulingGetStreamData,tulingEndDown);
 	RequestTulingLog("downTulingMp3 wait",1);
+	DEBUG_DOWN("exit down tuling file \n");
 	WaitPthreadExit();
 	RequestTulingLog("downTulingMp3 end",1);
-	printf("--------------downTulingMp3 exit mp3 -------------\n");
+	DEBUG_DOWN("--------------downTulingMp3 exit mp3 -------------\n");
 }
