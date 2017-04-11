@@ -30,6 +30,7 @@ void exit_tulingplay(void){
 		usleep(100);
 		printf("%s: exit tulingplay ..............\n",__func__);
 		SetDownExit();
+		__ExitQueueQttsPlay();
 	}
 	printf("%s exit ok\n",__func__);
 }
@@ -56,10 +57,8 @@ void downTulingMp3(const char *url){
 	setDowning();
 	RequestTulingLog("downTulingMp3 start",1);
 	demoDownFile(url,15,tulingStartDown,tulingGetStreamData,tulingEndDown);
-	SetDownExit();
 	RequestTulingLog("downTulingMp3 wait",1);
 	WaitPthreadExit();
 	RequestTulingLog("downTulingMp3 end",1);
-	SetTuling_playunLock();
 	printf("--------------downTulingMp3 exit mp3 -------------\n");
 }

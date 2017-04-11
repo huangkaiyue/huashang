@@ -67,7 +67,7 @@ extern I2SST I2S;
 
 extern void write_pcm(char *buf);
 extern void WritePcmData(char *data,int size);
-extern void WriteStreamPcmData(char *data,int len);
+extern int WriteStreamPcmData(char *data,int len);
 extern void CleanI2S_PlayCachedata(void);
 extern int Setwm8960Vol(int dir,int vol);
 extern int GetVol(void);

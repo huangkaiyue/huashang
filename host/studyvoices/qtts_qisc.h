@@ -28,7 +28,7 @@
 
 extern int Qtts_voices_text(char *text,unsigned char type);
 
-extern int init_iat_MSPLogin(void WritePcm(char *data,int size));
+extern int init_iat_MSPLogin(int WritePcm(char *data,int size));
 
 extern void iat_MSPLogout(void);
 

@@ -5,40 +5,68 @@
 #include "host/voices/WavAmrCon.h"
 #include "config.h"
 
-static unsigned short playWav_pos=0;
-static unsigned char playWavState=0;
+//------------------------------------------------------
+static unsigned short playNetwork_pos=0;
+static unsigned char  playNetworkState=0;
 
+void SetPlayNetworkState(unsigned char state){
+	playNetworkState = state;
+}
+int safeSetPlayNetworkState(unsigned char state){
+	if(playNetworkState==INTERRUPT_PLAY_WAV){
+		return -1;	
+	}
+	playNetworkState=state;
+	return 0;
+}
+int GetPlayNetworkState(void){
+	return (int)playNetworkState;
+}
+void ExitPlayNetworkState(void){
+	SetPlayNetworkState(INTERRUPT_PLAY_WAV);
+	exit_tulingplay();
+}
+int WriteStreamPcmData(char *data,int len){
+	int i=0;
+	for(i=0;i<len;i+=2){
+		if(playNetwork_pos==I2S_PAGE_SIZE){
+			write_pcm(play_buf);
+			playNetwork_pos=0;
+		}
+		if(playNetwork_pos+4>I2S_PAGE_SIZE){
+			printf(".......................error write data ................\n");
+			playNetwork_pos=0;
+			continue;
+		}
+		memcpy(play_buf+playNetwork_pos,data+i,2);
+		playNetwork_pos += 2;
+		memcpy(play_buf+playNetwork_pos,data+i,2);
+		playNetwork_pos += 2;
+		if(playNetworkState==INTERRUPT_PLAY_WAV){
+			return -1;
+		}
+	}
+	return 0;
+}
+//------------------------------------------------------
+static unsigned char playWavState=0;
 void SetPlayWavState(unsigned char state){
 	playWavState=state;
+}
+int SafeSetPlayWavState(unsigned char state){
+	if(playWavState==INTERRUPT_PLAY_WAV){
+		return -1;	
+	}
+	playWavState=state;
+	return 0;
 }
 int GetPlayWavState(void){
 	return (int)playWavState;
 }
 void ExitPlay_WavVoices(void){
 	SetPlayWavState(INTERRUPT_PLAY_WAV);
-	__ExitQueueQttsPlay();
 }
-void WriteStreamPcmData(char *data,int len){
-	int i=0;
-	for(i=0;i<len;i+=2){
-		if(playWav_pos==I2S_PAGE_SIZE){
-			write_pcm(play_buf);
-			playWav_pos=0;
-		}
-		if(playWav_pos+4>I2S_PAGE_SIZE){
-			printf(".......................error write data ................\n");
-			playWav_pos=0;
-			continue;
-		}
-		memcpy(play_buf+playWav_pos,data+i,2);
-		playWav_pos += 2;
-		memcpy(play_buf+playWav_pos,data+i,2);
-		playWav_pos += 2;
-		if(playWavState==INTERRUPT_PLAY_WAV){
-			break;
-		}
-	}
-}
+//------------------------------------------------------
 void WritePcmData(char *data,int size){
 	if(I2S.play_size==I2S_PAGE_SIZE){
 		I2S.play_size=0;
@@ -57,7 +85,10 @@ static void PlaySignleWavVoices(const char *playfilename,unsigned char playMode)
 		return ;
 	}
 	SetWm8960Rate(RECODE_RATE);
-	SetPlayWavState(START_PLAY_WAV);
+	if(playMode==PLAY_IS_INTERRUPT&&SafeSetPlayWavState(START_PLAY_WAV)){
+		printf("set play wav state failed ; current is interrupt play system wav voices \n");
+		goto exit;
+	}
 	fseek(fp,WAV_HEAD,SEEK_SET);		//跳过wav头部	
 	while(1){
 		r_size= fread(readbuf,1,2,fp);
@@ -85,10 +116,13 @@ static void PlaySignleWavVoices(const char *playfilename,unsigned char playMode)
 			break;
 		}	
 	}
-	//CleanI2S_PlayCachedata();
 	fclose(fp);
 	memset(play_buf,0,I2S_PAGE_SIZE);
-	return 0;
+	SetPlayWavState(START_PLAY_WAV);
+	return ;
+exit:
+	pause_record_audio();
+	SetPlayWavState(START_PLAY_WAV);
 }
 //播放单声道amr格式音频数据
 static void playAmrVoices(const char *filename,unsigned char playMode){
@@ -121,7 +155,6 @@ void playspeekVoices(const char *filename){
 *********************************************************/
 void PlaySystemAmrVoices(const char *filePath){
 	__playAmrVoices(filePath,PLAY_IS_INTERRUPT);
-	pause_record_audio();
 }
 
 void play_waitVoices(const char *filePath){
@@ -138,15 +171,17 @@ static int checkPlayNetwork_endVoices(void){
 		memset(play_buf,0,I2S_PAGE_SIZE);
 		ret=-1;
 	}else{
-		if(playWav_pos!=0){		//播放尾音
-			memset(play_buf+playWav_pos,0,I2S_PAGE_SIZE-playWav_pos);
+		if(playNetwork_pos!=0){		//播放尾音
+			memset(play_buf+playNetwork_pos,0,I2S_PAGE_SIZE-playNetwork_pos);
 			write_pcm(play_buf);
 		}
 		memset(play_buf,0,I2S_PAGE_SIZE);
 		pause_record_audio();		//退出播放状态
 		CleanI2S_PlayCachedata();	//清理
 	}
-	playWav_pos =0;	
+	playNetwork_pos =0;	
+	SetPlayNetworkState(START_PLAY_WAV);
+	SetTuling_playunLock();
 	return ret;
 }
 /********************************************************
@@ -155,23 +190,25 @@ static int checkPlayNetwork_endVoices(void){
 @ 返回值: 无
 *********************************************************/
 void PlayQttsText(char *text,unsigned char type){
-	StartPthreadPlay();
 	SetWm8960Rate(RECODE_RATE);
 	char *textbuf= (char *)calloc(1,strlen(text)+2);
 	if(textbuf==NULL){
 		perror("calloc error !!!");
 		goto exit;
 	}
-	SetPlayWavState(START_PLAY_WAV);
+	if(safeSetPlayNetworkState(START_PLAY_WAV)){
+		SetPlayNetworkState(START_PLAY_WAV);
+		goto exit;
+	}
 	sprintf(textbuf,"%s%s",text,",");	//文本尾部添加",",保证文本播报出来
-	PlayQtts_log("paly qtts start\n");
-	printf("start pkay qtts \n");
+	PlayQtts_log("play qtts start\n");
+	printf("start play qtts \n");
 	Qtts_voices_text(textbuf,type);
 	free(textbuf);
 	checkPlayNetwork_endVoices();
 	return ;
 exit:
-	exitStreamPlayOk();
+	SetTuling_playunLock();
 	pause_record_audio();
 }
 /********************************************************
@@ -180,8 +217,11 @@ exit:
 @ 返回值: 0 正常退出 -1非正常退出
 *********************************************************/
 int PlayTulingText(const char *url){
-	SetPlayWavState(START_PLAY_WAV);
-	StartPthreadPlay();
+	if(safeSetPlayNetworkState(START_PLAY_WAV)){
+		SetPlayNetworkState(START_PLAY_WAV);
+		SetTuling_playunLock();
+		return -1;
+	}
 	SetWm8960Rate(RECODE_RATE); 
 	downTulingMp3((const char*)url);
 	return checkPlayNetwork_endVoices();

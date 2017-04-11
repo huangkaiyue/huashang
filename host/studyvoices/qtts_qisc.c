@@ -14,27 +14,15 @@ typedef struct _MSPLogin{
 _MspLogin login_config;
 
 typedef struct{
-		unsigned char downState:4,playState:4;
-		void (*WritePcm)(char *data,int size);
-		WorkQueue * qttsList;
+	unsigned char downState:4,playState:4;
+	int (*WritePcm)(char *data,int size);
+	WorkQueue * qttsList;
 }QttsStream_t;
 static QttsStream_t *Qstream=NULL;
 
 void __ExitQueueQttsPlay(void){
-	if(Qstream->playState==PLAY_QTTS_QUIT){
-		printf("%s : current is play exit ...........\n",__func__);
-		return ;
-	}
-	Qstream->downState=DOWN_QTTS_QUIT;
-	while(1){
-		if(Qstream->playState==PLAY_QTTS_QUIT){
-			break;
-		}
-		Qstream->playState=PLAY_QTTS_WAIT;
-		printf("%s : wait exit Qstream->playState=%d\n",__func__,Qstream->playState);
-		usleep(10*1000);	//等待播放线程退出
-	}
-	printf("%s: qtts list------>%d ...\n",__func__,getWorkMsgNum(Qstream->qttsList));
+	Qstream->playState=PLAY_QTTS_WAIT;
+	Qstream->downState= DOWN_QTTS_QUIT;
  }
 static char savebuf[1];
 static unsigned char cacheFlag=0;	
@@ -91,8 +79,10 @@ static void *GetQueue_Voices_Forplay(void *arg){
 		}
 		printf("%s : write pcm\n",__func__);
 		getMsgQueue(Qstream->qttsList,&data,&len);
-		Qstream->WritePcm(data,len);
 		free(data);
+		if(Qstream->WritePcm(data,len)){
+			break;
+		}
 	}
 	if(Qstream->playState==PLAY_QTTS_WAIT){	//被外部事件设置异常退出,需要清除消息队列里面音频数据
 		while(getWorkMsgNum(Qstream->qttsList)){
@@ -108,14 +98,20 @@ static void *GetQueue_Voices_Forplay(void *arg){
 	return NULL;
 }
 
-void StartPthreadPlay(void){
+int StartPthreadPlay(void){
+	if(Qstream->playState==PLAY_QTTS_WAIT){
+		Qstream->downState=DOWN_QTTS_QUIT;
+		return -1;
+	}
 	Qstream->playState=PLAY_QTTS_ING;
 	Qstream->downState=DOWN_QTTS_ING;
 	pool_add_task(GetQueue_Voices_Forplay,NULL);		//启动播放线程
 	usleep(100);
+	return 0;
 }
 //正常情况下等待播放线程退出
 void WaitPthreadExit(void){
+	Qstream->downState= DOWN_QTTS_QUIT;
 	while(Qstream->downState==DOWN_QTTS_QUIT){		//等待播放线程退出
 		if(Qstream->playState==PLAY_QTTS_QUIT)
 			break;
@@ -125,16 +121,6 @@ void WaitPthreadExit(void){
 	Qstream->playState=PLAY_QTTS_QUIT;
 	PlayQtts_log("qtts quit ok\n");
 	printf("..................... WaitPthreadExit ok.....................\n ");
-}
-
-void SetDownExit(void){
-	Qstream->downState= DOWN_QTTS_QUIT;
-}
-
-void exitStreamPlayOk(){
-	Qstream->downState= DOWN_QTTS_QUIT;
-	Qstream->playState= PLAY_QTTS_QUIT;
-
 }
 /***************************************************************************
 @函数功能:	文本转换语音
@@ -149,17 +135,19 @@ static int text_to_speech(const char* src_text  ,const char* params){
 	unsigned int text_len = 0;
 	unsigned int audio_len = 0;
 	int synth_status = 1;
-	
+	if(StartPthreadPlay()){
+		return -1;
+	}
 	DEBUG_QTTS("\ntext_to_speech :begin to synth...\n");
 	text_len = (unsigned int)strlen(src_text);
 	sess_id = QTTSSessionBegin(params, &ret);
 	if ( ret != MSP_SUCCESS ){
-		DEBUG_QTTS("QTTSSessionBegin: qtts begin session failed Error code %d.\n",ret);
+		DEBUG_QTTS("QTTSSessionBegin: qtts begin session failed Error code %d\n",ret);
 		return ret;
 	}
 	ret = QTTSTextPut(sess_id, src_text, text_len, NULL);
 	if ( ret != MSP_SUCCESS ){
-		DEBUG_QTTS("QTTSTextPut: qtts put text failed Error code %d.\n",ret);
+		DEBUG_QTTS("QTTSTextPut: qtts put text failed Error code %d\n",ret);
 		QTTSSessionEnd(sess_id, "TextPutError");
 		return ret;
 	}
@@ -174,7 +162,6 @@ static int text_to_speech(const char* src_text  ,const char* params){
 		}
 		printf("%s: down file %d\n",__func__,Qstream->downState);
 	}
-	Qstream->downState= DOWN_QTTS_QUIT;
 	WaitPthreadExit();
 	ret = QTTSSessionEnd(sess_id, NULL);
 	return 0;
@@ -185,7 +172,6 @@ static int text_to_speech(const char* src_text  ,const char* params){
 @		VINN_GBK	文本转换语音参数
 ******************************************/
 int Qtts_voices_text(char *text,unsigned char type){
-
 	if(type==QTTS_GBK){
 		return text_to_speech(text,(const char *)VIMM_GBK);//女童音
 	}
@@ -194,7 +180,7 @@ int Qtts_voices_text(char *text,unsigned char type){
 	}
 }
 
-int init_iat_MSPLogin(void WritePcm(char *data,int size)){
+int init_iat_MSPLogin(int WritePcm(char *data,int size)){
 	//APPID请勿随意改动
 	//const char* login_configs = "appid = 55253ad2,dvc=hpm10000, work_dir =   .  ";
 	int ret = 0;
@@ -210,7 +196,7 @@ int init_iat_MSPLogin(void WritePcm(char *data,int size)){
 	//用户登录
 	ret = MSPLogin(NULL, NULL, login_configs);
 	if ( ret != MSP_SUCCESS ){
-		DEBUG_QTTS("iat MSPLogin failed , Error code %d.\n",ret);
+		DEBUG_QTTS("iat MSPLogin failed , Error code %d\n",ret);
 		return -1;
 	}
 	Qstream = (QttsStream_t *)calloc(1,sizeof(QttsStream_t));

@@ -75,20 +75,20 @@ static int parseJson_string(const char * pMsg){
 	int err=-1;
 	if(NULL == pMsg){
 		return -1;
-    }
-    cJSON * pJson = cJSON_Parse(pMsg);
+    	}
+    	cJSON * pJson = cJSON_Parse(pMsg);
 	if(NULL == pJson){
-       	return -1;
-    }
+       		return -1;
+    	}
 	cJSON *pSub = cJSON_GetObjectItem(pJson, "token");//获取token的值，用于下一次请求时上传的校验值
 	if(pSub!=NULL){
 		//暂时定义，用于临时存放校验值，每请求一次服务器都返回token
 		updateTokenValue((const char *) pSub->valuestring);
 	}
-    pSub = cJSON_GetObjectItem(pJson, "code");
-    if(NULL == pSub){
+    	pSub = cJSON_GetObjectItem(pJson, "code");
+    	if(NULL == pSub){
 		DEBUG_STD_MSG("get code failed\n");
-		goto exit;
+		goto exit0;
 	}
 	DEBUG_STD_MSG("code : %d\n", pSub->valueint);
 #if 1	
@@ -108,35 +108,37 @@ static int parseJson_string(const char * pMsg){
 		case 40012:	//服务受限
 		case 40013: //缺少 Token
 			playTulingRequestErrorVoices();
-			goto exit;
+			err=0;
+			goto exit0;
 	}
 #endif	
 	pSub = cJSON_GetObjectItem(pJson, "info");		//返回结果
-    if(NULL == pSub){
+    	if(NULL == pSub){
 		DEBUG_STD_MSG("get info failed\n");
-		goto exit;
-    }
+		goto exit0;
+    	}
 	DEBUG_STD_MSG("info: %s\n",pSub->valuestring);			//语音识别出来的汉字
-	if(CheckinfoText_forContorl((const char *)pSub->valuestring)){
-		goto exit;
+	if(!CheckinfoText_forContorl((const char *)pSub->valuestring)){
+		err=0;
+		goto exit0;
 	}
 exit1:	
 	pSub = cJSON_GetObjectItem(pJson, "text");		//解析到说话的内容
 	if(NULL == pSub){
 		DEBUG_STD_MSG("get text failed\n");
-		goto exit;
+		goto exit0;
 	}
 	DEBUG_STD_MSG("text: %s\n",pSub->valuestring);
 	pSub = cJSON_GetObjectItem(pJson, "ttsUrl");		//解析到说话的内容的链接地址，需要下载播放
     if(NULL == pSub||(!strcmp(pSub->valuestring,""))){	//如果出现空的链接地址，直接跳出
 		DEBUG_STD_MSG("get fileUrl failed\n");
-		goto exit;
+		goto exit0;
     }
 	DEBUG_STD_MSG("ttsUrl: %s \n",pSub->valuestring);
 	char *ttsURL= (char *)calloc(1,strlen(pSub->valuestring)+1);
 	if(ttsURL==NULL){
 		perror("calloc error !!!");
-		goto exit;
+		goto exit0;
 	}
 	sprintf(ttsURL,"%s",pSub->valuestring);
 	DEBUG_STD_MSG("ttsURL:%s\n",ttsURL);
@@ -144,20 +146,19 @@ exit1:
 	pSub = cJSON_GetObjectItem(pJson, "fileUrl"); 	//检查是否有mp3歌曲返回，如果有
 	if(NULL == pSub){	//直接播放语义之后的结果
 		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
-		SetTuling_playLock();	//切换到播放url状态，按键按下，需要退出播放  2017.3.24 修复播放状态不对bug
 		AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
 		err=0;
 		goto exit0;
 	}else{				//识别出有语义结果和mp3链接地址结果，先播放前面的语义内容，再播放mp3链接地址内容
 		if(!strcmp(pSub->valuestring,"")){//如果出现空的链接地址，直接跳出
 			free(ttsURL);
-			goto exit;
+			goto exit0;
 		}
 		Player_t *player=(Player_t *)calloc(1,sizeof(Player_t));
 		if(player==NULL){
 			perror("calloc error !!!");
 			free(ttsURL);
-			goto exit;
+			goto exit0;
 		}
 		snprintf(player->playfilename,128,"%s",pSub->valuestring);
 		snprintf(player->musicname,64,"%s","speek");
@@ -168,11 +169,7 @@ exit1:
 		AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
 		AddDownEvent((const char *)player,TULING_URL_VOICES);
 		err=0;
-		goto exit0;
 	}
-	
-exit:
-	pause_record_audio();
 exit0:
 	cJSON_Delete(pJson);
 	return err;
@@ -182,6 +179,8 @@ exit0:
 @参数:	data 数据 len 数据大小
 *******************************************************/
 static void runJsonEvent(const char *data){
+	SetTuling_playLock();	//切换到播放url状态，按键按下，需要退出播放  2017.3.24 修复播放状态不对bug
+	start_event_play_wav();
 #ifdef QITUTU_SHI
 	Led_System_vigue_close();
 #endif
@@ -191,7 +190,12 @@ static void runJsonEvent(const char *data){
 #ifdef DATOU_JIANG
 	led_lr_oc(closeled);
 #endif
-	parseJson_string(data);
+	if(parseJson_string(data)){
+		printf("parse json data or get resource failed \n");
+		SetTuling_playunLock();
+		pause_record_audio();
+		
+	}
 	free((void *)data);
 }
 int event_lock=0;
@@ -247,7 +251,6 @@ static void HandleEventMessage(const char *data,int msgSize){
 	handleeventLog("handleevent_start\n",cur->type);
 	switch(cur->type){
 		case STUDY_WAV_EVENT:		//会话事件
-			start_event_play_wav();
 			runJsonEvent(data);
 			break;
 			
@@ -296,7 +299,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			break;
 #endif			
 		case QTTS_PLAY_EVENT:		//QTTS事件
-			start_event_play_wav();
+			SetTuling_playLock();	//切换到播放url状态，按键按下，需要退出播放  2017.3.24 修复播放状态不对bug
 			PlayQttsText(data,cur->len);
 			free((void *)data);
 			break;

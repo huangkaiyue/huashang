@@ -6,8 +6,8 @@
 /********************************************************
 @函数功能:	匹配文字语音控制
 @参数:	text 匹配的文本
-@返回:	1表示匹配成功
-@	  	0表示匹配失败
+@返回:	0表示匹配成功
+@	  	-1表示匹配失败
 *********************************************************/
 int CheckinfoText_forContorl(const char *text){
 	int ret = -1;
@@ -25,7 +25,7 @@ int CheckinfoText_forContorl(const char *text){
 			PlaySystemAmrVoices(NO_MUSIC);
 		}
 #endif
-		return 1;
+		return 0;
 	}
 #ifdef DATOU_JIANG
 	else if(strstr(text,"本地故事")){
@@ -34,30 +34,28 @@ int CheckinfoText_forContorl(const char *text){
 		if(ret == -1){
 			PlaySystemAmrVoices(NO_STORY);
 		}
-		return 1;
+		return 0;
 	}
 #endif
 	else if(strstr(text,"名字")||strstr(text,"你是谁")){
 		PlaySystemAmrVoices(TULING_HAHAXIONG);
-		return 1;
+		return 0;
 	}
 	else if(strstr(text,"音量")){
 		if((strstr(text,"加")&&strstr(text,"减"))||(strstr(text,"大")&&strstr(text,"小")))
-			return 0;
+			return -1;
 		else if(strstr(text,"加")||strstr(text,"大")){
-			PlaySystemAmrVoices(VOICE_ADD);
 			Setwm8960Vol(VOL_ADD,0);
+			PlaySystemAmrVoices(VOICE_ADD);
 			ack_VolCtr("add",GetVol());//----------->音量减
-			pause_record_audio();
-			return 1;
+			return 0;
 		}
 		else if(strstr(text,"减")||strstr(text,"小")){
-			PlaySystemAmrVoices(VOICE_SUB);
 			Setwm8960Vol(VOL_SUB,0);
+			PlaySystemAmrVoices(VOICE_SUB);
 			ack_VolCtr("sub",GetVol());//----------->音量减
-			pause_record_audio();
-			return 1;
+			return 0;
 		}
 	}
-	return 0;
+	return -1;
 }

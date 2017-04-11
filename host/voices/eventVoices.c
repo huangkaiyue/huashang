@@ -163,15 +163,14 @@ static int __AddNetWork_UrlForPaly(const void *data){
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		goto exit0;
 	}
+	if(getTuling_playunLock()==TULING_PLAY_LOCK){
+		printf("is tuling play lock \n");
+		goto exit0;
+	}
 	if(GetRecordeVoices_PthreadState() == PLAY_WAV){
 		WritePlayUrl_Log("add failed ,reocde voices pthread is PLAY_WAV\n");
 		goto exit0;
 	}else if(GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
-		goto exit0;
-	}
-	if(getTuling_playunLock()==TULING_PLAY_LOCK){
-		printf("is tuling play lock \n");
-		exit_tulingplay();
 		goto exit0;
 	}
 	WritePlayUrl_Log("add url ok\n");
@@ -196,16 +195,15 @@ static int __AddLocalMp3ForPaly(const char *localpath){
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		return -1;
 	}
+	if(getTuling_playunLock()==TULING_PLAY_LOCK){
+		printf("is tuling play lock \n");
+		return -1;
+	}
 	if(GetRecordeVoices_PthreadState() == PLAY_WAV){	//处于播放qtts文件
 		DEBUG_EVENT(" PLAY_WAV \n");
 		ExitPlay_WavVoices();
 		return -1;
 	}else if(GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
-		return -1;
-	}
-	if(getTuling_playunLock()==TULING_PLAY_LOCK){
-		printf("is tuling play lock \n");
-		exit_tulingplay();
 		return -1;
 	}
 	char *URL= (char *)calloc(1,strlen(localpath)+1);
@@ -339,6 +337,11 @@ void TulingKeyDownSingal(void){
 	}	
 	if (GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
 		return ;
+	}
+	if(getTuling_playunLock()==TULING_PLAY_LOCK){
+		printf("is tuling play lock \n");
+		ExitPlayNetworkState();
+		return ;
 	}else if (GetRecordeVoices_PthreadState() == PLAY_WAV){//处于播放wav原始数据状态
 		ExitPlay_WavVoices();
 		Write_Speekkeylog((const char *)"PLAY_WAV",GetRecordeVoices_PthreadState());
@@ -351,12 +354,6 @@ void TulingKeyDownSingal(void){
 			Write_Speekkeylog((const char *)"ExitPlay_WavVoices",GetRecordeVoices_PthreadState());
 			return;
 		}		
-		if(getTuling_playunLock()==TULING_PLAY_LOCK){
-			printf("is tuling play lock \n");
-			exit_tulingplay();
-			return ;
-		}
-
 		sysMes.localplayname=0;	
 		NetStreamExitFile();	//在微信端推送歌曲，没有进行播放下一首歌曲的时候，突然按下智能会话按键，需要切换采样率，才能进入智能会话状态
 		if(SetWm8960Rate(RECODE_RATE)){	//切换采样率失败，退出(防止多线程当中切换，资源冲突问题)
@@ -455,14 +452,10 @@ void Create_PlaySystemEventVoices(int sys_voices){
 	}
 	if(getTuling_playunLock()==TULING_PLAY_LOCK){
 		printf("is tuling play lock \n");
-		exit_tulingplay();
-		return ;
+		ExitPlayNetworkState();
 	}
 	if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
 		return;
-	}
-	else if(GetRecordeVoices_PthreadState() ==PLAY_URL){
-		return ;
 	}
 	else if(GetRecordeVoices_PthreadState() ==PLAY_URL){
 		Create_CleanUrlEvent();
@@ -655,7 +648,7 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
 	if(getTuling_playunLock()==TULING_PLAY_LOCK){
 		printf("is tuling play lock \n");
-		exit_tulingplay();
+		ExitPlayNetworkState();
 		goto exit0;
 	}
 	if(GetRecordeVoices_PthreadState() == PLAY_WAV){	//解决在智能会话过程当中，添加微信发送过来的语音导致的死机现象  2017-4-26 
