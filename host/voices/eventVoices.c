@@ -34,7 +34,7 @@ static int getNetWorkLive(void){
 @
 */
 static int checkNetWorkLive(void){
-#if 0
+#if 1
 	if(getNetWorkLive()==NETWORK_ER||getNetWorkLive()==NETWORK_UNKOWN){
 		//播报台本
 		if(getEventNum()>0){	//检查是否添加过事件
@@ -77,6 +77,9 @@ static void CheckNetServer(void){
 //短按键按下获取wifi 名字并播放
 void ShortKeyDown_ForPlayWifiMessage(void){
 	if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
+		if(checkNetWorkLive()){	//检查网络
+			return;
+		}
 		char buf[128]={0};
 		char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
 		if(strlen(wifi)<=0){
