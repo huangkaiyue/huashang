@@ -34,7 +34,7 @@ static int getNetWorkLive(void){
 @
 */
 static int checkNetWorkLive(void){
-#if 1
+#if 0
 	if(getNetWorkLive()==NETWORK_ER||getNetWorkLive()==NETWORK_UNKOWN){
 		//播报台本
 		if(getEventNum()>0){	//检查是否添加过事件

@@ -27,6 +27,7 @@ void __ExitQueueQttsPlay(void){
 	Qstream->playState=PLAY_QTTS_QUIT;
 	//被外部事件设置异常退出,需要清除消息队列里面音频数据
 	while(getWorkMsgNum(Qstream->qttsList)){
+		Qstream->playState=PLAY_QTTS_QUIT;
 		getMsgQueue(Qstream->qttsList,&data,&len);
 		free(data);
 		printf("%s: wait exit ..............\n",__func__);
@@ -97,10 +98,12 @@ static void *GetQueue_Voices_Forplay(void *arg){
 		free(data);
 	}
 	printf("%s exit ok\n",__func__);
+	Qstream->playState=PLAY_QTTS_QUIT;
 	return NULL;
 }
 
 void StartPthreadPlay(void){
+	Qstream->downState=DOWN_QTTS_ING;
 	pool_add_task(GetQueue_Voices_Forplay,NULL);		//启动播放线程
 	usleep(100);
 }
@@ -144,7 +147,6 @@ static int text_to_speech(const char* src_text  ,const char* params){
 		return ret;
 	}
 	StartPthreadPlay();
-	Qstream->downState=DOWN_QTTS_ING;
 	while(Qstream->downState==DOWN_QTTS_ING){
 		const void *data = QTTSAudioGet(sess_id, &audio_len, &synth_status, &ret);
 		if (NULL != data){
