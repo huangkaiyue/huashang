@@ -17,7 +17,7 @@
 
 
 static unsigned char playTuling_lock=0;
-
+static unsigned char runlock=0;
 void SetplayNetwork_Lock(void){
 	playTuling_lock=PLAY_NETWORK_VOICES_LOCK;
 }
@@ -30,6 +30,10 @@ unsigned char GetplayNetwork_LockState(void){
 }
 
 void ExitPlayNetworkPlay(void){
+	if(runlock==PLAY_NETWORK_VOICES_LOCK){
+		return;
+	}
+	runlock=PLAY_NETWORK_VOICES_LOCK;
 	__ExitQueueQttsPlay();
 	while(1){
 		unsigned char playTuling_lock = GetplayNetwork_LockState();
@@ -42,6 +46,7 @@ void ExitPlayNetworkPlay(void){
 			quitDownFile();
 		}
 	}
+	runlock=PLAY_NETWORK_VOICES_UNLOCK;
 	DEBUG_DOWN("exit ok \n");
 }
 

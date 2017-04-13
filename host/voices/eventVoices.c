@@ -15,7 +15,7 @@
 #include "../sdcard/musicList.h"
 #include "config.h"
 
-#define ENABLE_CHECK_VOICES_PLAY	1	
+#define ENABLE_CHECK_VOICES_PLAY	1	//使能检查过程当中播放语音
 #define DISABLE_CHECK_VOICES_PLAY	0
 
 SysMessage sysMes;
@@ -37,7 +37,7 @@ static int getNetWorkLive(void){
 @
 */
 static int checkNetWorkLive(unsigned char enablePlayVoices){
-#if 0
+#if 1
 	if(getNetWorkLive()==NETWORK_ER||getNetWorkLive()==NETWORK_UNKOWN){
 		//播报台本
 		if(getEventNum()>0){	//检查是否添加过事件
@@ -749,6 +749,11 @@ static void StopRecorder_AndSendFile(void){
 ********************************************************/
 void Create_WeixinSpeekEvent(unsigned int gpioState){	
 	if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
+		return;
+	}
+	if(GetplayNetwork_LockState()==PLAY_NETWORK_VOICES_LOCK){
+		printf("is tuling play lock \n");
+		ExitPlayNetworkState();
 		return;
 	}
 	if(GetRecordeVoices_PthreadState() ==PLAY_URL){		//打断播放音乐

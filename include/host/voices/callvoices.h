@@ -97,7 +97,7 @@
 #define TULING_WAIT_VOICES			48
 //---------------------------------------------------------
 #define VOICES_MIN	13200	//是否是大于0.5秒的音频，采样率16000、量化位16位
-#define VOICES_ERR	1000	//误触发
+#define VOICES_ERR	2000	//误触发
 
 #define SEC				1
 #define MIN				60*SEC

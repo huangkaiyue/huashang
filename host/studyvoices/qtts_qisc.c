@@ -27,12 +27,13 @@ void __ExitQueueQttsPlay(void){
 	Qstream->playState=PLAY_QTTS_QUIT;
 	//被外部事件设置异常退出,需要清除消息队列里面音频数据
 	while(getWorkMsgNum(Qstream->qttsList)){
-		Qstream->playState=PLAY_QTTS_QUIT;
-		getMsgQueue(Qstream->qttsList,&data,&len);
-		free(data);
+		Qstream->downState= DOWN_QTTS_QUIT;
+//		getMsgQueue(Qstream->qttsList,&data,&len);
+//		free(data);
 		printf("%s: wait exit ..............\n",__func__);
 		usleep(100);
 	}
+	printf("%s ok\n",__func__);
  }
 static char savebuf[1];
 static unsigned char cacheFlag=0;	
@@ -90,12 +91,20 @@ static void *GetQueue_Voices_Forplay(void *arg){
 			continue;
 		}
 		printf("%s : write pcm\n",__func__);
-		getMsgQueue(Qstream->qttsList,&data,&len);
-		if(Qstream->WritePcm(data,len)){
+		if(GetPlayNetworkState()==START_PLAY_WAV){
+			getMsgQueue(Qstream->qttsList,&data,&len);
+			if(Qstream->WritePcm(data,len)){
+				free(data);
+				break;
+			}
 			free(data);
-			break;
 		}
+	}
+	while(getWorkMsgNum(Qstream->qttsList)){
+		getMsgQueue(Qstream->qttsList,&data,&len);
 		free(data);
+		printf("%s: clean queue list\n",__func__);
+		usleep(100);
 	}
 	printf("%s exit ok\n",__func__);
 	Qstream->playState=PLAY_QTTS_QUIT;
@@ -111,14 +120,17 @@ void StartPthreadPlay(void){
 void WaitPthreadExit(void){
 	Qstream->downState= DOWN_QTTS_QUIT;
 	while(1){		//等待播放线程退出
-		if(Qstream->playState==PLAY_QTTS_QUIT)
+		if(Qstream->playState==PLAY_QTTS_QUIT){
+			printf("==============\n is break \n ==================\n");
 			break;
+		}
 		printf("%s: Qstream->playState = %d Qstream->downState=%d\n",__func__,Qstream->playState,Qstream->downState);
 		usleep(100*1000);
 	}
+	printf("%s: ok...\n ",__func__);
 	Qstream->playState=PLAY_QTTS_QUIT;
 	PlayQtts_log("qtts quit ok\n");
-	printf("..................... WaitPthreadExit ok.....................\n ");
+	
 }
 /***************************************************************************
 @函数功能:	文本转换语音
