@@ -4,16 +4,16 @@
 
 //#define TEST_SDK					//测试SDK
 
-#define WORK_INTER
+//#define WORK_INTER
 
 #ifdef TEST_SDK						//使能命令输入行
 #endif
 
 //#define CONFIG_ALL		//全功能
 //#define DATOU_JIANG		//蒋总
-#define QITUTU_SHI		//石总
+//#define QITUTU_SHI		//石总
 //#define TANGTANG_LUO		//罗总
-
+#define HUASHANG_JIAOYU
 //----------------------功能类-----------------------------------
 
 #define SYSTEMLOCK				//测试版本限制开机次数
@@ -27,32 +27,18 @@
 #define MY_HTTP_REQ			//ʹ���Լ�д��http ����ӿ�
 #define TULING_FILE_LOG		//����ͼ��д����־�ļ�
 
+#if defined(QITUTU_SHI)||defined(DATOU_JIANG)||defined(HUASHANG_JIAOYU)
+	#define SPEEK_VOICES	//开启对讲功能
+	#define SPEEK_VOICES1	//按键切换会话
+	#define PALY_URL_SD		//下载保存到本地
+	#define LOCAL_MP3		//MP3本地播放
+	#define	LED_LR			//LED左右灯以及多按键
+#endif
 
 #ifdef DATOU_JIANG	//大头---蒋总
-	#define SPEEK_VOICES	//开启对讲功能
-	
-	#define SPEEK_VOICES1	//按键切换会话
-	
-	#define PALY_URL_SD		//下载保存到本地
-
-	#define LOCAL_MP3		//MP3本地播放
-
-	#define	LED_LR			//LED左右灯以及多按键
-
 #endif
 #ifdef QITUTU_SHI	//石总---好奇兔
 	#define CLOCKTOALIYUN	//阿里云闹钟
-	
-	#define SPEEK_VOICES	//开启对讲功能
-
-	#define SPEEK_VOICES1	//按键切换会话
-
-	#define PALY_URL_SD		//下载保存到本地
-
-	#define LOCAL_MP3		//MP3本地播放
-
-	#define	LED_LR			//LED左右灯以及多按键
-
 #endif
 #ifdef CONFIG_ALL	//全功能
 	#define CLOCKTOALIYUN	//阿里云闹钟

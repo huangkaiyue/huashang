@@ -15,6 +15,9 @@
 #include "../sdcard/musicList.h"
 #include "config.h"
 
+#define ENABLE_CHECK_VOICES_PLAY	1	
+#define DISABLE_CHECK_VOICES_PLAY	0
+
 SysMessage sysMes;
 //------------------------config network and set system network state---------------------------------------------------------
 /*
@@ -33,7 +36,7 @@ static int getNetWorkLive(void){
 @ 
 @
 */
-static int checkNetWorkLive(void){
+static int checkNetWorkLive(unsigned char enablePlayVoices){
 #if 0
 	if(getNetWorkLive()==NETWORK_ER||getNetWorkLive()==NETWORK_UNKOWN){
 		//播报台本
@@ -41,7 +44,8 @@ static int checkNetWorkLive(void){
 			return -1;
 		}
 		//添加系统音进去播放，提示用户进行联网
-		Create_PlaySystemEventVoices(NETWORK_ERROT_PLAY);
+		if(enablePlayVoices==ENABLE_CHECK_VOICES_PLAY)
+			Create_PlaySystemEventVoices(NETWORK_ERROT_PLAY);
 		return -1;
 	}else if(getNetWorkLive()==NETWORK_OK){
 		return 0;
@@ -77,7 +81,7 @@ static void CheckNetServer(void){
 //短按键按下获取wifi 名字并播放
 void ShortKeyDown_ForPlayWifiMessage(void){
 	if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
-		if(checkNetWorkLive()){	//检查网络
+		if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
 			return;
 		}
 		char buf[128]={0};
@@ -123,10 +127,7 @@ void LongNetKeyDown_ForConfigWifi(void){
 //连接成功设置工作指示灯,更新muc时间
 static void Link_NetworkOk(void){
 	Led_vigue_close();
-#ifdef QITUTU_SHI
-	led_lr_oc(openled);
-#endif
-#ifdef TANGTANG_LUO
+#if defined(TANGTANG_LUO)||defined(QITUTU_SHI)||defined(HUASHANG_JIAOYU)
 	led_lr_oc(openled);
 #endif
 #ifdef DATOU_JIANG
@@ -139,10 +140,7 @@ static void Link_NetworkOk(void){
 //联网失败,闪烁指示灯
 static void Link_NetworkError(void){
 	pool_add_task(Led_vigue_open,NULL);
-#ifdef QITUTU_SHI
-	led_lr_oc(closeled);
-#endif
-#ifdef TANGTANG_LUO
+#if defined(TANGTANG_LUO)||defined(QITUTU_SHI)||defined(HUASHANG_JIAOYU)
 	led_lr_oc(closeled);
 #endif
 #ifdef DATOU_JIANG
@@ -158,7 +156,7 @@ static void Link_NetworkError(void){
 ********************************************************/
 static int __AddNetWork_UrlForPaly(const void *data){
 	WritePlayUrl_Log("url start add \n");
-	if(checkNetWorkLive()){	//检查网络
+	if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
 		goto exit0;
 	}
 	//防止添加过快
@@ -312,7 +310,7 @@ void Create_PlayQttsEvent(const char *txt,int type){
 	if (GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
 		return ;
 	}
-	if (checkNetWorkLive()){	//检查网络
+	if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
 		return;
 	}	
 	if (GetRecordeVoices_PthreadState() == PLAY_URL){	//当前播放歌曲
@@ -353,7 +351,7 @@ void TulingKeyDownSingal(void){
 		Create_CleanUrlEvent();
 		Write_Speekkeylog((const char *)"PLAY_URL",GetRecordeVoices_PthreadState());
 	}else{		
-		if (checkNetWorkLive()){	//检查网络,没有网络直接退出播放
+		if (checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
 			Write_Speekkeylog((const char *)"ExitPlay_WavVoices",GetRecordeVoices_PthreadState());
 			return;
 		}		
@@ -483,14 +481,11 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 			Led_vigue_close();
 			Led_System_vigue_close();
 			Mute_voices(MUTE);		//关闭功放
-#ifdef QITUTU_SHI
+#if defined(TANGTANG_LUO) || defined(QITUTU_SHI) || defined(HUASHANG_JIAOYU)
 			close_sys_led();
 #endif
 #ifdef DATOU_JIANG
 			open_sys_led();
-#endif
-#ifdef TANGTANG_LUO
-			close_sys_led();
 #endif
 			led_lr_oc(closeled);
 			break;
@@ -654,14 +649,14 @@ void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
 		ExitPlayNetworkState();
 		goto exit0;
 	}
-	if(GetRecordeVoices_PthreadState() == PLAY_WAV){	//解决在智能会话过程当中，添加微信发送过来的语音导致的死机现象  2017-4-26 
+	if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
 		goto exit0;
 	}
-	if(GetRecordeVoices_PthreadState() ==PLAY_URL){
-		Create_CleanUrlEvent();
+	else if(GetRecordeVoices_PthreadState() == PLAY_WAV){	//解决在智能会话过程当中，添加微信发送过来的语音导致的死机现象  2017-4-26 
+		goto exit0;
 	}
-	if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
-		NetStreamExitFile();
+	else if(GetRecordeVoices_PthreadState() ==PLAY_URL){
+		Create_CleanUrlEvent();
 	}
 	char *TXT= (char *)calloc(1,strlen(filename)+1);
 	if(TXT){
@@ -753,7 +748,7 @@ static void StopRecorder_AndSendFile(void){
 参数:gpioState 0 按下  1 弹起
 ********************************************************/
 void Create_WeixinSpeekEvent(unsigned int gpioState){	
-	if(checkNetWorkLive()){	//检查网络
+	if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
 		return;
 	}
 	if(GetRecordeVoices_PthreadState() ==PLAY_URL){		//打断播放音乐

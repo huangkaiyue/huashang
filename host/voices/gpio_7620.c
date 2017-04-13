@@ -44,10 +44,7 @@ void Led_vigue_open(void){
 		open_sys_led();
 		usleep(500*1000);
 	}
-#ifdef QITUTU_SHI
-	open_sys_led();	//
-#endif
-#ifdef TANGTANG_LUO
+#if defined(TANGTANG_LUO) ||defined(QITUTU_SHI) || defined(HUASHANG_JIAOYU)
 	open_sys_led();	//
 #endif
 #ifdef DATOU_JIANG
@@ -73,10 +70,7 @@ void Led_System_vigue_open(void){
 		led_lr_oc(closeled);
 		usleep(300*1000);
 	}
-#ifdef QITUTU_SHI
-	led_lr_oc(openled);
-#endif
-#ifdef TANGTANG_LUO
+#if defined(TANGTANG_LUO) ||defined(QITUTU_SHI) || defined(HUASHANG_JIAOYU)
 	led_lr_oc(openled);
 #endif
 #ifdef DATOU_JIANG
@@ -120,7 +114,7 @@ void led_lr_oc(unsigned char type){
 	}
 }
 
-#ifdef QITUTU_SHI 
+#if defined(QITUTU_SHI)||defined(HUASHANG_JIAOYU)
 //按键按下绑定用户请求
 static void keyDownAck_userBind(void){
 	if(gpio.bindsign==BIND_DEV_OK){
@@ -410,6 +404,150 @@ static void signal_handler(int signum){
 	}
 	unlock_msgEv();
 }
+#endif
+#ifdef HUASHANG_JIAOYU
+static void signal_handler(int signum){
+
+	static key_mutiple_t mutiple_key_SUB,mutiple_key_ADD,mutiple_key_speek;
+
+	//拿到底层按键事件号码
+	if (ioctl(gpio.fd, TANG_GET_NUMBER,&gpio.mount) < 0){
+		perror("ioctl");
+		close(gpio.fd);
+		return ;
+	}
+	printf("signum = %d\n",signum);
+	if(check_lock_msgEv()){
+		printf("error is lock signal_handler\n");
+		return ;
+	}
+	lock_msgEv();
+	if (signum == GPIO_UP){			//短按按键事件
+		switch(gpio.mount){
+			case NETWORK_KEY:		//播报WiFi名
+				ShortKeyDown_ForPlayWifiMessage();
+				break;
+				
+			case RESERVE_KEY2:
+#ifdef SPEEK_VOICES1
+				//gpio.speek_tolk=SPEEK;
+				ReadSpeekGpio();
+#endif
+				break;
+
+			case SPEEK_KEY:
+				if(gpio.speek_tolk==SPEEK){
+					StopTuling_RecordeVoices();
+				}else{
+					Create_WeixinSpeekEvent(VOLKEYUP);
+				}
+				break;
+#ifdef 	LOCAL_MP3
+			case ADDVOL_KEY:	//短按播放喜爱内容,下一曲
+				keydown_flashingLED();
+
+				mutiple_key_ADD.key_number = ADDVOL_KEY;
+				mutiple_key_ADD.key_state  = VOLKEYUP;
+
+				GpioLog("key up",ADDVOL_KEY);
+				break;
+			case SUBVOL_KEY:	//短按播放喜爱内容,上一曲
+				keydown_flashingLED();
+
+				mutiple_key_SUB.key_number = SUBVOL_KEY;
+				mutiple_key_SUB.key_state  = VOLKEYUP;
+				GpioLog("key up",SUBVOL_KEY);
+
+				break;
+#endif
+			case RESERVE_KEY1:	//播放、暂停
+				keydown_flashingLED();	
+				keyStreamPlay();
+				break;
+			case RESERVE_KEY3:	//play last
+				keydown_flashingLED();
+				Enable_SaveLoveMusicFlag();
+				break;
+			case LETFLED_KEY:	//回复键
+				Ack_WeixinCall();
+				break;
+			case RIGHTLED_KEY:	//bind键
+				keyDownAck_userBind();
+				break;
+		}
+		DEBUG_GPIO("signal up (%d) !!!\n",gpio.mount);
+	}// end gpio_up
+	else if (signum == GPIO_DOWN){	//长按按键事件
+		switch(gpio.mount){
+			case RESET_KEY://恢复出厂设置
+				Create_PlaySystemEventVoices(RESET_HOST_V_PLAY);	//需要修改语音如下:
+				//ResetDefaultRouter();
+				system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
+				break;
+					
+			case RESERVE_KEY2://会话对讲开关键
+				//gpio.speek_tolk=TOLK;
+				ReadSpeekGpio();
+				break;
+				
+			case NETWORK_KEY://配网键
+				LongNetKeyDown_ForConfigWifi();
+				break;
+				
+			case SPEEK_KEY://会话键
+#ifdef	SPEEK_VOICES1 
+				ReadSpeekGpio();	//-----bug
+#endif
+				if(gpio.speek_tolk==SPEEK){
+					TulingKeyDownSingal();
+				}else{
+					Create_WeixinSpeekEvent(VOLKEYDOWN);
+				}			
+				break;
+			
+			case RESERVE_KEY1://预留键
+				break;
+#ifdef	LED_LR
+			case ADDVOL_KEY:	//长按音量加
+				keydown_flashingLED();
+				mutiple_key_ADD.key_state  = VOLKEYDOWN;
+				mutiple_key_ADD.key_number = ADDVOL_KEY;
+				if(mutiple_key_ADD.PthreadState == PthreadState_run)
+					break;
+				mutiple_key_ADD.PthreadState = PthreadState_run;
+				gettimeofday(&mutiple_key_ADD.time_start,0);
+				pool_add_task(mus_vol_mutiplekey_Thread,(void *)&mutiple_key_ADD);
+				ack_VolCtr("add",GetVol());		//----------->音量减
+				GpioLog("key down",ADDVOL_KEY);
+				break;
+			case SUBVOL_KEY:	//长按音量减
+				keydown_flashingLED();
+
+				mutiple_key_SUB.key_state  = VOLKEYDOWN;
+				mutiple_key_SUB.key_number = SUBVOL_KEY;
+				gettimeofday(&mutiple_key_SUB.time_start,0);
+				if(mutiple_key_SUB.PthreadState == PthreadState_run)
+					break;
+				mutiple_key_SUB.PthreadState = PthreadState_run;
+				pool_add_task(mus_vol_mutiplekey_Thread,(void *)&mutiple_key_SUB);
+				ack_VolCtr("sub",GetVol());		//----------->音量减
+				GpioLog("key down",SUBVOL_KEY);
+				break;
+			case LETFLED_KEY:	//play next
+				break;
+#endif
+			case RESERVE_KEY3:	//长按，删除收藏歌曲
+				Delete_LoveMusic();
+				break;
+		}// end gpio_down
+		DEBUG_GPIO("signal down (%d) !!!\n",gpio.mount);
+	}
+	else{
+		DEBUG_GPIO("not know signum ...\n");
+	}
+	unlock_msgEv();
+}
+
 #endif
 //----------------------------------------DATOU_JIANG-----------------------------------------------
 #ifdef DATOU_JIANG

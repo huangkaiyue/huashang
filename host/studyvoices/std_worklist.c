@@ -52,10 +52,7 @@ void ReqTulingServer(const char *voicesdata,int len,const char *voices_type,cons
 	}
 	return ;
 exit1:
-#ifdef QITUTU_SHI
-	Led_System_vigue_close();
-#endif
-#ifdef TANGTANG_LUO
+#if defined(TANGTANG_LUO)||defined(QITUTU_SHI)||defined(HUASHANG_JIAOYU)
 	Led_System_vigue_close();
 #endif
 #ifdef DATOU_JIANG
@@ -181,10 +178,7 @@ exit0:
 static void runJsonEvent(const char *data){
 	SetplayNetwork_Lock();	
 	start_event_play_wav();
-#ifdef QITUTU_SHI
-	Led_System_vigue_close();
-#endif
-#ifdef TANGTANG_LUO
+#if defined(TANGTANG_LUO)||defined(QITUTU_SHI)||defined(HUASHANG_JIAOYU)
 	Led_System_vigue_close();
 #endif
 #ifdef DATOU_JIANG
