@@ -21,19 +21,22 @@ typedef struct{
 static QttsStream_t *Qstream=NULL;
 
 void __ExitQueueQttsPlay(void){
+	usleep(1000);
+	printf("%s clean queue list\n",__func__);
+	Qstream->playState=PLAY_QTTS_WAIT;
+	Qstream->downState= DOWN_QTTS_QUIT;
+#if 0	
 	char *data=NULL;
 	int len=0;
-	printf("%s clean queue list\n",__func__);
-	Qstream->playState=PLAY_QTTS_QUIT;
 	//被外部事件设置异常退出,需要清除消息队列里面音频数据
 	while(getWorkMsgNum(Qstream->qttsList)){
-		Qstream->downState= DOWN_QTTS_QUIT;
 //		getMsgQueue(Qstream->qttsList,&data,&len);
 //		free(data);
 		printf("%s: wait exit ..............\n",__func__);
 		usleep(100);
 	}
-	printf("%s ok\n",__func__);
+	printf("%s ok\n",__func__);	
+#endif	
  }
 static char savebuf[1];
 static unsigned char cacheFlag=0;	
@@ -120,12 +123,19 @@ void StartPthreadPlay(void){
 void WaitPthreadExit(void){
 	Qstream->downState= DOWN_QTTS_QUIT;
 	while(1){		//等待播放线程退出
+		printf("step------->1\n");
+		printf("step------->2\n");
+		printf("%s: before Qstream->playState = %d Qstream->downState=%d\n",__func__,Qstream->playState,Qstream->downState);
+		printf("step------->3\n");
 		if(Qstream->playState==PLAY_QTTS_QUIT){
 			printf("==============\n is break \n ==================\n");
 			break;
 		}
-		printf("%s: Qstream->playState = %d Qstream->downState=%d\n",__func__,Qstream->playState,Qstream->downState);
+		printf("step------->4\n");
+		printf("%s: after Qstream->playState = %d Qstream->downState=%d\n",__func__,Qstream->playState,Qstream->downState);
+		printf("step------->5\n");
 		usleep(100*1000);
+		printf("step------->6\n");
 	}
 	printf("%s: ok...\n ",__func__);
 	Qstream->playState=PLAY_QTTS_QUIT;

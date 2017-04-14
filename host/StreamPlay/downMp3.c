@@ -35,13 +35,18 @@ void ExitPlayNetworkPlay(void){
 	}
 	runlock=PLAY_NETWORK_VOICES_LOCK;
 	__ExitQueueQttsPlay();
+	int timeout=0;
 	while(1){
 		unsigned char playTuling_lock = GetplayNetwork_LockState();
 		if(playTuling_lock==PLAY_NETWORK_VOICES_UNLOCK){
 			break;
 		}
-		usleep(1000);
-		//DEBUG_DOWN("waiting exit network play \n");
+		if(++timeout>30){
+			DEBUG_DOWN("timeout exit network play \n");
+			break;
+		}
+		usleep(10000);
+		
 		if(getDownState()==DOWN_ING){		//мкЁЖобть
 			quitDownFile();
 		}
