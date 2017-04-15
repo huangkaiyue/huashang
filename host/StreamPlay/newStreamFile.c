@@ -6,6 +6,7 @@
 #include "config.h"
 #include "curldown.h"
 #include "../sdcard/musicList.h"
+#include "host/voices/callvoices.h"
 
 Mp3Stream *st=NULL;
 
@@ -240,7 +241,7 @@ static void *NetplayStreamMusic(void *arg){
 	cleanStreamData(st);	//×´Ì¬ÇÐ»»ÊÇ·ñ¼ÓËø
 	
 	pause_record_audio();
-	DEBUG_STREAM("exit play ok (%d)\n",get_playstate());
+	DEBUG_STREAM("exit play ok \n");
 	return NULL;
 }
 
@@ -295,9 +296,10 @@ void NetStreamExitFile(void){
 	//DEBUG_STREAM("NetStreamExitFile start (%d)...\n",getDownState());
 	if(getDownState()==DOWN_ING){		//ÍË³öÏÂÔØ
 		quitDownFile();
-		WriteEventlockLog("eventlock exit down\n",5);
+		WriteEventlockLog("eventlock quitDownFile \n",2);
 	}
 	WriteEventlockLog("rate \n",st->rate);
+	int error_timeout_check=0;
 	//DEBUG_STREAM("=====NetStreamExitFile getDownState (%d)...\n",st->player.playState);
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//ÍË³ö²¥·Å
 		pthread_mutex_lock(&st->mutex);
@@ -307,12 +309,22 @@ void NetStreamExitFile(void){
 		memset(st->player.musicname,0,64);
 		DecodeExit();
 		pthread_mutex_unlock(&st->mutex);
-		WriteEventlockLog("eventlock exit mp3\n",5);
+		WriteEventlockLog("eventlock wait exit mp3 state \n",(int)st->player.playState);
 		DEBUG_STREAM("NetStreamExitFile while ...\n");
+		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
+			WriteEventlockLog("error exit ,and set  \n",(int)st->player.playState);
+			st->player.playState=MAD_NEXT;
+			break;
+		}
+		if(++error_timeout_check>300000){
+			WriteEventlockLog("error timeout_check ,and set exit \n",(int)st->player.playState);
+			st->player.playState=MAD_NEXT;
+			break;
+		}
 		usleep(100);
 	}
 	DEBUG_STREAM("NetStreamExitFile end ...\n");
-	WriteEventlockLog("eventlock exit end\n",5);
+	WriteEventlockLog("eventlock exit end\n",4);
 }
 
 //¿½±´ÍÆËÍ¹ýÀ´µÄÐÅÏ¢
@@ -489,8 +501,9 @@ void playLocalMp3(const char *mp3file){
 	SaveLoveMp3File(mp3file);		//É¾³ýÏ²°®¸èÇú
 #endif
 	cleanStreamData(st);	//×´Ì¬ÇÐ»»ÊÇ·ñ¼ÓËø
-	DEBUG_STREAM("exit play ok (%d)\n",get_playstate());
-	//free((void *)mp3file);
+	DEBUG_STREAM(" exit play ok \n");
+	WriteEventlockLog("playLocalMp3  exit play ok \n",(int)st->player.playState);
+	//pause_record_audio();
 }
 #ifdef PALY_URL_SD
 void PlayUrl(const void *data){

@@ -37,8 +37,8 @@
 #define RIGHTLED_KEY	14	//配网--灯
 
 #define GPIO_DEV	"/dev/gpio"
-#define SPEEK		0
-#define TOLK		1
+#define SPEEK		0		//微信对讲状态
+#define TOLK		1		//智能会话状态
 
 #define BIND_DEV_ER	0
 #define BIND_DEV_OK	1

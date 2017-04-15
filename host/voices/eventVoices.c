@@ -33,8 +33,8 @@ static int getNetWorkLive(void){
 }
 /*
 @ 检查网络状态 
-@ 
-@
+@ enablePlayVoices :用于控制播放wifi 断网状态语音
+@ 0: 连接网络正常  -1: 连接网络失败
 */
 static int checkNetWorkLive(unsigned char enablePlayVoices){
 #if 1
@@ -129,8 +129,7 @@ static void Link_NetworkOk(void){
 	Led_vigue_close();
 #if defined(TANGTANG_LUO)||defined(QITUTU_SHI)||defined(HUASHANG_JIAOYU)
 	led_lr_oc(openled);
-#endif
-#ifdef DATOU_JIANG
+#elif defined(DATOU_JIANG)
 	led_lr_oc(closeled);
 #endif
 	SocSendMenu(3,0);			//发送本地时间给mcu
@@ -142,8 +141,8 @@ static void Link_NetworkError(void){
 	pool_add_task(Led_vigue_open,NULL);
 #if defined(TANGTANG_LUO)||defined(QITUTU_SHI)||defined(HUASHANG_JIAOYU)
 	led_lr_oc(closeled);
-#endif
-#ifdef DATOU_JIANG
+
+#elif defined(DATOU_JIANG)
 	led_lr_oc(openled);
 #endif
 	setNetWorkLive(NETWORK_ER);
@@ -642,7 +641,7 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 }
 //-------end--------播放系统声音有关的、事件的产生、消费处理-----------------------------------------------------
 #ifdef SPEEK_VOICES
-//播放微信发送过来语音文件
+//播放微信发送过来语音文件  filename 发送过来的微信语音文件
 void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
 	if(GetplayNetwork_LockState()==PLAY_NETWORK_VOICES_LOCK){
 		printf("is tuling play lock \n");
@@ -665,8 +664,9 @@ void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
 			printf("add play amr voices failed ,and remove file \n");
 			goto exit0;
 		}
-		goto exit0;
+		return;
 	}
+	
 exit0:
 	remove(filename);
 }

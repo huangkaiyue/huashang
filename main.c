@@ -179,7 +179,6 @@ int main(int argc, char **argv){
 				free((void *)msg);
 				break;
 			case LOCAL_MP3_EVENT:	//±¾µØ²¥·Å
-				printf("LOCAL_MP3_EVENT start play\n");
 				playLocalMp3((const char *)msg);
 				free((void *)msg);
 				usleep(1000);

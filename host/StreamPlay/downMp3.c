@@ -31,14 +31,17 @@ unsigned char GetplayNetwork_LockState(void){
 
 void ExitPlayNetworkPlay(void){
 	if(runlock==PLAY_NETWORK_VOICES_LOCK){
+		RequestTulingLog("ExitPlayNetworkPlay lock ",10);
 		return;
 	}
+	RequestTulingLog("ExitPlayNetworkPlay start ",13);
 	runlock=PLAY_NETWORK_VOICES_LOCK;
 	__ExitQueueQttsPlay();
 	int timeout=0;
 	while(1){
 		unsigned char playTuling_lock = GetplayNetwork_LockState();
 		if(playTuling_lock==PLAY_NETWORK_VOICES_UNLOCK){
+			RequestTulingLog("ExitPlayNetworkPlay break ",12);
 			break;
 		}
 		if(++timeout>30){
@@ -46,13 +49,14 @@ void ExitPlayNetworkPlay(void){
 			break;
 		}
 		usleep(10000);
-		
+		RequestTulingLog("ExitPlayNetworkPlay exit ",13);
 		if(getDownState()==DOWN_ING){		//ÍË³öÏÂÔØ
 			quitDownFile();
 		}
 	}
 	runlock=PLAY_NETWORK_VOICES_UNLOCK;
 	DEBUG_DOWN("exit ok \n");
+	RequestTulingLog("ExitPlayNetworkPlay exit ok",10);
 }
 
 

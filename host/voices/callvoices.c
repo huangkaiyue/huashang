@@ -124,7 +124,7 @@ void start_event_talk_message(void){
 *****************************************/
 static void Start_uploadVoicesData(void){
 	//start_event_play_wav();		//播放过渡音，等待上传语音识别结果
-	mute_recorde_vol(PLAY_PASUSE_VOICES_VOL);
+	Setwm8960Vol(VOL_SET,PLAY_PASUSE_VOICES_VOL);
 	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
 	Create_PlayTulingWaitVoices(TULING_WAIT_VOICES);
 	usleep(200);
@@ -208,7 +208,7 @@ static void Save_VoicesPackt(const char *data,int size){
 	}else{
 		if(len_voices > VOICES_MIN)	//大于0.5s 音频，则上传到服务器当中开始识别  13200
 		{
-#ifdef DATOU_JIANG
+#ifdef DATOU_JIANG	//在上传过程当中闪烁灯
 			led_lr_oc(openled);
 #endif
 			Start_uploadVoicesData();		//开始上传语音

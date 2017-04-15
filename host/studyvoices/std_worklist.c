@@ -54,8 +54,7 @@ void ReqTulingServer(const char *voicesdata,int len,const char *voices_type,cons
 exit1:
 #if defined(TANGTANG_LUO)||defined(QITUTU_SHI)||defined(HUASHANG_JIAOYU)
 	Led_System_vigue_close();
-#endif
-#ifdef DATOU_JIANG
+#elif defined(DATOU_JIANG)
 	led_lr_oc(closeled);
 #endif
 	pause_record_audio();
@@ -180,8 +179,7 @@ static void runJsonEvent(const char *data){
 	start_event_play_wav();
 #if defined(TANGTANG_LUO)||defined(QITUTU_SHI)||defined(HUASHANG_JIAOYU)
 	Led_System_vigue_close();
-#endif
-#ifdef DATOU_JIANG
+#elif defined(DATOU_JIANG)
 	led_lr_oc(closeled);
 #endif
 	if(parseJson_string(data)){
@@ -302,7 +300,6 @@ static void HandleEventMessage(const char *data,int msgSize){
 			start_event_play_wav();
 			playspeekVoices(data);
 			pause_record_audio();
-			remove(data);
 			usleep(1000);
 			free((void *)data);
 			break;

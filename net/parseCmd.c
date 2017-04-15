@@ -554,7 +554,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}
 #endif
 	}
-#ifdef SPEEK_VOICES
+#ifdef SPEEK_VOICES		//微信对讲
 	else if (!strcmp(pSub->valuestring,"speek")){
 		CreatePlayWeixinVoicesSpeekEvent((const char *)cJSON_GetObjectItem(pJson, "file")->valuestring);
 	}
@@ -567,7 +567,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			Create_PlaySystemEventVoices(BIND_SSID_PLAY);
 		}
 	}
-	else if (!strcmp(pSub->valuestring,"call")){
+	else if (!strcmp(pSub->valuestring,"call")){		//微信界面发送过来的呼叫请求
 		EnableCallDev();
 		Create_PlaySystemEventVoices(TALK_CONFIRM_PLAY);
 	}

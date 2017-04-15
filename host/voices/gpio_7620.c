@@ -46,8 +46,7 @@ void Led_vigue_open(void){
 	}
 #if defined(TANGTANG_LUO) ||defined(QITUTU_SHI) || defined(HUASHANG_JIAOYU)
 	open_sys_led();	//
-#endif
-#ifdef DATOU_JIANG
+#elif defined(DATOU_JIANG)
 	close_sys_led();
 #endif
 }
@@ -58,6 +57,7 @@ void Led_System_vigue_close(void){
 void Led_vigue_close(void){
 	led_type=LED_VIGUE_CLOSE;
 }
+//闪烁led 指示灯
 void Led_System_vigue_open(void){
 	Led_System_vigue_close();
 	usleep(300*1000);
@@ -72,8 +72,7 @@ void Led_System_vigue_open(void){
 	}
 #if defined(TANGTANG_LUO) ||defined(QITUTU_SHI) || defined(HUASHANG_JIAOYU)
 	led_lr_oc(openled);
-#endif
-#ifdef DATOU_JIANG
+#elif defined(DATOU_JIANG)
 	led_lr_oc(closeled);
 #endif
 }
@@ -161,12 +160,15 @@ static int check_lock_msgEv(void){
 	}
 	return 0;
 }
-void EnableBindDev(void){
+//接收到微信发送过来的绑定请求
+void EnableBindDev(void){	
 	gpio.bindsign=BIND_DEV_OK;
 }
-void EnableCallDev(void){
+//接收到微信发送过来的呼叫请求
+void EnableCallDev(void){	
 	gpio.callbake=1;
 }
+//读取底部拨动开关状态
 static void ReadSpeekGpio(void){
 	//writeLog((const char * )"/log/read_gpio.txt",(const char * )"start read\n");
 	if (ioctl(gpio.fd,TANG_GET_DATA_3264,&gpio.data) < 0){
@@ -292,7 +294,7 @@ static void signal_handler(int signum){
 #endif
 				break;
 
-			case SPEEK_KEY:
+			case SPEEK_KEY:			//对讲和智能会话按键
 				if(gpio.speek_tolk==SPEEK){
 					StopTuling_RecordeVoices();
 				}else{
@@ -351,9 +353,9 @@ static void signal_handler(int signum){
 				LongNetKeyDown_ForConfigWifi();
 				break;
 				
-			case SPEEK_KEY://会话键
+			case SPEEK_KEY://对讲和智能会话按键
 #ifdef	SPEEK_VOICES1 
-				ReadSpeekGpio();	//-----bug
+				ReadSpeekGpio();	//每次读取底部按键拨动功能状态
 #endif
 				if(gpio.speek_tolk==SPEEK){
 					TulingKeyDownSingal();
@@ -405,11 +407,10 @@ static void signal_handler(int signum){
 	unlock_msgEv();
 }
 #endif
-#ifdef HUASHANG_JIAOYU
+#ifdef HUASHANG_JIAOYU		//华上教育
 static void signal_handler(int signum){
 
 	static key_mutiple_t mutiple_key_SUB,mutiple_key_ADD,mutiple_key_speek;
-
 	//拿到底层按键事件号码
 	if (ioctl(gpio.fd, TANG_GET_NUMBER,&gpio.mount) < 0){
 		perror("ioctl");

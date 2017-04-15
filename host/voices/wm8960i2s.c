@@ -145,17 +145,17 @@ void StartplayI2s(void){
 void PlayorPause(void){
 	ioctl(I2S.i2s_fd, I2S_PLAY_PAUSE_WM8960, 0);
 }
-void mute_recorde_vol(int change)
-{
+void mute_recorde_vol(int change){
+	int setVol=0;
 #if 1
 	if(change==UNMUTE){
 		printf("UNMUTE change %d tx_vol %d\n",change,I2S.tx_vol);
 		SET_TX_VOL(I2S.i2s_fd,I2S.tx_vol);
 	}else{
 		printf("MUTE change %d tx_vol %d\n",change,I2S.tx_vol);
-		change=(change>I2S.tx_vol?change:I2S.tx_vol);
-		printf("MUTE change %d tx_vol %d\n",change,I2S.tx_vol);
-		SET_TX_VOL(I2S.i2s_fd,change);
+		setVol=(change>I2S.tx_vol?change:I2S.tx_vol);
+		printf("MUTE change %d tx_vol %d\n",setVol,I2S.tx_vol);
+		SET_TX_VOL(I2S.i2s_fd,setVol);
 	}
 	usleep(1000);
 #endif
