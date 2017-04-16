@@ -100,8 +100,8 @@ static void loadLocalServer(int argc,const char *argv[]){
 #endif
 	srand((unsigned)time(NULL));	//取随机数基数
 	mkdir(CACHE_WAV_PATH,777);
-
 }
+#ifdef LOCAL_MP3
 //自动播放下一首歌曲 musicType 播放歌曲类型(用来区分目录标识)
 static void autoPlayNextMusic(unsigned char musicType){
 	setAutoPlayMusicTime();
@@ -119,13 +119,57 @@ static void autoPlayNextMusic(unsigned char musicType){
 			Create_playMusicEvent((const void *)"guoxue", PLAY_NEXT);
 			break;
 		case xiai:
-			Create_playMusicEvent((const void *)"xiai", PLAY_NEXT);
+			Create_playMusicEvent((const void *)XIAI_DIR, PLAY_NEXT);
 			break;
+#if defined(HUASHANG_JIAOYU)			
+		case huashang:
+			Create_playMusicEvent((const void *)HUASHANG_GUOXUE_DIR, PLAY_NEXT);
+			break;
+#endif			
 		default:
 			sysMes.localplayname=0;
 		break;
 	}	
-} 
+}
+#endif
+//主线程添加网络歌曲到队列当中播放
+static void Main_Thread_AddplayUrlMusic(const char *msg){
+	//start_event_play_url();		//暂时解决图灵播放mp3.状态不对问题
+#ifdef PALY_URL_SD
+		PlayUrl((const void *)msg);
+#else
+		NetStreamDownFilePlay((const void *)msg);
+#endif
+#if defined(HUASHANG_JIAOYU)
+	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
+		CreatePlayListMuisc((const char *)msg,PLAY_MUSIC_NETWORK);
+	}else{
+		free((void *)msg);
+	}
+#elif defined(QITUTU_SHI)
+		free((void *)msg);
+#endif
+}
+//主线程添加本地到队列当中播放
+static void Main_Thread_AddPlayLocalSdcard_Music(const char *msg){
+	playLocalMp3(msg);
+#if defined(HUASHANG_JIAOYU)	
+	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
+		CreatePlayListMuisc((const char *)msg,PLAY_MUSIC_SDCARD);
+	}else{
+		if(getEventNum()==0&&getWorkMsgNum(DownEvent)==0){
+			autoPlayNextMusic(sysMes.localplayname);
+		}	
+	}
+#elif defined(QITUTU_SHI)
+	if(getEventNum()==0&&getWorkMsgNum(DownEvent)==0){
+		autoPlayNextMusic(sysMes.localplayname);
+	}	
+#endif
+	free((void *)msg);
+	usleep(1000);
+
+}
 //检查文件锁，防止配网、启动联网脚本导致多次启动进程
 static void checkFileLock(void){
 	if (access(LOCAL_SERVER_FILE_LOCK, 0) < 0){
@@ -154,13 +198,7 @@ int main(int argc, char **argv){
 		}
 		switch(event){
 			case URL_VOICES_EVENT:	//url播放
-				//start_event_play_url();		//暂时解决图灵播放mp3.状态不对问题
-				#ifdef PALY_URL_SD
-					PlayUrl((const void *)msg);
-				#else
-					NetStreamDownFilePlay((const void *)msg);
-				#endif
-				free((void *)msg);
+				Main_Thread_AddplayUrlMusic((const char *)msg);
 				break;
 			case TULING_URL_VOICES:	//播放图灵 语音点歌、故事 url文件
 				usleep(1800*1000);	
@@ -179,14 +217,7 @@ int main(int argc, char **argv){
 				free((void *)msg);
 				break;
 			case LOCAL_MP3_EVENT:	//本地播放
-				playLocalMp3((const char *)msg);
-				free((void *)msg);
-				usleep(1000);
-			#if 1
-				if(getEventNum()==0&&getWorkMsgNum(DownEvent)==0){
-					autoPlayNextMusic(sysMes.localplayname);
-				}			
-			#endif				
+				Main_Thread_AddPlayLocalSdcard_Music((const char *)msg);
 				break;
 #ifdef TEST_PLAY_EQ_MUSIC			
 			case TEST_PLAY_EQ_WAV:

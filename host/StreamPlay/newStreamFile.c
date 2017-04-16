@@ -224,14 +224,7 @@ static void *NetplayStreamMusic(void *arg){
 	DEBUG_STREAM("music st->rate =%d st->channel=%d \n",st->rate,st->channel);
 	st->SetI2SRate(st->rate);
 	DecodePlayMusic(InputNetStream);
-#if 0
-	if(st->player.progress>95){
-		st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//·¢ËÍ½áÊø×´Ì¬
-	}else{
-		st->player.playState=MAD_NEXT;
-		st->ack_playCtr(TCP_ACK,&st->player,MAD_NEXT);
-	}
-#endif
+
 #ifdef PALY_URL_SD
 	if(st->cacheSize==st->streamLen){	//ÏÂÔØ½áÊø
 		SaveLoveMp3File(URL_SDPATH);
@@ -379,6 +372,23 @@ void StreamPlay(void){
 	}
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 }
+//ÉèÖÃµ±Ç°Á÷²¥·Å×´Ì¬
+void SetStreamPlayState(unsigned char playliststate){
+	st->player.playListState=playliststate;
+}
+//ÇÐ»»µ¥ÇúºÍÁÐ±í²¥·Å
+void GpioKey_SetStreamPlayState(void){
+	if(st->player.playListState==MUSIC_PLAY_LIST){
+		st->player.playListState=MUSIC_SINGLE_LIST;
+	}else{
+		st->player.playListState=MUSIC_PLAY_LIST;
+	}
+}
+//»ñÈ¡µ±Ç°Á÷²¥·Å×´Ì¬
+int GetStreamPlayState(void){
+	return (int)st->player.playListState; 
+}
+//°´¼üÇÐ»»²¥·Å×´Ì¬
 void keyStreamPlay(void){
 	if(st->player.playState==MAD_PAUSE){
 		st->player.playState=MAD_PLAY;
@@ -392,7 +402,11 @@ void keyStreamPlay(void){
 		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	}else if(st->player.playState==MAD_EXIT){
 #ifdef LOCAL_MP3
-		Create_playMusicEvent((const void * )"xiai",PLAY_NEXT);//ÔÝÍ£×´Ì¬£¬Ìí¼Ó¸èÇúµ½Ï²°®Ä¿Â¼ÏÂ²¥·Å
+#if defined(QITUTU_SHI)
+		Create_playMusicEvent((const void * )XIAI_DIR,PLAY_NEXT);//ÔÝÍ£×´Ì¬£¬Ìí¼ÓÏ²°®¸èÇú²¥·Å
+#elif defined(HUASHANG_JIAOYU) 
+		Create_playMusicEvent((const void * )HUASHANG_GUOXUE_DIR,PLAY_NEXT);//ÔÝÍ£×´Ì¬£¬Ìí¼Ó»ªÉÏ½ÌÓý¸èÇú²¥·Å
+#endif
 		usleep(1000);//·ÀÖ¹Ìí¼Ó°´¼üÌ«¿ì	
 #endif		
 	}
@@ -446,7 +460,7 @@ static void InputlocalStream(char * inputMsg,int inputSize){
 	fread(inputMsg,1,inputSize,st->rfp);
 	st->playSize+=inputSize;
 }
-
+//²¥·Å±¾µØ¸èÇú
 void playLocalMp3(const char *mp3file){
 	st->player.progress=0;
 	st->streamLen=0;
@@ -489,14 +503,6 @@ void playLocalMp3(const char *mp3file){
 	DEBUG_STREAM("music start play \n");
 	DecodePlayMusic(InputlocalStream);
 	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//·¢ËÍ½áÊø×´Ì¬
-#if 0
-		if(st->player.progress>95){
-			st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//·¢ËÍ½áÊø×´Ì¬
-		}else{
-			st->player.playState=MAD_NEXT;
-			st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);
-		}
-#endif
 #ifdef PALY_URL_SD
 	SaveLoveMp3File(mp3file);		//É¾³ýÏ²°®¸èÇú
 #endif
@@ -569,6 +575,7 @@ void initStream(void ack_playCtr(int nettype,Player_t *player,unsigned char play
 	st->ack_playCtr=ack_playCtr;
 	st->SetI2SRate=SetI2SRate;
 	st->GetVol=GetVol;
+	st->player.playState=MUSIC_PLAY_LIST;
 	pthread_mutex_init(&st->mutex, NULL);
 	initCurl();
 	DEBUG_STREAM("ok ...\n");

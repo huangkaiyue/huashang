@@ -219,11 +219,20 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 			{
 				if(mutiplekey->key_number == ADDVOL_KEY){
 					printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
-					Create_playMusicEvent((const void *)"xiai",PLAY_NEXT);
+#if defined(QITUTU_SHI) 					
+					Create_playMusicEvent((const void *)XIAI_DIR,PLAY_NEXT);
+#elif defined(HUASHANG_JIAOYU)
+					Create_playMusicEvent((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT);
+#endif
 				}
 				else{
 					printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
-					Create_playMusicEvent((const void *)"xiai",PLAY_PREV);
+#if defined(QITUTU_SHI)					
+					Create_playMusicEvent((const void *)XIAI_DIR,PLAY_PREV);
+#elif defined(HUASHANG_JIAOYU)
+					Create_playMusicEvent((const void *)HUASHANG_GUOXUE_DIR,PLAY_PREV);
+#endif
+
 				}
 	
 				break;
@@ -261,10 +270,8 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 	return NULL;
 }
 
-
-//按键处理事件
 //-------------------------------------------QITUTU_SHI--------------------------------------------
-#ifdef QITUTU_SHI
+#ifdef QITUTU_SHI	//石总
 static void signal_handler(int signum){
 
 	static key_mutiple_t mutiple_key_SUB,mutiple_key_ADD,mutiple_key_speek;
@@ -289,7 +296,6 @@ static void signal_handler(int signum){
 				
 			case RESERVE_KEY2:
 #ifdef SPEEK_VOICES1
-				//gpio.speek_tolk=SPEEK;
 				ReadSpeekGpio();
 #endif
 				break;
@@ -319,11 +325,11 @@ static void signal_handler(int signum){
 
 				break;
 #endif
-			case RESERVE_KEY1:	//播放、暂停
+			case PLAY_PAUSE_KEY:	//播放、暂停
 				keydown_flashingLED();	
 				keyStreamPlay();
 				break;
-			case RESERVE_KEY3:	//play last
+			case RESERVE_KEY3:	//使能收藏歌曲
 				keydown_flashingLED();
 				Enable_SaveLoveMusicFlag();
 				break;
@@ -340,12 +346,10 @@ static void signal_handler(int signum){
 		switch(gpio.mount){
 			case RESET_KEY://恢复出厂设置
 				Create_PlaySystemEventVoices(RESET_HOST_V_PLAY);	//需要修改语音如下:
-				//ResetDefaultRouter();
 				system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
 				break;
 					
 			case RESERVE_KEY2://会话对讲开关键
-				//gpio.speek_tolk=TOLK;
 				ReadSpeekGpio();
 				break;
 				
@@ -364,7 +368,7 @@ static void signal_handler(int signum){
 				}			
 				break;
 			
-			case RESERVE_KEY1://预留键
+			case PLAY_PAUSE_KEY://播放暂停按键(长按，会发弹起信号，不做处理)
 				break;
 #ifdef	LED_LR
 			case ADDVOL_KEY:	//长按音量加
@@ -408,6 +412,7 @@ static void signal_handler(int signum){
 }
 #endif
 #ifdef HUASHANG_JIAOYU		//华上教育
+//#define TEST_PLAY_KEY
 static void signal_handler(int signum){
 
 	static key_mutiple_t mutiple_key_SUB,mutiple_key_ADD,mutiple_key_speek;
@@ -426,51 +431,47 @@ static void signal_handler(int signum){
 	if (signum == GPIO_UP){			//短按按键事件
 		switch(gpio.mount){
 			case NETWORK_KEY:		//播报WiFi名
+#ifdef TEST_PLAY_KEY
+				keydown_flashingLED();
+				GpioKey_SetStreamPlayState();
+				break;
+#endif
 				ShortKeyDown_ForPlayWifiMessage();
 				break;
 				
 			case RESERVE_KEY2:
 #ifdef SPEEK_VOICES1
-				//gpio.speek_tolk=SPEEK;
 				ReadSpeekGpio();
 #endif
 				break;
 
-			case SPEEK_KEY:
-				if(gpio.speek_tolk==SPEEK){
-					StopTuling_RecordeVoices();
-				}else{
-					Create_WeixinSpeekEvent(VOLKEYUP);
-				}
+			case SPEEK_KEY:			//智能会话按键事件
+				StopTuling_RecordeVoices();
 				break;
 #ifdef 	LOCAL_MP3
 			case ADDVOL_KEY:	//短按播放喜爱内容,下一曲
 				keydown_flashingLED();
-
 				mutiple_key_ADD.key_number = ADDVOL_KEY;
 				mutiple_key_ADD.key_state  = VOLKEYUP;
-
 				GpioLog("key up",ADDVOL_KEY);
 				break;
 			case SUBVOL_KEY:	//短按播放喜爱内容,上一曲
 				keydown_flashingLED();
-
 				mutiple_key_SUB.key_number = SUBVOL_KEY;
 				mutiple_key_SUB.key_state  = VOLKEYUP;
 				GpioLog("key up",SUBVOL_KEY);
-
 				break;
 #endif
-			case RESERVE_KEY1:	//播放、暂停
+			case PLAY_PAUSE_KEY:	//播放、暂停
 				keydown_flashingLED();	
 				keyStreamPlay();
 				break;
-			case RESERVE_KEY3:	//play last
+			case RESERVE_KEY3:	//华上教育，设置单曲循环和列表
 				keydown_flashingLED();
-				Enable_SaveLoveMusicFlag();
+				GpioKey_SetStreamPlayState();
 				break;
-			case LETFLED_KEY:	//回复键
-				Ack_WeixinCall();
+			case HUASHANG_WEIXIN_SPEEK_KEY:	//华上教育微信对讲
+				Create_WeixinSpeekEvent(VOLKEYUP);
 				break;
 			case RIGHTLED_KEY:	//bind键
 				keyDownAck_userBind();
@@ -482,12 +483,10 @@ static void signal_handler(int signum){
 		switch(gpio.mount){
 			case RESET_KEY://恢复出厂设置
 				Create_PlaySystemEventVoices(RESET_HOST_V_PLAY);	//需要修改语音如下:
-				//ResetDefaultRouter();
 				system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
 				break;
 					
 			case RESERVE_KEY2://会话对讲开关键
-				//gpio.speek_tolk=TOLK;
 				ReadSpeekGpio();
 				break;
 				
@@ -496,19 +495,15 @@ static void signal_handler(int signum){
 				break;
 				
 			case SPEEK_KEY://会话键
-#ifdef	SPEEK_VOICES1 
-				ReadSpeekGpio();	//-----bug
+#ifdef TEST_PLAY_KEY
+				Create_playMusicEvent((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT);
+				break;
 #endif
-				if(gpio.speek_tolk==SPEEK){
-					TulingKeyDownSingal();
-				}else{
-					Create_WeixinSpeekEvent(VOLKEYDOWN);
-				}			
+				TulingKeyDownSingal();
 				break;
 			
-			case RESERVE_KEY1://预留键
+			case PLAY_PAUSE_KEY://长按播放/暂停  不做处理
 				break;
-#ifdef	LED_LR
 			case ADDVOL_KEY:	//长按音量加
 				keydown_flashingLED();
 				mutiple_key_ADD.key_state  = VOLKEYDOWN;
@@ -521,9 +516,8 @@ static void signal_handler(int signum){
 				ack_VolCtr("add",GetVol());		//----------->音量减
 				GpioLog("key down",ADDVOL_KEY);
 				break;
-			case SUBVOL_KEY:	//长按音量减
+			case SUBVOL_KEY:					//长按音量减
 				keydown_flashingLED();
-
 				mutiple_key_SUB.key_state  = VOLKEYDOWN;
 				mutiple_key_SUB.key_number = SUBVOL_KEY;
 				gettimeofday(&mutiple_key_SUB.time_start,0);
@@ -534,9 +528,9 @@ static void signal_handler(int signum){
 				ack_VolCtr("sub",GetVol());		//----------->音量减
 				GpioLog("key down",SUBVOL_KEY);
 				break;
-			case LETFLED_KEY:	//play next
+			case HUASHANG_WEIXIN_SPEEK_KEY:	//华上教育微信对讲
+				Create_WeixinSpeekEvent(VOLKEYDOWN);
 				break;
-#endif
 			case RESERVE_KEY3:	//长按，删除收藏歌曲
 				Delete_LoveMusic();
 				break;
@@ -620,33 +614,15 @@ static void signal_handler(int signum){
 				break;
 #endif
 			case RIGHTLED_KEY:
-#if 0
-				if(gpio.ledletf==1){
-					gpio.ledletf=0;
-					led_left_right(left,closeled);
-				}else{
-					gpio.ledletf=1;
-					led_left_right(left,openled);
-				}
-				if(gpio.ledright==1){	//right led
-					gpio.ledright=0;
-					led_left_right(right,closeled);
-				}else{
-					gpio.ledright=1;
-					led_left_right(right,openled);
-				}
-#else
 				if(sysMes.localplayname==english){
 					keyStreamPlay();
 				}else{
 					Create_playMusicEvent((const void *)"english",PLAY_NEXT);
 				}
-#endif
 				break;
 #ifdef	LOCAL_MP3
 			case RESERVE_KEY2:
 #ifdef	SPEEK_VOICES1
-				//gpio.speek_tolk=SPEEK;
 				ReadSpeekGpio();
 #else
 				if(sysMes.localplayname==english){
@@ -657,7 +633,7 @@ static void signal_handler(int signum){
 #endif
 				break;
 
-			case RESERVE_KEY1://预留键
+			case PLAY_PAUSE_KEY://播放暂停
 				if(sysMes.localplayname==guoxue){
 					keyStreamPlay();
 				}else{
@@ -686,7 +662,6 @@ static void signal_handler(int signum){
 		switch(gpio.mount){
 			case RESET_KEY://恢复出厂设置
 				Create_PlaySystemEventVoices(RESET_HOST_V_PLAY);
-				//ResetDefaultRouter();
 				system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
 				break;
 					
@@ -717,7 +692,7 @@ static void signal_handler(int signum){
 #endif
 				break;
 			
-			case RESERVE_KEY1://预留键
+			case PLAY_PAUSE_KEY://预留键
 				break;
 #ifdef	LED_LR
 			case RESERVE_KEY3:	//目录
@@ -773,7 +748,6 @@ static void signal_handler(int signum){
 		switch(gpio.mount){
 			case RESET_KEY://恢复出厂设置
 				Create_PlaySystemEventVoices(RESET_HOST_V_PLAY);
-				//ResetDefaultRouter();
 				system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
 				break;
 				
@@ -849,7 +823,7 @@ void enable_gpio(void){
 		return ;
 	}
 	info.pid = getpid();
-	info.irq = RESERVE_KEY1;
+	info.irq = PLAY_PAUSE_KEY;
 	if (ioctl(gpio.fd, RALINK_GPIO_REG_IRQ, &info) < 0) {
 		perror("ioctl");
 		close(gpio.fd);

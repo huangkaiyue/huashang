@@ -9,11 +9,10 @@
 #ifdef TEST_SDK						//使能命令输入行
 #endif
 
-//#define CONFIG_ALL		//全功能
 //#define DATOU_JIANG		//蒋总
-#define QITUTU_SHI		//石总
+//#define QITUTU_SHI		//石总
 //#define TANGTANG_LUO		//罗总
-//#define HUASHANG_JIAOYU
+#define HUASHANG_JIAOYU
 //----------------------功能类-----------------------------------
 
 #define SYSTEMLOCK				//测试版本限制开机次数
@@ -37,23 +36,14 @@
 
 #ifdef DATOU_JIANG	//大头---蒋总
 #endif
-#ifdef QITUTU_SHI	//石总---好奇兔
+#if defined(QITUTU_SHI)||defined(HUASHANG_JIAOYU)	//石总---好奇兔
 	#define CLOCKTOALIYUN	//阿里云闹钟
 #endif
-#ifdef CONFIG_ALL	//全功能
-	#define CLOCKTOALIYUN	//阿里云闹钟
-	
-	#define SPEEK_VOICES	//开启对讲功能
-//=====================================================
-	#define SPEEK_VOICES1	//按键切换会话
-	
-	#define PALY_URL_SD		//下载保存到本地
 
-	#define LOCAL_MP3		//MP3本地播放
-
-	#define	LED_LR			//LED左右灯以及多按键
-//=====================================================
+#if defined(HUASHANG_JIAOYU)
+	#define  HUASHANG_JIAOYU_PLAY_JSON_FILE		"huashang_play.json"
 #endif
+
 //----------------------测试类-----------------------------------
 
 //#define TEST_MIC			//测试录音并直接播放出来
@@ -127,5 +117,7 @@
 #endif
 
 
+#define XIAI_DIR 				"xiai"
+#define HUASHANG_GUOXUE_DIR		"huashangedu"	
 //#define TEST_ERROR_TULING
 

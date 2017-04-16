@@ -12,29 +12,25 @@
 
 #define GPIO_UP		SIGUSR1	//弹起事件--端按事件
 #define GPIO_DOWN	SIGUSR2	//按下事件--长按事件
-#if 0
-#define	RESET_KEY		39	//恢复出厂设置键
-#define RESERVE_KEY2	38	//会话对讲开关键
-#else
-#define	RESET_KEY		38	//恢复出厂设置键
-#define RESERVE_KEY2	39	//英语
-#endif
-#define	NETWORK_KEY		40	//配网键
-#define	SPEEK_KEY		41	//会话键
-#define	RESERVE_KEY1	42	//科技
 
-#define RESERVE_KEY3	20	//儿歌
+#define	RESET_KEY					38	//恢复出厂设置键
+#define RESERVE_KEY2				39	//会话对讲开关键
 
-//#define SUBVOL_KEY		16	//下一曲--音量加
-//#define ADDVOL_KEY		17	//上一曲--音量减
+#define	NETWORK_KEY					40	//配网键
+#define	SPEEK_KEY					41	//会话键
+#define	PLAY_PAUSE_KEY				42	//播放/暂停
 
-#define SUBVOL_KEY		17	//下一曲--音量减
-#define ADDVOL_KEY		16	//上一曲--音量加
+#define RESERVE_KEY3				20	//收藏歌曲
+
+#define ADDVOL_KEY					16	//上一曲--音量加
+#define SUBVOL_KEY					17	//下一曲--音量减
 
 
+#define RIGHTLED_KEY				14	//微信发送过来的绑定请求
 
-#define LETFLED_KEY		21	//素质
-#define RIGHTLED_KEY	14	//配网--灯
+#define LETFLED_KEY					21	//素质
+#define HUASHANG_WEIXIN_SPEEK_KEY	LETFLED_KEY	//华上教育微信对讲
+
 
 #define GPIO_DEV	"/dev/gpio"
 #define SPEEK		0		//微信对讲状态

@@ -20,7 +20,7 @@ int CheckinfoText_forContorl(const char *text){
 #ifdef DATOU_JIANG
 		ret=Create_playMusicEvent((const void *)"mp3",1);
 #else
-		ret=Create_playMusicEvent((const void *)"xiai",1);
+		ret=Create_playMusicEvent((const void *)XIAI_DIR,1);
 #endif
 		if(ret == -1){
 			PlaySystemAmrVoices(NO_MUSIC);

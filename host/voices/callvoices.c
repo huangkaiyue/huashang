@@ -38,12 +38,40 @@ static char amr_data[12*KB];
 //将录制的8k语音转换成16k语音
 static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen){
 	int pos=0,npos=0;
+#if defined(HUASHANG_JIAOYU)
+	char filepath[64]={0};
+	time_t t;
+	t = time(NULL);
+	sprintf(filepath,"%s%d%s",CACHE_WAV_PATH,(unsigned int)t,".pcm");
+
+	FILE *fp =fopen(filepath,"w+");
+	if(fp==NULL){
+		perror("open failed ");
+	}
+	for(pos=0;pos<inputLen;pos+=2){
+		if(fp!=NULL){
+			fwrite(inputdata+pos,1,2,fp);
+		}
+		memcpy(outputdata+npos,inputdata+pos,2);
+		npos+=2;
+		if(fp!=NULL){
+			fwrite(inputdata+pos,1,2,fp);
+		}
+		memcpy(outputdata+npos,inputdata+pos,2);
+		npos+=2;
+	}
+	if(fp!=NULL){
+		fclose(fp);
+	}
+	Huashang_SendnotOnline_xunfeiVoices((const char * )filepath);
+#else
 	for(pos=0;pos<inputLen;pos+=2){
 		memcpy(outputdata+npos,inputdata+pos,2);
 		npos+=2;
 		memcpy(outputdata+npos,inputdata+pos,2);
 		npos+=2;
 	}
+#endif
 }
 //将8k语音转换成16k语音，并写入到文件当中
 static int PcmVoice8kTo16k_File(const char *inputdata,const char *outfilename,int inputLen){
@@ -126,8 +154,11 @@ static void Start_uploadVoicesData(void){
 	//start_event_play_wav();		//播放过渡音，等待上传语音识别结果
 	Setwm8960Vol(VOL_SET,PLAY_PASUSE_VOICES_VOL);
 	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
+#if defined(HUASHANG_JIAOYU)
+#else
 	Create_PlayTulingWaitVoices(TULING_WAIT_VOICES);
 	usleep(200);
+#endif	
 	DEBUG_VOICES("len_voices = %d  \n",len_voices);
 #ifdef AMR8k_DATA		
 	pcmwavhdr.size_8 = (len_voices+36);
@@ -148,6 +179,11 @@ static void Start_uploadVoicesData(void){
 #ifdef PCM_DATA
 #ifdef MY_HTTP_REQ
 	pcmVoice8kTo16k(buf_voices+WAV_HEAD,pcm_voices16k,len_voices);
+#if defined(HUASHANG_JIAOYU)
+	if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
+		return ;
+	}
+#endif
 	ReqTulingServer((const char *)pcm_voices16k,len_voices*2,"pcm","0",RECODE_RATE*2);
 #else
 	PcmVoice8kTo16k_File(buf_voices,"pcm16k.cache",len_voices);

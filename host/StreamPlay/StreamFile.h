@@ -20,10 +20,14 @@
 #define UDP_ACK		1
 #define TCP_ACK		0
 
+#define MUSIC_PLAY_LIST			0	//列表播放
+#define	MUSIC_SINGLE_LIST		1 	//单曲循环
+
 #define MP3STEAM_SIZE	sizeof(Mp3Stream)
 
 typedef struct{
-	unsigned char playState;
+	unsigned char playListState;//播放列表状态		0:顺序播放 1:单曲播放		
+	unsigned char playState;	//播放状态
 	unsigned char vol;			//音量大小	
 	short progress;				//播放进度
 	short proflag;				//播放进度标记
@@ -68,6 +72,8 @@ extern void PlayUrl(const void *data);	//播放URL接口，本地存在就不下载了
 extern int NetStreamDownFilePlay(const void *data);//开始边下边播放 阻塞 耗时下载，后台线程播放
 extern void StreamPause(void);
 extern void StreamPlay(void);
+extern void SetStreamPlayState(unsigned char playliststate);
+extern int GetStreamPlayState(void);
 extern void keyStreamPlay(void);
 
 extern void getStreamState(void *data,void StreamState(void *data,Player_t *player));	//获取播放流状态

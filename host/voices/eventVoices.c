@@ -15,9 +15,6 @@
 #include "../sdcard/musicList.h"
 #include "config.h"
 
-#define ENABLE_CHECK_VOICES_PLAY	1	//使能检查过程当中播放语音
-#define DISABLE_CHECK_VOICES_PLAY	0
-
 SysMessage sysMes;
 //------------------------config network and set system network state---------------------------------------------------------
 /*
@@ -36,7 +33,7 @@ static int getNetWorkLive(void){
 @ enablePlayVoices :用于控制播放wifi 断网状态语音
 @ 0: 连接网络正常  -1: 连接网络失败
 */
-static int checkNetWorkLive(unsigned char enablePlayVoices){
+int checkNetWorkLive(unsigned char enablePlayVoices){
 #if 1
 	if(getNetWorkLive()==NETWORK_ER||getNetWorkLive()==NETWORK_UNKOWN){
 		//播报台本
@@ -153,7 +150,7 @@ static void Link_NetworkError(void){
 参数: data 播放歌曲信息，已经malloc申请内存了	
 返回值: 无
 ********************************************************/
-static int __AddNetWork_UrlForPaly(const void *data){
+int __AddNetWork_UrlForPaly(const void *data){
 	WritePlayUrl_Log("url start add \n");
 	if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
 		goto exit0;
@@ -190,7 +187,7 @@ void setAutoPlayMusicTime(void){
 参数: localpath 本地MP3播放地址	
 返回值: 0添加成功 -1添加失败
 ********************************************************/
-static int __AddLocalMp3ForPaly(const char *localpath){
+int __AddLocalMp3ForPaly(const char *localpath){
 	if(getEventNum()>0){	//事件任务过多，直接丢掉，防止添加过快，导致后面清理时间过长
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		return -1;
@@ -255,6 +252,7 @@ static int GetSdcardMusicNameforPlay(unsigned char menu,const char *path, unsign
 }
 #endif
 
+
 /*******************************************************
 函数功能: 播放MP3
 参数: play 本地MP3播放命令 或 URL地址
@@ -275,9 +273,15 @@ int Create_playMusicEvent(const void *play,unsigned char Mode){
 	else if(!strcmp((const char *)play,"guoxue")){
 		ret=GetSdcardMusicNameforPlay(guoxue,TF_GUOXUE_PATH,Mode);
 	}
-	else if(!strcmp((const char *)play,"xiai")){
+	else if(!strcmp((const char *)play,XIAI_DIR)){
 		ret=GetSdcardMusicNameforPlay(xiai,XIMALA_MUSIC_DIRNAME,Mode);
-	}else{
+	}
+#if defined(HUASHANG_JIAOYU)	
+	else if(!strcmp((const char *)play,HUASHANG_GUOXUE_DIR)){
+		GetScard_forPlayHuashang_Music(Mode,(const void *)play);
+	}
+#endif	
+	else{
 		ret=0;
 		__AddNetWork_UrlForPaly(play);
 	}
@@ -350,10 +354,14 @@ void TulingKeyDownSingal(void){
 		Create_CleanUrlEvent();
 		Write_Speekkeylog((const char *)"PLAY_URL",GetRecordeVoices_PthreadState());
 	}else{		
+#if defined(HUASHANG_JIAOYU)	//华上教育有离线语音识别接口，需要采集音频进行离线识别
+		
+#else
 		if (checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
 			Write_Speekkeylog((const char *)"ExitPlay_WavVoices",GetRecordeVoices_PthreadState());
 			return;
-		}		
+		}
+#endif		
 		sysMes.localplayname=0;	
 		NetStreamExitFile();	//在微信端推送歌曲，没有进行播放下一首歌曲的时候，突然按下智能会话按键，需要切换采样率，才能进入智能会话状态
 		if(SetWm8960Rate(RECODE_RATE)){	//切换采样率失败，退出(防止多线程当中切换，资源冲突问题)
@@ -376,6 +384,9 @@ void *Close_Mtk76xxSystem(void *arg){
 #ifdef PALY_URL_SD	
 	SaveSystemPlayNum();
 #endif	
+#ifdef HUASHANG_JIAOYU
+	closeSystemSave_huashangData();
+#endif
 	return NULL;
 }
 //----------------------播放系统声音有关的、事件的产生、消费处理-----------------------------------------------------
@@ -905,6 +916,9 @@ static void *waitLoadMusicList(void *arg){
 		sysMes.netstate=NETWORK_ER;
 		enable_gpio();
 	}
+#ifdef HUASHANG_JIAOYU
+	openSystemload_huashangData();
+#endif
 	return;
 } 
 #endif

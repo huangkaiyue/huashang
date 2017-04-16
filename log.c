@@ -315,3 +315,24 @@ void WiterSmartConifg_Log(const char *data1,const char *data2){
 	return ;
 #endif
 }
+
+void Write_huashang_log(const char *data1,const char *data2,int val){
+#ifdef ENABLE_LOG	
+	FILE *fplog = NULL;
+	if(!strcmp(data2,"start")){
+		fplog =fopen("/log/huashang.log","w+");
+	}else{
+		fplog =fopen("/log/huashang.log","a+");
+	}
+	
+	if(NULL == fplog ){
+		return ;
+    }
+	if(fplog){
+		fprintf(fplog,"%s--->%s--->%d\n",data1,data2,val);
+		fclose(fplog);
+	}
+	return ;
+#endif	
+}
+

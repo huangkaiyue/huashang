@@ -40,6 +40,8 @@ all +=host/voices/message_wav.o
 all +=host/voices/eventVoices.o
 all +=host/voices/gpio_7620.o
 
+all +=host/voices/huashangMusic.o
+
 all +=host/sdcard/sdcard.o
 all +=host/sdcard/sqlite.o
 all +=host/sdcard/MusicListDb.o

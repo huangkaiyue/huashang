@@ -41,6 +41,12 @@ extern char* Rstrchr(char* s, char x);
 ********************************************/
 extern void   ToLowerCase(char* s);
 
+/********************************************
+功能：读取filename 这个文件内容到内存当中
+返回指向filename文件当中内存指针，需要释放这块内存
+********************************************/
+extern char *readFileBuf(const char *filename);
+
 #ifdef __cplusplus
 };
 #endif

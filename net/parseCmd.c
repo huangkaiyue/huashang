@@ -623,8 +623,12 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 #endif
 		}else{
 		}
-
+	}
+#if defined(HUASHANG_JIAOYU)	
+	else if(!strcmp(pSub->valuestring,"xunfei")){
+		GetHua_xunfei_aifiVoices();
 	}
+#endif	
 exit:
 	cJSON_Delete(pJson);
 	return 0;

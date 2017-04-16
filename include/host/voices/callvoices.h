@@ -41,11 +41,11 @@
 #define LOCAL_MP3_EVENT			7
 #define SPEEK_VOICES_EVENT		8		//接收到语音消息	
 #define TALK_EVENT_EVENT		9		//对讲事件
-#define QUIT_MAIN			10		//退出main函数
+#define QUIT_MAIN				10		//退出main函数
 #define TULING_URL_MAIN			11		//图灵URL事件
 #define TULING_URL_VOICES		12		//图灵mp3事件
 #define TEST_PLAY_EQ_WAV		13		//测试播放wav音频文件
-#define WEIXIN_DOWN_MP3_EVENT		14		//微信端下载歌曲事件
+#define WEIXIN_DOWN_MP3_EVENT	14		//微信端下载歌曲事件
 
 //----------------------系统音---------------------------------------
 #define END_SYS_VOICES_PLAY			1	//结束音
@@ -92,9 +92,10 @@
 #define UPDATA_ERROR_PLAY			45	//更新固件错误。
 
 
-#define AI_KEY_TALK_ERROR			46
-#define MIN_10_NOT_USER_WARN			47
-#define TULING_WAIT_VOICES			48
+#define AI_KEY_TALK_ERROR			46	//智能会话按键误触发，播放系统音
+#define MIN_10_NOT_USER_WARN		47	//10分钟不用提示用户
+#define TULING_WAIT_VOICES			48	//播放图灵系统等待音
+
 //---------------------------------------------------------
 #define VOICES_MIN	13200	//是否是大于0.5秒的音频，采样率16000、量化位16位
 #define VOICES_ERR	2000	//误触发
@@ -114,19 +115,17 @@
 #define NETWORK_ER 1		//联网失败
 #define NETWORK_UNKOWN	2	//未知网络状态
 
+#define ENABLE_CHECK_VOICES_PLAY	1	//使能检查过程当中播放--->断网添加播放系统语音事件
+#define DISABLE_CHECK_VOICES_PLAY	0	//关闭检查网络状态播放--->断网添加播放系统语音事件
 
-#define NETWORK_ERR_VOICES_1	1		//网络连接错误，播放语音台本标签值
-#define NETWORK_ERR_VOICES_2	2
-#define NETWORK_ERR_VOICES_3	3
-#define NETWORK_ERR_VOICES_4	4
-#define NETWORK_ERR_VOICES_5	5
-
+#define PLAY_MUSIC_NETWORK			1	//播放歌曲为网络播放类型	
+#define PLAY_MUSIC_SDCARD			2	//播放歌曲为sdcard 存储歌曲
 
 typedef struct{
-	unsigned char localplayname;
+	unsigned char localplayname;//当前播放本地歌曲目录
 	unsigned char netstate;		//板子连接外部网络状态
 	int Playlocaltime;			//记录板子最后一次未使用时间，用来和当前时间比较，10分钟提示用户长时间未使用
-	char localVoicesPath[20];
+	char localVoicesPath[20];	//板子系统音存放路径
 }SysMessage;
 extern SysMessage sysMes;
 //--------------------eventVoices.c----------------------------------------
@@ -146,6 +145,7 @@ static enum{
 	english,
 	guoxue,
 	xiai,
+	huashang,
 };
 
 //--------------------callvoices.c-----------------------------------------
