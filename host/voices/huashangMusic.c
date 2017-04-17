@@ -10,8 +10,16 @@
 
 //------------------------------------------------------------------------------
 #define	HUASHANG_MUSIC_TOTAL_NUM 	3819
+
+#define UNKOWN_AIFI_STATE	0
+#define	TULING_AIFI_OK		1
+#define	XUNFEI_AIFI_OK		2
+#define XUNFEI_AIFI_FAILED	3
+#define XUNFEI_AIFI_ING		4
 static int PlayHuashang_MusicIndex=0;	//播放华上教育歌曲下表编号 
 static int Huashang_MusicTotal=HUASHANG_MUSIC_TOTAL_NUM;		
+static unsigned char AifiState=0;
+
 //开机获取华上教育内容播放记录
 void openSystemload_huashangData(void){
 	char jsonfile[128]={0};
@@ -99,11 +107,6 @@ void Huashang_keyDown_playkeyVoices(int state){
 
 	}
 }
-static unsigned char AifiState=0;
-#define UNKOWN_AIFI_STATE	0
-#define	TULING_AIFI_OK		1
-#define	XUNFEI_AIFI_OK		2
-
 
 void SetAifi_voicesState(unsigned char aifiState){
 	AifiState=aifiState;
@@ -111,7 +114,20 @@ void SetAifi_voicesState(unsigned char aifiState){
 int GetAifi_voicesState(void){
 	return (int)AifiState;
 }
-
+int check_tuingAifiPermison(void){
+	while(1){
+		switch(AifiState){
+			case XUNFEI_AIFI_OK:
+				goto exit0;
+			case XUNFEI_AIFI_ING:
+				usleep(1000);
+				break;
+			case  
+		}
+	}
+exit0:
+	return -1;
+}
 //发送离线语音识别请求给 网络服务器，进行语音识别
 void Huashang_SendnotOnline_xunfeiVoices(const char *filename){
 	char* szJSON = NULL;
@@ -120,12 +136,13 @@ void Huashang_SendnotOnline_xunfeiVoices(const char *filename){
 	cJSON_AddStringToObject(pItem, "handler", "xunfei");
 	cJSON_AddStringToObject(pItem, "filename",filename); 
 	szJSON = cJSON_Print(pItem);
+	SetAifi_voicesState(XUNFEI_AIFI_ING);
 	int ret= SendtoServicesWifi(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
 //获取到讯飞识别出来的aifi 语音结果
-void GetHua_xunfei_aifiVoices(const char *xunfeiAifi){
+void GetHuashang_xunfei_aifiVoices(const char *xunfeiAifi){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
 	unsigned char aifiState=0;
@@ -134,10 +151,18 @@ void GetHua_xunfei_aifiVoices(const char *xunfeiAifi){
 		goto exit;
 	}
 	sprintf(data,"%s",szJSON);
-	
+	if(AddworkEvent(data,0,XUNFEI_AIFI_EVENT)){
+		printf("add xunfei aifi failed \n");
+		goto exit;
+	}
+	SetAifi_voicesState(XUNFEI_AIFI_OK);	
+	return ;
 exit:
-	SetAifi_voicesState(UNKOWN_AIFI_STATE);
+	SetAifi_voicesState(XUNFEI_AIFI_FAILED);
 }
 
+void GetHuashang_xunfei_aifiFailed(void){
+	SetAifi_voicesState(XUNFEI_AIFI_FAILED);
+}
 #endif
 

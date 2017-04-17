@@ -308,6 +308,9 @@ static void HandleEventMessage(const char *data,int msgSize){
 			Handle_WeixinSpeekEvent(cur->len);
 			break;
 #endif
+		case XUNFEI_AIFI_EVENT:
+			free((void *)data);
+			break;
 		default:
 			DEBUG_STD_MSG("not event msg !!!\n");
 			break;

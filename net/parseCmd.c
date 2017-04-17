@@ -10,6 +10,7 @@
 #include "host/ap_sta.h"
 #include "host/voices/callvoices.h"
 #include "sysdata.h"
+#include "config.h"
 
 #define STREAM_EXIT				MAD_EXIT	//Í£Ö¹	
 #define STREAM_PLAY 			MAD_PLAY	//²¥·Å
@@ -626,7 +627,13 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	}
 #if defined(HUASHANG_JIAOYU)	
 	else if(!strcmp(pSub->valuestring,"xunfei")){
-		GetHua_xunfei_aifiVoices();
+		pSub = cJSON_GetObjectItem(pJson, "status");
+		if(pSub){
+			if(!strcmp(pSub->valuestring,"ok"))
+				GetHuashang_xunfei_aifiVoices(recvdata);
+			else
+				GetHuashang_xunfei_aifiFailed();
+		}
 	}
 #endif	
 exit:

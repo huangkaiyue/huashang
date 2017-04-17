@@ -46,7 +46,7 @@
 #define TULING_URL_VOICES		12		//图灵mp3事件
 #define TEST_PLAY_EQ_WAV		13		//测试播放wav音频文件
 #define WEIXIN_DOWN_MP3_EVENT	14		//微信端下载歌曲事件
-
+#define XUNFEI_AIFI_EVENT		15
 //----------------------系统音---------------------------------------
 #define END_SYS_VOICES_PLAY			1	//结束音
 #define TULING_WINT_PLAY			2	//请稍等
