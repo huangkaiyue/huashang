@@ -11,7 +11,9 @@
 #include "StreamFile.h"
 #include "../sdcard/musicList.h"
 #include "../voices/gpio_7620.h"
-
+#if defined(HUASHANG_JIAOYU)
+#include "../voices/huashangMusic.h"
+#endif
 static const char *key = "b1833040534a6bfd761215154069ea58";
 static WorkQueue *EventQue;
 
@@ -35,6 +37,11 @@ void ReqTulingServer(const char *voicesdata,int len,const char *voices_type,cons
 	DEBUG_STD_MSG("up voices data ...(len=%d)\n", len);
 	err = reqTlVoices(8,key,(const void *)voicesdata, len, rate, voices_type,\
 			asr,&text,&textSize);
+#if defined(HUASHANG_JIAOYU)
+		if(check_tuingAifiPermison()==DISABLE_TULING_PLAY){
+			return ;
+		}
+#endif	
 	if (err == -1){	//请求服务器失败
 		Create_PlaySystemEventVoices(REQUEST_FAILED_PLAY);//播放请求服务器数据失败
 		goto exit1;
@@ -309,6 +316,8 @@ static void HandleEventMessage(const char *data,int msgSize){
 			break;
 #endif
 		case XUNFEI_AIFI_EVENT:
+			start_event_play_url();
+			//AddDownEvent((const char *)data,LOCAL_MP3_EVENT);
 			free((void *)data);
 			break;
 		default:

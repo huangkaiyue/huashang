@@ -5,17 +5,12 @@
 #include "../sdcard/musicList.h"
 #include "base/cJSON.h"
 #include "gpio_7620.h"
+#include "huashangMusic.h"
 
 #ifdef HUASHANG_JIAOYU		//获取华上教育sdcard当中国学的歌曲内容
 
 //------------------------------------------------------------------------------
-#define	HUASHANG_MUSIC_TOTAL_NUM 	3819
 
-#define UNKOWN_AIFI_STATE	0
-#define	TULING_AIFI_OK		1
-#define	XUNFEI_AIFI_OK		2
-#define XUNFEI_AIFI_FAILED	3
-#define XUNFEI_AIFI_ING		4
 static int PlayHuashang_MusicIndex=0;	//播放华上教育歌曲下表编号 
 static int Huashang_MusicTotal=HUASHANG_MUSIC_TOTAL_NUM;		
 static unsigned char AifiState=0;
@@ -107,26 +102,36 @@ void Huashang_keyDown_playkeyVoices(int state){
 
 	}
 }
-
+//设置aifi语音状态
 void SetAifi_voicesState(unsigned char aifiState){
 	AifiState=aifiState;
 }
+//获取aifi 语音
 int GetAifi_voicesState(void){
 	return (int)AifiState;
 }
+//检查图灵aifi 权限  -1 :
 int check_tuingAifiPermison(void){
+	int timeout=0;
+	int ret=DISABLE_TULING_PLAY;
 	while(1){
 		switch(AifiState){
-			case XUNFEI_AIFI_OK:
+			case XUNFEI_AIFI_OK:	//离线识别成功
 				goto exit0;
-			case XUNFEI_AIFI_ING:
+			case XUNFEI_AIFI_ING:	//讯飞正在识别状态
 				usleep(1000);
+				if(++timeout>5000){
+					ret=ALLOW_TULING_PLAY;
+					goto exit0;
+				}
 				break;
-			case  
+			case XUNFEI_AIFI_FAILED:
+				ret=ALLOW_TULING_PLAY;
+				goto exit0;
 		}
 	}
 exit0:
-	return -1;
+	return ret;
 }
 //发送离线语音识别请求给 网络服务器，进行语音识别
 void Huashang_SendnotOnline_xunfeiVoices(const char *filename){
@@ -136,6 +141,7 @@ void Huashang_SendnotOnline_xunfeiVoices(const char *filename){
 	cJSON_AddStringToObject(pItem, "handler", "xunfei");
 	cJSON_AddStringToObject(pItem, "filename",filename); 
 	szJSON = cJSON_Print(pItem);
+	//设置成正在进行讯飞离线识别
 	SetAifi_voicesState(XUNFEI_AIFI_ING);
 	int ret= SendtoServicesWifi(szJSON,strlen(szJSON));
 	cJSON_Delete(pItem);
@@ -160,7 +166,7 @@ void GetHuashang_xunfei_aifiVoices(const char *xunfeiAifi){
 exit:
 	SetAifi_voicesState(XUNFEI_AIFI_FAILED);
 }
-
+//获取讯飞aifi 失败
 void GetHuashang_xunfei_aifiFailed(void){
 	SetAifi_voicesState(XUNFEI_AIFI_FAILED);
 }

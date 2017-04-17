@@ -63,6 +63,7 @@ static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen)
 	if(fp!=NULL){
 		fclose(fp);
 	}
+	//发送通知给网络服务器，进行离线语音识别
 	Huashang_SendnotOnline_xunfeiVoices((const char * )filepath);
 #else
 	for(pos=0;pos<inputLen;pos+=2){
