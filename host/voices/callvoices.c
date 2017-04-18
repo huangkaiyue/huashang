@@ -8,7 +8,9 @@
 #include "gpio_7620.h"
 #include "../studyvoices/qtts_qisc.h"
 #include "config.h"
-
+#if defined(HUASHANG_JIAOYU)
+#include "huashangMusic.h"
+#endif
 static char buf_voices[STD_RECODE_SIZE];
 static char pcm_voices16k[STD_RECODE_SIZE_16K];
 static int len_voices = 0;
@@ -181,7 +183,12 @@ static void Start_uploadVoicesData(void){
 #ifdef MY_HTTP_REQ
 	pcmVoice8kTo16k(buf_voices+WAV_HEAD,pcm_voices16k,len_voices);
 #if defined(HUASHANG_JIAOYU)
+	//检查网络状态
 	if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
+		//没有网络，直接退出,检查离线识别状态
+		if(check_tuingAifiPermison()==TIMEOUT_AIFI){
+			pause_record_audio();
+		}
 		return ;
 	}
 #endif

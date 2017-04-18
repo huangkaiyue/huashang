@@ -38,6 +38,7 @@ void ReqTulingServer(const char *voicesdata,int len,const char *voices_type,cons
 	err = reqTlVoices(8,key,(const void *)voicesdata, len, rate, voices_type,\
 			asr,&text,&textSize);
 #if defined(HUASHANG_JIAOYU)
+		//图灵语音识别结束之后，检查讯飞识别结果
 		if(check_tuingAifiPermison()==DISABLE_TULING_PLAY){
 			return ;
 		}
@@ -315,11 +316,14 @@ static void HandleEventMessage(const char *data,int msgSize){
 			Handle_WeixinSpeekEvent(cur->len);
 			break;
 #endif
+#if defined(HUASHANG_JIAOYU)
 		case XUNFEI_AIFI_EVENT:
 			start_event_play_url();
-			//AddDownEvent((const char *)data,LOCAL_MP3_EVENT);
+			//添加到主线程当中播放华上教育内容
+			AddDownEvent((const char *)data,LOCAL_MP3_EVENT);
 			free((void *)data);
 			break;
+#endif			
 		default:
 			DEBUG_STD_MSG("not event msg !!!\n");
 			break;

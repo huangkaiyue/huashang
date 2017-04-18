@@ -625,12 +625,12 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}else{
 		}
 	}
-#if defined(HUASHANG_JIAOYU)	
+#if defined(HUASHANG_JIAOYU)	//华上语音识别接口，识别出来的结果
 	else if(!strcmp(pSub->valuestring,"xunfei")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(pSub){
-			if(!strcmp(pSub->valuestring,"ok"))
-				GetHuashang_xunfei_aifiVoices(recvdata);
+			if(!strcmp(pSub->valuestring,"ok"))	//正确识别出播放的语音
+				GetHuashang_xunfei_aifiVoices(cJSON_GetObjectItem(pJson, "musicname")->valuestring,cJSON_GetObjectItem(pJson, "playindex")->valueint);
 			else
 				GetHuashang_xunfei_aifiFailed();
 		}

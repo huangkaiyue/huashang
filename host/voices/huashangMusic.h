@@ -11,7 +11,7 @@
 
 #define ALLOW_TULING_PLAY	0
 #define DISABLE_TULING_PLAY	-1
-
+#define TIMEOUT_AIFI		-2
 //开机加载华上教育内容
 extern void openSystemload_huashangData(void);
 //获取sdard 内容进行播放
@@ -22,16 +22,13 @@ extern void closeSystemSave_huashangData(void);
 extern void CreatePlayListMuisc(const void *data,int musicType);
 //华上教育按键按下，播放按键音
 extern void Huashang_keyDown_playkeyVoices(int state);
-//设置aifi 语音识别状态
-extern void SetAifi_voicesState(unsigned char aifiState);
-//获取设置aifi语音识别状态
-extern int GetAifi_voicesState(void);
+
 //检查图灵语音添加权限
 extern int check_tuingAifiPermison(void);
 //发送华上离线语音识别
 extern void Huashang_SendnotOnline_xunfeiVoices(const char *filename);
 //获取华上讯飞离线语音识别结果
-extern void GetHuashang_xunfei_aifiVoices(const char *xunfeiAifi);
+extern void GetHuashang_xunfei_aifiVoices(const char *musicname,int playIndex);
 //获取华上讯飞离线语音识别失败
 extern void GetHuashang_xunfei_aifiFailed(void);
 
