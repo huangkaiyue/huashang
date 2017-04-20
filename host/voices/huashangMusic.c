@@ -162,7 +162,7 @@ void GetHuashang_xunfei_aifiVoices(const char *musicname,int playIndex){
 	if(data==NULL){
 		goto exit;
 	}
-	sprintf(data,"%s",szJSON);
+	sprintf(data,"%s",musicname);
 	if(AddworkEvent(data,0,XUNFEI_AIFI_EVENT)){
 		printf("add xunfei aifi failed \n");
 		goto exit;
