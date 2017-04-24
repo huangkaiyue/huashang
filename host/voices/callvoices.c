@@ -41,6 +41,7 @@ static char amr_data[12*KB];
 static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen){
 	int pos=0,npos=0;
 #if defined(HUASHANG_JIAOYU)
+#ifdef XUN_FEI_OK
 	char filepath[64]={0};
 	time_t t;
 	t = time(NULL);
@@ -67,6 +68,14 @@ static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen)
 	}
 	//发送通知给网络服务器，进行离线语音识别
 	Huashang_SendnotOnline_xunfeiVoices((const char * )filepath);
+#else	//离线没有调试好。先用原先代码
+	for(pos=0;pos<inputLen;pos+=2){
+		memcpy(outputdata+npos,inputdata+pos,2);
+		npos+=2;
+		memcpy(outputdata+npos,inputdata+pos,2);
+		npos+=2;
+	}
+#endif	
 #else
 	for(pos=0;pos<inputLen;pos+=2){
 		memcpy(outputdata+npos,inputdata+pos,2);

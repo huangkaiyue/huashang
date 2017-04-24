@@ -6,11 +6,11 @@ SDK_PATH=/home/7620sdk/7688/sdk4300_20140916/RT288x_SDK/source
 #SDK_PATH=/home/7620sdk/7688/sdk4300_20140916/RT288x_SDK/uart_source7688
 KERNEL_PATH =$(SDK_PATH)/linux-2.6.36.x
 
-#OTHEN_LIB=-lmsc463
-OTHEN_LIB=-lmsc_notonline
+OTHEN_LIB=-lmsc463
+#OTHEN_LIB=-lmsc_notonline
 SYSTEM_LIB=-ldl -lpthread -lrt  $(SDK_PATH)/lib/libnvram/libnvram-0.9.28.so
 OPEN_LIB= -lz -lcurl -lssl -lcrypto -lmad  -lopencore-amrnb -lsqlite3 
-MY_LIB=-lbase463  -ldownFile463 -ldemoquick463 -lsystools463  -luartmcu -lvo-amrwbenc -lDemoDecodeMp3
+MY_LIB=-lbase463  -ldownFile463 -ldemoquick463 -lsystools463  -lvo-amrwbenc -lDemoDecodeMp3
 OPENSRC_DIR=/home/openSrc/src
 
 
@@ -30,7 +30,7 @@ all +=testInterface.o
 all +=srvwork/workinter.o
 all +=net/network.o
 all +=net/parseCmd.o
-#all +=uart/uart.o
+all +=uart/uart.o
 #all +=mtkwifiLib/mtkwifi.o
 all +=usrdb/sysdata.o
 

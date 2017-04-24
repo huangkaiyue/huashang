@@ -355,8 +355,9 @@ void TulingKeyDownSingal(void){
 		Write_Speekkeylog((const char *)"PLAY_URL",GetRecordeVoices_PthreadState());
 	}else{		
 #if defined(HUASHANG_JIAOYU)	//华上教育有离线语音识别接口，需要采集音频进行离线识别
-		
+#ifndef XUN_FEI_OK		
 #else
+#endif
 		if (checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
 			Write_Speekkeylog((const char *)"ExitPlay_WavVoices",GetRecordeVoices_PthreadState());
 			return;

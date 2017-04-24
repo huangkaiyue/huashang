@@ -39,9 +39,11 @@ void ReqTulingServer(const char *voicesdata,int len,const char *voices_type,cons
 			asr,&text,&textSize);
 #if defined(HUASHANG_JIAOYU)
 		//图灵语音识别结束之后，检查讯飞识别结果
+#ifdef XUN_FEI_OK		
 		if(check_tuingAifiPermison()==DISABLE_TULING_PLAY){
 			return ;
 		}
+#endif		
 #endif	
 	if (err == -1){	//请求服务器失败
 		Create_PlaySystemEventVoices(REQUEST_FAILED_PLAY);//播放请求服务器数据失败
