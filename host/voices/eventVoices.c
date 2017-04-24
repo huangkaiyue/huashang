@@ -443,6 +443,12 @@ static void Handle_PlayTaiBenToNONetWork(void){
 	snprintf(file,64,"qtts/network_error_8K_%d.amr",i);
 	PlaySystemAmrVoices(file);
 }
+static void CreateCloseSystemLock(void){
+	FILE *fp = fopen(CLOSE_SYSTEM_LOCK_FILE,"w+");
+	if(fp){
+		fclose(fp);
+	}
+}
 /*******************************************************
 函数功能: 创建一个播放系统声音事件，
 参数: sys_voices 系统音标号	
@@ -450,6 +456,7 @@ static void Handle_PlayTaiBenToNONetWork(void){
 ********************************************************/
 void Create_PlaySystemEventVoices(int sys_voices){
 	if(sys_voices==END_SYS_VOICES_PLAY){	//结束音退出事件
+		CreateCloseSystemLock();
 #ifdef PALY_URL_SD
 		pool_add_task(Close_Mtk76xxSystem,NULL);//关机删除，长时间不用的文件
 #endif
@@ -903,6 +910,10 @@ static void *waitLoadMusicList(void *arg){
 	while(++timeout<20){
 		if(!access(TF_SYS_PATH, F_OK)){		//检查tf卡
 			break;
+		}
+		//检测到关键文件锁，直接退出，不执行下面操作，防止在关机过程读写sdcard
+		if(access(CLOSE_SYSTEM_LOCK_FILE, F_OK)==F_OK){
+			return ;
 		}
 		sleep(1);
 	}

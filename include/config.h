@@ -10,9 +10,9 @@
 #endif
 
 //#define DATOU_JIANG		//è’‹æ€»
-//#define QITUTU_SHI		//çŸ³æ€»
+#define QITUTU_SHI		//çŸ³æ€»
 //#define TANGTANG_LUO		//ç½—æ€»
-#define HUASHANG_JIAOYU
+//#define HUASHANG_JIAOYU
 //----------------------åŠŸèƒ½ç±»-----------------------------------
 
 #define SYSTEMLOCK				//æµ‹è¯•ç‰ˆæœ¬é™åˆ¶å¼€æœºæ¬¡æ•°
@@ -114,6 +114,8 @@
 #define LOCAL_SERVER_FILE_LOCK			"/var/localserver.lock"	//±¾µØ·şÎñÆ÷ÎÄ¼şËø
 
 #define ENABLE_RECV_NETWORK_FILE_LOCK	"/var/startNet.lock"	//Ê¹ÄÜ½ÓÊÕÎÄ¼şËø
+
+#define CLOSE_SYSTEM_LOCK_FILE			"/var/close_system.lock"
 #endif
 
 
