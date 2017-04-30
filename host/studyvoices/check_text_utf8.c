@@ -11,6 +11,7 @@
 *********************************************************/
 int CheckinfoText_forContorl(const char *text){
 	int ret = -1;
+	char playName[128]={0};
 	if(strstr(text,"本地歌曲")){		
 		SetplayNetwork_unLock();
 #ifdef TANGTANG_LUO
@@ -59,6 +60,11 @@ int CheckinfoText_forContorl(const char *text){
 			Setwm8960Vol(VOL_SUB,0);
 			PlaySystemAmrVoices(VOICE_SUB);
 			ack_VolCtr("sub",GetVol());//----------->音量减
+			return 0;
+		}
+	}else if(strstr(text,"播放")){
+		if(Huashang_Checkutf8(text,playName)==0){
+			__AddLocalMp3ForPaly((const char *)playName);
 			return 0;
 		}
 	}

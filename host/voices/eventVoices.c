@@ -333,7 +333,7 @@ void Create_PlayQttsEvent(const char *txt,int type){
 返回值: 无
 ********************************************************/
 void TulingKeyDownSingal(void){
-	Write_Speekkeylog((const char *)"speekstart",0);
+	Write_Speekkeylog((const char *)"TulingKeyDownSingal",0);
 	//处于微信对讲状态，直接退出	
 	if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES){		
 		Write_Speekkeylog((const char *)"START_SPEEK_VOICES",GetRecordeVoices_PthreadState());

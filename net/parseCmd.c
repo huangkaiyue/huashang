@@ -626,6 +626,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}
 	}
 #if defined(HUASHANG_JIAOYU)	//华上语音识别接口，识别出来的结果
+#ifdef XUN_FEI_OK
 	else if(!strcmp(pSub->valuestring,"xunfei")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(pSub){
@@ -635,6 +636,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 				GetHuashang_xunfei_aifiFailed();
 		}
 	}
+#endif	
 #endif	
 exit:
 	cJSON_Delete(pJson);

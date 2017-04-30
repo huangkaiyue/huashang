@@ -124,6 +124,7 @@ static int parseJson_string(const char * pMsg){
 		goto exit0;
     	}
 	DEBUG_STD_MSG("info: %s\n",pSub->valuestring);			//语音识别出来的汉字	
+	Write_tulingTextLog(pSub->valuestring);
 	if(!CheckinfoText_forContorl((const char *)pSub->valuestring)){
 		err=-1;	//正确加载里面的文字内容，播放系统音
 		goto exit0;

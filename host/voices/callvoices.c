@@ -167,7 +167,8 @@ static void Start_uploadVoicesData(void){
 	Setwm8960Vol(VOL_SET,PLAY_PASUSE_VOICES_VOL);
 	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
 #if defined(HUASHANG_JIAOYU)
-#else
+	Write_Speekkeylog((const char *)"Start_uploadVoicesData",GetRecordeVoices_PthreadState());
+//#else
 	Create_PlayTulingWaitVoices(TULING_WAIT_VOICES);
 	usleep(200);
 #endif	
@@ -192,6 +193,7 @@ static void Start_uploadVoicesData(void){
 #ifdef MY_HTTP_REQ
 	pcmVoice8kTo16k(buf_voices+WAV_HEAD,pcm_voices16k,len_voices);
 #if defined(HUASHANG_JIAOYU)
+#ifdef XUN_FEI_OK
 	//检查网络状态
 	if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
 		//没有网络，直接退出,检查离线识别状态
@@ -200,6 +202,7 @@ static void Start_uploadVoicesData(void){
 		}
 		return ;
 	}
+#endif	
 #endif
 	ReqTulingServer((const char *)pcm_voices16k,len_voices*2,"pcm","0",RECODE_RATE*2);
 #else

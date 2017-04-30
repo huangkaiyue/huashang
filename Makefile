@@ -3,7 +3,6 @@ CROSS_COMPILE	=$(PATH)mipsel-linux-
 CC=$(CROSS_COMPILE)gcc
 
 SDK_PATH=/home/7620sdk/7688/sdk4300_20140916/RT288x_SDK/source
-#SDK_PATH=/home/7620sdk/7688/sdk4300_20140916/RT288x_SDK/uart_source7688
 KERNEL_PATH =$(SDK_PATH)/linux-2.6.36.x
 
 OTHEN_LIB=-lmsc463
@@ -42,6 +41,7 @@ all +=host/voices/eventVoices.o
 all +=host/voices/gpio_7620.o
 
 all +=host/voices/huashangMusic.o
+all +=host/voices/huashangPasreUtf8.o
 
 all +=host/sdcard/sdcard.o
 all +=host/sdcard/sqlite.o

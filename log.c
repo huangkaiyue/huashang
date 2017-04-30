@@ -335,4 +335,22 @@ void Write_huashang_log(const char *data1,const char *data2,int val){
 	return ;
 #endif	
 }
-
+void Write_tulingTextLog(const char *txt){
+#ifdef ENABLE_LOG	
+	FILE *fplog = NULL;
+	if(!strcmp(txt,"start")){
+		fplog =fopen("/log/tulingText.log","w+");
+	}else{
+		fplog =fopen("/log/tulingText.log","a+");
+	}
+	
+	if(NULL == fplog ){
+		return ;
+    }
+	if(fplog){
+		fprintf(fplog,"%s\n",txt);
+		fclose(fplog);
+	}
+	return ;
+#endif		
+}

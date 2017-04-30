@@ -103,6 +103,7 @@ void Huashang_keyDown_playkeyVoices(int state){
 	}
 }
 
+#ifdef XUN_FEI_OK
 
 //…Ë÷√aifi ”Ô“Ù ∂±◊¥Ã¨
 void SetAifi_voicesState(unsigned char aifiState){
@@ -177,5 +178,6 @@ exit:
 void GetHuashang_xunfei_aifiFailed(void){
 	SetAifi_voicesState(XUNFEI_AIFI_FAILED);
 }
+#endif
 #endif
 
