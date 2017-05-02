@@ -168,7 +168,7 @@ static void Start_uploadVoicesData(void){
 	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
 #if defined(HUASHANG_JIAOYU)
 	Write_Speekkeylog((const char *)"Start_uploadVoicesData",GetRecordeVoices_PthreadState());
-//#else
+#else
 	Create_PlayTulingWaitVoices(TULING_WAIT_VOICES);
 	usleep(200);
 #endif	

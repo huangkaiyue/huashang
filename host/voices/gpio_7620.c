@@ -136,6 +136,12 @@ static void Ack_WeixinCall(void){
 		}
 	}
 }
+static void keyDown_AndSetGpioFor_play(void){
+	ioctl(gpio.fd, AUDIO_IC_CONTROL,0x01);//按下
+}
+static void keyUp_AndSetGpioFor_play(void){
+	ioctl(gpio.fd, AUDIO_IC_CONTROL,0x20);//弹起
+}	
 #endif
 
 //串口开关
@@ -446,6 +452,7 @@ static void signal_handler(int signum){
 				break;
 
 			case SPEEK_KEY:			//智能会话按键事件
+				keyUp_AndSetGpioFor_play();
 				StopTuling_RecordeVoices();
 				break;
 #ifdef 	LOCAL_MP3
@@ -471,6 +478,7 @@ static void signal_handler(int signum){
 				GpioKey_SetStreamPlayState();
 				break;
 			case HUASHANG_WEIXIN_SPEEK_KEY:	//华上教育微信对讲
+				keyUp_AndSetGpioFor_play();
 				Create_WeixinSpeekEvent(VOLKEYUP);
 				break;
 			case RIGHTLED_KEY:	//bind键
@@ -499,6 +507,7 @@ static void signal_handler(int signum){
 				Create_playMusicEvent((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT);
 				break;
 #endif
+				keyDown_AndSetGpioFor_play();
 				TulingKeyDownSingal();
 				break;
 			
@@ -529,6 +538,7 @@ static void signal_handler(int signum){
 				GpioLog("key down",SUBVOL_KEY);
 				break;
 			case HUASHANG_WEIXIN_SPEEK_KEY:	//华上教育微信对讲
+				keyDown_AndSetGpioFor_play();
 				Create_WeixinSpeekEvent(VOLKEYDOWN);
 				break;
 			case RESERVE_KEY3:	//长按，删除收藏歌曲

@@ -177,8 +177,6 @@ void write_pcm(char *buf){
 	ioctl(I2S.i2s_fd, I2S_PUT_AUDIO, pBuf);	
 #endif	//end defined(CONFIG_I2S_MMAP)
 }
-
-
 /**********************************************
 获取音频数据
 **********************************************/
