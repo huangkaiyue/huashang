@@ -67,7 +67,7 @@ static char *aifiJson(const char *key,int len,int rate,const char *format,const 
 	uint8_t outStr[64] = {'0'};
 	int i,aseLen=0;
 		
-	for(i=0;out[i] != '\0';i++){		
+	for(i=0;i<16;i++){		
 		aseLen+=snprintf(outStr+aseLen,64,"%.2x",out[i]);	 
 	}
 	//printf("outStr = %s i=%d\n",outStr,i);
