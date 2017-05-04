@@ -63,8 +63,14 @@ int CheckinfoText_forContorl(const char *text){
 			return 0;
 		}
 	}else if(strstr(text,"鎾斁")){
+		Write_huashangTextLog(text);
 		if(Huashang_Checkutf8(text,playName)==0){
-			__AddLocalMp3ForPaly((const char *)playName);
+			SetplayNetwork_unLock();
+			pause_record_audio();//需要切换到暂停状态，才能添加歌曲进去播放------------>当前状态为播放wav状态
+			Write_huashangTextLog(playName);
+			if(__AddLocalMp3ForPaly((const char *)playName)){
+				Write_huashangTextLog("add play huashang play failed");
+			}
 			return 0;
 		}
 	}

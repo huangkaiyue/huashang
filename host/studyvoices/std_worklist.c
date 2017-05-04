@@ -46,6 +46,13 @@ void ReqTulingServer(const char *voicesdata,int len,const char *voices_type,cons
 #endif		
 #endif	
 	if (err == -1){	//请求服务器失败
+#if defined(HUASHANG_JIAOYU)	//去掉过渡音，需要将当前的状态切换成到暂停状态
+	if(GetRecordeVoices_PthreadState()==PLAY_DING_VOICES){	//如果当前还是处于播放等待图灵状态，表明没有其他外部事件打断，添加进去播放请求图灵服务器失败
+		pause_record_audio();
+	}else{
+		return;
+	}
+#endif	
 		Create_PlaySystemEventVoices(REQUEST_FAILED_PLAY);//播放请求服务器数据失败
 		goto exit1;
 	}

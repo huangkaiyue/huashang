@@ -9,7 +9,7 @@
 #define 	CHECK_CMD_OK		2
 #define 	CHECK_FILE			3
 
-#define HUASHANG_MUSIC_FILE	"huashang.bnf"
+#define HUASHANG_MUSIC_FILE	"home/huashang.bnf"
 #define HUASHANG_GUOXUE_DIR		"huashangedu"
 #define MAX_PLAY_NUMBER			3819
 
