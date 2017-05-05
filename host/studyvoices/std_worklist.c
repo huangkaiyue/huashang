@@ -77,7 +77,18 @@ exit1:
 	pause_record_audio();
 	return;
 }
+static void playTulingQtts(const char *playUrl,const char *playText){
+	char playVoicesName[12]={0};
+	GetPlayVoicesName(playVoicesName);
+	if(!strcmp(playVoicesName,"tuling")){
+		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
+		AddDownEvent(playUrl,TULING_URL_MAIN);
 
+	}else{
+		SetplayNetwork_Lock();	
+		PlayQttsText(playText,QTTS_GBK,playVoicesName);	
+	}
+}
 /*******************************************
 @函数功能:	json解析服务器数据
 @参数:	pMsg	服务器数据
@@ -309,7 +320,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 #endif			
 		case QTTS_PLAY_EVENT:		//QTTS事件
 			SetplayNetwork_Lock();	
-			PlayQttsText(data,cur->len);
+			PlayQttsText(data,cur->len,"vinn");
 			free((void *)data);
 			break;
 			

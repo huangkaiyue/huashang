@@ -194,7 +194,7 @@ static int checkPlayNetwork_endVoices(void){
 @ text:文本		type:文本类型
 @ 返回值: 无
 *********************************************************/
-void PlayQttsText(char *text,unsigned char type){
+void PlayQttsText(const char *text,unsigned char type,const char *playVoicesName){
 	SetWm8960Rate(RECODE_RATE);
 	char *textbuf= (char *)calloc(1,strlen(text)+2);
 	if(textbuf==NULL){
@@ -208,7 +208,7 @@ void PlayQttsText(char *text,unsigned char type){
 	sprintf(textbuf,"%s%s",text,",");	//文本尾部添加",",保证文本播报出来
 	PlayQtts_log("play qtts start\n");
 	printf("start play qtts \n");
-	Qtts_voices_text(textbuf,type);
+	Qtts_voices_text(textbuf,type,playVoicesName);
 	free(textbuf);
 	checkPlayNetwork_endVoices();
 	return ;

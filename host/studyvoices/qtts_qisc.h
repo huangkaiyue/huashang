@@ -26,7 +26,7 @@
 #define DEBUG_QTTS(fmt, args...) { }
 #endif	//end DBG_AP_STA
 
-extern int Qtts_voices_text(char *text,unsigned char type);
+extern int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName);
 
 extern int init_iat_MSPLogin(int WritePcm(char *data,int size));
 

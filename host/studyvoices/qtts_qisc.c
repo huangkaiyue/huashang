@@ -189,7 +189,7 @@ static int text_to_speech(const char* src_text  ,const char* params){
 @参数:	text 文本文件 
 @		VINN_GBK	文本转换语音参数
 ******************************************/
-int Qtts_voices_text(char *text,unsigned char type){
+int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName){
 	if(type==QTTS_GBK){
 		return text_to_speech(text,(const char *)VIMM_GBK);//女童音
 	}
@@ -272,7 +272,7 @@ int main(int argc,char **argv)
 	{
 		exit(0);
 	}
-	Qtts_voices_text("1234566789",QTTS_GBK);
+	Qtts_voices_text("1234566789",QTTS_GBK,"");
 	return 0;
 	FILE *fp =fopen(argv[1],"r");
 	if(fp==NULL)
@@ -287,7 +287,7 @@ int main(int argc,char **argv)
 	}
 	fread(data,len,1,fp);
 	fclose(fp);
-	Qtts_voices_text(data,QTTS_GBK);
+	Qtts_voices_text(data,QTTS_GBK,"");
 	free(data);
 	return 0;	
 }
