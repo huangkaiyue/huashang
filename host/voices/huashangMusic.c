@@ -135,10 +135,13 @@ void Huashang_changePlayVoicesName(void){
 		}
 	}	
 }
-
+/**
+»ñÈ¡²¥ÒôÈË
+**/
 void GetPlayVoicesName(char *playVoicesName){
 	if(hsUser->playVoicesNameNums==NULL){
 		snprintf(playVoicesName,8,"tuling");
+		return ;
 	}
 	switch(hsUser->playVoicesNameNums){
 		case 0:
@@ -147,8 +150,14 @@ void GetPlayVoicesName(char *playVoicesName){
 		case 1:
 			snprintf(playVoicesName,8,"vinn");
 			break;
+		case 2:
+			snprintf(playVoicesName,8,"aisduck");
+			break;
+		case 3:
+			snprintf(playVoicesName,8,"xiaoqi");
+			break;
 		default:
-			snprintf(playVoicesName,8,"tuling");
+			snprintf(playVoicesName,8,"aisduck");
 			break;
 	}
 }

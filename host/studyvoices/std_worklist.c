@@ -57,6 +57,14 @@ void ReqTulingServer(const char *voicesdata,int len,const char *voices_type,cons
 		goto exit1;
 	}
 	else if (err == 1){
+#if defined(HUASHANG_JIAOYU)	//去掉过渡音，需要将当前的状态切换成到暂停状态
+			if(GetRecordeVoices_PthreadState()==PLAY_DING_VOICES){	//如果当前还是处于播放等待图灵状态，表明没有其他外部事件打断，添加进去播放请求图灵服务器失败
+				pause_record_audio();
+			}else{
+				return;
+			}
+#endif	
+
 #ifdef TEST_ERROR_TULING	
 		test_tulingApi_andDownerrorFile();
 #else
@@ -76,18 +84,29 @@ exit1:
 #endif
 	pause_record_audio();
 	return;
-}
+}
+/*
+播放图灵云端返回的tts文本
+playUrl:云端语义结果播放链接地址
+playText: 云端语义解析内容
+*/
 static void playTulingQtts(const char *playUrl,const char *playText){
+#if defined(HUASHANG_JIAOYU)	
 	char playVoicesName[12]={0};
+	//Huashang_changePlayVoicesName();	//用于测试用，切换播音人
 	GetPlayVoicesName(playVoicesName);
-	if(!strcmp(playVoicesName,"tuling")){
+	if(!strcmp(playVoicesName,"tuling")){	//当前播音人采用图灵的
 		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
 		AddDownEvent(playUrl,TULING_URL_MAIN);
-
 	}else{
 		SetplayNetwork_Lock();	
-		PlayQttsText(playText,QTTS_GBK,playVoicesName);	
+		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
+		PlayQttsText(playText,QTTS_UTF8,playVoicesName);	
 	}
+#else
+	SetMainQueueLock(MAIN_QUEUE_UNLOCK);
+	AddDownEvent(playUrl,TULING_URL_MAIN);
+#endif
 }
 /*******************************************
 @函数功能:	json解析服务器数据
@@ -137,10 +156,10 @@ static int parseJson_string(const char * pMsg){
 	}
 #endif	
 	pSub = cJSON_GetObjectItem(pJson, "info");		//返回结果
-    	if(NULL == pSub){
+    if(NULL == pSub){
 		DEBUG_STD_MSG("get info failed\n");
 		goto exit0;
-    	}
+    }
 	DEBUG_STD_MSG("info: %s\n",pSub->valuestring);			//语音识别出来的汉字	
 	Write_tulingTextLog(pSub->valuestring);
 	if(!CheckinfoText_forContorl((const char *)pSub->valuestring)){
@@ -170,8 +189,9 @@ exit1:
 	
 	pSub = cJSON_GetObjectItem(pJson, "fileUrl"); 	//检查是否有mp3歌曲返回，如果有
 	if(NULL == pSub){	//直接播放语义之后的结果
-		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
-		AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
+		//SetMainQueueLock(MAIN_QUEUE_UNLOCK);
+		//AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
+		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring);
 		err=0;
 		goto exit0;
 	}else{				//识别出有语义结果和mp3链接地址结果，先播放前面的语义内容，再播放mp3链接地址内容
@@ -188,10 +208,11 @@ exit1:
 		snprintf(player->playfilename,128,"%s",pSub->valuestring);
 		snprintf(player->musicname,64,"%s","speek");
 		player->musicTime = 0;
-		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
 		Write_tulinglog((const char *)"play url:");
 		Write_tulinglog((const char *)pSub->valuestring);
-		AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
+		//SetMainQueueLock(MAIN_QUEUE_UNLOCK);
+		//AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
+		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring);
 		AddDownEvent((const char *)player,TULING_URL_VOICES);
 		err=0;
 	}

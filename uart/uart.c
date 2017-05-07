@@ -1,6 +1,7 @@
 #include "comshead.h"
-//#include "base/tools.h"
+#include "base/tools.h"
 #include "uart.h"
+#include "systools.h"
 
 static ReacData data;
 static int serialFd[2];
@@ -272,18 +273,6 @@ static int handle_uartMsg(int fd ,unsigned char buf,int size){
 			case SMBATTYPE://充电状态
 			case SMOK://握手信号
 				break;
-#if 0
-			case SMLOW:
-				data.data=0x1;
-				DEBUG_UART("handle_uartMsg smbattery \n");
-				if(CacheUarl()==0){
-					SocSendMenu(SMOKER_OK,0);
-					uartCtr->voicesEvent(3);
-				}else{
-					SocSendMenu(SMOKER_ER,0);
-				}
-				break;
-#endif
 			default:
 				data.head=0x0;
 				break;
@@ -455,10 +444,11 @@ void clean_Uart(void){
 * 参  数  :无
 * 返回值  :无
 **************************************************/
-static void disconnect_airkiss(void)
-{
+static void disconnect_airkiss(void){
 	close(serialFd[0]);
 }
+
+//#define TEST
 #ifdef TEST
 /*************************************************
 * 函数功能:打印获取当前时间
@@ -497,46 +487,36 @@ void VoicesEvent(int event){
 void ack_batteryCtr(int recvdata,int power){
 	printf("recvdata = %d,power = %d\n",recvdata,power);
 }
-int main(int argc,char *argv[])
-{
+int main(int argc,char *argv[]){
 	char bufo[12]="0:30";
 	char bufc[12]="0:27";
 	char bufd[12]="17:20";
 	init_Uart(VoicesEvent,ack_batteryCtr);
-	sleep(2);
-	if(argc < 2){
-		perror("argc < 2");
-	}
-	switch(strtoul(argv[1], NULL ,10)){
-		case 1:
-			printf("argv ----->1--%s---\n",bufo);
-			SocSendMenu(1,bufo);
-			break;
-		case 2:
-			printf("argv ----->2--%s---\n",bufc);
-			SocSendMenu(2,bufc);
-			break;
-		case 3:
-			printf("argv ----->3-----\n");
-			SocSendMenu(3,0);
-			break;
-		case 4:
-			printf("argv ----->4-----\n");
-			SocSendMenu(4,0);
-			break;
-		case 7:
-			printf("argv ----->7-----\n");
-			SocSendMenu(7,bufd);
-			break;
-		sleep(3);
-		printf("\n");
-	}
-	while(1)
-	{
-		//if(getchar())
-		get_time();
-		sleep(5);
-		//pause();
+	sleep(1);
+	char cmd[20];
+	while(1){
+		memset(cmd,0,20);
+		fgets(cmd,stdin,20);
+		if(!strncmp(cmd,"1",1)){
+				printf("cmd ----->1--%s---\n",bufo);
+				SocSendMenu(1,bufo);
+		}
+		else if(!strncmp(cmd,"2",1)){
+				printf("cmd ----->2--%s---\n",bufc);
+				SocSendMenu(2,bufc);
+		}
+		else if(!strncmp(cmd,"3",1)){
+				printf("cmd ----->3-----\n");
+				SocSendMenu(3,0);
+		}
+		else if(!strncmp(cmd,"4",1)){
+				printf("argv ----->4-----\n");
+				SocSendMenu(4,0);
+		}
+		else if(!strncmp(cmd,"7",1)){
+				printf("cmd ----->7-----\n");
+				SocSendMenu(7,bufd);
+		}
 	}
 	return 0;
 }

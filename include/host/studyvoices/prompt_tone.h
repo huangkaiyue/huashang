@@ -4,22 +4,10 @@
 /*******************************************************************************
 固定合成的音频文件
 *******************************************************************************/
-
-#define ERROR_40002			"qtts/40002_8k.amr"				//靠近一点
-#define ERROR_40003			"qtts/40003_8k.amr"				//账号有误
-#define ERROR_40004			"qtts/40004_8k.amr"				//对话次数用完
-#define ERROR_40005			"qtts/40005_8k.amr"				//不支持问题
-#define ERROR_40006			"qtts/40006_8k.amr"				//服务器正在升级
-#define ERROR_40007			"qtts/40007_8k.amr"				//近一些
-
 #define NO_NETWORK_VOICES 	"qtts/no_network_8k.amr"		//请帮我连接网络
 #define START_SYS_VOICES	"qtts/start_haha_talk_8k.amr"	//启动音
 #define END_SYS_VOICES		"qtts/end_haha_talk_8k.amr"		//结束音
 
-#define EXIT_TALK_VOICES	"qtts/exit_haha_talk_8k.amr"	//退出，请按我的鼻子
-#define OPEN_TALK_VOICES	"qtts/open_std_8k.amr"			//宝贝有什么吩咐
-#define CLOSE_TALK_VOICES	"qtts/close_std_8k.amr"			//我先去休息了，拜拜
-#define CONNECT_NETWORK_V	"qtts/connect_network_8k.amr"	//亲，正在连接网路当中请勿断电
 #define RESET_HOST_V		"qtts/reset_host_8k.amr"		//亲，恢复出厂设置当中，请勿断电
 #define REQUEST_FAILED		"qtts/request_failed_8k.amr"	//请求服务器数据失败
 
@@ -37,9 +25,6 @@
 #define NO_WIFI		        "qtts/NO_WIFI_8k.amr"			//无法扫描到您的wifi,请检查您的网络
 #define NOT_REAVWIFI		"qtts/not_reavwifi_8K.amr"		//没有收到你发送的wifi，请重新发送一遍
 #define YES_REAVWIFI		"qtts/yes_reavwifi_8K.amr"		//成功收到你发送的wifi
-
-#define NO_BADY	      		"qtts/Nobady_8K.amr"			//没有用户在线
-#define MSG_VOICES			"qtts/MSG_VOICES_8k.amr"		//叮咚
 
 #define TULING_DIDI			"qtts/TuLin_Di_8K.amr"			//叮
 #define TULING_WINT			"qtts/TuLin_Wint_8K.amr"		//请稍等  
@@ -113,7 +98,6 @@
 /*******************************************************************************
 保存app端发送过来的音频文件 路径
 *******************************************************************************/
-//#define CACHE_WAV_PATH		"/cache/wav/"
 #define CACHE_WAV_PATH		"/upload/"
 
 #endif

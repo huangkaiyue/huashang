@@ -355,13 +355,13 @@ void TulingKeyDownSingal(void){
 		Write_Speekkeylog((const char *)"PLAY_URL",GetRecordeVoices_PthreadState());
 	}else{		
 #if defined(HUASHANG_JIAOYU)	//华上教育有离线语音识别接口，需要采集音频进行离线识别
-#ifndef XUN_FEI_OK		
+#ifdef XUN_FEI_OK		
 #else
-#endif
-		if (checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
-			Write_Speekkeylog((const char *)"ExitPlay_WavVoices",GetRecordeVoices_PthreadState());
-			return;
-		}
+	if (checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
+		Write_Speekkeylog((const char *)"ExitPlay_WavVoices",GetRecordeVoices_PthreadState());
+		return;
+	}
+	#endif
 #endif		
 		sysMes.localplayname=0;	
 		NetStreamExitFile();	//在微信端推送歌曲，没有进行播放下一首歌曲的时候，突然按下智能会话按键，需要切换采样率，才能进入智能会话状态
@@ -951,7 +951,9 @@ void InitMtkPlatfrom76xx(void){
 
 	InitMtk76xx_gpio();
 	InitWm8960Voices();
-#ifndef TEST_SDK
+#if defined(HUASHANG_JIAOYU)
+	PlaySystemAmrVoices(CONNET_TIME);
+#else
 	PlaySystemAmrVoices(START_SYS_VOICES);//开机启动音
 #endif
 	initStream(ack_playCtr,WritePcmData,SetWm8960Rate,GetVol);

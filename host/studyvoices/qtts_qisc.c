@@ -124,18 +124,15 @@ void WaitPthreadExit(void){
 	Qstream->downState= DOWN_QTTS_QUIT;
 	while(1){		//等待播放线程退出
 		printf("step------->1\n");
-		printf("step------->2\n");
 		printf("%s: before Qstream->playState = %d Qstream->downState=%d\n",__func__,Qstream->playState,Qstream->downState);
-		printf("step------->3\n");
 		if(Qstream->playState==PLAY_QTTS_QUIT){
 			printf("==============\n is break \n ==================\n");
 			break;
 		}
-		printf("step------->4\n");
 		printf("%s: after Qstream->playState = %d Qstream->downState=%d\n",__func__,Qstream->playState,Qstream->downState);
-		printf("step------->5\n");
+		printf("step------->2\n");
 		usleep(100*1000);
-		printf("step------->6\n");
+		printf("step------->3\n");
 	}
 	printf("%s: ok...\n ",__func__);
 	Qstream->playState=PLAY_QTTS_QUIT;
@@ -190,12 +187,14 @@ static int text_to_speech(const char* src_text  ,const char* params){
 @		VINN_GBK	文本转换语音参数
 ******************************************/
 int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName){
+	char params[128]={0};
 	if(type==QTTS_GBK){
-		return text_to_speech(text,(const char *)VIMM_GBK);//女童音
+		snprintf(params,128,"voice_name=%s,text_encoding=gbk,sample_rate=8000,speed=60,volume=50,pitch=50,rdn =3",playVoicesName);
 	}
 	else if(type==QTTS_UTF8){
-		return text_to_speech(text,(const char *)VIMM_UTF8);//女童音
+		snprintf(params,128,"voice_name=%s,text_encoding=utf8,sample_rate=8000,speed=60,volume=50,pitch=50,rdn =3",playVoicesName);
 	}
+	return text_to_speech(text,(const char *)params);
 }
 
 int init_iat_MSPLogin(int WritePcm(char *data,int size)){
