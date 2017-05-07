@@ -13,6 +13,7 @@
 
 #include "../host/studyvoices/qtts_qisc.h"
 #include "../sdcard/musicList.h"
+#include "uart/uart.h"
 #include "config.h"
 
 SysMessage sysMes;
@@ -388,6 +389,7 @@ void *Close_Mtk76xxSystem(void *arg){
 #ifdef HUASHANG_JIAOYU
 	closeSystemSave_huashangData();
 #endif
+	system("sync");	//同步数据到sdcard 当中
 	return NULL;
 }
 //----------------------播放系统声音有关的、事件的产生、消费处理-----------------------------------------------------
@@ -450,13 +452,10 @@ static void CreateCloseSystemLock(void){
 		fclose(fp);
 	}
 }
-/*******************************************************
-函数功能: 创建一个播放系统声音事件，
-参数: sys_voices 系统音标号	
-返回值: 无
-********************************************************/
-void Create_PlaySystemEventVoices(int sys_voices){
-	if(sys_voices==END_SYS_VOICES_PLAY){	//结束音退出事件
+//串口事件回调函数
+void UartEventcallFuntion(int event){
+	if(event==UART_EVENT_CLOSE_SYSTEM){	//结束音退出事件	
+		showFacePicture(CLOSE_SYSTEM_PICTURE);
 		CreateCloseSystemLock();
 #ifdef PALY_URL_SD
 		pool_add_task(Close_Mtk76xxSystem,NULL);//关机删除，长时间不用的文件
@@ -468,7 +467,20 @@ void Create_PlaySystemEventVoices(int sys_voices){
 		if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
 			NetStreamExitFile();
 		}
-	}
+		//创建一个播放系统结束音
+		Create_PlaySystemEventVoices(END_SYS_VOICES_PLAY);
+	}else if(event==UART_EVENT_LOW_BASTERRY){
+		Create_PlaySystemEventVoices(LOW_BATTERY_PLAY);
+	}	
+} 
+
+/*******************************************************
+函数功能: 创建一个播放系统声音事件，
+参数: sys_voices 系统音标号	
+返回值: 无
+********************************************************/
+void Create_PlaySystemEventVoices(int sys_voices){
+
 	if(GetplayNetwork_LockState()==PLAY_NETWORK_VOICES_LOCK){
 		printf("is tuling play lock \n");
 		ExitPlayNetworkState();
@@ -498,7 +510,6 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 			PlaySystemAmrVoices(END_SYS_VOICES);
 			Led_vigue_close();
 			Led_System_vigue_close();
-			Mute_voices(MUTE);		//关闭功放
 #if defined(TANGTANG_LUO) || defined(QITUTU_SHI) || defined(HUASHANG_JIAOYU)
 			close_sys_led();
 #endif
@@ -506,6 +517,8 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 			open_sys_led();
 #endif
 			led_lr_oc(closeled);
+			usleep(500*1000);
+			Mute_voices(MUTE);		//关闭功放
 			break;
 		case LOW_BATTERY_PLAY:						//低电关机
 #ifdef PALY_URL_SD
@@ -527,11 +540,9 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 		case TIMEOUT_PLAY_LOCALFILE:				//请求服务器超时，播放本地已经录制好的音频
 			TaiwanToTulingError();
 			break;
-		case 8:
-			PlaySystemAmrVoices(REQUEST_FAILED);
-			break;
 //----------------------网络有关-----------------------------------------------------
 		case CONNET_ING_PLAY:			//正在连接，请稍等
+			showFacePicture(CONNECT_WIFI_ING_PICTURE);//正在连接wifi 		
 			PlaySystemAmrVoices(CHANGE_NETWORK);
 			PlaySystemAmrVoices(CONNET_TIME);
 			break;
@@ -544,7 +555,8 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 		case SMART_CONFIG_OK_PLAY:		//接受密码成功
 			PlaySystemAmrVoices(YES_REAVWIFI);
 			break;
-		case CONNECT_OK_PLAY:			//连接成功
+		case CONNECT_OK_PLAY:			//连接成功	
+			showFacePicture(CONNECT_WIFI_OK_PICTURE);	
 			PlaySystemAmrVoices(LINK_SUCCESS);
 			Link_NetworkOk();		//连接成功关灯，开灯，状态设置
 			enable_gpio();
@@ -655,6 +667,9 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 		case TULING_WAIT_VOICES:
 			play_waitVoices(TULING_WINT);
 			printf("%s: play wait voices ok\n",__func__);
+			break;
+		default:
+			pause_record_audio();
 			break;
 	}
 }

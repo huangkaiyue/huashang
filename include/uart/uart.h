@@ -15,13 +15,29 @@
 #define SMOK		0xf2	//握手信号 1111 0010 ->0b01001111
 #define SMLOW		0x91	//低电提醒
 
-#define OPEN		1
-#define CLOSE		2
-#define TIME		3
-#define BATTYPE		4
-#define SMOKER_OK	5
-#define SMOKER_ER	6
-#define CLOCK		7
+#define FACECMD		0x02
+
+#define OPEN				1
+#define MUC_CLOSE_SYSTEM	2
+#define TIME				3
+#define BATTYPE				4
+#define SMOKER_OK			5
+#define SMOKER_ER			6	
+#define CLOCK				7
+#define FACE				8
+
+#define UART_EVENT_CLOSE_SYSTEM	1	//mcu关机事件
+#define UART_EVENT_LOW_BASTERRY 3	//电量低
+
+
+#define OPEN_SYSTEM_PICTURE			1	//开机动画
+#define CLOSE_SYSTEM_PICTURE		2	//关机动画
+#define CONNECT_WIFI_ING_PICTURE	3	//wifi-连接过程动画
+#define CONNECT_WIFI_OK_PICTURE		4	//wifi-成功连接
+#define	BATTERY_PICTURE				5	//电池电量
+#define	WEIXIN_PICTURE				6	//消息
+#define MUSIC_SHAPE_PICTURE			7	//音乐-波形动画
+#define MUSIC_HZ_PICTURE			8	//音乐-频谱动画
 
 #define SERIAL_SOC_PATH		"/dev/ttyS0"
 #define SPEED_SOC			9600
@@ -84,7 +100,7 @@ typedef struct{
 extern int init_Uart(void VoicesEvent(int event),void ack_batteryCtr(int recvdata,int power););
 extern void SocSendMenu(unsigned char str,char *senddata);
 //串口处理函数
-extern int get_battery(void);
-extern int get_charge(void);
+extern int Get_batteryVaule(void);
+extern int get_dc_state(void);
 
 #endif

@@ -178,6 +178,7 @@ extern int Create_playMusicEvent(const void *play,unsigned char Mode);
 extern void Create_CleanUrlEvent(void);
 extern void Create_PlayQttsEvent(const char *txt,int type);
 extern void TulingKeyDownSingal(void);
+extern void UartEventcallFuntion(int event);
 extern void Create_PlaySystemEventVoices(int sys_voices);
 extern void Handle_PlaySystemEventVoices(int sys_voices);
 extern void InitMtkPlatfrom76xx(void);

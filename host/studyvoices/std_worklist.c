@@ -14,6 +14,8 @@
 #if defined(HUASHANG_JIAOYU)
 #include "../voices/huashangMusic.h"
 #endif
+#include "uart/uart.h"
+
 static const char *key = "b1833040534a6bfd761215154069ea58";
 static WorkQueue *EventQue;
 
@@ -313,6 +315,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			break;
 			
 		case URL_VOICES_EVENT:		//URL网络播放事件
+			showFacePicture(MUSIC_SHAPE_PICTURE);
 			WritePlayUrl_Log("handler url voices event \n");
 			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		
 			NetStreamExitFile();
@@ -324,6 +327,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			
 #ifdef 	LOCAL_MP3
 		case LOCAL_MP3_EVENT:		//本地音乐播放事件
+			showFacePicture(MUSIC_SHAPE_PICTURE);
 			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
 			NetStreamExitFile();
 			start_event_play_url();
@@ -347,6 +351,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			
 #ifdef SPEEK_VOICES	
 		case SPEEK_VOICES_EVENT:	//接收到语音消息	
+			showFacePicture(WEIXIN_PICTURE);
 			start_event_play_wav();
 			playspeekVoices(data);
 			pause_record_audio();

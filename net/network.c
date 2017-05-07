@@ -192,7 +192,7 @@ static void add_queue(Server *ser,int new_fd,struct sockaddr_in client_addr)
 		init_addr(&(ser->addr[i]),inet_ntoa(client_addr.sin_addr),CTRL_PORT);
 		ServerLog("new connection addr[%d] %s : %d\n", ser->conn_amount,  
 				 inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));  
-		ack_alluserCtr(new_fd,get_battery(),get_charge());
+		ack_alluserCtr(new_fd,Get_batteryVaule(),get_dc_state());
 		if (new_fd > ser->maxsock){
 			ser->maxsock = new_fd;
 		}
@@ -302,7 +302,7 @@ static void *Ctrl_Server(void *arg)
 			}
 			ServerLog("recv ctrl accept\n");
 			if(ser->conn_amount >= (BACKLOG-1)){
-				ack_batteryCtr(get_battery(),get_charge());
+				ack_batteryCtr(Get_batteryVaule(),get_dc_state());
 			}
 			add_queue(ser,new_fd,client_addr);
 		}

@@ -11,6 +11,7 @@
 #include "host/sdcard/musicList.h"
 #include "config.h"
 #include "host/studyvoices/prompt_tone.h"
+#include "uart/uart.h"
 #ifdef WORK_INTER
 #include "srvwork/workinter.h"
 #endif
@@ -90,7 +91,7 @@ static void loadLocalServer(int argc,const char *argv[]){
 	init_interface(pasreInputCmd);
 #endif	//end WORK_INTER
 	init_videoServer();
-	init_Uart(Create_PlaySystemEventVoices,ack_batteryCtr);	//初始化串口
+	init_Uart(UartEventcallFuntion,ack_batteryCtr);	//初始化串口
 	
 #ifdef	LED_LR
 	led_lr_oc(closeled);
@@ -189,6 +190,7 @@ int main(int argc, char **argv){
 	loadLocalServer(argc,argv);
 	char *msg=NULL;
 	int event=0;
+	showFacePicture(CONNECT_WIFI_ING_PICTURE);
 	while(1){
 		getMsgQueue(DownEvent,&msg,&event);
 		if (mainQueLock == MAIN_QUEUE_LOCK){

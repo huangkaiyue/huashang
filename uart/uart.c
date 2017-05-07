@@ -1,14 +1,14 @@
 #include "comshead.h"
 #include "base/tools.h"
-#include "uart.h"
+#include "uart/uart.h"
 #include "systools.h"
+#include "config.h"
 
 static ReacData data;
 static int serialFd[2];
 static char quit=0;
 static uart_t *uartCtr=NULL;
 
-static void disconnect_airkiss(void);
 #if 0
 /*************************************************
 * 函数功能:倒序八位二进制
@@ -28,7 +28,7 @@ static unsigned char bin8_rev(unsigned char data)
 * 参  数  :无
 * 返回值  :电池电量
 **************************************************/
-int get_battery(void){
+int Get_batteryVaule(void){
 	switch(uartCtr->battery){
 		case 0:
 			return 10;
@@ -50,7 +50,7 @@ int get_battery(void){
 * 参  数  :无
 * 返回值  :0 未充电 1充电
 **************************************************/
-int get_charge(void){
+int get_dc_state(void){
 	if(uartCtr->charge!=1){
 		uartCtr->charge=0;
 	}
@@ -111,6 +111,8 @@ void SocSendMenu(unsigned char str,char *senddata){
 	AckOCBat bat;
 	AckOCData data;
 	AckTimeData timedata;
+	unsigned char facebuf[3];
+	char checksum;
 	switch(str){
 		case OPEN://定时开机
 			data.ochead=MSOPEN;
@@ -138,7 +140,7 @@ void SocSendMenu(unsigned char str,char *senddata){
 			DEBUG_UART("system open time is %d:%d\n",data.hour,data.min);
 			uart_send_soc((unsigned char *)&data,sizeof(AckOCData));
 			break;
-		case CLOSE://定时关机
+		case MUC_CLOSE_SYSTEM://定时关机
 			data.ochead=MSCLOSE;
 			pt=strtok_r(senddata,":",&p);
 			data.hour=atoi(pt);
@@ -169,89 +171,27 @@ void SocSendMenu(unsigned char str,char *senddata){
 			smok.chack=SMOK+0xaa;
 			uart_send_soc((unsigned char *)&smok,sizeof(AckSmok));
 			break;
+		case FACE:
+			checksum = FACECMD + *senddata;
+			memset(facebuf,0,sizeof(facebuf));
+			facebuf[0] = FACECMD;
+			facebuf[1] = *senddata;
+			facebuf[2] = checksum;
+			uart_send_soc(facebuf,sizeof(facebuf));
+			break;
 	}
+}
+void showFacePicture(unsigned char faceNums){
+#if defined(HUASHANG_JIAOYU)	
+	unsigned char faceBuf =faceNums;
+	SocSendMenu(FACE,(char *)&faceNums);
+#endif	
 }
 /*************************************************
 * 函数功能:串口消息处理函数
 * 参  数  :无
 * 返回值  :无
 **************************************************/
-	
-#define UART_TEST
-
-#ifndef UART_TEST
-static int handle_uartMsg(int fd ,unsigned char buf,int size){
-	if(data.head!=0x0&&data.data==0x1){
-		data.head=0x0;
-		data.data=0x0;
-		return;
-	}
-	if(data.head==0x0){
-		data.head=buf;
-		DEBUG_UART("\n===head ===%x==\n",data.head);
-		switch(data.head){
-			case SMCLOSETIME: 	//MCU定时定时到关机信号发送
-				break;
-			case SMBATTERY:		//电池电量 100，75，50，25，10
-				break;
-			case SMCLOSE:		//开关机
-				break;
-			case SMBATTYPE:		//充电状态
-				break;
-			case SMOK:			//握手信号
-				break;
-			case SMLOW:
-				uartCtr->voicesEvent(3);
-				data.data=0x1;
-				DEBUG_UART("handle_uartMsg smbattery \n");
-				SocSendMenu(SMOKER_OK,0);
-				break;
-			default:
-				data.head=0x0;
-				break;
-		}
-	}
-	else{
-		data.data=buf;
-		DEBUG_UART("===data ===%x==\n",data.data);
-		switch(data.head){
-			case SMCLOSE://开关机
-			case SMCLOSETIME://MCU定时定时到关机信号发送
-				DEBUG_UART("handle_uartMsg SMCLOSETIME \n");
-				uartCtr->voicesEvent(1);
-				SocSendMenu(SMOKER_OK,0);
-				break;
-				
-			case SMBATTERY://电池电量 100，75，50，25，10
-			case SMBATTYPE://充电状态
-				if((data.data&0x80)==0x80){//充电
-					DEBUG_UART("handle_uartMsg  SMBATTYPE OK \n");
-					uartCtr->charge=1;
-				}
-				else if((data.data&0x80)==0x00){//未充电
-					DEBUG_UART("handle_uartMsg  SMBATTYPE ERROR \n");
-					uartCtr->charge=0;
-				}
-				data.data&=0xf;
-				DEBUG_UART("SMBATTYPE bat=%d\n",data.data);
-				uartCtr->battery=data.data;
-				uartCtr->Ack_batteryCtr(get_battery(),uartCtr->charge);
-				SocSendMenu(SMOKER_OK,0);
-				break;
-				
-			case SMOK://握手信号
-				if(data.data==0x55){//正确
-					DEBUG_UART("handle_uartMsg OK \n");
-				}
-				else if(data.data==0xaa){//错误
-					DEBUG_UART("handle_uartMsg error \n");
-				}
-				break;
-		}
-		data.data=0x1;
-	}
-}
-#else
 static unsigned char batterylow=0;	//播报低电标志
 static int CacheUarl(void){
 	//printf("===%x+%x=%x===================\n",data.head,data.data,data.cache);
@@ -301,7 +241,7 @@ static int handle_uartMsg(int fd ,unsigned char buf,int size){
 			case SMCLOSETIME://MCU定时定时到关机信号发送
 				DEBUG_UART("handle_uartMsg SMCLOSETIME \n");
 				if(CacheUarl()==0){
-					uartCtr->voicesEvent(1);
+					uartCtr->voicesEvent(UART_EVENT_CLOSE_SYSTEM);
 					SocSendMenu(SMOKER_OK,0);
 				}else{
 					SocSendMenu(SMOKER_ER,0);
@@ -324,9 +264,9 @@ static int handle_uartMsg(int fd ,unsigned char buf,int size){
 					data.data&=0xf;
 					SocSendMenu(SMOKER_OK,0);
 					uartCtr->battery=data.data;
-					uartCtr->Ack_batteryCtr(get_battery(),uartCtr->charge);
+					uartCtr->Ack_batteryCtr(Get_batteryVaule(),uartCtr->charge);
 					if(uartCtr->battery<=1&&batterylow==0){		//电量低于25，报语音
-						uartCtr->voicesEvent(3);
+						uartCtr->voicesEvent(UART_EVENT_LOW_BASTERRY);
 						batterylow=1;
 					}
 				}else{
@@ -342,14 +282,13 @@ static int handle_uartMsg(int fd ,unsigned char buf,int size){
 					DEBUG_UART("handle_uartMsg error \n");
 				}
 				break;
+
 		}
 		data.data=0x0;
 		data.head=0x0;
 		data.cache=0x0;
 	}
 }
-
-#endif
 /*************************************************
 * 函数功能:读取串口消息
 * 参  数  :无
@@ -390,34 +329,17 @@ static void *uart_read_serial(void){
 				}
 		}
 	}
-	disconnect_airkiss();
+	close(serialFd[0]);
 	return NULL;
 }
-/*************************************************
-* 函数功能:线程有关
-* 参  数  :无
-* 返回值  :
-**************************************************/
-static int pthread_create_attr(void *(*start_routine) (void *), void *arg){
-	pthread_t tid;
-	pthread_attr_t attr;
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	return pthread_create(&tid,&attr,start_routine,arg);
-}
-//#define TEST
 /*************************************************
 * 函数功能:串口初始化
 * 参  数  :VoicesEvent 系统音 回调函数
 			ack_batteryCtr 电量发送 回调函数
 * 返回值  :0 成功 -1失败
 **************************************************/
-int init_Uart(void VoicesEvent(int event),void ack_batteryCtr(int recvdata,int power))
-{
-	if(quit==1)
-		return -1;
+int init_Uart(void VoicesEvent(int event),void ack_batteryCtr(int recvdata,int power)){
 	quit=1;
-	//单片机
 	uartCtr = (uart_t *)calloc(1,sizeof(uart_t));
 	if(uartCtr==NULL)
 		return -1;
@@ -428,24 +350,12 @@ int init_Uart(void VoicesEvent(int event),void ack_batteryCtr(int recvdata,int p
 		perror("pthread_create uart_read_serial failed");
 		return -1;
 	}
-#ifndef TEST
 	usleep(10000);
 	SocSendMenu(3,NULL);
-#endif
+
 	usleep(10000);
 	SocSendMenu(4,NULL);
 	return 0;
-}
-void clean_Uart(void){
-	quit=0;
-}
-/*************************************************
-* 函数功能:串口清理
-* 参  数  :无
-* 返回值  :无
-**************************************************/
-static void disconnect_airkiss(void){
-	close(serialFd[0]);
 }
 
 //#define TEST
@@ -496,7 +406,7 @@ int main(int argc,char *argv[]){
 	char cmd[20];
 	while(1){
 		memset(cmd,0,20);
-		fgets(cmd,stdin,20);
+		fgets(cmd,20,stdin);
 		if(!strncmp(cmd,"1",1)){
 				printf("cmd ----->1--%s---\n",bufo);
 				SocSendMenu(1,bufo);

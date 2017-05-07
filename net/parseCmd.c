@@ -10,6 +10,7 @@
 #include "host/ap_sta.h"
 #include "host/voices/callvoices.h"
 #include "sysdata.h"
+#include "uart/uart.h"
 #include "config.h"
 
 #define STREAM_EXIT				MAD_EXIT	//停止	
@@ -137,7 +138,6 @@ void ack_hostCtr(int sockfd,char *recvdata,char *type){
 @函数功能:	电池电量返回函数
 @参数:	recvdata 电池电量
 */
-//ack_batteryCtr(get_battery(),get_charge());
 void ack_batteryCtr(int recvdata,int power){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
@@ -157,7 +157,6 @@ void ack_batteryCtr(int recvdata,int power){
 @函数功能:	所有信息返回函数
 @参数:	recvdata 电池电量
 */
-//ack_alluserCtr(new_fd,get_battery(),get_charge());
 void ack_alluserCtr(const int sockfd,int state,int power){
 	char stropenTime[10]={0};
 	char strcloseTime[10]={0};
@@ -458,7 +457,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			
 			SocSendMenu(3,0);
 			usleep(100*1000);
-			SocSendMenu(2,strcloseTime);//----------->定时关机
+			SocSendMenu(MUC_CLOSE_SYSTEM,strcloseTime);//----------->定时关机
 			usleep(100*1000);
 		}
 	}//end host 定时开关机
@@ -604,7 +603,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	
 		}
 	}else if(!strcmp(pSub->valuestring,"getdev")){	//微信获取设备信息
-		ack_alluserCtr(sockfd,get_battery(),get_charge());
+		ack_alluserCtr(sockfd,Get_batteryVaule(),get_dc_state());
 	}
 #endif	
 	else if (!strcmp(pSub->valuestring,"tuling")){
