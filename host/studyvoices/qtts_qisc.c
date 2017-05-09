@@ -189,10 +189,10 @@ static int text_to_speech(const char* src_text  ,const char* params){
 int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName){
 	char params[128]={0};
 	if(type==QTTS_GBK){
-		snprintf(params,128,"voice_name=%s,text_encoding=gbk,sample_rate=8000,speed=60,volume=50,pitch=50,rdn =3",playVoicesName);
+		snprintf(params,128,"voice_name=%s,text_encoding=gbk,sample_rate=8000,speed=70,volume=50,pitch=50,rdn =3",playVoicesName);
 	}
 	else if(type==QTTS_UTF8){
-		snprintf(params,128,"voice_name=%s,text_encoding=utf8,sample_rate=8000,speed=60,volume=50,pitch=50,rdn =3",playVoicesName);
+		snprintf(params,128,"voice_name=%s,text_encoding=utf8,sample_rate=8000,speed=70,volume=50,pitch=50,rdn =3",playVoicesName);
 	}
 	return text_to_speech(text,(const char *)params);
 }

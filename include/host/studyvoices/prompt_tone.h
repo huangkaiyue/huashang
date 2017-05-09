@@ -67,7 +67,7 @@
 #define VOICE_ADD			"qtts/voice_add_8K.amr"				//音量加设置成功。
 #define VOICE_SUB			"qtts/voice_sub_8K.amr"				//音量减设置成功。
 #define SPEEK_WARNING		"qtts/speek_warning_8K.amr"			//小朋友快来跟我玩，跟我说话聊天吧。
-#define WELCOME_PLAY		"qtts/welcome_play_8K.amr"			//小朋友我们接着上次内容继续听吧，开始播放。
+#define WELCOME_PLAY		"qtts/welcome_play_8K.amr"			//来自开普勒星球的小培老师正在检查网络
 
 #define BIND_SSID			"qtts/bind_ssid_8K.amr"				//成功收到小伙伴的绑定请求。
 #define BIND_OK				"qtts/bind_ok_8K.amr"				//成功处理小伙伴的绑定请求。

@@ -211,7 +211,7 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 	int volendtime=0;
 	unsigned int time_ms = 0;
 	key_mutiple_t *mutiplekey = (key_mutiple_t *)arg;
-	
+	int playDownVoicesFlag=0;;
 	while(1){
 		
 		gettimeofday(&mutiplekey->time_end,0);
@@ -250,7 +250,10 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 		
 
 		if(time_ms >=500){
-			
+			if(playDownVoicesFlag==0){
+				keyDown_AndSetGpioFor_play();
+				playDownVoicesFlag++;
+			}
 			printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
 			if(mutiplekey->key_state == VOLKEYUP)
 				break;
@@ -475,6 +478,7 @@ static void signal_handler(int signum){
 				break;
 			case RESERVE_KEY3:	//华上教育，设置单曲循环和列表
 				keydown_flashingLED();
+				keyDown_AndSetGpioFor_play();
 				GpioKey_SetStreamPlayState();
 				break;
 			case HUASHANG_WEIXIN_SPEEK_KEY:	//华上教育微信对讲
@@ -512,6 +516,7 @@ static void signal_handler(int signum){
 				break;
 			
 			case PLAY_PAUSE_KEY://长按播放/暂停  切换智能会话播音人
+				keyDown_AndSetGpioFor_play();
 				Huashang_changePlayVoicesName();
 				break;
 			case ADDVOL_KEY:	//长按音量加
@@ -533,6 +538,7 @@ static void signal_handler(int signum){
 				gettimeofday(&mutiple_key_SUB.time_start,0);
 				if(mutiple_key_SUB.PthreadState == PthreadState_run)
 					break;
+				
 				mutiple_key_SUB.PthreadState = PthreadState_run;
 				pool_add_task(mus_vol_mutiplekey_Thread,(void *)&mutiple_key_SUB);
 				ack_VolCtr("sub",GetVol());		//----------->音量减

@@ -11,6 +11,7 @@
 #if defined(HUASHANG_JIAOYU)
 #include "huashangMusic.h"
 #endif
+
 static char buf_voices[STD_RECODE_SIZE];
 static char pcm_voices16k[STD_RECODE_SIZE_16K];
 static int len_voices = 0;
@@ -167,6 +168,7 @@ static void Start_uploadVoicesData(void){
 	Setwm8960Vol(VOL_SET,PLAY_PASUSE_VOICES_VOL);
 	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
 #if defined(HUASHANG_JIAOYU)
+	Show_SmartTalkKey();
 	Write_Speekkeylog((const char *)"Start_uploadVoicesData",GetRecordeVoices_PthreadState());
 #else
 	Create_PlayTulingWaitVoices(TULING_WAIT_VOICES);

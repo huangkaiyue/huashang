@@ -63,15 +63,15 @@ int GetScard_forPlayHuashang_Music(unsigned char playMode,const void *playDir){
 	}
 	if(playMode==PLAY_NEXT){
 		if(hsUser!=NULL){
-			if(++hsUser->PlayHuashang_MusicIndex>HUASHANG_MUSIC_TOTAL_NUM){
+			if(++hsUser->PlayHuashang_MusicIndex>HUASHANG_MUSIC_TOTAL_NUM-1){
 				hsUser->PlayHuashang_MusicIndex=0;
 			}
 		}
 		
 	}else if(playMode==PLAY_PREV){
 		if(hsUser!=NULL){
-			if(--hsUser->PlayHuashang_MusicIndex>HUASHANG_MUSIC_TOTAL_NUM){
-				hsUser->PlayHuashang_MusicIndex=HUASHANG_MUSIC_TOTAL_NUM;
+			if(--hsUser->PlayHuashang_MusicIndex<=0){
+				hsUser->PlayHuashang_MusicIndex=HUASHANG_MUSIC_TOTAL_NUM-1;
 			}
 		}
 	}	
@@ -86,6 +86,9 @@ int GetScard_forPlayHuashang_Music(unsigned char playMode,const void *playDir){
 }
 //关机保存华上教育内容播放记录数据
 void closeSystemSave_huashangData(void){
+	char jsonfile[128]={0};
+	snprintf(jsonfile,128,"%s%s",TF_SYS_PATH,HUASHANG_JIAOYU_PLAY_JSON_FILE);
+
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
 	pItem = cJSON_CreateObject();
@@ -98,6 +101,11 @@ void closeSystemSave_huashangData(void){
 	}
 	szJSON = cJSON_Print(pItem);
 	cJSON_Delete(pItem);
+	FILE *fp =fopen(jsonfile,"w+");
+	if(fp){
+		fwrite((szJSON),strlen(szJSON),1,fp);
+		fclose(fp);
+	}
 	free(szJSON);
 	if(hsUser!=NULL){
 		free(hsUser);

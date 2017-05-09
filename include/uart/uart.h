@@ -39,6 +39,12 @@
 #define MUSIC_SHAPE_PICTURE			7	//音乐-波形动画
 #define MUSIC_HZ_PICTURE			8	//音乐-频谱动画
 
+#define FACE_jingya_42				42	//神态表情-惊讶
+#define FACE_qinqin_51				51	//神态表情-亲亲
+#define FACE_feel_happy_54			54	//神态表情-微笑
+#define FACE_thumbs_up_63			63	//神态表情-赞
+#define FACE_eye_show_64			64	//神态表情-眨眼
+
 #define SERIAL_SOC_PATH		"/dev/ttyS0"
 #define SPEED_SOC			9600
 #define CLOCK_TIME			3			//闹钟提前开机时间

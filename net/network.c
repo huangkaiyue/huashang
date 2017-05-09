@@ -354,6 +354,7 @@ void init_videoServer(void)
 	char IP[20]={0};
 	if(GetNetworkcardIp("br0",IP))
 	{
+			writeLog((const char * )"/log/init_videoServer.log",(const char * )"get br0 failed .......");
 			perror("get br0 ip failed");
 			return ;
 	}

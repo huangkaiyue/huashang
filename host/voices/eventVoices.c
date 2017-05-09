@@ -560,6 +560,7 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 			PlaySystemAmrVoices(LINK_SUCCESS);
 			Link_NetworkOk();		//连接成功关灯，开灯，状态设置
 			enable_gpio();
+			showFacePicture(MUSIC_HZ_PICTURE);
 			break;
 		case NOT_FIND_WIFI_PLAY:			//没有扫描到wifi
 			PlaySystemAmrVoices(NO_WIFI);
@@ -950,6 +951,27 @@ static void *waitLoadMusicList(void *arg){
 } 
 #endif
 
+#ifdef HUASHANG_JIAOYU
+//显示智能会话表情
+void Show_SmartTalkKey(void){
+	int faceNumS=(1+(int) (3.0*rand()/(RAND_MAX+1.0)));	
+	switch(faceNumS){
+		case 1:
+			showFacePicture(FACE_jingya_42);
+			break;
+		case 2:
+			showFacePicture(FACE_qinqin_51);
+			break;
+		case 3:
+			showFacePicture(FACE_eye_show_64);
+			break;
+		default:
+			showFacePicture(FACE_eye_show_64);
+			break;
+	}
+}
+#endif
+
 /******************************************************************
 初始化8960音频芯片，开启8K录音和播放双工模式,初始化gpio，播放开机启动音
 *******************************************************************/
@@ -967,7 +989,7 @@ void InitMtkPlatfrom76xx(void){
 	InitMtk76xx_gpio();
 	InitWm8960Voices();
 #if defined(HUASHANG_JIAOYU)
-	PlaySystemAmrVoices(CONNET_TIME);
+	PlaySystemAmrVoices(WELCOME_PLAY);
 #else
 	PlaySystemAmrVoices(START_SYS_VOICES);//开机启动音
 #endif
