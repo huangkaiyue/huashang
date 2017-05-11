@@ -164,11 +164,10 @@ void start_event_talk_message(void){
 @参数:	无
 *****************************************/
 static void Start_uploadVoicesData(void){
-	//start_event_play_wav();		//播放过渡音，等待上传语音识别结果
 	Setwm8960Vol(VOL_SET,PLAY_PASUSE_VOICES_VOL);
 	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
 #if defined(HUASHANG_JIAOYU)
-	Show_SmartTalkKey();
+	Show_SmartTalkKey();	//显示智能会话表情
 	Write_Speekkeylog((const char *)"Start_uploadVoicesData",GetRecordeVoices_PthreadState());
 #else
 	Create_PlayTulingWaitVoices(TULING_WAIT_VOICES);

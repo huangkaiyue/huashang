@@ -234,6 +234,8 @@ int main(int argc, char **argv){
 				free((void *)msg);
 				break;
 #endif				
+			case UPLOAD_TULING_EVENT:	//将耗时操作的上传接口放到队列当中
+				break;
 			case QUIT_MAIN:
 				printf("end main !!!\n");
 				goto exit0;
