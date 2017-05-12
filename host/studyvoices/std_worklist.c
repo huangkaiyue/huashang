@@ -395,12 +395,26 @@ static void CleanEventMessage(const char *data,int msgSize){
 #endif
 }
 
+static WorkQueue *PLayEvent=NULL;
+static void *PlayVoicesPthread(void *arg){
+	PLayEvent = initQueue();
+	char *msg=NULL;
+	int event=0;
+	while(1){
+		getMsgQueue(PLayEvent,&msg,&event);
+		
+	}
+	destoryQueue(PLayEvent);
+}
 /*
 @  初始化事件处理消息线程 ,创建一件队列 ,队列名为EventQue
 */
 void InitEventMsgPthread(void){
 	EventQue = InitCondWorkPthread(HandleEventMessage);
 	init_iat_MSPLogin(WriteStreamPcmData);
+	if(pthread_create_attr(PlayVoicesPthread,NULL)){
+		printf("create play voices pthread failed \n");	
+	}
 }
 /*
 @  清除事件处理消息线程
