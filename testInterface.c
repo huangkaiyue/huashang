@@ -37,22 +37,7 @@ int checkPlayVoicesWorkState(int checkLevel){
 }
 #endif
 
-#ifdef TEST_ERROR_TULING
-/*
-*单独测试图灵的接口
-*/
-void test_tulingApi_andDownerrorFile(void){
-	cJSON *root;
-	root=cJSON_CreateObject();
-	cJSON_AddNumberToObject(root,"code",10);
-	cJSON_AddStringToObject(root,"info","testetest");
-	cJSON_AddStringToObject(root,"text","testetest");
-	cJSON_AddStringToObject(root,"ttsUrl","http://smartdevice.ai.tuling123.com/file2/ace2b7b9-df01-4554-95b2-6a3d5189b0b0.pcm");
-	char *text=cJSON_Print(root);
-	cJSON_Delete(root);
-	AddworkEvent(text,0,STUDY_WAV_EVENT);
-}
-#endif
+
 
 #ifdef TEST_MIC
 /*******************************************************
@@ -132,80 +117,7 @@ void test_playTuingPcmFile(void){
 }
 #endif
 
-#ifdef TEST_PLAY_EQ_MUSIC
-/*******************************************************
-函数功能: 测试播放wav 音频文件
-参数: play 本地MP3播放内容
-返回值: 无
-********************************************************/
-void createPlay_wavFileEvent(const void *play){
-	if(checkNetWorkLive()){	//检查网络
-		return;
-	}
-	if(getEventNum()>0||getplayEventNum()>0){
-		DEBUG_EVENT("num =%d \n",getEventNum());
-		return;
-	}
-	if(GetRecordeVoices_PthreadState() == PLAY_WAV){
-		return;
-	}
-	AddworkEvent((const char *)play,0,TEST_PLAY_EQ_WAV);
-}
-static unsigned char Testmp3sign =0;
-void TestPlay_localMp3Music(void){
-	char filepath[128]={0};
-	if(Testmp3sign>8){
-		Testmp3sign=0;
-	}
-	snprintf(filepath,128,"%stestmp3/test%d.mp3",TF_SYS_PATH,Testmp3sign);
-	printf("filepath = %s\n",filepath);
-	if(access(filepath, F_OK)==F_OK){
-		__AddLocalMp3ForPaly((const char *)filepath);
-	}
-	Testmp3sign++;
-	return;
-}
-#endif
 
-void betaServer_OkUserId_And_token(void){
-#if 0	//id和token测试ok
-		char token[64]={"772f32e9-1a8a-46fe-95ed-76b405e71fca"};
-		char *user_id  = "ai22334455667780";
-#endif
-#if 0
-		char token[64]={"b3346661-ee10-4d46-ad1e-5b35bf2a824e"};
-		char *user_id  = "ai00000000000015";
-#endif
-#if 0
-		char token[64]={"de693565-b4ab-49d2-8376-7bb01d799d6f"};
-		char *user_id  = "ai00000000000016";
-#endif
-#if 0
-		char token[64]={"2f3f51f9-0488-454a-aff8-5063860e8c5c"};
-		char *user_id  = "ai00000000000017";
-#endif
-#if 0
-		char token[64]={"954689a2-1203-4eca-bd59-7ce690c9f0c2"};
-		char *user_id  = "ai2000000000000";
-#endif
-#if 0	//id和token测试ok //beta
-		char token[64]={"8589b8c9-c1a8-4492-8c26-f5f2586493ab"};
-		char *user_id  = "aia0000000000002";
-#endif
-		
-#if 0	//smart  id和token 测试ok smart
-		char token[64]={"63c5dc4b-ccff-48cd-b112-eff5426ca3e8"};
-		char *user_id  = "ai123456789ababab";
-#endif
-#if 0   //idoítoken2aê?ok //smart
-		char token[64]={"b825f483-d5be-4a6f-a1bb-80be3de187e5"};
-		char *user_id  = "ai123456789abab12";
-#endif
-#if 0	//beta ok
-char token[64]={"fa750125-cb6d-4259-b667-278c32f2eece"};	
-char *user_id  = "airhwrhwrhw00104";
-#endif
-}
 
 #ifdef TEST_PLAY_EQ_MUSIC
 #include "host/voices/WavAmrCon.h"
@@ -335,7 +247,6 @@ static void addplay_urlFile(void){
 	char *ttsURL= (char *)calloc(1,strlen(url)+1);
 	sprintf(ttsURL,"%s",url);
 	SetMainQueueLock(MAIN_QUEUE_UNLOCK);
-	SetplayNetwork_Lock();	
 	AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
 	if(++playIndex==5){
 		playIndex=0;

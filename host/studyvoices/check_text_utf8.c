@@ -9,13 +9,12 @@
 @è¿”å›ž:	0è¡¨ç¤ºåŒ¹é…æˆåŠŸ
 @	  	-1è¡¨ç¤ºåŒ¹é…å¤±è´¥
 *********************************************************/
-int CheckinfoText_forContorl(const char *text){
+int CheckinfoText_forContorl(const char *text,unsigned int playEventNums){
 	int ret = -1;
 	char playName[128]={0};
 	if(strstr(text,"æœ¬åœ°æ­Œæ›²")){		
-		SetplayNetwork_unLock();
 #ifdef TANGTANG_LUO
-		PlaySystemAmrVoices(NO_MUSIC);
+		PlaySystemAmrVoices(NO_MUSIC,playEventNums);
 #else
 		pause_record_audio();
 #ifdef DATOU_JIANG
@@ -24,7 +23,7 @@ int CheckinfoText_forContorl(const char *text){
 		ret=Create_playMusicEvent((const void *)XIAI_DIR,1);
 #endif
 		if(ret == -1){
-			PlaySystemAmrVoices(NO_MUSIC);
+			PlaySystemAmrVoices(NO_MUSIC,playEventNums);
 		}
 #endif
 		return 0;
@@ -32,40 +31,35 @@ int CheckinfoText_forContorl(const char *text){
 #ifdef DATOU_JIANG
 	else if(strstr(text,"æœ¬åœ°æ•…äº‹")){
 		pause_record_audio();		
-		SetplayNetwork_unLock();
 		ret=Create_playMusicEvent((const void *)"story",1);
 		if(ret == -1){
-			PlaySystemAmrVoices(NO_STORY);
+			PlaySystemAmrVoices(NO_STORY,playEventNums);
 		}
 		return 0;
 	}
 #endif
 	else if(strstr(text,"åå­—")||strstr(text,"ä½ æ˜¯è°")){		
-		SetplayNetwork_unLock();
-		PlaySystemAmrVoices(TULING_HAHAXIONG);
+		PlaySystemAmrVoices(TULING_HAHAXIONG,playEventNums);
 		return 0;
 	}
 	else if(strstr(text,"éŸ³é‡")){
 		if((strstr(text,"åŠ ")&&strstr(text,"å‡"))||(strstr(text,"å¤§")&&strstr(text,"å°")))
 			return -1;
 		else if(strstr(text,"åŠ ")||strstr(text,"å¤§")){			
-			SetplayNetwork_unLock();
 			Setwm8960Vol(VOL_ADD,0);
-			PlaySystemAmrVoices(VOICE_ADD);
+			PlaySystemAmrVoices(VOICE_ADD,playEventNums);
 			ack_VolCtr("add",GetVol());//----------->éŸ³é‡å‡
 			return 0;
 		}
 		else if(strstr(text,"å‡")||strstr(text,"å°")){			
-			SetplayNetwork_unLock();
 			Setwm8960Vol(VOL_SUB,0);
-			PlaySystemAmrVoices(VOICE_SUB);
+			PlaySystemAmrVoices(VOICE_SUB,playEventNums);
 			ack_VolCtr("sub",GetVol());//----------->éŸ³é‡å‡
 			return 0;
 		}
 	}else if(strstr(text,"æ’­æ”¾")){
 		Write_huashangTextLog(text);
 		if(Huashang_Checkutf8(text,playName)==0){
-			SetplayNetwork_unLock();
 			pause_record_audio();//ÐèÒªÇÐ»»µ½ÔÝÍ£×´Ì¬£¬²ÅÄÜÌí¼Ó¸èÇú½øÈ¥²¥·Å------------>µ±Ç°×´Ì¬Îª²¥·Åwav×´Ì¬
 			Write_huashangTextLog(playName);
 			if(__AddLocalMp3ForPaly((const char *)playName)){

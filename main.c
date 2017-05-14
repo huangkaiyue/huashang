@@ -12,6 +12,7 @@
 #include "config.h"
 #include "host/studyvoices/prompt_tone.h"
 #include "uart/uart.h"
+#include "host/studyvoices/std_worklist.h"
 #ifdef WORK_INTER
 #include "srvwork/workinter.h"
 #endif
@@ -213,21 +214,14 @@ int main(int argc, char **argv){
 				free((void *)msg);
 				break;
 			case TULING_URL_MAIN:	//播放图灵 tts文件
-				if(PlayTulingText((const char*)msg)){		//异常退出，需要清理后面的url播放事件
+				if(PlayTulingText((HandlerText_t *)msg)){		//异常退出，需要清理后面的url播放事件
 					SetMainQueueLock(MAIN_QUEUE_LOCK);		//清理后面mp3播放
 				}
 				free((void *)msg);
 				break;
 			case LOCAL_MP3_EVENT:	//本地播放
 				Main_Thread_AddPlayLocalSdcard_Music((const char *)msg);
-				break;
-#ifdef TEST_PLAY_EQ_MUSIC			
-			case TEST_PLAY_EQ_WAV:
-				TestPlay_EqWavFile((const void *)msg);
-				free((void *)msg);
-				usleep(1000);
-				break;
-#endif			
+				break;		
 #ifdef PALY_URL_SD
 			case WEIXIN_DOWN_MP3_EVENT:	//微信端下载歌曲事件	
 				HandlerWeixinDownMp3((const void *)msg);

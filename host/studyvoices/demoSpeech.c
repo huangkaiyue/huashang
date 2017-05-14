@@ -336,11 +336,7 @@ int reqTlVoices(int timeout,const char *key,const void * audio,int len,int rate,
 			printf("open failed \n");
 			return -1;
 		}
-	#ifndef AMR16K_DATA	
 		fprintf(logfp,"mtk76xx upload file rate %d 16bit  type %s\n",16000,"pcm");
-	#else
-		fprintf(logfp,"mtk76xx file rate %d 16bit  type %s\n",16000,"amr");
-	#endif	
 		printf("open log file %s ok\n",filelog);
 
 	}

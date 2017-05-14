@@ -13,31 +13,6 @@ typedef struct _MSPLogin{
 }_MspLogin;
 _MspLogin login_config;
 
-typedef struct{
-	unsigned char downState:4,playState:4;
-	int (*WritePcm)(char *data,int size);
-	WorkQueue * qttsList;
-}QttsStream_t;
-static QttsStream_t *Qstream=NULL;
-
-void __ExitQueueQttsPlay(void){
-	usleep(1000);
-	printf("%s clean queue list\n",__func__);
-	Qstream->playState=PLAY_QTTS_WAIT;
-	Qstream->downState= DOWN_QTTS_QUIT;
-#if 0	
-	char *data=NULL;
-	int len=0;
-	//被外部事件设置异常退出,需要清除消息队列里面音频数据
-	while(getWorkMsgNum(Qstream->qttsList)){
-//		getMsgQueue(Qstream->qttsList,&data,&len);
-//		free(data);
-		printf("%s: wait exit ..............\n",__func__);
-		usleep(100);
-	}
-	printf("%s ok\n",__func__);	
-#endif	
- }
 static char savebuf[1];
 static unsigned char cacheFlag=0;	
 void initputPcmdata(void){
@@ -76,68 +51,7 @@ void putPcmStreamToQueue(const void *data,int size){
 		ret=size-1;
 		cacheFlag=1;
 	}
-	putMsgQueue(Qstream->qttsList,newdata,ret);	//添加到播放队列
-	
-}
-static void *GetQueue_Voices_Forplay(void *arg){
-	char *data;
-	int len=0;
-	printf("%s: start run pthread\n",__func__);
-	Qstream->playState=PLAY_QTTS_ING;
-	while(Qstream->playState==PLAY_QTTS_ING){
-	 	if(getWorkMsgNum(Qstream->qttsList)==0){
-			if(Qstream->downState==DOWN_QTTS_QUIT){
-				printf("%s start exit \n",__func__);
-				break;
-			}
-			usleep(1000);
-			continue;
-		}
-		printf("%s : write pcm\n",__func__);
-		if(GetPlayNetworkState()==START_PLAY_WAV){
-			getMsgQueue(Qstream->qttsList,&data,&len);
-			if(Qstream->WritePcm(data,len)){
-				free(data);
-				break;
-			}
-			free(data);
-		}
-	}
-	while(getWorkMsgNum(Qstream->qttsList)){
-		getMsgQueue(Qstream->qttsList,&data,&len);
-		free(data);
-		printf("%s: clean queue list\n",__func__);
-		usleep(100);
-	}
-	printf("%s exit ok\n",__func__);
-	Qstream->playState=PLAY_QTTS_QUIT;
-	return NULL;
-}
-
-void StartPthreadPlay(void){
-	Qstream->downState=DOWN_QTTS_ING;
-	pool_add_task(GetQueue_Voices_Forplay,NULL);		//启动播放线程
-	usleep(100);
-}
-//正常情况下等待播放线程退出
-void WaitPthreadExit(void){
-	Qstream->downState= DOWN_QTTS_QUIT;
-	while(1){		//等待播放线程退出
-		printf("step------->1\n");
-		printf("%s: before Qstream->playState = %d Qstream->downState=%d\n",__func__,Qstream->playState,Qstream->downState);
-		if(Qstream->playState==PLAY_QTTS_QUIT){
-			printf("==============\n is break \n ==================\n");
-			break;
-		}
-		printf("%s: after Qstream->playState = %d Qstream->downState=%d\n",__func__,Qstream->playState,Qstream->downState);
-		printf("step------->2\n");
-		usleep(100*1000);
-		printf("step------->3\n");
-	}
-	printf("%s: ok...\n ",__func__);
-	Qstream->playState=PLAY_QTTS_QUIT;
-	PlayQtts_log("qtts quit ok\n");
-	
+	putPcmDataToPlay((const void *)newdata,ret);	//添加到播放队列	
 }
 /***************************************************************************
 @函数功能:	文本转换语音
@@ -146,7 +60,7 @@ void WaitPthreadExit(void){
 @返回值:	0 成功
 @			其它	错误码
 ***************************************************************************/
-static int text_to_speech(const char* src_text  ,const char* params){
+static int text_to_speech(const char* src_text  ,const char* params,unsigned int playEventNums){
 	char* sess_id = NULL;
 	int ret = -1;
 	unsigned int text_len = 0;
@@ -165,8 +79,7 @@ static int text_to_speech(const char* src_text  ,const char* params){
 		QTTSSessionEnd(sess_id, "TextPutError");
 		return ret;
 	}
-	StartPthreadPlay();
-	while(Qstream->downState==DOWN_QTTS_ING){
+	while(1){
 		const void *data = QTTSAudioGet(sess_id, &audio_len, &synth_status, &ret);
 		if (NULL != data){
 			putPcmStreamToQueue(data,audio_len);
@@ -175,9 +88,10 @@ static int text_to_speech(const char* src_text  ,const char* params){
 		if (synth_status==2|| ret!= 0){		//退出
 			break;
 		}
-		printf("%s: down file %d\n",__func__,Qstream->downState);
+		if(GetCurrentEventNums()!=playEventNums){	//当前事件被切换，直接打断下载
+			break;
+		}
 	}
-	WaitPthreadExit();
 	ret = QTTSSessionEnd(sess_id, NULL);
 	return 0;
 }
@@ -186,7 +100,7 @@ static int text_to_speech(const char* src_text  ,const char* params){
 @参数:	text 文本文件 
 @		VINN_GBK	文本转换语音参数
 ******************************************/
-int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName){
+int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums){
 	char params[128]={0};
 	if(type==QTTS_GBK){
 		snprintf(params,128,"voice_name=%s,text_encoding=gbk,sample_rate=8000,speed=70,volume=50,pitch=50,rdn =3",playVoicesName);
@@ -194,100 +108,28 @@ int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName){
 	else if(type==QTTS_UTF8){
 		snprintf(params,128,"voice_name=%s,text_encoding=utf8,sample_rate=8000,speed=70,volume=50,pitch=50,rdn =3",playVoicesName);
 	}
-	return text_to_speech(text,(const char *)params);
+	return text_to_speech(text,(const char *)params,playEventNums);
 }
 
-int init_iat_MSPLogin(int WritePcm(char *data,int size)){
+int Init_Iat_MSPLogin(void){
 	//APPID请勿随意改动
-	//const char* login_configs = "appid = 55253ad2,dvc=hpm10000, work_dir =   .  ";
 	int ret = 0;
 	char login_configs[100];
-#if 0
-	strcpy(login_config.appid,"55253ad2");
-#else
 	strcpy(login_config.appid,"57909831");
-#endif
 	strcpy(login_config.dvc,"hpm10000");
 	snprintf(login_configs,100,"appid=%s,dvc=%s, work_dir =   . ",login_config.appid,login_config.dvc);
-	
-	//用户登录
-	ret = MSPLogin(NULL, NULL, login_configs);
+	ret = MSPLogin(NULL, NULL, login_configs);//用户登录
 	if ( ret != MSP_SUCCESS ){
 		DEBUG_QTTS("iat MSPLogin failed , Error code %d\n",ret);
 		return -1;
 	}
-	Qstream = (QttsStream_t *)calloc(1,sizeof(QttsStream_t));
-	if(Qstream==NULL){
-		DEBUG_QTTS("iat QttsStream_t failed \n");
-		return -1;
-	}
 	
-	Qstream->qttsList = initQueue();
-	if(Qstream->qttsList ==NULL){
-		DEBUG_QTTS("iat qttsList failed \n");
-		goto exit;
-	}
-	Qstream->WritePcm = WritePcm;
 	DEBUG_QTTS("iat MSPLogin successfully \n");
 	return 0;
 exit:
-	free(Qstream);
 	return -1;
 }
 
-void iat_MSPLogout(void){
+void Iat_MSPLogout(void){
 	MSPLogout();
-	char *msg;
-	int msgSize;
-	if(Qstream){
-		while(getWorkMsgNum(Qstream->qttsList)){
-			getMsgQueue(Qstream->qttsList,&msg,&msgSize);
-			free(msg);
-		}
-		destoryQueue(Qstream->qttsList);
-		free(Qstream);
-	}
 }
-#if 0
-struct wave_pcm_hdr pcmwavhdr = 
-{
-	{ 'R', 'I', 'F', 'F' },
-	0,
-	{'W', 'A', 'V', 'E'},
-	{'f', 'm', 't', ' '},
-	16,
-	1,
-	1,
-	8000,
-	32000,
-	2,
-	16,
-	{'d', 'a', 't', 'a'},
-	0  
-};
-int main(int argc,char **argv)
-{
-	if(argc<2)
-	{
-		exit(0);
-	}
-	Qtts_voices_text("1234566789",QTTS_GBK,"");
-	return 0;
-	FILE *fp =fopen(argv[1],"r");
-	if(fp==NULL)
-		return -1;
-	fseek(fp,0,SEEK_END);
-	int len = ftell(fp);
-	fseek(fp,0,SEEK_SET);
-	char *data = (char *)malloc(len+1);
-	if(data==NULL){
-		perror("calloc error !!!");
-		return;
-	}
-	fread(data,len,1,fp);
-	fclose(fp);
-	Qtts_voices_text(data,QTTS_GBK,"");
-	free(data);
-	return 0;	
-}
-#endif

@@ -1,65 +1,10 @@
 #include "comshead.h"
 #include "base/pool.h"
 #include "curldown.h"
-#include "host/voices/wm8960i2s.h"
-#include "config.h"
+#include "host/studyvoices/std_worklist.h"
+#include "host/voices/callvoices.h"
 
-#define EXIT_TULING_PLAY 		0	//退出图灵播放
-#define TULING_PLAY_ING 		1	//正在播放下载内容
-#define WAIT_TULING_PLAY_EXIT 	2	//等待退出图灵
-
-#define DEBUG_DOWN_MP3
-#ifdef DEBUG_DOWN_MP3  
-#define DEBUG_DOWN(fmt, args...)     printf("%s: "fmt,__func__, ## args)
-#else   
-#define DEBUG_DOWN(fmt, args...) { }  
-#endif  
-
-
-static unsigned char playTuling_lock=0;
-static unsigned char runlock=0;
-void SetplayNetwork_Lock(void){
-	playTuling_lock=PLAY_NETWORK_VOICES_LOCK;
-}
-//设置在线播放上锁
-void SetplayNetwork_unLock(void){
-	playTuling_lock=PLAY_NETWORK_VOICES_UNLOCK;
-}
-unsigned char GetplayNetwork_LockState(void){
-	return playTuling_lock;
-}
-
-void ExitPlayNetworkPlay(void){
-	if(runlock==PLAY_NETWORK_VOICES_LOCK){
-		RequestTulingLog("ExitPlayNetworkPlay lock ",10);
-		return;
-	}
-	RequestTulingLog("ExitPlayNetworkPlay start ",13);
-	runlock=PLAY_NETWORK_VOICES_LOCK;
-	__ExitQueueQttsPlay();
-	int timeout=0;
-	while(1){
-		unsigned char playTuling_lock = GetplayNetwork_LockState();
-		if(playTuling_lock==PLAY_NETWORK_VOICES_UNLOCK){
-			RequestTulingLog("ExitPlayNetworkPlay break ",12);
-			break;
-		}
-		if(++timeout>30){
-			DEBUG_DOWN("timeout exit network play \n");
-			break;
-		}
-		usleep(10000);
-		RequestTulingLog("ExitPlayNetworkPlay exit ",13);
-		if(getDownState()==DOWN_ING){		//退出下载
-			quitDownFile();
-		}
-	}
-	runlock=PLAY_NETWORK_VOICES_UNLOCK;
-	DEBUG_DOWN("exit ok \n");
-	RequestTulingLog("ExitPlayNetworkPlay exit ok",10);
-}
-
-
+static unsigned int playTulingEventNums=0;
 //开始下载, 接口兼容，需要去掉streamLen
 static void tulingStartDown(const char *filename,int streamLen){
 	initputPcmdata();
@@ -69,6 +14,10 @@ static void tulingStartDown(const char *filename,int streamLen){
 
 //获取到流数据
 static void  tulingGetStreamData(const char *data,int size){
+	if(playTulingEventNums!=GetCurrentEventNums()){
+		quitDownFile();
+		return;
+	}
 	putPcmStreamToQueue((const void *)data,size);
 }
 
@@ -77,15 +26,10 @@ static void  tulingEndDown(int downLen){
 	printf("tulingEndDown mp3 \n");
 }
 
-void downTulingMp3(const char *url){
+void downTulingMp3(HandlerText_t *handtext){
 	setDowning();
-	StartPthreadPlay();
 	RequestTulingLog("downTulingMp3 start",1);
-	DEBUG_DOWN("start down tuling file \n");
-	demoDownFile(url,15,tulingStartDown,tulingGetStreamData,tulingEndDown);
-	RequestTulingLog("downTulingMp3 wait",1);
-	DEBUG_DOWN("exit down tuling file \n");
-	WaitPthreadExit();
+	playTulingEventNums = handtext->EventNums;
+	demoDownFile(handtext->data,15,tulingStartDown,tulingGetStreamData,tulingEndDown);
 	RequestTulingLog("downTulingMp3 end",1);
-	DEBUG_DOWN("--------------downTulingMp3 exit mp3 -------------\n");
 }

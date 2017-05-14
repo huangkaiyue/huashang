@@ -18,14 +18,16 @@
 
 static const char *key = "b1833040534a6bfd761215154069ea58";
 static WorkQueue *EventQue;
+static WorkQueue *PlayList=NULL;
+static unsigned int newEventNums=0;
 
 #define TLJSONERNUM 9.0
 //解析图灵请求错误内容，播放本地已经录制好的音频
-static void playTulingRequestErrorVoices(void){
+static void playTulingRequestErrorVoices(unsigned int playEventNums){
 	char buf[32]={0};
 	int i=(1+(int) (TLJSONERNUM*rand()/(RAND_MAX+1.0)));
 	snprintf(buf,32,"qtts/TulingJsonEr%d_8k.amr",i);
-	PlaySystemAmrVoices(buf);
+	PlaySystemAmrVoices(buf,playEventNums);
 }
 /*
 @ 将录制的语音上传到图灵服务器
@@ -33,49 +35,29 @@ static void playTulingRequestErrorVoices(void){
   asr 请求格式(0:pcm 3:amr) rate:声音采样率
 @ 无
 */
-void ReqTulingServer(const char *voicesdata,int len,const char *voices_type,const char* asr,int rate){
+void ReqTulingServer(HandlerText_t *handText,const char *voices_type,const char* asr,int rate){
 	int textSize = 0, err = 0;
 	char *text = NULL;
-	DEBUG_STD_MSG("up voices data ...(len=%d)\n", len);
-	err = reqTlVoices(8,key,(const void *)voicesdata, len, rate, voices_type,\
-			asr,&text,&textSize);
-#if defined(HUASHANG_JIAOYU)
-		//图灵语音识别结束之后，检查讯飞识别结果
-#ifdef XUN_FEI_OK		
-		if(check_tuingAifiPermison()==DISABLE_TULING_PLAY){
-			return ;
-		}
-#endif		
-#endif	
-	if (err == -1){	//请求服务器失败
-#if defined(HUASHANG_JIAOYU)	//去掉过渡音，需要将当前的状态切换成到暂停状态
-	if(GetRecordeVoices_PthreadState()==PLAY_DING_VOICES){	//如果当前还是处于播放等待图灵状态，表明没有其他外部事件打断，添加进去播放请求图灵服务器失败
+	err = reqTlVoices(8,key,(const void *)handText->data, handText->dataSize, rate, voices_type,asr,&text,&textSize);//耗时操作
+	if(GetCurrentEventNums()!=handText->EventNums){	//如果当前还是处于播放等待图灵状态，表明没有其他外部事件打断，添加进去播放请求图灵服务器失败
 		pause_record_audio();
-	}else{
 		return;
 	}
-#endif	
+	pause_record_audio();	
+	if (err == -1){	//请求服务器失败
 		Create_PlaySystemEventVoices(REQUEST_FAILED_PLAY);//播放请求服务器数据失败
 		goto exit1;
 	}
 	else if (err == 1){
-#if defined(HUASHANG_JIAOYU)	//去掉过渡音，需要将当前的状态切换成到暂停状态
-			if(GetRecordeVoices_PthreadState()==PLAY_DING_VOICES){	//如果当前还是处于播放等待图灵状态，表明没有其他外部事件打断，添加进去播放请求图灵服务器失败
-				pause_record_audio();
-			}else{
-				return;
-			}
-#endif	
-
-#ifdef TEST_ERROR_TULING	
-		test_tulingApi_andDownerrorFile();
-#else
-		Create_PlaySystemEventVoices(TIMEOUT_PLAY_LOCALFILE);//播放本地已经录制好的文件
-#endif		
+		Create_PlaySystemEventVoices(TIMEOUT_PLAY_LOCALFILE);//播放本地已经录制好的文件		
 		goto exit1;
 	}
 	if (text){
-		AddworkEvent(text,0,STUDY_WAV_EVENT);
+		free(handText->data);
+		handText->data = text;
+		handText->dataSize = textSize;
+		handText->event=STUDY_WAV_EVENT;
+		AddworkEvent(handText,sizeof(HandlerText_t));
 	}
 	return ;
 exit1:
@@ -92,18 +74,22 @@ exit1:
 playUrl:云端语义结果播放链接地址
 playText: 云端语义解析内容
 */
-static void playTulingQtts(const char *playUrl,const char *playText){
+static void playTulingQtts(const char *playUrl,const char *playText,unsigned int playEventNums){
 #if defined(HUASHANG_JIAOYU)	
 	char playVoicesName[12]={0};
 	//Huashang_changePlayVoicesName();	//用于测试用，切换播音人
 	GetPlayVoicesName(playVoicesName);
 	if(!strcmp(playVoicesName,"tuling")){	//当前播音人采用图灵的
 		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
-		AddDownEvent(playUrl,TULING_URL_MAIN);
+		HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
+		if(handtext){
+			handtext->data =playUrl; 
+			handtext->EventNums = playEventNums;
+			AddDownEvent((const char *)handtext,TULING_URL_MAIN);
+		}
 	}else{
-		SetplayNetwork_Lock();	
 		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
-		PlayQttsText(playText,QTTS_UTF8,playVoicesName);	
+		PlayQttsText(playText,QTTS_UTF8,playVoicesName,playEventNums);	
 	}
 #else
 	SetMainQueueLock(MAIN_QUEUE_UNLOCK);
@@ -116,12 +102,12 @@ static void playTulingQtts(const char *playUrl,const char *playText){
 @		textString	解析后的数据
 @返回值:	0	成功	其他整数都是错误码
 ***********************************************/
-static int parseJson_string(const char * pMsg){
+static int parseJson_string(HandlerText_t *handText){
 	int err=-1;
-	if(NULL == pMsg){
+	if(NULL == handText->data){
 		return -1;
     }
-    cJSON * pJson = cJSON_Parse(pMsg);
+    cJSON * pJson = cJSON_Parse(handText->data);
 	if(NULL == pJson){
     	return -1;
     }
@@ -152,7 +138,7 @@ static int parseJson_string(const char * pMsg){
 		case 40011: //非法请求
 		case 40012:	//服务受限
 		case 40013: //缺少 Token
-			playTulingRequestErrorVoices();
+			playTulingRequestErrorVoices(handText->EventNums);
 			err=0;
 			goto exit0;
 	}
@@ -164,7 +150,7 @@ static int parseJson_string(const char * pMsg){
     }
 	DEBUG_STD_MSG("info: %s\n",pSub->valuestring);			//语音识别出来的汉字	
 	Write_tulingTextLog(pSub->valuestring);
-	if(!CheckinfoText_forContorl((const char *)pSub->valuestring)){
+	if(!CheckinfoText_forContorl((const char *)pSub->valuestring,handText->EventNums)){
 		err=-1;	//正确加载里面的文字内容，播放系统音
 		goto exit0;
 	}
@@ -191,9 +177,7 @@ exit1:
 	
 	pSub = cJSON_GetObjectItem(pJson, "fileUrl"); 	//检查是否有mp3歌曲返回，如果有
 	if(NULL == pSub){	//直接播放语义之后的结果
-		//SetMainQueueLock(MAIN_QUEUE_UNLOCK);
-		//AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
-		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring);
+		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums);
 		err=0;
 		goto exit0;
 	}else{				//识别出有语义结果和mp3链接地址结果，先播放前面的语义内容，再播放mp3链接地址内容
@@ -212,9 +196,7 @@ exit1:
 		player->musicTime = 0;
 		Write_tulinglog((const char *)"play url:");
 		Write_tulinglog((const char *)pSub->valuestring);
-		//SetMainQueueLock(MAIN_QUEUE_UNLOCK);
-		//AddDownEvent((const char *)ttsURL,TULING_URL_MAIN);
-		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring);
+		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums);
 		AddDownEvent((const char *)player,TULING_URL_VOICES);
 		err=0;
 	}
@@ -226,40 +208,35 @@ exit0:
 @函数功能:	学习音事件处理函数
 @参数:	data 数据 len 数据大小
 *******************************************************/
-static void runJsonEvent(const char *data){
-	SetplayNetwork_Lock();	
+static void runJsonEvent(HandlerText_t *handText){
 	start_event_play_wav();
 #if defined(TANGTANG_LUO)||defined(QITUTU_SHI)||defined(HUASHANG_JIAOYU)
 	Led_System_vigue_close();
 #elif defined(DATOU_JIANG)
 	led_lr_oc(closeled);
 #endif
-	if(parseJson_string(data)){
+	if(parseJson_string(handText)){
 		printf("parse json data or get resource failed \n");
 		pause_record_audio();
-		
 	}
-	free((void *)data);
+	free((void *)handText->data);
+	free((void *)handText);
 }
 int event_lock=0;
 /*******************************************************
 @函数功能:	添加事件到链表
-@参数:	eventMsg 数据	len 数据长度 type事件类型
+@参数:	eventMsg 数据	
 @返回值:	-1 添加失败 其它添加成功
 ********************************************************/
-int AddworkEvent(const char *eventMsg,int  len,int  type){
-	int msgSize=0;
+int AddworkEvent(HandlerText_t *eventMsg,int msgSize){
 	if(event_lock){
 		WriteEventlockLog("event_lock add error\n",event_lock);
 		return -1;
 	}
-	if(type!=LOCAL_MP3_EVENT)	//不为本地播放清理播放上下曲
+	if(eventMsg->event!=LOCAL_MP3_EVENT)	//不为本地播放清理播放上下曲
 		sysMes.localplayname=0;
 	WriteEventlockLog("event_lock add ok\n",event_lock);
-	EventMsg_t *msg =(EventMsg_t *)(&msgSize);
-	msg->len = len;
-	msg->type = type;
-	return putMsgQueue(EventQue,eventMsg,msgSize);
+	return putMsgQueue(EventQue,(const char *)eventMsg,msgSize);
 }
 /*
 @ 
@@ -290,16 +267,16 @@ void cleanQuequeEvent(void){
 @参数:	data 数据	msgSize事件类型以及数据大小结构体
 ********************************************************/
 static void HandleEventMessage(const char *data,int msgSize){
-	EventMsg_t *cur =(EventMsg_t *)(&msgSize); 
-	handleeventLog("handleevent_start\n",cur->type);
-	switch(cur->type){
+	HandlerText_t *handText = (HandlerText_t *)data;
+	switch(handText->event){
 		case STUDY_WAV_EVENT:		//会话事件
-			runJsonEvent(data);
+			newEventNums=handText->EventNums;
+			runJsonEvent((HandlerText_t *)data);
 			break;
 			
 		case SYS_VOICES_EVENT:		//系统音事件
 			start_event_play_wav();
-			Handle_PlaySystemEventVoices(cur->len);
+			Handle_PlaySystemEventVoices(handText->playLocalVoicesIndex,handText->EventNums);
 			break;
 			
 		case SET_RATE_EVENT:		//URL清理事件
@@ -334,33 +311,27 @@ static void HandleEventMessage(const char *data,int msgSize){
 			AddDownEvent((const char *)data,LOCAL_MP3_EVENT);
 			DEBUG_STD_MSG("handle_event_msg LOCAL_MP3_EVENT add end\n");
 			break;
-#endif
-#ifdef TEST_PLAY_EQ_MUSIC
-		case TEST_PLAY_EQ_WAV:
-			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
-			SetplayWavEixt();
-			start_event_play_url();
-			AddDownEvent((const char *)data,TEST_PLAY_EQ_WAV);		
-			break;
-#endif			
+#endif		
 		case QTTS_PLAY_EVENT:		//QTTS事件
-			SetplayNetwork_Lock();	
-			PlayQttsText(data,cur->len,"vinn");
-			free((void *)data);
+			handText =(HandlerText_t *)data;
+			newEventNums=handText->EventNums;
+			PlayQttsText(handText->data,handText->playLocalVoicesIndex,"vinn",handText->EventNums);
+			free((void *)handText->data);
+			free((void *)handText);
 			break;
 			
 #ifdef SPEEK_VOICES	
 		case SPEEK_VOICES_EVENT:	//接收到语音消息	
 			showFacePicture(WEIXIN_PICTURE);
 			start_event_play_wav();
-			playspeekVoices(data);
+			playspeekVoices(data,handText->EventNums);
 			pause_record_audio();
 			usleep(1000);
 			free((void *)data);
 			break;
 			
 		case TALK_EVENT_EVENT:		//对讲事件
-			Handle_WeixinSpeekEvent(cur->len);
+			Handle_WeixinSpeekEvent(handText->playLocalVoicesIndex,handText->EventNums);
 			break;
 #endif
 #if defined(HUASHANG_JIAOYU)
@@ -376,7 +347,6 @@ static void HandleEventMessage(const char *data,int msgSize){
 			DEBUG_STD_MSG("not event msg !!!\n");
 			break;
 	}
-	handleeventLog("handleevent end\n",cur->type);
 }
 /*
 @  清除队列消息
@@ -395,23 +365,48 @@ static void CleanEventMessage(const char *data,int msgSize){
 #endif
 }
 
-static WorkQueue *PLayEvent=NULL;
+
+void putPcmDataToPlay(const void * data,int size){
+	putMsgQueue(PlayList,data,size); //添加到播放队列	
+}
 static void *PlayVoicesPthread(void *arg){
-	PLayEvent = initQueue();
-	char *msg=NULL;
-	int event=0;
+	unsigned short playNetwork_pos=0;
+	int i=0;
+	PlayList = initQueue();
+	char *data=NULL;
+	int pcmSize=0;
 	while(1){
-		getMsgQueue(PLayEvent,&msg,&event);
+		getMsgQueue(PlayList,&data,&pcmSize);
+		if(newEventNums!=GetCurrentEventNums()){	//当前播放事件编号和最新事件编号
+			continue;
+		}
+		if(data){
+			for(i=0;i<pcmSize;i+=2){
+				memcpy(play_buf+playNetwork_pos,data+i,2);
+				playNetwork_pos += 2;
+				memcpy(play_buf+playNetwork_pos,data+i,2);
+				playNetwork_pos += 2;
+			
+				if(playNetwork_pos==I2S_PAGE_SIZE){
+					write_pcm(play_buf);
+					playNetwork_pos=0;
+				}
+
+			}
+			free(data);
+		}
 		
 	}
-	destoryQueue(PLayEvent);
+	destoryQueue(PlayList);
+	return NULL;
 }
+
 /*
 @  初始化事件处理消息线程 ,创建一件队列 ,队列名为EventQue
 */
 void InitEventMsgPthread(void){
 	EventQue = InitCondWorkPthread(HandleEventMessage);
-	init_iat_MSPLogin(WriteStreamPcmData);
+	Init_Iat_MSPLogin();
 	if(pthread_create_attr(PlayVoicesPthread,NULL)){
 		printf("create play voices pthread failed \n");	
 	}
@@ -421,5 +416,5 @@ void InitEventMsgPthread(void){
 */
 void CleanEventMsgPthread(void){
 	CleanCondWorkPthread(EventQue,CleanEventMessage);
-	iat_MSPLogout();
+	Iat_MSPLogout();
 }

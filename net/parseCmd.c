@@ -405,18 +405,8 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 					snprintf(player->musicname,48,"%s",musicname);
 					player->musicTime = cJSON_GetObjectItem(pJson, "time")->valueint;
 				}
-#ifdef TEST_PLAY_EQ_MUSIC	
-				if(strstr(musicname,".wav")){
-					createPlay_wavFileEvent(player);
-				}else if(!strcmp(musicname,"test.mp3")){
-					TestPlay_localMp3Music();
-				}else{
-					Create_playMusicEvent(player,0);
-				}
-#else	
+
 				Create_playMusicEvent(player,0);
-#endif
-				
 			}
 		}else if (!strcmp(pSub->valuestring,"pause")){
 			//mute_recorde_vol(MUTE);

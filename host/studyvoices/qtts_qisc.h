@@ -26,10 +26,10 @@
 #define DEBUG_QTTS(fmt, args...) { }
 #endif	//end DBG_AP_STA
 
-extern int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName);
+extern int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums);
 
-extern int init_iat_MSPLogin(int WritePcm(char *data,int size));
+extern int Init_Iat_MSPLogin(void);
 
-extern void iat_MSPLogout(void);
+extern void Iat_MSPLogout(void);
 
 #endif

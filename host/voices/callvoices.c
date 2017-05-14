@@ -13,9 +13,9 @@
 #endif
 
 static char buf_voices[STD_RECODE_SIZE];
-static char pcm_voices16k[STD_RECODE_SIZE_16K];
 static int len_voices = 0;
 static unsigned char recorde_live=0;
+unsigned int CurrentuploadEventNums=0;
 
 //默认音频头部数据
 struct wave_pcm_hdr pcmwavhdr = {
@@ -34,57 +34,15 @@ struct wave_pcm_hdr pcmwavhdr = {
 	0  
 };
 
-#ifdef AMR8k_DATA
-static char amr_data[12*KB];
-#endif
-
 //将录制的8k语音转换成16k语音
 static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen){
 	int pos=0,npos=0;
-#if defined(HUASHANG_JIAOYU)
-#ifdef XUN_FEI_OK
-	char filepath[64]={0};
-	time_t t;
-	t = time(NULL);
-	sprintf(filepath,"%s%d%s",CACHE_WAV_PATH,(unsigned int)t,".pcm");
-
-	FILE *fp =fopen(filepath,"w+");
-	if(fp==NULL){
-		perror("open failed ");
-	}
-	for(pos=0;pos<inputLen;pos+=2){
-		if(fp!=NULL){
-			fwrite(inputdata+pos,1,2,fp);
-		}
-		memcpy(outputdata+npos,inputdata+pos,2);
-		npos+=2;
-		if(fp!=NULL){
-			fwrite(inputdata+pos,1,2,fp);
-		}
-		memcpy(outputdata+npos,inputdata+pos,2);
-		npos+=2;
-	}
-	if(fp!=NULL){
-		fclose(fp);
-	}
-	//发送通知给网络服务器，进行离线语音识别
-	Huashang_SendnotOnline_xunfeiVoices((const char * )filepath);
-#else	//离线没有调试好。先用原先代码
 	for(pos=0;pos<inputLen;pos+=2){
 		memcpy(outputdata+npos,inputdata+pos,2);
 		npos+=2;
 		memcpy(outputdata+npos,inputdata+pos,2);
 		npos+=2;
 	}
-#endif	
-#else
-	for(pos=0;pos<inputLen;pos+=2){
-		memcpy(outputdata+npos,inputdata+pos,2);
-		npos+=2;
-		memcpy(outputdata+npos,inputdata+pos,2);
-		npos+=2;
-	}
-#endif
 }
 //将8k语音转换成16k语音，并写入到文件当中
 static int PcmVoice8kTo16k_File(const char *inputdata,const char *outfilename,int inputLen){
@@ -101,12 +59,22 @@ static int PcmVoice8kTo16k_File(const char *inputdata,const char *outfilename,in
 	fclose(fp);
 	return 0;
 }	
+unsigned int GetCurrentEventNums(void){
+	return CurrentuploadEventNums;
+}
+void updateCurrentEventNums(void){
+	struct timeval starttime;
+    gettimeofday(&starttime,0); 
+	CurrentuploadEventNums=(unsigned int)starttime.tv_sec/2+starttime.tv_usec;
+}
+
 /*****************************************************
 *获取状态
 *****************************************************/
 int GetRecordeVoices_PthreadState(void){
 	return recorde_live;
 }
+
 /*****************************************************
 *设置状态
 *****************************************************/
@@ -159,6 +127,12 @@ void pause_record_audio(void){
 void start_event_talk_message(void){
 	SetRecordeVoices_PthreadState(START_TAIK_MESSAGE);
 }
+
+static void *uploadPcmPthread(void *arg){
+	HandlerText_t *handText = (HandlerText_t *)arg;
+	ReqTulingServer(handText,"pcm","0",RECODE_RATE*2);
+	return NULL;
+}
 /****************************************
 @函数功能:	开始上传语音到服务器
 @参数:	无
@@ -173,66 +147,25 @@ static void Start_uploadVoicesData(void){
 	Create_PlayTulingWaitVoices(TULING_WAIT_VOICES);
 	usleep(200);
 #endif	
-	DEBUG_VOICES("len_voices = %d  \n",len_voices);
-#ifdef AMR8k_DATA		
-	pcmwavhdr.size_8 = (len_voices+36);
-	pcmwavhdr.data_size = len_voices;
-	memcpy(buf_voices,&pcmwavhdr,WAV_HEAD); 			//写音频头
-	if(WavToAmr8k((const char *)buf_voices,amr_data,&amr_size)){	//转换成amr格式
-		DEBUG_VOICES_ERROR("enc failed \n");
-		return ;
+	DEBUG_VOICES("len_voices = %d  \n",len_voices);	
+
+#if defined(MY_HTTP_REQ)
+	HandlerText_t *up = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
+	if(up){
+		up->dataSize =len_voices*2;
+		up->data= (char *)calloc(1,up->dataSize+2);
+		if(up->data){
+			up->EventNums = GetCurrentEventNums();
+			pcmVoice8kTo16k(buf_voices+WAV_HEAD,up->data,len_voices);
+			pthread_create_attr(uploadPcmPthread,(void * )up);
+		}
 	}
-	ReqTulingServer((const char *)amr_data,amr_size,"amr","3",RECODE_RATE);
-#endif
-	
-#ifdef	PCM_TEST
+#elif	defined(PCM_TEST)
 	test_save8kpcm(buf_voices+WAV_HEAD,len_voices);
 	test_save16kpcm(buf_voices+WAV_HEAD,len_voices);
-#endif
-	
-#ifdef PCM_DATA
-#ifdef MY_HTTP_REQ
-	pcmVoice8kTo16k(buf_voices+WAV_HEAD,pcm_voices16k,len_voices);
-#if defined(HUASHANG_JIAOYU)
-#ifdef XUN_FEI_OK
-	//检查网络状态
-	if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
-		//没有网络，直接退出,检查离线识别状态
-		if(check_tuingAifiPermison()==TIMEOUT_AIFI){
-			pause_record_audio();
-		}
-		return ;
-	}
-#endif	
-#endif
-	ReqTulingServer((const char *)pcm_voices16k,len_voices*2,"pcm","0",RECODE_RATE*2);
 #else
 	PcmVoice8kTo16k_File(buf_voices,"pcm16k.cache",len_voices);
 	ReqTulingServer((const char *)"pcm16k.cache",len_voices*2,"pcm","0",RECODE_RATE*2);
-#endif
-#endif
-	//16kpcm--->16kwav--->16k amr 注意先将这个
-#ifdef AMR16K_DATA
-	int amr_size=0;
-	pcmVoice8kTo16k(buf_voices+WAV_HEAD,pcm_voices16k+WAV_HEAD,len_voices);
-	pcmwavhdr.size_8 = (len_voices*2+36);
-	pcmwavhdr.data_size = len_voices*2;
-	pcmwavhdr.samples_per_sec=16000;
-	memcpy(pcm_voices16k,&pcmwavhdr,WAV_HEAD);			//写音频头
-
-#ifdef MY_HTTP_REQ
-	if(WavAmr16k((const char *)pcm_voices16k,amr_data,&amr_size)){	//转换成amr格式
-		return ;
-		DEBUG_VOICES_ERROR("enc failed \n");
-	}
-	ReqTulingServer((const char *)amr_data,amr_size,"amr","3",RECODE_RATE*2);
-#else
-	if(WavAmr16kFile((const void *)pcm_voices16k,(void *)"./amr16k.cache",&amr_size)){
-		return ;
-	}
-	ReqTulingServer((const char *)"./amr16k.cache",amr_size,"amr","3",RECODE_RATE*2);
-#endif
-
 #endif
 
 }
@@ -278,7 +211,6 @@ static void Save_VoicesPackt(const char *data,int size){
 		}
 		else{	//VOICES_ERR --->VOICES_MIN 区间的音频，认定为无效音频
 			Create_PlaySystemEventVoices(AI_KEY_TALK_ERROR);
-			test_Save_VoicesPackt_function_log((const char *)"TaiBenToTulingNOVoices ",len_voices);
 			goto exit1;
 		}
 		test_Save_VoicesPackt_function_log((const char *)"error ",len_voices);
@@ -428,4 +360,6 @@ void ExitRecord_Voicespthread(void){
 			break;
 	}
 	DEBUG_VOICES("exit record pthread success (%d)\n",GetRecordeVoices_PthreadState());
+
+	//主线程、接收网络、录音、播放线程、事件处理线程、串口线程、网络线程
 }

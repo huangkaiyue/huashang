@@ -20,9 +20,6 @@
 //#define CLOSE_VOICE				//ä¸å·¥ä½œå¤„äºå…³é—­éŸ³é¢‘çŠ¶æ€
 #define SELECT_UDP				//å°†udpæ·»åŠ åˆ°select å½“ä¸­
 
-#define PCM_DATA				//ä¸Šä¼ pcmæ•°æ®
-//#define AMR16K_DATA				//ä¸Šä¼ amræ•°æ®
-
 #define MY_HTTP_REQ			//Ê¹ÓÃ×Ô¼ºĞ´µÄhttp ÇëÇó½Ó¿Ú
 #define TULING_FILE_LOG		//¿ªÆôÍ¼ÁéĞ´ÈëÈÕÖ¾ÎÄ¼ş
 

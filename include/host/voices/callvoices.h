@@ -182,11 +182,11 @@ extern void Create_PlayQttsEvent(const char *txt,int type);
 extern void TulingKeyDownSingal(void);
 extern void UartEventcallFuntion(int event);
 extern void Create_PlaySystemEventVoices(int sys_voices);
-extern void Handle_PlaySystemEventVoices(int sys_voices);
+extern void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums);
 extern void InitMtkPlatfrom76xx(void);
 extern void CleanMtkPlatfrom76xx(void);
 extern void Create_WeixinSpeekEvent(unsigned int gpioState);
-extern void Handle_WeixinSpeekEvent(unsigned int gpioState);
+extern void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums);
 extern void SaveRecorderVoices(const char *voices_data,int size);
 
 
@@ -199,9 +199,8 @@ extern void SaveRecorderVoices(const char *voices_data,int size);
 #define PLAY_IS_COMPLETE		1		//完整播放   ---->适用在智能会话过渡音当中，不允许打断
 #define PLAY_IS_INTERRUPT		2		//可以打断播放
 
-
-extern void PlaySystemAmrVoices(const char *filePath);
-extern void play_waitVoices(const char *filepath);
-extern void ExitPlay_WavVoices(void);
+extern void playspeekVoices(const char *filename,unsigned int playEventNums);
+extern void PlaySystemAmrVoices(const char *filePath,unsigned int playEventNums);
+extern void play_waitVoices(const char *filepath,unsigned int playEventNums);
 
 #endif

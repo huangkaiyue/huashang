@@ -43,7 +43,4 @@
 #define MAIN_QUEUE_LOCK		1		//对主线程队列上锁，将队列里面的事件全部清掉
 #define MAIN_QUEUE_UNLOCK	0		//对主线程队列解锁，只要有事件进到队列当中，直接消费
 
-#define PLAY_NETWORK_VOICES_LOCK	1
-#define PLAY_NETWORK_VOICES_UNLOCK	0
-
 #endif

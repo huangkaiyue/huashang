@@ -161,18 +161,21 @@ int __AddNetWork_UrlForPaly(const void *data){
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		goto exit0;
 	}
-	if(GetplayNetwork_LockState()==PLAY_NETWORK_VOICES_LOCK){
-		printf("is tuling play lock \n");
-		goto exit0;
-	}
 	if(GetRecordeVoices_PthreadState() == PLAY_WAV){
 		WritePlayUrl_Log("add failed ,reocde voices pthread is PLAY_WAV\n");
 		goto exit0;
 	}else if(GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
 		goto exit0;
 	}
-	WritePlayUrl_Log("add url ok\n");
-	return AddworkEvent((const char *)data,0,URL_VOICES_EVENT);
+	int ret=-1;
+	HandlerText_t *handEvent = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
+	if(handEvent){
+		WritePlayUrl_Log("add url ok\n");
+		handEvent->data = data;
+		handEvent->event=URL_VOICES_EVENT;
+		ret = AddworkEvent(handEvent,sizeof(HandlerText_t));
+	}
+	return ret;
 exit0:
 	free(data);
 	return -1;
@@ -193,24 +196,29 @@ int __AddLocalMp3ForPaly(const char *localpath){
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		return -1;
 	}
-	if(GetplayNetwork_LockState()==PLAY_NETWORK_VOICES_LOCK){
-		printf("is tuling play lock \n");
-		return -1;
-	}
 	if(GetRecordeVoices_PthreadState() == PLAY_WAV){	//处于播放qtts文件
 		DEBUG_EVENT(" PLAY_WAV \n");
-		ExitPlay_WavVoices();
 		return -1;
 	}else if(GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
 		return -1;
 	}
-	char *URL= (char *)calloc(1,strlen(localpath)+1);
-	if(URL==NULL){
-		perror("calloc error !!!");
-		return -1;
-	}
-	sprintf(URL,"%s",localpath);
-	return AddworkEvent(URL,0,LOCAL_MP3_EVENT);
+	int ret=-1;
+	HandlerText_t *handEvent = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));	
+	if(handEvent){
+		char *URL= (char *)calloc(1,strlen(localpath)+1);
+		if(URL==NULL){
+			perror("calloc error !!!");
+			goto exit0;
+		}
+		sprintf(URL,"%s",localpath);		
+
+		handEvent->data = URL;
+		handEvent->event=LOCAL_MP3_EVENT;
+		ret = AddworkEvent(handEvent,sizeof(HandlerText_t));
+	}	
+	return ret;
+exit0:
+	free(handEvent);
 }
 /*
 @ 根据目录菜单和路径获取本地sdcatd 歌曲名字进行播放
@@ -298,7 +306,11 @@ int Create_playMusicEvent(const void *play,unsigned char Mode){
 ********************************************************/
 void Create_CleanUrlEvent(void){
 	sysMes.localplayname=0;
-	AddworkEvent(NULL,0,SET_RATE_EVENT);
+	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
+	if(handtext){
+		handtext->event=SET_RATE_EVENT;
+		AddworkEvent(handtext,sizeof(HandlerText_t));
+	}
 }
 /*******************************************************
 函数功能: 创建播放QTTS语音事件 --->文本转语音并播放
@@ -310,7 +322,6 @@ void Create_PlayQttsEvent(const char *txt,int type){
 		printf("%s: current is play wav\n",__func__);
 		return ;
 	}
-
 	if (GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
 		return ;
 	}
@@ -320,11 +331,17 @@ void Create_PlayQttsEvent(const char *txt,int type){
 	if (GetRecordeVoices_PthreadState() == PLAY_URL){	//当前播放歌曲
 		Create_CleanUrlEvent();
 	}
-	char *TXT = (char *)calloc(1,strlen(txt)+1);
-	if (TXT){
-		sprintf(TXT,"%s",txt);
-		printf("%s: add qtts ok \n",__func__);
-		AddworkEvent((const char *)TXT,type,QTTS_PLAY_EVENT);
+	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
+	if(handtext){
+		updateCurrentEventNums();
+		handtext->EventNums= GetCurrentEventNums();
+		handtext->data= (char *)calloc(1,strlen(txt)+1);
+		if (handtext->data){
+			sprintf(handtext->data,"%s",txt);
+			handtext->event =QTTS_PLAY_EVENT;
+			handtext->playLocalVoicesIndex=type;
+			AddworkEvent((const char *)handtext,sizeof(HandlerText_t));
+		}
 	}
 }
 
@@ -334,23 +351,13 @@ void Create_PlayQttsEvent(const char *txt,int type){
 返回值: 无
 ********************************************************/
 void TulingKeyDownSingal(void){
+	updateCurrentEventNums();
 	Write_Speekkeylog((const char *)"TulingKeyDownSingal",0);
 	//处于微信对讲状态，直接退出	
 	if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES){		
 		Write_Speekkeylog((const char *)"START_SPEEK_VOICES",GetRecordeVoices_PthreadState());
 		return;
 	}	
-	if (GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
-		return ;
-	}
-	if(GetplayNetwork_LockState()==PLAY_NETWORK_VOICES_LOCK){
-		printf("is tuling play lock \n");
-		ExitPlayNetworkState();
-		return ;
-	}else if (GetRecordeVoices_PthreadState() == PLAY_WAV){//处于播放wav原始数据状态
-		ExitPlay_WavVoices();
-		Write_Speekkeylog((const char *)"PLAY_WAV",GetRecordeVoices_PthreadState());
-	}
 	else if (GetRecordeVoices_PthreadState() == PLAY_URL){//处于播放歌曲状态	
 		Create_CleanUrlEvent();
 		Write_Speekkeylog((const char *)"PLAY_URL",GetRecordeVoices_PthreadState());
@@ -359,7 +366,6 @@ void TulingKeyDownSingal(void){
 #ifdef XUN_FEI_OK		
 #else
 	if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
-		Write_Speekkeylog((const char *)"ExitPlay_WavVoices",GetRecordeVoices_PthreadState());
 		return;
 	}
 	#endif
@@ -394,57 +400,57 @@ void *Close_Mtk76xxSystem(void *arg){
 }
 //----------------------播放系统声音有关的、事件的产生、消费处理-----------------------------------------------------
 //播放智能会话按键误触发产生的声音
-static void TaiBenToTulingNOVoices(void){
+static void TaiBenToTulingNOVoices(unsigned int playEventNums){
 	int i=(1+(int) (10.0*rand()/(RAND_MAX+1.0)));	
 	switch(i){
 		case 1:
-			PlaySystemAmrVoices(NO_VOICES);
+			PlaySystemAmrVoices(NO_VOICES,playEventNums);
 			break;
 		case 2:
-			PlaySystemAmrVoices(NO_VOICES_1);
+			PlaySystemAmrVoices(NO_VOICES_1,playEventNums);
 			break;
 		case 3:
-			PlaySystemAmrVoices(NO_VOICES_2);
+			PlaySystemAmrVoices(NO_VOICES_2,playEventNums);
 			break;
 		case 4:
-			PlaySystemAmrVoices(NO_VOICES_3);
+			PlaySystemAmrVoices(NO_VOICES_3,playEventNums);
 			break;
 		case 5:
-			PlaySystemAmrVoices(NO_VOICES_4);
+			PlaySystemAmrVoices(NO_VOICES_4,playEventNums);
 			break;
 		case 6:
-			PlaySystemAmrVoices(NO_VOICES_5);
+			PlaySystemAmrVoices(NO_VOICES_5,playEventNums);
 			break;
 		case 7:
-			PlaySystemAmrVoices(NO_VOICES_6);
+			PlaySystemAmrVoices(NO_VOICES_6,playEventNums);
 			break;
 		case 8:
-			PlaySystemAmrVoices(NO_VOICES_7);
+			PlaySystemAmrVoices(NO_VOICES_7,playEventNums);
 			break;
 		case 9:
-			PlaySystemAmrVoices(NO_VOICES_8);
+			PlaySystemAmrVoices(NO_VOICES_8,playEventNums);
 			break;
 		case 10:
-			PlaySystemAmrVoices(NO_VOICES_9);
+			PlaySystemAmrVoices(NO_VOICES_9,playEventNums);
 			break;
 	}
 }
 #define TLERNUM 34.0
-static void TaiwanToTulingError(void){
+static void TaiwanToTulingError(unsigned int playEventNums){
 	char buf[32]={0};
 	int i=(1+(int)(TLERNUM*rand()/(RAND_MAX+1.0)));
 	snprintf(buf,32,"qtts/TulingError%d_8k.amr",i);
-	PlaySystemAmrVoices(buf);
+	PlaySystemAmrVoices(buf,playEventNums);
 }
 /*
 @ 没有网络的时候，播放本地系统固定录好台本
 @
 */
-static void Handle_PlayTaiBenToNONetWork(void){
+static void Handle_PlayTaiBenToNONetWork(unsigned int playEventNums){
 	char file[64]={0};
 	int i=(1+(int)(5.0*rand()/(RAND_MAX+1.0)));
 	snprintf(file,64,"qtts/network_error_8K_%d.amr",i);
-	PlaySystemAmrVoices(file);
+	PlaySystemAmrVoices(file,playEventNums);
 }
 static void CreateCloseSystemLock(void){
 	FILE *fp = fopen(CLOSE_SYSTEM_LOCK_FILE,"w+");
@@ -462,7 +468,6 @@ void UartEventcallFuntion(int event){
 #endif
 		cleanQuequeEvent();	//清理队列
 		if(GetRecordeVoices_PthreadState()==PLAY_WAV){
-			ExitPlay_WavVoices();	//清理事件
 		}
 		if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
 			NetStreamExitFile();
@@ -480,34 +485,40 @@ void UartEventcallFuntion(int event){
 返回值: 无
 ********************************************************/
 void Create_PlaySystemEventVoices(int sys_voices){
-
-	if(GetplayNetwork_LockState()==PLAY_NETWORK_VOICES_LOCK){
-		printf("is tuling play lock \n");
-		ExitPlayNetworkState();
-	}
 	if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
 		return;
 	}
 	else if(GetRecordeVoices_PthreadState() ==PLAY_URL){
 		Create_CleanUrlEvent();
-	}else if(GetRecordeVoices_PthreadState()==PLAY_WAV){
-		ExitPlay_WavVoices();		
 	}
-	AddworkEvent(NULL,sys_voices,SYS_VOICES_EVENT);
+	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
+	if(handtext){
+		updateCurrentEventNums();
+		handtext->EventNums =GetCurrentEventNums();
+		handtext->playLocalVoicesIndex =sys_voices;
+		handtext->event =SYS_VOICES_EVENT;
+		AddworkEvent(handtext,sizeof(HandlerText_t));
+	}	
+	
 }
 //添加播放过渡音事件
 void Create_PlayTulingWaitVoices(int sys_voices){
-	AddworkEvent(NULL,sys_voices,SYS_VOICES_EVENT);
+	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
+	if(handtext){
+		handtext->event =SYS_VOICES_EVENT;
+		handtext->playLocalVoicesIndex =sys_voices;
+		AddworkEvent(handtext,sizeof(HandlerText_t));
+	}
 }
 /*******************************************************
 函数功能: 系统音事件处理函数
 参数: sys_voices 系统音标号
 返回值: 无
 ********************************************************/
-void Handle_PlaySystemEventVoices(int sys_voices){
+void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 	switch(sys_voices){
 		case END_SYS_VOICES_PLAY:					//结束音
-			PlaySystemAmrVoices(END_SYS_VOICES);
+			PlaySystemAmrVoices(END_SYS_VOICES,playEventNums);
 			Led_vigue_close();
 			Led_System_vigue_close();
 #if defined(TANGTANG_LUO) || defined(QITUTU_SHI) || defined(HUASHANG_JIAOYU)
@@ -524,149 +535,149 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 #ifdef PALY_URL_SD
 			pool_add_task(Close_Mtk76xxSystem,NULL);//关机删除，长时间不用的文件
 #endif
-			PlaySystemAmrVoices(LOW_BATTERY);			
+			PlaySystemAmrVoices(LOW_BATTERY,playEventNums);			
 			break;
 		case RESET_HOST_V_PLAY:						//恢复出厂设置
-			PlaySystemAmrVoices(RESET_HOST_V);
+			PlaySystemAmrVoices(RESET_HOST_V,playEventNums);
 			break;
 //----------------------重连有关-----------------------------------------------------
 		case REQUEST_FAILED_PLAY:					//重连，请求服务器数据失败
-			PlaySystemAmrVoices(REQUEST_FAILED);
+			PlaySystemAmrVoices(REQUEST_FAILED,playEventNums);
 			break;
 		case UPDATA_END_PLAY:						//更新固件结束
-			PlaySystemAmrVoices(UPDATA_END);
+			PlaySystemAmrVoices(UPDATA_END,playEventNums);
 			//system("sleep 8 && reboot &");
 			break;
 		case TIMEOUT_PLAY_LOCALFILE:				//请求服务器超时，播放本地已经录制好的音频
-			TaiwanToTulingError();
+			TaiwanToTulingError(playEventNums);
 			break;
 //----------------------网络有关-----------------------------------------------------
 		case CONNET_ING_PLAY:			//正在连接，请稍等
 			showFacePicture(CONNECT_WIFI_ING_PICTURE);//正在连接wifi 		
-			PlaySystemAmrVoices(CHANGE_NETWORK);
-			PlaySystemAmrVoices(CONNET_TIME);
+			PlaySystemAmrVoices(CHANGE_NETWORK,playEventNums);
+			PlaySystemAmrVoices(CONNET_TIME,playEventNums);
 			break;
 		case START_SMARTCONFIG_PLAY:		//启动配网
 			pool_add_task(Led_vigue_open,NULL);
 			led_lr_oc(closeled);
 			setNetWorkLive(NETWORK_ER);
-			PlaySystemAmrVoices(START_INTERNET);
+			PlaySystemAmrVoices(START_INTERNET,playEventNums);
 			break;
 		case SMART_CONFIG_OK_PLAY:		//接受密码成功
-			PlaySystemAmrVoices(YES_REAVWIFI);
+			PlaySystemAmrVoices(YES_REAVWIFI,playEventNums);
 			break;
 		case CONNECT_OK_PLAY:			//连接成功	
 			showFacePicture(CONNECT_WIFI_OK_PICTURE);	
-			PlaySystemAmrVoices(LINK_SUCCESS);
+			PlaySystemAmrVoices(LINK_SUCCESS,playEventNums);
 			Link_NetworkOk();		//连接成功关灯，开灯，状态设置
 			enable_gpio();
 			showFacePicture(MUSIC_HZ_PICTURE);
 			break;
 		case NOT_FIND_WIFI_PLAY:			//没有扫描到wifi
-			PlaySystemAmrVoices(NO_WIFI);
+			PlaySystemAmrVoices(NO_WIFI,playEventNums);
 			enable_gpio();
 			break;
 		case SMART_CONFIG_FAILED_PLAY:	//没有收到用户发送的wifi
-			PlaySystemAmrVoices(NOT_REAVWIFI);
+			PlaySystemAmrVoices(NOT_REAVWIFI,playEventNums);
 			break;
 		case NOT_NETWORK_PLAY:			//没有连接成功
-			PlaySystemAmrVoices(NO_NETWORK_VOICES);
+			PlaySystemAmrVoices(NO_NETWORK_VOICES,playEventNums);
 			Link_NetworkError();
 			enable_gpio();
 			break;
 		case CONNET_CHECK_PLAY:			//检查网络是否可用
-			PlaySystemAmrVoices(CHECK_INTERNET);
+			PlaySystemAmrVoices(CHECK_INTERNET,playEventNums);
 			break;
 		case WIFI_CHECK_PLAY:			//检查网络
-			PlaySystemAmrVoices(CHECK_WIFI);
-			PlaySystemAmrVoices(CHECK_WIFI_WAIT);
+			PlaySystemAmrVoices(CHECK_WIFI,playEventNums);
+			PlaySystemAmrVoices(CHECK_WIFI_WAIT,playEventNums);
 			break;
-		case WIFI_NO:			//检查网络NO
-			PlaySystemAmrVoices(CHECK_WIFI_NO);
+		case WIFI_NO:					//检查网络NO
+			PlaySystemAmrVoices(CHECK_WIFI_NO,playEventNums);
 			break;
-		case WIFI_YES:			//检查网络OK
-			PlaySystemAmrVoices(CHECK_WIFI_YES);
+		case WIFI_YES:					//检查网络OK
+			PlaySystemAmrVoices(CHECK_WIFI_YES,playEventNums);
 			break;
 //----------------------对讲有关-----------------------------------------------------
-		case SEND_OK_PLAY:			//发送成功
-			PlaySystemAmrVoices(SEND_OK);
+		case SEND_OK_PLAY:				//发送成功
+			PlaySystemAmrVoices(SEND_OK,playEventNums);
 			break;
 		case SEND_ERROR_PLAY:			//发送失败
-			PlaySystemAmrVoices(SEND_ERROR);
+			PlaySystemAmrVoices(SEND_ERROR,playEventNums);
 			break;
 		case SEND_LINK_PLAY:			//正在发送
-			PlaySystemAmrVoices(SEND_LINK);
+			PlaySystemAmrVoices(SEND_LINK,playEventNums);
 			break;
-		case KEY_DOWN_PLAY:			//按键按下	=---正在发送
-			PlaySystemAmrVoices(KEY_VOICE_DOWN);
+		case KEY_DOWN_PLAY:				//按键按下	=---正在发送
+			PlaySystemAmrVoices(KEY_VOICE_DOWN,playEventNums);
 			break;
 		case PLAY_ERROT_PLAY:			//播放失败
-			PlaySystemAmrVoices(PLAY_ERROR);
+			PlaySystemAmrVoices(PLAY_ERROR,playEventNums);
 			break;
 		case LIKE_ERROT_PLAY:			//
-			PlaySystemAmrVoices(LIKE_ERROR);
+			PlaySystemAmrVoices(LIKE_ERROR,playEventNums);
 			break;
 		case TF_ERROT_PLAY:				//TF加载失败
-			PlaySystemAmrVoices(TF_ERROR);
+			PlaySystemAmrVoices(TF_ERROR,playEventNums);
 			break;
 //=====================================================================
 		case BIND_SSID_PLAY:			//
-			PlaySystemAmrVoices(BIND_SSID);
+			PlaySystemAmrVoices(BIND_SSID,playEventNums);
 			break;
 		case BIND_OK_PLAY:			//
-			PlaySystemAmrVoices(BIND_OK);
+			PlaySystemAmrVoices(BIND_OK,playEventNums);
 			break;
 		case SEND_LINK_ER_PLAY:			//
-			PlaySystemAmrVoices(SEND_LINK_ER);
+			PlaySystemAmrVoices(SEND_LINK_ER,playEventNums);
 			break;
 		case TALK_CONFIRM_PLAY:			//
-			PlaySystemAmrVoices(TALK_CONFIRM);
+			PlaySystemAmrVoices(TALK_CONFIRM,playEventNums);
 			break;
 		case TALK_CONFIRM_OK_PLAY:			//
-			PlaySystemAmrVoices(TALK_CONFIRM_OK);
+			PlaySystemAmrVoices(TALK_CONFIRM_OK,playEventNums);
 			break;
 		case TALK_CONFIRM_ER_PLAY:			//
-			PlaySystemAmrVoices(TALK_CONFIRM_ER);
+			PlaySystemAmrVoices(TALK_CONFIRM_ER,playEventNums);
 			break;
 		case DOWNLOAD_ING_PLAY:			//
-			PlaySystemAmrVoices(DOWNLOAD_ING);
+			PlaySystemAmrVoices(DOWNLOAD_ING,playEventNums);
 			break;
 		case DOWNLOAD_ERROE_PLAY:			//
-			PlaySystemAmrVoices(DOWNLOAD_ERROE);
+			PlaySystemAmrVoices(DOWNLOAD_ERROE,playEventNums);
 			break;
 		case DOWNLOAD_END_PLAY:			//
-			PlaySystemAmrVoices(DOWNLOAD_END);
+			PlaySystemAmrVoices(DOWNLOAD_END,playEventNums);
 			break;
 		case DOWNLOAD_25_PLAY:			//
-			PlaySystemAmrVoices(DOWNLOAD_25);
+			PlaySystemAmrVoices(DOWNLOAD_25,playEventNums);
 			break;
 		case DOWNLOAD_50_PLAY:			//
-			PlaySystemAmrVoices(DOWNLOAD_50);
+			PlaySystemAmrVoices(DOWNLOAD_50,playEventNums);
 			break;
 		case DOWNLOAD_75_PLAY:			//
-			PlaySystemAmrVoices(DOWNLOAD_75);
+			PlaySystemAmrVoices(DOWNLOAD_75,playEventNums);
 			break;
 		case UPDATA_NEW_PLAY:			//
-			PlaySystemAmrVoices(UPDATA_NEW);
+			PlaySystemAmrVoices(UPDATA_NEW,playEventNums);
 			break;
 		case UPDATA_START_PLAY:			//
-			PlaySystemAmrVoices(UPDATA_START);
+			PlaySystemAmrVoices(UPDATA_START,playEventNums);
 			break;
 		case UPDATA_ERROR_PLAY:			//
-			PlaySystemAmrVoices(UPDATA_ERROR);
+			PlaySystemAmrVoices(UPDATA_ERROR,playEventNums);
 			break;
 //==========================================================================
 		case NETWORK_ERROT_PLAY:				//网络连接失败
-			Handle_PlayTaiBenToNONetWork();
+			Handle_PlayTaiBenToNONetWork(playEventNums);
 			break;
 		case AI_KEY_TALK_ERROR: 
-			TaiBenToTulingNOVoices();
+			TaiBenToTulingNOVoices(playEventNums);
 			break;
 		case MIN_10_NOT_USER_WARN: 
-			PlaySystemAmrVoices(SPEEK_WARNING);
+			PlaySystemAmrVoices(SPEEK_WARNING,playEventNums);
 			break;
 		case TULING_WAIT_VOICES:
-			play_waitVoices(TULING_WINT);
+			play_waitVoices(TULING_WINT,playEventNums);
 			printf("%s: play wait voices ok\n",__func__);
 			break;
 		default:
@@ -678,11 +689,6 @@ void Handle_PlaySystemEventVoices(int sys_voices){
 #ifdef SPEEK_VOICES
 //播放微信发送过来语音文件  filename 发送过来的微信语音文件
 void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
-	if(GetplayNetwork_LockState()==PLAY_NETWORK_VOICES_LOCK){
-		printf("is tuling play lock \n");
-		ExitPlayNetworkState();
-		goto exit0;
-	}
 	if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
 		goto exit0;
 	}
@@ -692,16 +698,24 @@ void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
 	else if(GetRecordeVoices_PthreadState() ==PLAY_URL){
 		Create_CleanUrlEvent();
 	}
-	char *TXT= (char *)calloc(1,strlen(filename)+1);
-	if(TXT){
-		sprintf(TXT,"%s",filename);
-		if(AddworkEvent(TXT,0,SPEEK_VOICES_EVENT)){
+	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
+	if(handtext){
+		handtext->data= (char *)calloc(1,strlen(filename)+1);
+		if(handtext->data==NULL){
+			goto exit1;
+		}
+		sprintf(handtext->data,"%s",filename);
+		handtext->event = SPEEK_VOICES_EVENT;
+		if(AddworkEvent(handtext,sizeof(HandlerText_t))){
 			printf("add play amr voices failed ,and remove file \n");
-			goto exit0;
+			goto exit2;
 		}
 		return;
 	}
-	
+exit2:
+	free(handtext->data);
+exit1:
+	free(handtext);
 exit0:
 	remove(filename);
 }
@@ -750,7 +764,7 @@ static int CreateRecorderFile(void){
 参数:
 返回值:
 ********************************************************/
-static void StopRecorder_AndSendFile(void){
+static void StopRecorder_AndSendFile(unsigned int playEventNums){
 	char filepath[64]={0};
 	pcmwavhdr.size_8 = (speek->file_len+36);
 	pcmwavhdr.data_size = speek->file_len;
@@ -772,7 +786,7 @@ static void StopRecorder_AndSendFile(void){
 		}
 		DEBUG_EVENT("stop save file \n");
 		uploadVoicesToaliyun(filepath,pcmwavhdr.data_size/10+6);
-		PlaySystemAmrVoices(KEY_VOICE_DOWN);	//播放微信提示音，表示音频正在发送	
+		PlaySystemAmrVoices(KEY_VOICE_DOWN,playEventNums);	//播放微信提示音，表示音频正在发送	
 	}else{
 		pthread_mutex_unlock(&speek->mutex);
 	}
@@ -786,29 +800,27 @@ void Create_WeixinSpeekEvent(unsigned int gpioState){
 	if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
 		return;
 	}
-	if(GetplayNetwork_LockState()==PLAY_NETWORK_VOICES_LOCK){
-		printf("is tuling play lock \n");
-		ExitPlayNetworkState();
-		return;
-	}
 	if(GetRecordeVoices_PthreadState() ==PLAY_URL){		//打断播放音乐
 		Create_CleanUrlEvent();
 		return;
-	}else if(GetRecordeVoices_PthreadState()==PLAY_WAV){
-		ExitPlay_WavVoices();
-		return;
 	}else if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
-		//NetStreamExitFile();
 		return;
 	}
 	DEBUG_EVENT("state %d\n",gpioState);
-	AddworkEvent(NULL,gpioState,TALK_EVENT_EVENT);
+	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
+	if(handtext){	
+		updateCurrentEventNums();
+		handtext->EventNums = GetCurrentEventNums();
+		handtext->event=TALK_EVENT_EVENT;
+		handtext->playLocalVoicesIndex=gpioState;
+		AddworkEvent(handtext,sizeof(HandlerText_t));
+	}
 }
 /*******************************************************
 函数功能:处理微信语音按键事件 
 参数: gpioState 0 按下  1 弹起
 ********************************************************/
-void Handle_WeixinSpeekEvent(unsigned int gpioState){
+void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 	int endtime,voicesTime=0;
 	time_t t;
 	if(gpioState==VOLKEYDOWN&&GetRecordeVoices_PthreadState()==RECODE_PAUSE){	//按下
@@ -828,10 +840,10 @@ void Handle_WeixinSpeekEvent(unsigned int gpioState){
 		if(voicesTime<2||voicesTime>10){//时间太短或太长
 			pause_record_audio();
 			shortVoicesClean();
-			PlaySystemAmrVoices(SEND_ERROR);
+			PlaySystemAmrVoices(SEND_ERROR,playEventNums);
 			return ;
 		}else{
-			StopRecorder_AndSendFile();
+			StopRecorder_AndSendFile(playEventNums);
 			pause_record_audio();
 		}
 	}
@@ -989,9 +1001,9 @@ void InitMtkPlatfrom76xx(void){
 	InitMtk76xx_gpio();
 	InitWm8960Voices();
 #if defined(HUASHANG_JIAOYU)
-	PlaySystemAmrVoices(WELCOME_PLAY);
+	PlaySystemAmrVoices(WELCOME_PLAY,0);
 #else
-	PlaySystemAmrVoices(START_SYS_VOICES);//开机启动音
+	PlaySystemAmrVoices(START_SYS_VOICES,0);//开机启动音
 #endif
 	initStream(ack_playCtr,WritePcmData,SetWm8960Rate,GetVol);
 
