@@ -338,8 +338,7 @@ void Create_PlayQttsEvent(const char *txt,int type){
 	}
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext){
-		updateCurrentEventNums();
-		handtext->EventNums= GetCurrentEventNums();
+		handtext->EventNums= updateCurrentEventNums();
 		handtext->data= (char *)calloc(1,strlen(txt)+1);
 		if (handtext->data){
 			sprintf(handtext->data,"%s",txt);
@@ -492,8 +491,7 @@ void Create_PlaySystemEventVoices(int sys_voices){
 	}
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext){
-		updateCurrentEventNums();
-		handtext->EventNums =GetCurrentEventNums();
+		handtext->EventNums =updateCurrentEventNums();
 		handtext->playLocalVoicesIndex =sys_voices;
 		handtext->event =SYS_VOICES_EVENT;
 		AddworkEvent(handtext,sizeof(HandlerText_t));
@@ -686,7 +684,6 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 	}
 }
 //-------end--------播放系统声音有关的、事件的产生、消费处理-----------------------------------------------------
-#ifdef SPEEK_VOICES
 //播放微信发送过来语音文件  filename 发送过来的微信语音文件
 void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
 	if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
@@ -706,6 +703,7 @@ void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
 		}
 		sprintf(handtext->data,"%s",filename);
 		handtext->event = SPEEK_VOICES_EVENT;
+		handtext->EventNums=updateCurrentEventNums();
 		if(AddworkEvent(handtext,sizeof(HandlerText_t))){
 			printf("add play amr voices failed ,and remove file \n");
 			goto exit2;
@@ -719,9 +717,7 @@ exit1:
 exit0:
 	remove(filename);
 }
-#endif
 
-#ifdef SPEEK_VOICES
 static Speek_t *speek=NULL;
 //先挂载录音再退出
 static void shortVoicesClean(void){
@@ -809,8 +805,7 @@ void Create_WeixinSpeekEvent(unsigned int gpioState){
 	DEBUG_EVENT("state %d\n",gpioState);
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext){	
-		updateCurrentEventNums();
-		handtext->EventNums = GetCurrentEventNums();
+		handtext->EventNums = updateCurrentEventNums();
 		handtext->event=TALK_EVENT_EVENT;
 		handtext->playLocalVoicesIndex=gpioState;
 		AddworkEvent(handtext,sizeof(HandlerText_t));
@@ -880,8 +875,6 @@ void SaveRecorderVoices(const char *voices_data,int size){
 	}
 	pthread_mutex_unlock(&speek->mutex);
 }
-#endif			//endif SPEEK_VOICES  :微信对讲声音 事件的产生和处理
-
 #ifdef PALY_URL_SD	
 //--------------------------------------sdcard 收藏喜爱歌曲---------------------------------------------------
 //检查sdcard 是否挂载，没有挂载，添加系统音播放提示
@@ -988,7 +981,6 @@ void Show_SmartTalkKey(void){
 初始化8960音频芯片，开启8K录音和播放双工模式,初始化gpio，播放开机启动音
 *******************************************************************/
 void InitMtkPlatfrom76xx(void){
-#ifdef SPEEK_VOICES
 	speek = (Speek_t *)calloc(1,sizeof(Speek_t));
 	if(speek==NULL){
 		return ;
@@ -996,23 +988,13 @@ void InitMtkPlatfrom76xx(void){
 	speek->savefilefp=NULL;
 	speek->file_len=0;
 	pthread_mutex_init(&speek->mutex, NULL);
-#endif
 
 	InitMtk76xx_gpio();
 	InitWm8960Voices();
-#if defined(HUASHANG_JIAOYU)
-	PlaySystemAmrVoices(WELCOME_PLAY,0);
-#else
-	PlaySystemAmrVoices(START_SYS_VOICES,0);//开机启动音
-#endif
-	initStream(ack_playCtr,WritePcmData,SetWm8960Rate,GetVol);
-
-	InitEventMsgPthread();
 	InitRecord_VoicesPthread();
-#ifdef TEST_SDK
-	enable_gpio();
-#endif
-
+	initStream(ack_playCtr,WritePcmData,SetWm8960Rate,GetVol);
+	InitEventMsgPthread();
+	
 #ifdef LOCAL_MP3
 	InitMusicList();
 	pool_add_task(waitLoadMusicList, NULL);	//防止T卡加载慢

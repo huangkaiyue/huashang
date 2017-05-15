@@ -74,7 +74,7 @@ exit1:
 playUrl:云端语义结果播放链接地址
 playText: 云端语义解析内容
 */
-static void playTulingQtts(const char *playUrl,const char *playText,unsigned int playEventNums){
+static void playTulingQtts(const char *playUrl,const char *playText,unsigned int playEventNums,unsigned short playLocalVoicesIndex){
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext==NULL){
 		return ;		
@@ -88,6 +88,7 @@ static void playTulingQtts(const char *playUrl,const char *playText,unsigned int
 	sprintf(handtext->data,"%s",playUrl);
 	DEBUG_STD_MSG("handtext->data:%s\n", handtext->data);
 	handtext->EventNums = playEventNums;
+	handtext->playLocalVoicesIndex=playLocalVoicesIndex;
 	SetMainQueueLock(MAIN_QUEUE_UNLOCK);
 #if defined(HUASHANG_JIAOYU)	
 	char playVoicesName[12]={0};
@@ -175,7 +176,7 @@ exit1:
 	
 	pSub = cJSON_GetObjectItem(pJson, "fileUrl"); 	//检查是否有mp3歌曲返回，如果有
 	if(NULL == pSub){	//直接播放语义之后的结果
-		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums);
+		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums,TULING_TEXT);
 		err=0;
 		goto exit0;
 	}else{				//识别出有语义结果和mp3链接地址结果，先播放前面的语义内容，再播放mp3链接地址内容
@@ -194,8 +195,15 @@ exit1:
 		player->musicTime = 0;
 		Write_tulinglog((const char *)"play url:");
 		Write_tulinglog((const char *)pSub->valuestring);
-		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums);
-		AddDownEvent((const char *)player,TULING_URL_VOICES);
+		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums,TULING_TEXT_MUSIC);
+		HandlerText_t *handMainMusic = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
+		if(handMainMusic==NULL){
+			goto exit0;	
+		}
+		//添加歌曲也要标记当前事件编号
+		handMainMusic->EventNums =handText->EventNums;
+		handMainMusic->data=(char *)player;
+		AddDownEvent((const char *)handMainMusic,TULING_URL_VOICES);
 		err=0;
 	}
 exit0:
@@ -310,14 +318,12 @@ static void HandleEventMessage(const char *data,int msgSize){
 			break;
 #endif		
 		case QTTS_PLAY_EVENT:		//QTTS事件
-			handText =(HandlerText_t *)data;
 			newEventNums=handText->EventNums;
 			PlayQttsText(handText->data,handText->playLocalVoicesIndex,"vinn",handText->EventNums);
 			free((void *)handText->data);
 			free((void *)handText);
 			break;
-			
-#ifdef SPEEK_VOICES	
+
 		case SPEEK_VOICES_EVENT:	//接收到语音消息	
 			showFacePicture(WEIXIN_PICTURE);
 			start_event_play_wav();
@@ -330,14 +336,13 @@ static void HandleEventMessage(const char *data,int msgSize){
 		case TALK_EVENT_EVENT:		//对讲事件
 			Handle_WeixinSpeekEvent(handText->playLocalVoicesIndex,handText->EventNums);
 			break;
-#endif
+			
 #if defined(HUASHANG_JIAOYU)
 		case XUNFEI_AIFI_EVENT:
 			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
 			NetStreamExitFile();
 			start_event_play_url();
-			//添加到主线程当中播放华上教育内容
-			AddDownEvent((const char *)data,LOCAL_MP3_EVENT);
+			AddDownEvent((const char *)data,LOCAL_MP3_EVENT);//添加到主线程当中播放华上教育内容
 			break;
 #endif			
 		default:
@@ -361,38 +366,66 @@ static void CleanEventMessage(const char *data,int msgSize){
 		free(data);
 #endif
 }
+#define START_PLAY_VOICES		1
+#define INTERRUPT_PLAY_VOICES	2
 
 
 void putPcmDataToPlay(const void * data,int size){
 	putMsgQueue(PlayList,data,size); //添加到播放队列	
 }
+int getPlayVoicesQueueNums(void){
+	return getWorkMsgNum(PlayList);
+}
 static void *PlayVoicesPthread(void *arg){
 	unsigned short playNetwork_pos=0;
-	int i=0;
+	unsigned char playSate=START_PLAY_VOICES;
+	int i=0,pcmSize=0,CleanendVoicesNums=0;
 	PlayList = initQueue();
-	char *data=NULL;
-	int pcmSize=0;
+	char *data=NULL; 
+	
 	while(1){
-		getMsgQueue(PlayList,&data,&pcmSize);
-		if(newEventNums!=GetCurrentEventNums()){	//当前播放事件编号和最新事件编号
-			continue;
-		}
-		if(data){
-			for(i=0;i<pcmSize;i+=2){
-				memcpy(play_buf+playNetwork_pos,data+i,2);
-				playNetwork_pos += 2;
-				memcpy(play_buf+playNetwork_pos,data+i,2);
-				playNetwork_pos += 2;
-			
-				if(playNetwork_pos==I2S_PAGE_SIZE){
-					write_pcm(play_buf);
-					playNetwork_pos=0;
+		switch(playSate){
+			case START_PLAY_VOICES:
+				//if(getWorkMsgNum(PlayList)==0){//当前队列为空，挂起播放		
+				//}
+				getMsgQueue(PlayList,&data,&pcmSize);
+				if(data){
+					for(i=0;i<pcmSize;i+=2){
+						memcpy(play_buf+playNetwork_pos,data+i,2);
+						playNetwork_pos += 2;
+						memcpy(play_buf+playNetwork_pos,data+i,2);
+						playNetwork_pos += 2;		
+						if(playNetwork_pos==I2S_PAGE_SIZE){
+							write_pcm(play_buf);
+							playNetwork_pos=0;
+						}
+						if(newEventNums!=GetCurrentEventNums()){	//当前播放事件编号和最新事件编号
+							free(data);
+							CleanendVoicesNums=4;	//清除尾部数据片
+							playSate=INTERRUPT_PLAY_VOICES;
+							break;
+						}
+					}
+					free(data);
 				}
-
-			}
-			free(data);
+				break;
+			case INTERRUPT_PLAY_VOICES:
+				if(getWorkMsgNum(PlayList)>0){
+					getMsgQueue(PlayList,&data,&pcmSize);
+				}
+#if 0		
+				CleanI2S_PlayCachedata();//清理
+				StopplayI2s();			 //最后一片数据丢掉
+#else		
+				if(--CleanendVoicesNums<=0){
+					playSate=INTERRUPT_PLAY_VOICES;
+				}
+				memset(play_buf,0,I2S_PAGE_SIZE);
+				write_pcm(play_buf);
+				usleep(1000);
+#endif		
+				break;
 		}
-		
 	}
 	destoryQueue(PlayList);
 	return NULL;

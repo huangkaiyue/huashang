@@ -174,9 +174,7 @@ void ack_alluserCtr(const int sockfd,int state,int power){
 	szJSON = cJSON_Print(pItem);
 	DEBUG_TCP("ack_alluserCtr: %s\n",szJSON);
 	send_ctrl_ack(sockfd,szJSON,strlen(szJSON));
-#ifdef SPEEK_VOICES
 	SendtoaliyunServices(szJSON,strlen(szJSON));	//发送给微信
-#endif
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
@@ -266,7 +264,6 @@ void GetNetState(void){
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
-#ifdef SPEEK_VOICES
 void uploadVoicesToaliyun(const char *filename,int fileSize){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
@@ -303,7 +300,6 @@ void Ack_CallDev(int recvdata){
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
-#endif
 #ifdef CLOCKTOALIYUN
 void CloseSystemSignToaliyun(void){
 	char* szJSON = NULL;
@@ -534,8 +530,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}
 #endif
 	}
-#ifdef SPEEK_VOICES		//微信对讲
-	else if (!strcmp(pSub->valuestring,"speek")){
+	else if (!strcmp(pSub->valuestring,"speek")){//微信对讲
 		CreatePlayWeixinVoicesSpeekEvent((const char *)cJSON_GetObjectItem(pJson, "file")->valuestring);
 	}
 	else if (!strcmp(pSub->valuestring,"binddev")){
@@ -585,7 +580,6 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	}else if(!strcmp(pSub->valuestring,"getdev")){	//微信获取设备信息
 		ack_alluserCtr(sockfd,Get_batteryVaule(),get_dc_state());
 	}
-#endif	
 	else if (!strcmp(pSub->valuestring,"tuling")){
 		Write_tulinglog("recv tuling val\n");
 		pSub = cJSON_GetObjectItem(pJson, "userId");

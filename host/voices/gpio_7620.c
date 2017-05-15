@@ -305,9 +305,7 @@ static void signal_handler(int signum){
 				break;
 				
 			case RESERVE_KEY2:
-#ifdef SPEEK_VOICES1
 				ReadSpeekGpio();
-#endif
 				break;
 
 			case SPEEK_KEY:			//对讲和智能会话按键
@@ -368,9 +366,7 @@ static void signal_handler(int signum){
 				break;
 				
 			case SPEEK_KEY://对讲和智能会话按键
-#ifdef	SPEEK_VOICES1 
 				ReadSpeekGpio();	//每次读取底部按键拨动功能状态
-#endif
 				if(gpio.speek_tolk==SPEEK){
 					TulingKeyDownSingal();
 				}else{
@@ -450,9 +446,7 @@ static void signal_handler(int signum){
 				break;
 				
 			case RESERVE_KEY2:
-#ifdef SPEEK_VOICES1
 				ReadSpeekGpio();
-#endif
 				break;
 
 			case SPEEK_KEY:			//智能会话按键事件
@@ -582,15 +576,11 @@ static void signal_handler(int signum){
 				break;
 
 			case SPEEK_KEY:
-#ifdef SPEEK_VOICES
 				if(gpio.speek_tolk==SPEEK){
 					StopTuling_RecordeVoices();
 				}else{
 					Create_WeixinSpeekEvent(VOLKEYUP);
 				}
-#else
-				StopTuling_RecordeVoices();
-#endif
 				break;
 			
 #ifdef 	LOCAL_MP3
@@ -640,15 +630,7 @@ static void signal_handler(int signum){
 				break;
 #ifdef	LOCAL_MP3
 			case RESERVE_KEY2:
-#ifdef	SPEEK_VOICES1
 				ReadSpeekGpio();
-#else
-				if(sysMes.localplayname==english){
-					keyStreamPlay();
-				}else{
-					Create_playMusicEvent((const void *)"english",PLAY_NEXT);
-				}
-#endif
 				break;
 
 			case PLAY_PAUSE_KEY://播放暂停
@@ -684,10 +666,7 @@ static void signal_handler(int signum){
 				break;
 					
 			case RESERVE_KEY2://会话对讲开关键
-#ifdef	SPEEK_VOICES1
-				//gpio.speek_tolk=TOLK;
 				ReadSpeekGpio();
-#endif
 				break;
 				
 			case NETWORK_KEY://配网键
@@ -695,19 +674,13 @@ static void signal_handler(int signum){
 				break;
 				
 			case SPEEK_KEY://会话键
-#ifdef	SPEEK_VOICES
-#ifdef	SPEEK_VOICES1
 				ReadSpeekGpio();
-#endif
 				printf("%d \n",gpio.speek_tolk);
 				if(gpio.speek_tolk==SPEEK){
 					TulingKeyDownSingal();
 				}else{
 					Create_WeixinSpeekEvent(VOLKEYDOWN);
 				}
-#else
-				TulingKeyDownSingal();
-#endif
 				break;
 			
 			case PLAY_PAUSE_KEY://预留键
@@ -939,9 +912,7 @@ void InitMtk76xx_gpio(void){
 #else
 	pool_add_task(Led_vigue_open,NULL);
 #endif
-#ifdef SPEEK_VOICES
 	ReadSpeekGpio();	//读取会话对讲功能拨动键
-#endif
 	enableResetgpio();	//使能恢复出厂设置按键 (防止开机出现死机现象，无法操作)
 }
 //去使能按键

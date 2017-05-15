@@ -28,7 +28,6 @@ static void PlaySignleWavVoices(const char *playfilename,unsigned char playMode,
 	SetWm8960Rate(RECODE_RATE);
 	fseek(fp,WAV_HEAD,SEEK_SET);		//跳过wav头部	
 	while(1){
-		
 		if(playMode==PLAY_IS_INTERRUPT&&playEventNums!=GetCurrentEventNums()){
 			pause_record_audio();
 			CleanI2S_PlayCachedata();//清理
@@ -60,7 +59,6 @@ static void PlaySignleWavVoices(const char *playfilename,unsigned char playMode,
 	return ;
 exit:
 	pause_record_audio();
-	SetPlayWavState(START_PLAY_WAV);
 }
 //播放单声道amr格式音频数据
 static void playAmrVoices(const char *filename,unsigned char playMode,unsigned int playEventNums){
@@ -75,7 +73,7 @@ static void __playAmrVoices(const char *filePath,unsigned char playMode,unsigned
 	playAmrVoices(path,playMode,playEventNums);
 }
 
-#ifdef SPEEK_VOICES
+
 /********************************************************
 @ 播放接收到手机发送的对讲消息
 @ filename:缓存到本地的wav数据的文件路径 (播放完需要删除)
@@ -85,7 +83,6 @@ void playspeekVoices(const char *filename,unsigned int playEventNums){
 	playAmrVoices(filename,PLAY_IS_INTERRUPT,playEventNums);
 	remove(filename);
 }
-#endif
 /********************************************************
 @ 函数功能:	播放系统音
 @ filePath:	路径
@@ -125,7 +122,5 @@ exit:
 @ 返回值: 0 正常退出 -1非正常退出
 *********************************************************/
 int PlayTulingText(HandlerText_t *handtext){
-	SetWm8960Rate(RECODE_RATE); 
-	downTulingMp3(handtext);
-	return 0;
+	return downTulingMp3_forPlay(handtext);
 }	

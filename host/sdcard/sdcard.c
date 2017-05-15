@@ -117,11 +117,9 @@ void WavtoAmrfile(char * sdpath,char *amrpath,unsigned char type)
 		if(type==0){
 			WavToAmr8kFile(wavfilepath,amrfilepath);
 		}
-#ifdef	SPEEK_VOICES
 		else if(type==1){
 			playspeekVoices(amrfilepath);
 		}
-#endif
 		memset(wavfilepath,0,128);
 		memset(amrfilepath,0,128);
 	}

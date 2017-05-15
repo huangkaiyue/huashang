@@ -112,8 +112,8 @@
 
 #define LONG_TIME_NOT_USER_MUTE_VOICES	10		//10s不用 mute音频
 
-#define START_UPLOAD	0
-#define END_UPLOAD	1
+#define START_UPLOAD	1
+#define END_UPLOAD		0
 typedef struct{
 	unsigned char recorde_live;
 	unsigned char uploadState;
@@ -162,6 +162,7 @@ static enum{
 
 //--------------------callvoices.c-----------------------------------------
 extern unsigned int GetCurrentEventNums(void);
+extern unsigned int updateCurrentEventNums(void);	//更新当前事件编号，并返回事件编号值
 extern void StartTuling_RecordeVoices(void);
 extern void StopTuling_RecordeVoices(void);
 extern void start_event_play_wav(void);
@@ -201,9 +202,6 @@ extern void SaveRecorderVoices(const char *voices_data,int size);
 
 
 //--------------------message_wav.c-----------------------------------------------
-#define INTERRUPT_PLAY_WAV		1		//打断当前播放wav 音频文件
-#define START_PLAY_WAV			0		//开始播放wav原始数据
-
 
 #define PLAY_IS_COMPLETE		1		//完整播放   ---->适用在智能会话过渡音当中，不允许打断
 #define PLAY_IS_INTERRUPT		2		//可以打断播放

@@ -24,8 +24,6 @@
 #define TULING_FILE_LOG		//����ͼ��д����־�ļ�
 
 #if defined(QITUTU_SHI)||defined(DATOU_JIANG)||defined(HUASHANG_JIAOYU)
-	#define SPEEK_VOICES	//开启对讲功能
-	#define SPEEK_VOICES1	//按键切换会话
 	#define PALY_URL_SD		//下载保存到本地
 	#define LOCAL_MP3		//MP3本地播放
 	#define	LED_LR			//LED左右灯以及多按键

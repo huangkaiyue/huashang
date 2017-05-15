@@ -9,6 +9,8 @@
 #define DEBUG_STD_MSG(fmt, args...) { }
 #endif	//end DBG_STD_MSG
 
+#define TULING_TEXT			1
+#define TULING_TEXT_MUSIC	2	//播放text 携带有音乐(语音点歌)
 typedef struct{
 	unsigned char event;			//当前处理事件
 	unsigned short playLocalVoicesIndex;	//播放本地录制好的台本编号

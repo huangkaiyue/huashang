@@ -18,14 +18,9 @@ typedef struct{
 	int maxsock; 
 	fd_set fdsr;		
 	struct sockaddr_in wifiAddr;
-#ifdef SPEEK_VOICES
 	struct sockaddr_in speekAddr;
-#endif
 }Server;
-
-#ifdef SPEEK_VOICES
 #define SPEEK_PORT	20011
-#endif
 
 #define BASE_PORT		20000
 #define CTRL_PORT		BASE_PORT+1

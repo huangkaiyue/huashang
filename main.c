@@ -136,7 +136,6 @@ static void autoPlayNextMusic(unsigned char musicType){
 #endif
 //主线程添加网络歌曲到队列当中播放
 static void Main_Thread_AddplayUrlMusic(const char *msg){
-	//start_event_play_url();		//暂时解决图灵播放mp3.状态不对问题
 #ifdef PALY_URL_SD
 		PlayUrl((const void *)msg);
 #else
@@ -170,7 +169,20 @@ static void Main_Thread_AddPlayLocalSdcard_Music(const char *msg){
 #endif
 	free((void *)msg);
 	usleep(1000);
-
+}
+static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
+	if(hand->EventNums!=GetCurrentEventNums()){
+		goto exit0;
+	}
+	start_event_play_url(); 	
+#ifdef PALY_URL_SD
+	PlayUrl((const void *)hand->data);
+#else
+	NetStreamDownFilePlay((const void *)hand->data);
+#endif
+exit0:
+	free((void *)hand->data);
+	free((void *)hand);
 }
 //检查文件锁，防止配网、启动联网脚本导致多次启动进程
 static void checkFileLock(void){
@@ -204,20 +216,12 @@ int main(int argc, char **argv){
 				Main_Thread_AddplayUrlMusic((const char *)msg);
 				break;
 			case TULING_URL_VOICES:	//播放图灵 语音点歌、故事 url文件
-				usleep(1800*1000);	
-				start_event_play_url();		//暂时解决图灵播放mp3.状态不对问题
-				#ifdef PALY_URL_SD
-					PlayUrl((const void *)msg);
-				#else
-					NetStreamDownFilePlay((const void *)msg);
-				#endif
-				free((void *)msg);
+				Main_Thread_playTuLingMusic((HandlerText_t *)msg);
 				break;
 			case TULING_URL_MAIN:	//播放图灵 tts文件
-				if(PlayTulingText((HandlerText_t *)msg)){		//异常退出，需要清理后面的url播放事件
+				if(PlayTulingText((HandlerText_t *)msg)){	//异常退出，需要清理后面的url播放事件
 					SetMainQueueLock(MAIN_QUEUE_LOCK);		//清理后面mp3播放
 				}
-				free((void *)msg);
 				break;
 			case LOCAL_MP3_EVENT:	//本地播放
 				Main_Thread_AddPlayLocalSdcard_Music((const char *)msg);

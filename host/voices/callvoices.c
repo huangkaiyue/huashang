@@ -61,10 +61,11 @@ static int PcmVoice8kTo16k_File(const char *inputdata,const char *outfilename,in
 unsigned int GetCurrentEventNums(void){
 	return RV->CurrentuploadEventNums;
 }
-void updateCurrentEventNums(void){
+unsigned int updateCurrentEventNums(void){
 	struct timeval starttime;
-    	gettimeofday(&starttime,0); 
+    gettimeofday(&starttime,0); 
 	RV->CurrentuploadEventNums=(unsigned int)starttime.tv_sec/2+starttime.tv_usec;
+	return RV->CurrentuploadEventNums;
 }
 
 /*****************************************************
@@ -129,8 +130,13 @@ void start_event_talk_message(void){
 
 static void *uploadPcmPthread(void *arg){
 	HandlerText_t *handText = (HandlerText_t *)arg;
+#if defined(MY_HTTP_REQ)
 	ReqTulingServer(handText,"pcm","0",RECODE_RATE*2);
-	RV->uploadState = START_UPLOAD;
+#else
+	PcmVoice8kTo16k_File(RV->buf_voices,"pcm16k.cache",RV->len_voices);
+	ReqTulingServer((const char *)"pcm16k.cache",RV->len_voices*2,"pcm","0",RECODE_RATE*2);
+#endif
+	RV->uploadState = END_UPLOAD;
 	return NULL;
 }
 /****************************************
@@ -138,21 +144,18 @@ static void *uploadPcmPthread(void *arg){
 @参数:	无
 *****************************************/
 static void Start_uploadVoicesData(void){
-	if(RV->uploadState==END_UPLOAD){
+	if(RV->uploadState==START_UPLOAD){
 		return ;
 	}
-	RV->uploadState = END_UPLOAD;
+	RV->uploadState = START_UPLOAD;
 	Setwm8960Vol(VOL_SET,PLAY_PASUSE_VOICES_VOL);
 	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
 #if defined(HUASHANG_JIAOYU)
 	Show_SmartTalkKey();	//显示智能会话表情
-	Write_Speekkeylog((const char *)"Start_uploadVoicesData",GetRecordeVoices_PthreadState());
 #else
 	Create_PlayTulingWaitVoices(TULING_WAIT_VOICES);
 	usleep(200);
 #endif	
-	DEBUG_VOICES("len_voices = %d  \n",len_voices);	
-#if defined(MY_HTTP_REQ)
 	HandlerText_t *up = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(up){
 		up->dataSize =RV->len_voices*2;
@@ -163,11 +166,6 @@ static void Start_uploadVoicesData(void){
 			pthread_create_attr(uploadPcmPthread,(void * )up);
 		}
 	}
-#else
-	PcmVoice8kTo16k_File(RV->buf_voices,"pcm16k.cache",RV->len_voices);
-	ReqTulingServer((const char *)"pcm16k.cache",RV->len_voices*2,"pcm","0",RECODE_RATE*2);
-#endif
-
 }
 /****************************************
 @函数功能:	处理采集数据函数
@@ -175,7 +173,6 @@ static void Start_uploadVoicesData(void){
 *****************************************/
 static void Save_VoicesPackt(const char *data,int size){
 	int i;
-	test_Save_VoicesPackt_function_log((const char *)"start",RV->len_voices);
 	if(data != NULL){
 		if((RV->len_voices+size) > (STD_RECODE_SIZE-WAV_HEAD)){//大于5秒的音频丢掉
 			test_Save_VoicesPackt_function_log((const char *)"STD_RECODE_SIZE exit1",RV->len_voices);
@@ -194,7 +191,6 @@ static void Save_VoicesPackt(const char *data,int size){
 			RV->len_voices += 2;
 		}
 #endif	//end 0
-		test_Save_VoicesPackt_function_log((const char *)"<STD_RECODE_SIZE ",RV->len_voices);
 	}else{
 		if(RV->len_voices > VOICES_MIN)	//大于0.5s 音频，则上传到服务器当中开始识别  13200
 		{
@@ -202,18 +198,15 @@ static void Save_VoicesPackt(const char *data,int size){
 			led_lr_oc(openled);
 #endif
 			Start_uploadVoicesData();		//开始上传语音
-			test_Save_VoicesPackt_function_log((const char *)">VOICES_MIN ",RV->len_voices);
 			goto exit0;
 		}
 		else if(RV->len_voices < VOICES_ERR){			//
-			test_Save_VoicesPackt_function_log((const char *)"<VOICES_ERR ",RV->len_voices);
 			goto exit1;	//误触发
 		}
 		else{	//VOICES_ERR --->VOICES_MIN 区间的音频，认定为无效音频
-			Create_PlaySystemEventVoices(AI_KEY_TALK_ERROR);
+			//Create_PlaySystemEventVoices(AI_KEY_TALK_ERROR);
 			goto exit1;
 		}
-		test_Save_VoicesPackt_function_log((const char *)"error ",RV->len_voices);
 	}
 	return ;
 exit1:
@@ -291,13 +284,11 @@ static void *PthreadRecordVoices(void *arg){
 			case END_SPEEK_VOICES:		//会话录音结束
 				Save_VoicesPackt(NULL, 0);	//发送空音频作为一段音频的结束标志
 				break;
-#ifdef SPEEK_VOICES
 			case START_TAIK_MESSAGE:	//对讲录音
 				pBuf = I2sGetvoicesData();
 				SaveRecorderVoices((const char *)pBuf,I2S_PAGE_SIZE);
 				usleep(5000);		//不会有快进的感觉
 				break;
-#endif
 #ifdef CLOCESYSTEM
 			case TIME_SIGN:		//提示休息很久了
 				Create_PlaySystemEventVoices(MIN_10_NOT_USER_WARN);
@@ -316,6 +307,9 @@ static void *PthreadRecordVoices(void *arg){
 				sysMes.Playlocaltime=time(&t);
 				break;
 #endif
+			case PLAY_DING_VOICES:
+				usleep(50000);
+				break;
 			default:
 				I2sGetvoicesData();		//默认状态清除音频
 				usleep(50000);
@@ -335,8 +329,14 @@ void InitRecord_VoicesPthread(void){
 	RV =(RecoderVoices_t *)calloc(1,sizeof(RecoderVoices_t));
 	if(RV==NULL){
 		perror("calloc RecoderVoices_t memory failed");
-        	exit(-1);
+        exit(-1);
 	}
+#if defined(HUASHANG_JIAOYU)
+	play_waitVoices(WELCOME_PLAY,0);
+#else
+	play_waitVoices(START_SYS_VOICES,0);//开机启动音
+#endif
+
 #ifdef TEST_MIC
 	if(pthread_create_attr(TestRecordePlay,NULL)){
 		perror("create test recorde play failed!");

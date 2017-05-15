@@ -318,13 +318,9 @@ int SendtoServicesWifi(char *msg,int size)
 	return sendto(ctrSer->broSock,msg,size,0,(const struct sockaddr *)&ctrSer->wifiAddr,sizeof(struct sockaddr_in));
 }
 #endif
-#ifdef SPEEK_VOICES
-int SendtoaliyunServices(const void *msg,int size)
-{
+int SendtoaliyunServices(const void *msg,int size){
 	return sendto(ctrSer->broSock,msg,size,0,(const struct sockaddr *)&ctrSer->speekAddr,sizeof(struct sockaddr_in));
 }
-
-#endif
 //使能联网文件锁
 static void EnableNetworkFile_lock(void){
 	if(access(ENABLE_RECV_NETWORK_FILE_LOCK,0) < 0){
@@ -363,9 +359,7 @@ void init_videoServer(void)
 	//GetNetState();
 	EnableNetworkFile_lock();
 #endif
-#ifdef SPEEK_VOICES
 	init_addr(&ctrSer->speekAddr, IP,  SPEEK_PORT);
-#endif
 	initSock(ctrSer,BASE_PORT);
 	if(pthread_create_attr(Ctrl_Server,ctrSer)){
 		ServerLog("pthread_create_attr Ctrl_Server failed \n");

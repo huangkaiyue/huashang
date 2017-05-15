@@ -511,33 +511,24 @@ void playLocalMp3(const char *mp3file){
 	cleanStreamData(st);	//状态切换是否加锁
 	DEBUG_STREAM(" exit play ok \n");
 	WriteEventlockLog("playLocalMp3  exit play ok \n",(int)st->player.playState);
-	//pause_record_audio();
 }
 #ifdef PALY_URL_SD
 void PlayUrl(const void *data){
 	char domain[64] = {0};
+	char filename[128]={0};
 	int port = 80;
-	char filename[128];
 	Player_t *play =(Player_t *)data;
 	parse_url(play->playfilename, domain, &port, filename);
 	CopyUrlMessage((Player_t *)data,(Player_t *)&st->player);
-	char *buf= (char *)calloc(1,strlen(filename)+1+MP3_PATHLEN);
-	char *likebuf= (char *)calloc(1,strlen(filename)+1+MP3_LIKEPATHLEN);
-	if(buf||likebuf){
-		snprintf(buf,200,"%s%s",MP3_SDPATH,filename);		//
-		snprintf(likebuf,200,"%s%s",MP3_LIKEPATH,filename);	//
-		snprintf(st->mp3name,128,"%s",filename);			//将名字写入结构体中
-		if(!access(buf,F_OK)){
-			DEBUG_STREAM("PlayUrl playLocalMp3(%s) ... \n",filename);
-			playLocalMp3(buf);
-		}else if(!access(likebuf,F_OK)){
-			DEBUG_STREAM("PlayUrl playLocalMp3(%s) ... \n",filename);
-			playLocalMp3(likebuf);
-		}else{
-			DEBUG_STREAM("PlayUrl NetStreamDownFilePlay (%s)... \n",filename);
-			NetStreamDownFilePlay(data);
-		}
-		free((void *)buf);
+	char likebuf[256]={0};
+	snprintf(likebuf,256,"%s%s",MP3_LIKEPATH,filename);	
+	snprintf(st->mp3name,128,"%s",filename);			//将名字写入结构体中
+	if(!access(likebuf,F_OK)){
+		DEBUG_STREAM("music ximalaya dir :%s \n",filename);
+		playLocalMp3(likebuf);
+	}else{
+		DEBUG_STREAM("down load url for network: %s \n",filename);
+		NetStreamDownFilePlay(data);
 	}
 }
 #endif
