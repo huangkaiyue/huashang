@@ -196,7 +196,7 @@ void InitWm8960Voices(void){
 	if(I2S.i2s_fd<0)
 	{
 		perror("i2scmd init");
-		return -1;
+		return ;
 	}
 #ifdef CLOSE_VOICE
 	mute_recorde_vol(MUTE);

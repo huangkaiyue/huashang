@@ -5,6 +5,7 @@
 #include "host/voices/WavAmrCon.h"
 #include "host/studyvoices/std_worklist.h"
 #include "config.h"
+#include "log.h"
 
 //------------------------------------------------------
 void WritePcmData(char *data,int size){

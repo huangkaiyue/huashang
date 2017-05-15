@@ -94,7 +94,7 @@ static int __send_ctrl_ack(Server *ser,int sockfd,char *data,int size)
 	char *cachedata = (char *)calloc(1,size+16);
 	if(cachedata==NULL){
 		perror("calloc error !!!");
-		return;
+		return -1;
 	}
 	snprintf(cachedata,16,"%s%d%s","head:",size,":");
 	memcpy(cachedata+16,data,size);
@@ -141,12 +141,12 @@ static int SendUdp_Ack(Server *ser,struct sockaddr_in *addr,char *data,int size)
 	char *cachedata = (char *)calloc(1,size+16);
 	if(cachedata==NULL){
 		perror("calloc error !!!");
-		return;
+		return -1;
 	}
 	snprintf(cachedata,16,"%s%d%s","head:",size,":");
 	memcpy(cachedata+16,data,size);
 	ServerLog("----------------------------SendUdp_Ack(%s)--------------------------\n",inet_ntoa(addr->sin_addr));
-	ret = sendto(ser->broSock,cachedata,size+16,0,addr,sizeof(struct sockaddr));
+	ret = sendto(ser->broSock,cachedata,size+16,0,(struct sockaddr *)addr,sizeof(struct sockaddr));
 	free(cachedata);
 	ServerLog("%s\n---------------------------------------------------------\n",data);
 	return ret;
@@ -309,6 +309,7 @@ static void *Ctrl_Server(void *arg)
 		memset(recvbuf,0,512);
 	}
 	ser->quit=2;
+	return NULL;
 }
 
 #ifdef SELECT_UDP

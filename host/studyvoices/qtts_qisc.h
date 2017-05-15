@@ -21,10 +21,13 @@
 
 #define DBG_QTTS
 #ifdef 	DBG_QTTS 
-#define DEBUG_QTTS(fmt, args...) printf("%s: " ,__func__,fmt, ## args)
+#define DEBUG_QTTS(fmt, args...) printf("%s: "fmt,__func__, ## args)
 #else   
 #define DEBUG_QTTS(fmt, args...) { }
 #endif	//end DBG_AP_STA
+
+extern void initputPcmdata(void);
+extern void setPlayAudioSize(int downSize);
 
 extern int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums);
 

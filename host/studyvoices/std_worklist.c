@@ -15,6 +15,7 @@
 #include "../voices/huashangMusic.h"
 #endif
 #include "uart/uart.h"
+#include "log.h"
 
 static const char *key = "b1833040534a6bfd761215154069ea58";
 static WorkQueue *EventQue;
@@ -40,7 +41,6 @@ void ReqTulingServer(HandlerText_t *handText,const char *voices_type,const char*
 	char *text = NULL;
 	err = reqTlVoices(8,key,(const void *)handText->data, handText->dataSize, rate, voices_type,asr,&text,&textSize);//耗时操作
 	if(GetCurrentEventNums()!=handText->EventNums){	//如果当前还是处于播放等待图灵状态，表明没有其他外部事件打断，添加进去播放请求图灵服务器失败
-		pause_record_audio();
 		return;
 	}
 	pause_record_audio();	
@@ -75,25 +75,31 @@ playUrl:云端语义结果播放链接地址
 playText: 云端语义解析内容
 */
 static void playTulingQtts(const char *playUrl,const char *playText,unsigned int playEventNums){
+	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
+	if(handtext==NULL){
+		return ;		
+	}
+	handtext->data= (char *)calloc(1,strlen(playUrl)+1);
+	if( handtext->data==NULL){
+		perror("calloc error !!!");
+		free(handtext);
+		return ;
+	}
+	sprintf(handtext->data,"%s",playUrl);
+	DEBUG_STD_MSG("handtext->data:%s\n", handtext->data);
+	handtext->EventNums = playEventNums;
+	SetMainQueueLock(MAIN_QUEUE_UNLOCK);
 #if defined(HUASHANG_JIAOYU)	
 	char playVoicesName[12]={0};
 	//Huashang_changePlayVoicesName();	//用于测试用，切换播音人
 	GetPlayVoicesName(playVoicesName);
 	if(!strcmp(playVoicesName,"tuling")){	//当前播音人采用图灵的
-		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
-		HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
-		if(handtext){
-			handtext->data =playUrl; 
-			handtext->EventNums = playEventNums;
-			AddDownEvent((const char *)handtext,TULING_URL_MAIN);
-		}
+		AddDownEvent((const char *)handtext,TULING_URL_MAIN);
 	}else{
-		SetMainQueueLock(MAIN_QUEUE_UNLOCK);
 		PlayQttsText(playText,QTTS_UTF8,playVoicesName,playEventNums);	
 	}
 #else
-	SetMainQueueLock(MAIN_QUEUE_UNLOCK);
-	AddDownEvent(playUrl,TULING_URL_MAIN);
+	AddDownEvent((const char *)handtext,TULING_URL_MAIN);
 #endif
 }
 /*******************************************
@@ -106,48 +112,46 @@ static int parseJson_string(HandlerText_t *handText){
 	int err=-1;
 	if(NULL == handText->data){
 		return -1;
-    }
-    cJSON * pJson = cJSON_Parse(handText->data);
+    	}
+    	cJSON * pJson = cJSON_Parse(handText->data);
 	if(NULL == pJson){
-    	return -1;
-    }
+    		return -1;
+    	}
 	cJSON *pSub = cJSON_GetObjectItem(pJson, "token");//获取token的值，用于下一次请求时上传的校验值
 	if(pSub!=NULL){
 		//暂时定义，用于临时存放校验值，每请求一次服务器都返回token
 		updateTokenValue((const char *) pSub->valuestring);
 	}
-    pSub = cJSON_GetObjectItem(pJson, "code");
-    if(NULL == pSub){
+    	pSub = cJSON_GetObjectItem(pJson, "code");
+    	if(NULL == pSub){
 		DEBUG_STD_MSG("get code failed\n");
 		goto exit0;
 	}
 	DEBUG_STD_MSG("code : %d\n", pSub->valueint);
-#if 1	
 	switch(pSub->valueint){
 		case 40001:	//参数为空
 		case 40002:	//音频为空
 		case 40003:	//参数缺失
-		case 40004: //参数不是标准的 json 文本
+		case 40004: 	//参数不是标准的 json 文本
 		case 40005:	//无法解析该音频文件	
 		case 40006:	//参数错误
-		case 40007: //无效的 Key
+		case 40007: 	//无效的 Key
 		case 40008:
 		case 40009:	//访问受限
 		case 40010:	//Token 错误 ,播放图灵错误内容
 			goto exit1;
-		case 40011: //非法请求
+		case 40011: 	//非法请求
 		case 40012:	//服务受限
-		case 40013: //缺少 Token
+		case 40013: 	//缺少 Token
 			playTulingRequestErrorVoices(handText->EventNums);
 			err=0;
 			goto exit0;
 	}
-#endif	
 	pSub = cJSON_GetObjectItem(pJson, "info");		//返回结果
-    if(NULL == pSub){
+    	if(NULL == pSub){
 		DEBUG_STD_MSG("get info failed\n");
 		goto exit0;
-    }
+    	}
 	DEBUG_STD_MSG("info: %s\n",pSub->valuestring);			//语音识别出来的汉字	
 	Write_tulingTextLog(pSub->valuestring);
 	if(!CheckinfoText_forContorl((const char *)pSub->valuestring,handText->EventNums)){
@@ -162,18 +166,12 @@ exit1:
 	}
 	DEBUG_STD_MSG("text: %s\n",pSub->valuestring);
 	pSub = cJSON_GetObjectItem(pJson, "ttsUrl");		//解析到说话的内容的链接地址，需要下载播放
-    if(NULL == pSub||(!strcmp(pSub->valuestring,""))){	//如果出现空的链接地址，直接跳出
+    	if(NULL == pSub||(!strcmp(pSub->valuestring,""))){	//如果出现空的链接地址，直接跳出
 		DEBUG_STD_MSG("get fileUrl failed\n");
 		goto exit0;
-    }
+    	}
 	DEBUG_STD_MSG("ttsUrl: %s \n",pSub->valuestring);
-	char *ttsURL= (char *)calloc(1,strlen(pSub->valuestring)+1);
-	if(ttsURL==NULL){
-		perror("calloc error !!!");
-		goto exit0;
-	}
-	sprintf(ttsURL,"%s",pSub->valuestring);
-	DEBUG_STD_MSG("ttsURL:%s\n",ttsURL);
+	char *ttsURL= pSub->valuestring;
 	
 	pSub = cJSON_GetObjectItem(pJson, "fileUrl"); 	//检查是否有mp3歌曲返回，如果有
 	if(NULL == pSub){	//直接播放语义之后的结果
@@ -286,7 +284,6 @@ static void HandleEventMessage(const char *data,int msgSize){
 			NetStreamExitFile();
 			SetWm8960Rate(RECODE_RATE);
 			event_lock=0;
-			sysMes.localplayname=0;
 			pause_record_audio();
 			WriteEventlockLog("eventlock end\n",event_lock);
 			break;

@@ -2,7 +2,8 @@
 #define _CALLVOICES_H
 
 #include "base/pool.h"
-
+#include "host/voices/wm8960i2s.h"
+#include "host/voices/WavAmrCon.h"
 #define KB	1024
 
 
@@ -111,6 +112,15 @@
 
 #define LONG_TIME_NOT_USER_MUTE_VOICES	10		//10s不用 mute音频
 
+#define START_UPLOAD	0
+#define END_UPLOAD	1
+typedef struct{
+	unsigned char recorde_live;
+	unsigned char uploadState;
+	int len_voices;
+	unsigned int CurrentuploadEventNums;
+	char buf_voices[STD_RECODE_SIZE];
+}RecoderVoices_t;
 //--------------------------------------------------------
 
 #define NETWORK_OK 0		//连接外网成功
@@ -136,7 +146,7 @@ extern SysMessage sysMes;
 
 #define DBG_EVENT
 #ifdef DBG_EVENT  
-#define DEBUG_EVENT(fmt, args...) printf("%s:" ,__func__,fmt, ## args)  
+#define DEBUG_EVENT(fmt, args...) printf("%s:"fmt,__func__, ## args)  
 #else   
 #define DEBUG_EVENT(fmt, args...) { }  
 #endif //end DBG_EVENT
@@ -151,15 +161,14 @@ static enum{
 };
 
 //--------------------callvoices.c-----------------------------------------
+extern unsigned int GetCurrentEventNums(void);
 extern void StartTuling_RecordeVoices(void);
 extern void StopTuling_RecordeVoices(void);
 extern void start_event_play_wav(void);
 extern void start_event_play_url(void);
 extern void pause_record_audio(void);
 extern int GetRecordeVoices_PthreadState(void);
-#ifdef TIMEOUT_CHECK
 extern void start_event_talk_message(void);
-#endif
 extern int SetMucClose_Time(unsigned char closeTime);
 
 extern void InitRecord_VoicesPthread(void);

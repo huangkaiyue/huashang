@@ -15,6 +15,7 @@
 #include "../sdcard/musicList.h"
 #include "uart/uart.h"
 #include "config.h"
+#include "log.h"
 
 SysMessage sysMes;
 //------------------------config network and set system network state---------------------------------------------------------
@@ -215,10 +216,11 @@ int __AddLocalMp3ForPaly(const char *localpath){
 		handEvent->data = URL;
 		handEvent->event=LOCAL_MP3_EVENT;
 		ret = AddworkEvent(handEvent,sizeof(HandlerText_t));
-	}	
-	return ret;
+	}
+	return ret;	
 exit0:
 	free(handEvent);
+	return -1;
 }
 /*
 @ 根据目录菜单和路径获取本地sdcatd 歌曲名字进行播放
@@ -318,6 +320,9 @@ void Create_CleanUrlEvent(void){
 返回值: 无
 ********************************************************/
 void Create_PlayQttsEvent(const char *txt,int type){
+	if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES){		
+		return;
+	}
 	if(GetRecordeVoices_PthreadState() == PLAY_WAV){	//解决在智能会话过程当中，添加播放系统语音、播放wifi 名字导致的死机现象  2017-3-26 
 		printf("%s: current is play wav\n",__func__);
 		return ;
@@ -362,15 +367,9 @@ void TulingKeyDownSingal(void){
 		Create_CleanUrlEvent();
 		Write_Speekkeylog((const char *)"PLAY_URL",GetRecordeVoices_PthreadState());
 	}else{		
-#if defined(HUASHANG_JIAOYU)	//华上教育有离线语音识别接口，需要采集音频进行离线识别
-#ifdef XUN_FEI_OK		
-#else
-	if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
-		return;
-	}
-	#endif
-#endif		
-		sysMes.localplayname=0;	
+		if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
+			return;
+		}
 		NetStreamExitFile();	//在微信端推送歌曲，没有进行播放下一首歌曲的时候，突然按下智能会话按键，需要切换采样率，才能进入智能会话状态
 		if(SetWm8960Rate(RECODE_RATE)){	//切换采样率失败，退出(防止多线程当中切换，资源冲突问题)
 			return ;
@@ -506,6 +505,7 @@ void Create_PlayTulingWaitVoices(int sys_voices){
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext){
 		handtext->event =SYS_VOICES_EVENT;
+		handtext->EventNums=GetCurrentEventNums();
 		handtext->playLocalVoicesIndex =sys_voices;
 		AddworkEvent(handtext,sizeof(HandlerText_t));
 	}
@@ -710,8 +710,8 @@ void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
 			printf("add play amr voices failed ,and remove file \n");
 			goto exit2;
 		}
-		return;
 	}
+	return;
 exit2:
 	free(handtext->data);
 exit1:
@@ -942,7 +942,7 @@ static void *waitLoadMusicList(void *arg){
 		}
 		//检测到关键文件锁，直接退出，不执行下面操作，防止在关机过程读写sdcard
 		if(access(CLOSE_SYSTEM_LOCK_FILE, F_OK)==F_OK){
-			return ;
+			return NULL;
 		}
 		sleep(1);
 	}
@@ -959,7 +959,7 @@ static void *waitLoadMusicList(void *arg){
 #ifdef HUASHANG_JIAOYU
 	openSystemload_huashangData();
 #endif
-	return;
+	return NULL;
 } 
 #endif
 

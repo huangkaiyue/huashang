@@ -16,6 +16,7 @@
 #ifdef WORK_INTER
 #include "srvwork/workinter.h"
 #endif
+#include "log.h"
 static WorkQueue *DownEvent=NULL;
 static unsigned char mainQueLock=0;
 
@@ -48,9 +49,8 @@ void CleanSystemResources(void){
 /*
 * 加载传进来的参数,提取qtts 系统语音路径等
 */
-static void loadLocalServer(int argc,const char *argv[]){
+static void loadLocalServer(int argc,char *argv[]){
 	int i;
-	char *aliUrl=NULL;
 	int sleeptime=3;
 	char *token=NULL;
 	char *user_id  = NULL;

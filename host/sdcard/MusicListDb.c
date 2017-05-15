@@ -203,12 +203,10 @@ int DelXimalayaMusic(const char *musicDir,const char *musicName){
 }
 static int table_result(void *args,int nRow,int nColumn,char **dbResult){
 	char *getMusicname = (char *)args;
-	int result, i, j, index;
 	// dbResult 前面第一行数据是字段名称，从 nColumn 索引开始才是真正的数据  
 	if(nRow==0){
 		return -2;
 	}
-	index = nColumn; 
 	if(netmusic->playMode==PLAY_NEXT){
 		if(++netmusic->playindex>=nRow){
 			netmusic->playindex=0;
@@ -228,6 +226,8 @@ static int table_result(void *args,int nRow,int nColumn,char **dbResult){
 	}
 	snprintf(getMusicname,128,dbResult [res+2]);	//二是去掉表头
 #if 0
+	int i, j;
+	int index = nColumn; 
 	for( i = 0; i < nRow ; i++ )  { 		
 			for( j = 0 ; j < nColumn; j++ )  {  
 				if(netmusic->playindex==i){
@@ -287,9 +287,6 @@ void CleanMusicList(void){
 	CloseSql();
 }
 
-int checkMusicDb(const char *sdcard,const char *musicDir){
-
-}
 //#define MAIN_TEST
 	
 #ifdef MAIN_TEST

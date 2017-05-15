@@ -126,8 +126,6 @@ int Init_Iat_MSPLogin(void){
 	
 	DEBUG_QTTS("iat MSPLogin successfully \n");
 	return 0;
-exit:
-	return -1;
 }
 
 void Iat_MSPLogout(void){

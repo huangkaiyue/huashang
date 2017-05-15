@@ -11,11 +11,7 @@
 #if defined(HUASHANG_JIAOYU)
 #include "huashangMusic.h"
 #endif
-
-static char buf_voices[STD_RECODE_SIZE];
-static int len_voices = 0;
-static unsigned char recorde_live=0;
-unsigned int CurrentuploadEventNums=0;
+static RecoderVoices_t *RV=NULL;
 
 //默认音频头部数据
 struct wave_pcm_hdr pcmwavhdr = {
@@ -34,6 +30,7 @@ struct wave_pcm_hdr pcmwavhdr = {
 	0  
 };
 
+#if defined(MY_HTTP_REQ)
 //将录制的8k语音转换成16k语音
 static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen){
 	int pos=0,npos=0;
@@ -44,6 +41,7 @@ static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen)
 		npos+=2;
 	}
 }
+#else
 //将8k语音转换成16k语音，并写入到文件当中
 static int PcmVoice8kTo16k_File(const char *inputdata,const char *outfilename,int inputLen){
 	FILE *fp=NULL;
@@ -59,28 +57,29 @@ static int PcmVoice8kTo16k_File(const char *inputdata,const char *outfilename,in
 	fclose(fp);
 	return 0;
 }	
+#endif
 unsigned int GetCurrentEventNums(void){
-	return CurrentuploadEventNums;
+	return RV->CurrentuploadEventNums;
 }
 void updateCurrentEventNums(void){
 	struct timeval starttime;
-    gettimeofday(&starttime,0); 
-	CurrentuploadEventNums=(unsigned int)starttime.tv_sec/2+starttime.tv_usec;
+    	gettimeofday(&starttime,0); 
+	RV->CurrentuploadEventNums=(unsigned int)starttime.tv_sec/2+starttime.tv_usec;
 }
 
 /*****************************************************
 *获取状态
 *****************************************************/
 int GetRecordeVoices_PthreadState(void){
-	return recorde_live;
+	return RV->recorde_live;
 }
 
 /*****************************************************
 *设置状态
 *****************************************************/
 static void SetRecordeVoices_PthreadState(unsigned char state){
-	printf("%s: recorde_live %d  %d \n",__func__,recorde_live,state);
-	recorde_live=state;
+	printf("%s: recorde_live %d  %d \n",__func__,RV->recorde_live,state);
+	RV->recorde_live=state;
 }
 
 /*****************************************************
@@ -131,6 +130,7 @@ void start_event_talk_message(void){
 static void *uploadPcmPthread(void *arg){
 	HandlerText_t *handText = (HandlerText_t *)arg;
 	ReqTulingServer(handText,"pcm","0",RECODE_RATE*2);
+	RV->uploadState = START_UPLOAD;
 	return NULL;
 }
 /****************************************
@@ -138,6 +138,10 @@ static void *uploadPcmPthread(void *arg){
 @参数:	无
 *****************************************/
 static void Start_uploadVoicesData(void){
+	if(RV->uploadState==END_UPLOAD){
+		return ;
+	}
+	RV->uploadState = END_UPLOAD;
 	Setwm8960Vol(VOL_SET,PLAY_PASUSE_VOICES_VOL);
 	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
 #if defined(HUASHANG_JIAOYU)
@@ -148,24 +152,20 @@ static void Start_uploadVoicesData(void){
 	usleep(200);
 #endif	
 	DEBUG_VOICES("len_voices = %d  \n",len_voices);	
-
 #if defined(MY_HTTP_REQ)
 	HandlerText_t *up = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(up){
-		up->dataSize =len_voices*2;
+		up->dataSize =RV->len_voices*2;
 		up->data= (char *)calloc(1,up->dataSize+2);
 		if(up->data){
 			up->EventNums = GetCurrentEventNums();
-			pcmVoice8kTo16k(buf_voices+WAV_HEAD,up->data,len_voices);
+			pcmVoice8kTo16k(RV->buf_voices+WAV_HEAD,up->data,RV->len_voices);
 			pthread_create_attr(uploadPcmPthread,(void * )up);
 		}
 	}
-#elif	defined(PCM_TEST)
-	test_save8kpcm(buf_voices+WAV_HEAD,len_voices);
-	test_save16kpcm(buf_voices+WAV_HEAD,len_voices);
 #else
-	PcmVoice8kTo16k_File(buf_voices,"pcm16k.cache",len_voices);
-	ReqTulingServer((const char *)"pcm16k.cache",len_voices*2,"pcm","0",RECODE_RATE*2);
+	PcmVoice8kTo16k_File(RV->buf_voices,"pcm16k.cache",RV->len_voices);
+	ReqTulingServer((const char *)"pcm16k.cache",RV->len_voices*2,"pcm","0",RECODE_RATE*2);
 #endif
 
 }
@@ -175,52 +175,52 @@ static void Start_uploadVoicesData(void){
 *****************************************/
 static void Save_VoicesPackt(const char *data,int size){
 	int i;
-	test_Save_VoicesPackt_function_log((const char *)"start",len_voices);
+	test_Save_VoicesPackt_function_log((const char *)"start",RV->len_voices);
 	if(data != NULL){
-		if((len_voices+size) > (STD_RECODE_SIZE-WAV_HEAD)){//大于5秒的音频丢掉
-			test_Save_VoicesPackt_function_log((const char *)"STD_RECODE_SIZE exit1",len_voices);
+		if((RV->len_voices+size) > (STD_RECODE_SIZE-WAV_HEAD)){//大于5秒的音频丢掉
+			test_Save_VoicesPackt_function_log((const char *)"STD_RECODE_SIZE exit1",RV->len_voices);
 			goto exit1;
 		}
 #if 0		
 		//只有有声道有数据，左声道没有，需要拷贝2、3两个数据
 		for(i=2; i<size; i+=4){
 			//双声道数据转成单声道数据
-			memcpy(buf_voices+WAV_HEAD+len_voices,data+i,2);
-			len_voices += 2;
+			memcpy(RV->buf_voices+WAV_HEAD+RV->len_voices,data+i,2);
+			RV->len_voices += 2;
 		}
 #else
 		for(i=0; i<size; i+=4){
-			memcpy(buf_voices+WAV_HEAD+len_voices,data+i,2);
-			len_voices += 2;
+			memcpy(RV->buf_voices+WAV_HEAD+RV->len_voices,data+i,2);
+			RV->len_voices += 2;
 		}
 #endif	//end 0
-		test_Save_VoicesPackt_function_log((const char *)"<STD_RECODE_SIZE ",len_voices);
+		test_Save_VoicesPackt_function_log((const char *)"<STD_RECODE_SIZE ",RV->len_voices);
 	}else{
-		if(len_voices > VOICES_MIN)	//大于0.5s 音频，则上传到服务器当中开始识别  13200
+		if(RV->len_voices > VOICES_MIN)	//大于0.5s 音频，则上传到服务器当中开始识别  13200
 		{
 #ifdef DATOU_JIANG	//在上传过程当中闪烁灯
 			led_lr_oc(openled);
 #endif
 			Start_uploadVoicesData();		//开始上传语音
-			test_Save_VoicesPackt_function_log((const char *)">VOICES_MIN ",len_voices);
+			test_Save_VoicesPackt_function_log((const char *)">VOICES_MIN ",RV->len_voices);
 			goto exit0;
 		}
-		else if(len_voices < VOICES_ERR){			//
-			test_Save_VoicesPackt_function_log((const char *)"<VOICES_ERR ",len_voices);
+		else if(RV->len_voices < VOICES_ERR){			//
+			test_Save_VoicesPackt_function_log((const char *)"<VOICES_ERR ",RV->len_voices);
 			goto exit1;	//误触发
 		}
 		else{	//VOICES_ERR --->VOICES_MIN 区间的音频，认定为无效音频
 			Create_PlaySystemEventVoices(AI_KEY_TALK_ERROR);
 			goto exit1;
 		}
-		test_Save_VoicesPackt_function_log((const char *)"error ",len_voices);
+		test_Save_VoicesPackt_function_log((const char *)"error ",RV->len_voices);
 	}
 	return ;
 exit1:
 	pause_record_audio();
 exit0:
-	memset(buf_voices,0,len_voices);
-	len_voices = 0;
+	memset(RV->buf_voices,0,RV->len_voices);
+	RV->len_voices = 0;
 	test_Save_VoicesPackt_function_log((const char *)"exit Save_VoicesPackt ok",GetRecordeVoices_PthreadState());
 	return ;
 }
@@ -332,6 +332,11 @@ static void *PthreadRecordVoices(void *arg){
 开启录音工作线程
 *****************************************************/
 void InitRecord_VoicesPthread(void){	
+	RV =(RecoderVoices_t *)calloc(1,sizeof(RecoderVoices_t));
+	if(RV==NULL){
+		perror("calloc RecoderVoices_t memory failed");
+        	exit(-1);
+	}
 #ifdef TEST_MIC
 	if(pthread_create_attr(TestRecordePlay,NULL)){
 		perror("create test recorde play failed!");
@@ -339,8 +344,8 @@ void InitRecord_VoicesPthread(void){
 	}
 #else
 	if(pthread_create_attr(PthreadRecordVoices,NULL)){
-    	perror("create handle record voices failed!");
-        exit(-1);
+  	  	perror("create handle record voices failed!");
+        	exit(-1);
 	}
 #endif	//end TEST_MIC
 	usleep(300);

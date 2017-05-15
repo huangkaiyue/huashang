@@ -5,6 +5,7 @@
 #include "../sdcard/musicList.h"
 #include "../studyvoices/qtts_qisc.h"
 #include "host/voices/wm8960i2s.h"
+#include "log.h"
 #include "nvram.h"
 #include "config.h"
 //#define MAIN

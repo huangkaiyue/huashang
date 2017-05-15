@@ -3,6 +3,7 @@
 #include "host/mtkwifi.h"
 #include "nvram.h"
 #include "base/cJSON.h"
+#include "base/pool.h"
 #include "config.h"
 
 //#define MAIN_TEST
@@ -25,7 +26,7 @@ static void createSmartConfigLock(void){
 static void delSmartConfigLock(void){
 	remove(SMART_CONFIG_FILE_LOCK);
 }
-static int createInternetLock(void){
+static void createInternetLock(void){
 	FILE *fp =fopen(INTEN_NETWORK_FILE_LOCK,"w+");
 	if(fp){
 		fclose(fp);
@@ -155,7 +156,7 @@ exit0:
 	wifi->enableGpio();
 	free(wifi);
 	wifi=NULL;
-	return ret;
+	return NULL;
 }
 int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
 	WiterSmartConifg_Log("startSmartConfig ","start");
@@ -185,21 +186,6 @@ exit1:
 	delInternetLock();	//上半段解文件锁
 	return ret;
 }
-
-void startServiceWifi(void){
-	int ret=0;
-	char* szJSON = NULL;
-	cJSON* pItem = NULL;
-	pItem = cJSON_CreateObject();
-	cJSON_AddStringToObject(pItem, "handler", "ServerWifi");
-	cJSON_AddNumberToObject(pItem, "event",START_SERVICES);
-	szJSON = cJSON_Print(pItem);
-	ret= SendtoServicesWifi(szJSON,strlen(szJSON));
-	cJSON_Delete(pItem);
-	free(szJSON);
-	return ret ;	
-}
-
 #ifdef MAIN_TEST
 #define USAGE "Usage:  ./ap_sta 1 \n"
 

@@ -3,6 +3,7 @@
 #include "curldown.h"
 #include "host/studyvoices/std_worklist.h"
 #include "host/voices/callvoices.h"
+#include "log.h"
 
 static unsigned int playTulingEventNums=0;
 //开始下载, 接口兼容，需要去掉streamLen

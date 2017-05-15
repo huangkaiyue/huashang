@@ -89,14 +89,14 @@ static int Get_Line(void *user_data,const char *lineStr,int lineNum){
 		cJSON_AddItemToArray(point->resultJsonData, pItem); 	
 	}
 	point->findPointNums=0;
+	return 0;
 }
 int ReadFile_Line(const char *filename,void *user_data,int Get_Line(void *user_data,const char *lineStr,int lineNum)){
      FILE * fp=NULL;  
      char * line = NULL;  
      size_t len = 0;  
      ssize_t read;  
-     int nline=0,count=0;
-     char *p=NULL;	 
+     int nline=0;
      fp = fopen(filename, "r");  
      if (fp == NULL){ 
          return -1;
@@ -164,7 +164,7 @@ static void Parse_ResultLine_Id(const char *text,int *playIndex){
 	}
 }
 //解析识别出来播放歌曲的信息
-static void Parse_TextJsonResult(const char *jsonData,int *playIndex){
+static int Parse_TextJsonResult(const char *jsonData,int *playIndex){
 	cJSON * pJson = cJSON_Parse(jsonData);
 	if(NULL == pJson){
 		return -1;
@@ -193,13 +193,12 @@ static void Parse_TextJsonResult(const char *jsonData,int *playIndex){
 		}
 	}
 	Parse_ResultLine_Id((const char *)Result,playIndex);
-exit:
 	cJSON_Delete(pJson);
 	return 0;	
 }
 
 //解析播放指令
-int Parse_playCmdMenu(const char *txt,int *playIndex){
+void Parse_playCmdMenu(const char *txt,int *playIndex){
 	utf8Parse_t user_point;
 	PASRE_UTF8_LOG("check Parse_playCmdMenu cmd  \n");
 	memset(&user_point,0,sizeof(utf8Parse_t));
@@ -225,7 +224,7 @@ static int NumberMenu_GetBytechar_ch(void *user_point,const char *byteChar,int b
 	int i=0; 
 	int found =0;
 	char matchStr[][10] = {"零","一","二","三","四","五","六","七","八","九"};
-	char matchAscii[][10] = {"0","1","2","3","4","5","6","7","8","9"};
+	//char matchAscii[][10] = {"0","1","2","3","4","5","6","7","8","9"};
 	utf8Parse_t *point =(utf8Parse_t *)user_point;
 	PASRE_UTF8_LOG("byteChar = %s\n",byteChar);
 	for(i=0;i<10;i++){
@@ -258,7 +257,7 @@ static int NumberMenu_GetBytechar_ch(void *user_point,const char *byteChar,int b
 	return 0;
 }
 //解析数字篇
-int Parse_NumberMenu(const char *txt,int *playIndex){
+static void Parse_NumberMenu(const char *txt,int *playIndex){
 	utf8Parse_t user_point;
 	memset(&user_point,0,sizeof(utf8Parse_t));
 	pasre_utf8(txt,(void *)&user_point,NumberMenu_GetBytechar_ch);
@@ -267,6 +266,7 @@ int Parse_NumberMenu(const char *txt,int *playIndex){
 	}
 	*playIndex= user_point.playIndexNum;
 	PASRE_UTF8_LOG("user_point.playIndexNum = %d \n",user_point.playIndexNum);
+
 }
 //---------------------------------------------------------------------- end 解析数字篇
 int Huashang_Checkutf8(const char *txt,char *playName){

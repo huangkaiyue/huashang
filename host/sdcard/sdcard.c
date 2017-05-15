@@ -36,7 +36,7 @@ int CheckDirexistFiletype(const char * dir,const char *type){
 }
 
 //是否小于SD剩余空间下限大小
-void CheckSdcardInfo(char * sdpath){
+int CheckSdcardInfo(char * sdpath){
 	int Capacity =0;
 	GetStorageInfo(sdpath,&Capacity,FREE);
 	if(Capacity<SD_MIN)

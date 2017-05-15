@@ -35,7 +35,7 @@ static int SendTo(int sockfd,char *data,int size,struct sockaddr_in *peer){
 	char *cachedata = (char *)calloc(1,size+16);
 	if(cachedata==NULL){
 		perror("calloc error !!!");
-		return;
+		return -1;
 	}
 	snprintf(cachedata,16,"%s%d%s","head:",size,":");
 	memcpy(cachedata+16,data,size);
@@ -336,7 +336,7 @@ void SetClockToaliyun(unsigned char clocknum,unsigned char state,const char *tim
 void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer){
 	cJSON * pJson = cJSON_Parse(recvdata);
 	if(NULL == pJson){
-		return -1;
+		return ;
 	}
 	//DEBUG_TCP("handler_CtrlMsg = %s\n",recvdata);
 	cJSON * pSub = cJSON_GetObjectItem(pJson, "handler");
@@ -469,27 +469,20 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	else if(!strcmp(pSub->valuestring,"updateHost")){	//----------->由版本监测进程发送过来
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(!strcmp(pSub->valuestring,"newversion")){	//有新版本，需要更新
-			//Create_PlayQttsEvent("有新版本，需要更新。",QTTS_GBK);//send to app
 			Create_PlaySystemEventVoices(UPDATA_NEW_PLAY);
 		}else if(!strcmp(pSub->valuestring,"start")){	//正在下载固件
-			//Create_PlayQttsEvent("正在下载固件。",QTTS_GBK);
 			Create_PlaySystemEventVoices(DOWNLOAD_ING_PLAY);
 		}else if(!strcmp(pSub->valuestring,"error")){	//下载固件错误
-			//Create_PlayQttsEvent("下载固件错误。",QTTS_GBK);
 			Create_PlaySystemEventVoices(DOWNLOAD_ERROE_PLAY);
 		}else if(!strcmp(pSub->valuestring,"end")){ 	//下载固件结束
-			//Create_PlayQttsEvent("下载固件结束。",QTTS_GBK);
 			Create_PlaySystemEventVoices(DOWNLOAD_END_PLAY);
 		}else if(!strcmp(pSub->valuestring,"progress")){		//下载进度
 			pSub = cJSON_GetObjectItem(pJson, "value");
 			if(pSub->valueint==25){
-				//Create_PlayQttsEvent("下载到百分之二十五。",QTTS_GBK);
 				Create_PlaySystemEventVoices(DOWNLOAD_25_PLAY);			
 			}else if(pSub->valueint==50){
-				//Create_PlayQttsEvent("下载到百分之五十。",QTTS_GBK);	
 				Create_PlaySystemEventVoices(DOWNLOAD_50_PLAY);	
 			}else if(pSub->valueint==75){
-				//Create_PlayQttsEvent("下载到百分之七十五。",QTTS_GBK);
 				Create_PlaySystemEventVoices(DOWNLOAD_75_PLAY);
 			}
 		}
@@ -497,13 +490,10 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	else if(!strcmp(pSub->valuestring,"updateImage")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(!strcmp(pSub->valuestring,"start")){ 		//开始更新固件
-			//Create_PlayQttsEvent("开始更新固件。",QTTS_GBK);
 			Create_PlaySystemEventVoices(UPDATA_START_PLAY);
 		}else if(!strcmp(pSub->valuestring,"error")){	//更新固件错误
-			//Create_PlayQttsEvent("更新固件错误。",QTTS_GBK);
 			Create_PlaySystemEventVoices(UPDATA_ERROR_PLAY);
 		}else if(!strcmp(pSub->valuestring,"end")){ 	//更新固件结束
-			//Create_PlayQttsEvent("更新固件结束。",QTTS_GBK);
 			Create_PlaySystemEventVoices(UPDATA_END_PLAY);
 		}
 	}//  end updateImage                // end----------->由版本监测进程发送过来

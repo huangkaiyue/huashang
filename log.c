@@ -249,13 +249,16 @@ void GpioLog(const char *data,unsigned char number){
 #endif
 }
 void WriteLocalserver_Version(const char *versionMessage){
+#ifdef ENABLE_LOG	
 	FILE *fp = fopen("/log/localerverVersion.log","w+");
 	if(fp){
 		fwrite(versionMessage,1,strlen(versionMessage),fp);//写入当前版本
 		fclose(fp);
 	}	
+#endif
 }
 void Write_Speekkeylog(const char *data,int num){
+#ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	char buf[128];
 	if(!strcmp(data,"speekstart")){
@@ -271,6 +274,7 @@ void Write_Speekkeylog(const char *data,int num){
     fwrite(buf,1,size,fp);
   	fflush(fp);
 	fclose(fp);
+#endif
 }
 
 

@@ -1,12 +1,14 @@
 #include "comshead.h"
 #include "base/pool.h"
 #include "base/head_mp3.h"
+#include "base/fileMes.h"
 #include "StreamFile.h"
 #include "mplay.h"
 #include "config.h"
 #include "curldown.h"
 #include "../sdcard/musicList.h"
 #include "host/voices/callvoices.h"
+#include "log.h"
 
 Mp3Stream *st=NULL;
 
@@ -60,7 +62,7 @@ static void ack_progress(void){
 	}
 }
 //实现写入音频流的接口, 需要输入的数据内存存放位置 inputMsg  inputSize 输入的数据流大小
-static void InputNetStream(char * inputMsg,int inputSize){
+static void InputNetStream(const void * inputMsg,int inputSize){
 	while(st->playSize+inputSize>st->cacheSize){
 		if(getDownState()==DOWN_QUIT){	//已经退出下载，停止播放	
 			DEBUG_STREAM("exit ...st->cacheSize =%d st->playSize%d\n",st->cacheSize,st->playSize);
@@ -122,7 +124,7 @@ static void InputNetStream(char * inputMsg,int inputSize){
 
 static unsigned char like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;
 #ifdef PALY_URL_SD
-int GetFileNameForPath(char *path){
+int GetFileNameForPath(const char *path){
 	int i=0;
 	int size=strlen(path);
 	char *p;
@@ -135,7 +137,7 @@ int GetFileNameForPath(char *path){
 	}
 	return (size-strlen(p)+1);
 }
-static void SaveLoveMp3File(char *filepath){
+static void SaveLoveMp3File(const char *filepath){
 	char buf[200]={0};
 	if(CheckSdcardInfo(MP3_SDPATH)){	//内存不足50M删除指定数目的歌曲
 		return ;
@@ -227,7 +229,7 @@ static void *NetplayStreamMusic(void *arg){
 
 #ifdef PALY_URL_SD
 	if(st->cacheSize==st->streamLen){	//下载结束
-		SaveLoveMp3File(URL_SDPATH);
+		SaveLoveMp3File((const char *)URL_SDPATH);
 	}
 #endif
 	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//发送结束状态
@@ -433,7 +435,7 @@ void seekToStream(int progress){
 #endif
 }
 
-static void InputlocalStream(char * inputMsg,int inputSize){
+static void InputlocalStream(const void * inputMsg,int inputSize){
 	while(st->playSize+inputSize>=st->streamLen){
 		fread(inputMsg,1,st->streamLen-st->playSize,st->rfp);
 		memset(inputMsg+st->streamLen-st->playSize,0,st->playSize+inputSize-st->streamLen);
@@ -514,7 +516,6 @@ void playLocalMp3(const char *mp3file){
 #ifdef PALY_URL_SD
 void PlayUrl(const void *data){
 	char domain[64] = {0};
-	char filecmd[128]={0};
 	int port = 80;
 	char filename[128];
 	Player_t *play =(Player_t *)data;

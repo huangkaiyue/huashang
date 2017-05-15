@@ -33,7 +33,6 @@
 #define UNLOCK_SMART_CONFIG_WIFI	0	//对配网进行解锁
 
 extern int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void));//一键配网
-extern void startServiceWifi(void);
 extern int checkInternetFile(void);
 
 #endif

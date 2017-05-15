@@ -2,6 +2,7 @@
 #include "base/tools.h"
 #include "uart/uart.h"
 #include "systools.h"
+#include "log.h"
 #include "config.h"
 
 static ReacData data;
@@ -202,7 +203,7 @@ static int CacheUarl(void){
 		return -1;
 	}
 }
-static int handle_uartMsg(int fd ,unsigned char buf,int size){
+static void handle_uartMsg(int fd ,unsigned char buf,int size){
 	if(data.head==0x0){
 		data.head=buf;
 		DEBUG_UART("\n===head ===%x==\n",data.head);

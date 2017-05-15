@@ -4,7 +4,7 @@
 
 #define DBG_STD_MSG
 #ifdef DBG_STD_MSG
-#define DEBUG_STD_MSG(fmt, args...) printf("%s:" ,__func__,fmt, ## args)
+#define DEBUG_STD_MSG(fmt, args...) printf("%s: "fmt,__func__, ## args)
 #else   
 #define DEBUG_STD_MSG(fmt, args...) { }
 #endif	//end DBG_STD_MSG
@@ -16,7 +16,6 @@ typedef struct{
 	char *data;		//需要处理的数据	(上传语音到服务器数据、接受到服务器返回来的文本or链接地址 需要播放)
 	int dataSize;	//处理的数据大小
 }HandlerText_t;
-
 
 extern void ReqTulingServer(HandlerText_t *handText,const char *voices_type,const char* asr,int rate);
 extern int AddworkEvent(HandlerText_t *handText,int msgSize);

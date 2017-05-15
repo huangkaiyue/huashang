@@ -37,8 +37,8 @@ static TulingUser_t *tulingUser=NULL;
 static FILE *logfp=NULL;
 static int requestLogNum=0;
 static void GetDate(char *date){
-    const char* wday[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
-    const char* mon[]={"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+    //const char* wday[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+    //const char* mon[]={"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
     time_t timep;
     struct tm* p;
     time(&timep);
