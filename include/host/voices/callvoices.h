@@ -206,8 +206,8 @@ extern void SaveRecorderVoices(const char *voices_data,int size);
 #define PLAY_IS_COMPLETE		1		//完整播放   ---->适用在智能会话过渡音当中，不允许打断
 #define PLAY_IS_INTERRUPT		2		//可以打断播放
 
-extern void playspeekVoices(const char *filename,unsigned int playEventNums);
-extern void PlaySystemAmrVoices(const char *filePath,unsigned int playEventNums);
-extern void play_waitVoices(const char *filepath,unsigned int playEventNums);
+extern int playspeekVoices(const char *filename,unsigned int playEventNums);
+extern int PlaySystemAmrVoices(const char *filePath,unsigned int playEventNums);
+extern void PlayImportVoices(const char *filepath,unsigned int playEventNums);
 
 #endif

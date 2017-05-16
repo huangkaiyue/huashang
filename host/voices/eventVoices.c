@@ -657,7 +657,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			PlaySystemAmrVoices(SPEEK_WARNING,playEventNums);
 			break;
 		case TULING_WAIT_VOICES:
-			play_waitVoices(TULING_WINT,playEventNums);
+			PlayImportVoices(TULING_WINT,playEventNums);
 			printf("%s: play wait voices ok\n",__func__);
 			break;
 		default:

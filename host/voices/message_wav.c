@@ -17,21 +17,22 @@ void WritePcmData(char *data,int size){
 	I2S.play_size +=size;
 }
 //播放单声道wav格式音频数据
-static void PlaySignleWavVoices(const char *playfilename,unsigned char playMode,unsigned int playEventNums){
+static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,unsigned int playEventNums){
 	int r_size=0,pos=0;
 	char readbuf[2]={0};
+	int ret=0;
 	FILE *fp= fopen(playfilename,"r");
 	if(fp==NULL){
 		printf("open sys failed \n");
-		return ;
+		return -1;
 	}
 	SetWm8960Rate(RECODE_RATE);
 	fseek(fp,WAV_HEAD,SEEK_SET);		//跳过wav头部	
 	while(1){
 		if(playMode==PLAY_IS_INTERRUPT&&playEventNums!=GetCurrentEventNums()){
-			pause_record_audio();
 			CleanI2S_PlayCachedata();//清理
 			StopplayI2s();			 //最后一片数据丢掉
+			ret=-1;
 			break;
 		}	
 		r_size= fread(readbuf,1,2,fp);
@@ -56,21 +57,20 @@ static void PlaySignleWavVoices(const char *playfilename,unsigned char playMode,
 	}
 	fclose(fp);
 	memset(play_buf,0,I2S_PAGE_SIZE);
-	return ;
-exit:
-	pause_record_audio();
+	return ret;
 }
 //播放单声道amr格式音频数据
-static void playAmrVoices(const char *filename,unsigned char playMode,unsigned int playEventNums){
+static int playAmrVoices(const char *filename,unsigned char playMode,unsigned int playEventNums){
 	char *outfile ="speek.wav";
 	AmrToWav8k(filename,(const char *)outfile);
-	PlaySignleWavVoices((const char *)outfile,playMode,playEventNums);
+	int ret = PlaySignleWavVoices((const char *)outfile,playMode,playEventNums);
 	remove(outfile);
+	return ret;
 }
-static void __playAmrVoices(const char *filePath,unsigned char playMode,unsigned int playEventNums){
+static int __playAmrVoices(const char *filePath,unsigned char playMode,unsigned int playEventNums){
 	char path[128]={0};
 	snprintf(path,128,"%s%s",sysMes.localVoicesPath,filePath);
-	playAmrVoices(path,playMode,playEventNums);
+	return playAmrVoices(path,playMode,playEventNums);
 }
 
 
@@ -79,20 +79,21 @@ static void __playAmrVoices(const char *filePath,unsigned char playMode,unsigned
 @ filename:缓存到本地的wav数据的文件路径 (播放完需要删除)
 @
 *********************************************************/
-void playspeekVoices(const char *filename,unsigned int playEventNums){
-	playAmrVoices(filename,PLAY_IS_INTERRUPT,playEventNums);
+int playspeekVoices(const char *filename,unsigned int playEventNums){
+	int ret = playAmrVoices(filename,PLAY_IS_INTERRUPT,playEventNums);
 	remove(filename);
+	return ret;
 }
 /********************************************************
 @ 函数功能:	播放系统音
 @ filePath:	路径
 @ 返回值: 无
 *********************************************************/
-void PlaySystemAmrVoices(const char *filePath,unsigned int playEventNums){
-	__playAmrVoices(filePath,PLAY_IS_INTERRUPT,playEventNums);
+int PlaySystemAmrVoices(const char *filePath,unsigned int playEventNums){
+	return __playAmrVoices(filePath,PLAY_IS_INTERRUPT,playEventNums);
 }
 //播放过渡音，不允许打断
-void play_waitVoices(const char *filePath,unsigned int playEventNums){
+void PlayImportVoices(const char *filePath,unsigned int playEventNums){
 	__playAmrVoices(filePath,PLAY_IS_COMPLETE,playEventNums);
 }
 

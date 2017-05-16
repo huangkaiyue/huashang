@@ -24,11 +24,11 @@ static unsigned int newEventNums=0;
 
 #define TLJSONERNUM 9.0
 //解析图灵请求错误内容，播放本地已经录制好的音频
-static void playTulingRequestErrorVoices(unsigned int playEventNums){
+static int playTulingRequestErrorVoices(unsigned int playEventNums){
 	char buf[32]={0};
 	int i=(1+(int) (TLJSONERNUM*rand()/(RAND_MAX+1.0)));
 	snprintf(buf,32,"qtts/TulingJsonEr%d_8k.amr",i);
-	PlaySystemAmrVoices(buf,playEventNums);
+	return PlaySystemAmrVoices(buf,playEventNums);
 }
 /*
 @ 将录制的语音上传到图灵服务器
@@ -43,7 +43,6 @@ void ReqTulingServer(HandlerText_t *handText,const char *voices_type,const char*
 	if(GetCurrentEventNums()!=handText->EventNums){	//如果当前还是处于播放等待图灵状态，表明没有其他外部事件打断，添加进去播放请求图灵服务器失败
 		return;
 	}
-	pause_record_audio();	
 	if (err == -1){	//请求服务器失败
 		Create_PlaySystemEventVoices(REQUEST_FAILED_PLAY);//播放请求服务器数据失败
 		goto exit1;
@@ -114,20 +113,20 @@ static int parseJson_string(HandlerText_t *handText){
 	int err=-1;
 	if(NULL == handText->data){
 		return -1;
-    	}
-    	cJSON * pJson = cJSON_Parse(handText->data);
+    }
+    cJSON * pJson = cJSON_Parse(handText->data);
 	if(NULL == pJson){
-    		return -1;
-    	}
+    		goto exit1;
+    }
 	cJSON *pSub = cJSON_GetObjectItem(pJson, "token");//获取token的值，用于下一次请求时上传的校验值
 	if(pSub!=NULL){
 		//暂时定义，用于临时存放校验值，每请求一次服务器都返回token
 		updateTokenValue((const char *) pSub->valuestring);
 	}
-    	pSub = cJSON_GetObjectItem(pJson, "code");
-    	if(NULL == pSub){
+    pSub = cJSON_GetObjectItem(pJson, "code");
+   	if(NULL == pSub){
 		DEBUG_STD_MSG("get code failed\n");
-		goto exit0;
+		goto exit1;
 	}
 	DEBUG_STD_MSG("code : %d\n", pSub->valueint);
 	switch(pSub->valueint){
@@ -141,37 +140,45 @@ static int parseJson_string(HandlerText_t *handText){
 		case 40008:
 		case 40009:	//访问受限
 		case 40010:	//Token 错误 ,播放图灵错误内容
-			goto exit1;
+			goto exit2;
 		case 40011: 	//非法请求
 		case 40012:	//服务受限
 		case 40013: 	//缺少 Token
-			playTulingRequestErrorVoices(handText->EventNums);
-			err=0;
-			goto exit0;
+			if(playTulingRequestErrorVoices(handText->EventNums)){	//外部事件打断，不能切换录音线程状态
+				goto exit0;
+			}else{
+				goto exit1;
+			}
 	}
 	pSub = cJSON_GetObjectItem(pJson, "info");		//返回结果
-    	if(NULL == pSub){
+    if(NULL == pSub){
 		DEBUG_STD_MSG("get info failed\n");
-		goto exit0;
-    	}
+		goto exit1;
+    }
 	DEBUG_STD_MSG("info: %s\n",pSub->valuestring);			//语音识别出来的汉字	
 	Write_tulingTextLog(pSub->valuestring);
-	if(!CheckinfoText_forContorl((const char *)pSub->valuestring,handText->EventNums)){
-		err=-1;	//正确加载里面的文字内容，播放系统音
-		goto exit0;
+	char getPlayMusicName[128]={0};
+	int cmd = CheckinfoText_forContorl((const char *)pSub->valuestring,getPlayMusicName);
+	if(cmd<0){
+	}else{//正确加载里面的文字内容，播放系统音
+		if(HandlerPlay_checkTextResult(cmd,(const char *)getPlayMusicName,handText->EventNums)){
+			goto exit0;
+		}else{
+			goto exit1;
+		}
 	}
-exit1:	
+exit2:	
 	pSub = cJSON_GetObjectItem(pJson, "text");		//解析到说话的内容
 	if(NULL == pSub){
 		DEBUG_STD_MSG("get text failed\n");
-		goto exit0;
+		goto exit1;
 	}
 	DEBUG_STD_MSG("text: %s\n",pSub->valuestring);
 	pSub = cJSON_GetObjectItem(pJson, "ttsUrl");		//解析到说话的内容的链接地址，需要下载播放
-    	if(NULL == pSub||(!strcmp(pSub->valuestring,""))){	//如果出现空的链接地址，直接跳出
+    if(NULL == pSub||(!strcmp(pSub->valuestring,""))){	//如果出现空的链接地址，直接跳出
 		DEBUG_STD_MSG("get fileUrl failed\n");
-		goto exit0;
-    	}
+		goto exit1;
+    }
 	DEBUG_STD_MSG("ttsUrl: %s \n",pSub->valuestring);
 	char *ttsURL= pSub->valuestring;
 	
@@ -179,17 +186,17 @@ exit1:
 	if(NULL == pSub){	//直接播放语义之后的结果
 		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums,TULING_TEXT);
 		err=0;
-		goto exit0;
+		goto exit1;
 	}else{				//识别出有语义结果和mp3链接地址结果，先播放前面的语义内容，再播放mp3链接地址内容
 		if(!strcmp(pSub->valuestring,"")){//如果出现空的链接地址，直接跳出
 			free(ttsURL);
-			goto exit0;
+			goto exit1;
 		}
 		Player_t *player=(Player_t *)calloc(1,sizeof(Player_t));
 		if(player==NULL){
 			perror("calloc error !!!");
 			free(ttsURL);
-			goto exit0;
+			goto exit1;
 		}
 		snprintf(player->playfilename,128,"%s",pSub->valuestring);
 		snprintf(player->musicname,64,"%s","speek");
@@ -199,7 +206,7 @@ exit1:
 		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums,TULING_TEXT_MUSIC);
 		HandlerText_t *handMainMusic = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 		if(handMainMusic==NULL){
-			goto exit0;	
+			goto exit1;	
 		}
 		//添加歌曲也要标记当前事件编号
 		handMainMusic->EventNums =handText->EventNums;
@@ -207,6 +214,8 @@ exit1:
 		AddDownEvent((const char *)handMainMusic,TULING_URL_VOICES);
 		err=0;
 	}
+exit1:
+	pause_record_audio();
 exit0:
 	cJSON_Delete(pJson);
 	return err;
@@ -222,10 +231,7 @@ static void runJsonEvent(HandlerText_t *handText){
 #elif defined(DATOU_JIANG)
 	led_lr_oc(closeled);
 #endif
-	if(parseJson_string(handText)){
-		printf("parse json data or get resource failed \n");
-		pause_record_audio();
-	}
+	parseJson_string(handText);
 	free((void *)handText->data);
 	free((void *)handText);
 }
@@ -369,9 +375,9 @@ static void CleanEventMessage(const char *data,int msgSize){
 		free(data);
 #endif
 }
-#define START_PLAY_VOICES		1
-#define INTERRUPT_PLAY_VOICES	2
-
+#define START_PLAY_VOICES_LIST		1
+#define INTERRUPT_PLAY_VOICES_LIST	2
+#define CLEAN_PLAY_VOICES_LIST		3
 
 void putPcmDataToPlay(const void * data,int size){
 	putMsgQueue(PlayList,data,size); //添加到播放队列	
@@ -381,14 +387,15 @@ int getPlayVoicesQueueNums(void){
 }
 static void *PlayVoicesPthread(void *arg){
 	unsigned short playNetwork_pos=0;
-	unsigned char playSate=START_PLAY_VOICES;
+	unsigned char playSate=START_PLAY_VOICES_LIST;
 	int i=0,pcmSize=0,CleanendVoicesNums=0;
+	int CacheNums=0;//保存打断这次播放之后缓存队列nums 数
 	PlayList = initQueue();
 	char *data=NULL; 
 	
 	while(1){
 		switch(playSate){
-			case START_PLAY_VOICES:
+			case START_PLAY_VOICES_LIST:
 				//if(getWorkMsgNum(PlayList)==0){//当前队列为空，挂起播放		
 				//}
 				getMsgQueue(PlayList,&data,&pcmSize);
@@ -403,30 +410,36 @@ static void *PlayVoicesPthread(void *arg){
 							playNetwork_pos=0;
 						}
 						if(newEventNums!=GetCurrentEventNums()){	//当前播放事件编号和最新事件编号
-							free(data);
 							CleanendVoicesNums=4;	//清除尾部数据片
-							playSate=INTERRUPT_PLAY_VOICES;
+							playSate=INTERRUPT_PLAY_VOICES_LIST;
+							CacheNums =getWorkMsgNum(PlayList);
 							break;
 						}
 					}
 					free(data);
 				}
 				break;
-			case INTERRUPT_PLAY_VOICES:
-				if(getWorkMsgNum(PlayList)>0){
-					getMsgQueue(PlayList,&data,&pcmSize);
-				}
+			case INTERRUPT_PLAY_VOICES_LIST:
 #if 0		
 				CleanI2S_PlayCachedata();//清理
 				StopplayI2s();			 //最后一片数据丢掉
 #else		
 				if(--CleanendVoicesNums<=0){
-					playSate=INTERRUPT_PLAY_VOICES;
+					playSate=CLEAN_PLAY_VOICES_LIST;
 				}
 				memset(play_buf,0,I2S_PAGE_SIZE);
 				write_pcm(play_buf);
 				usleep(1000);
-#endif		
+#endif	
+
+				break;
+			case CLEAN_PLAY_VOICES_LIST:
+				if(getWorkMsgNum(PlayList)>0&&--CacheNums>0){
+					getMsgQueue(PlayList,&data,&pcmSize);
+					free(data);
+				}else{
+					playSate=START_PLAY_VOICES_LIST;
+				}
 				break;
 		}
 	}

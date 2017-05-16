@@ -173,7 +173,7 @@ static void Save_VoicesPackt(const char *data,int size){
 	int i;
 	if(data != NULL){
 		if((RV->len_voices+size) > (STD_RECODE_SIZE-WAV_HEAD)){//大于5秒的音频丢掉
-			test_Save_VoicesPackt_function_log((const char *)"STD_RECODE_SIZE exit1",RV->len_voices);
+			test_Save_VoicesPackt_function_log((const char *)"STD_RECODE_SIZE is >5s",RV->len_voices);
 			goto exit1;
 		}
 #if 0		
@@ -195,14 +195,17 @@ static void Save_VoicesPackt(const char *data,int size){
 #ifdef DATOU_JIANG	//在上传过程当中闪烁灯
 			led_lr_oc(openled);
 #endif
+			test_Save_VoicesPackt_function_log((const char *)"start upload",GetRecordeVoices_PthreadState());
 			Start_uploadVoicesData();		//开始上传语音
 			goto exit0;
 		}
 		else if(RV->len_voices < VOICES_ERR){			//
+			test_Save_VoicesPackt_function_log((const char *)"< VOICES_ERR",GetRecordeVoices_PthreadState());
 			goto exit1;	//误触发
 		}
 		else{	//VOICES_ERR --->VOICES_MIN 区间的音频，认定为无效音频
 			//Create_PlaySystemEventVoices(AI_KEY_TALK_ERROR);
+			test_Save_VoicesPackt_function_log((const char *)"< VOICES_MIN",GetRecordeVoices_PthreadState());
 			goto exit1;
 		}
 	}
@@ -212,7 +215,6 @@ exit1:
 exit0:
 	memset(RV->buf_voices,0,RV->len_voices);
 	RV->len_voices = 0;
-	test_Save_VoicesPackt_function_log((const char *)"exit Save_VoicesPackt ok",GetRecordeVoices_PthreadState());
 	return ;
 }
 //关机，将当前系统时间发送给MCU
@@ -330,7 +332,7 @@ void InitRecord_VoicesPthread(void){
         exit(-1);
 	}
 #if defined(HUASHANG_JIAOYU)
-	play_waitVoices(WELCOME_PLAY,0);
+	PlayImportVoices(WELCOME_PLAY,0);
 #else
 	play_waitVoices(START_SYS_VOICES,0);//开机启动音
 #endif
