@@ -6,34 +6,6 @@
 #include "../host/studyvoices/qtts_qisc.h"
 #include "host/voices/wm8960i2s.h"
 
-//----------------------------权限次数-------------------------------------
-#ifdef	SYSTEMLOCK
-//设置权限次数
-void setSystemLock(int size){
-	char buf_s[64]={0};
-	sprintf(buf_s,"%s %d", "nvram_set 2860 SystemLock", size);
-	system(buf_s);
-	//nvram_bufset(RT2860_NVRAM, "VoiceSIZE",buf_s);
-}
-//获取权限次数,检查是否到达上线
-void checkSystemLock(void){
-	char *number = nvram_bufget(RT2860_NVRAM, "SystemLock");
-	int opennumber = (unsigned char)atoi(number);
-	if(opennumber>SYSTEMLOCKNUM){	//检查开机次数
-		Create_PlayQttsEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
-		sleep(10);
-		Create_PlayQttsEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
-		sleep(10);
-		Create_PlayQttsEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
-		sleep(10);
-		Create_PlayQttsEvent("权限次数不够。请联系软件所属公司，深圳日晖网讯有限公司，常先生。或者唐工 QQ ：121109281。",QTTS_GBK);
-		sleep(10);
-		SetMucClose_Time(1);
-	}
-	setSystemLock((opennumber+1));
-}
-#endif
-
 //----------------------------音量-------------------------------------
 //从路由表当中获取音量
 void GetVol_formRouteTable(unsigned char *size){

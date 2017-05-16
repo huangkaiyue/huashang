@@ -35,7 +35,6 @@ all +=usrdb/sysdata.o
 
 all +=host/voices/wm8960i2s.o
 all +=host/voices/callvoices.o
-#all +=host/voices/amrwb-enc.o
 all +=host/voices/message_wav.o
 all +=host/voices/eventVoices.o
 all +=host/voices/gpio_7620.o

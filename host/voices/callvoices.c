@@ -30,8 +30,7 @@ struct wave_pcm_hdr pcmwavhdr = {
 	0  
 };
 
-#if defined(MY_HTTP_REQ)
-//将录制的8k语音转换成16k语音
+#if defined(MY_HTTP_REQ)	//将录制的8k语音转换成16k语音
 static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen){
 	int pos=0,npos=0;
 	for(pos=0;pos<inputLen;pos+=2){
@@ -41,8 +40,7 @@ static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen)
 		npos+=2;
 	}
 }
-#else
-//将8k语音转换成16k语音，并写入到文件当中
+#else					//将8k语音转换成16k语音，并写入到文件当中
 static int PcmVoice8kTo16k_File(const char *inputdata,const char *outfilename,int inputLen){
 	FILE *fp=NULL;
 	fp = fopen(outfilename,"w+");
@@ -153,7 +151,7 @@ static void Start_uploadVoicesData(void){
 #if defined(HUASHANG_JIAOYU)
 	Show_SmartTalkKey();	//显示智能会话表情
 #else
-	Create_PlayTulingWaitVoices(TULING_WAIT_VOICES);
+	Create_PlayImportVoices(TULING_WAIT_VOICES);
 	usleep(200);
 #endif	
 	HandlerText_t *up = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));

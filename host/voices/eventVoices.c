@@ -83,20 +83,20 @@ void ShortKeyDown_ForPlayWifiMessage(void){
 		if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
 			return;
 		}
-		char buf[128]={0};
+		char wifiMessage[128]={0};
 		char *wifi = nvram_bufget(RT2860_NVRAM, "ApCliSsid");
 		if(strlen(wifi)<=0){
 			printf("read wifi failed \n");
 			return ;
 		}
-#ifdef DEBUG_SYSTEM_IP
+#ifdef DEBUG_PLAY_SYSTEM_IP
 		char IP[20]={0};
 		GetNetworkcardIp((char * )"apcli0",IP);
-		snprintf(buf,128,"已连接 wifi %s  IP地址是 %s",wifi,IP);
+		snprintf(wifiMessage,128,"已连接 wifi %s  IP地址是 %s",wifi,IP);
 #else
-		snprintf(buf,128,"已连接 wifi %s ",wifi);
+		snprintf(wifiMessage,128,"已连接 wifi %s ",wifi);
 #endif	
-		Create_PlayQttsEvent(buf,QTTS_GBK);
+		Create_PlayQttsEvent(wifiMessage,QTTS_GBK);
 	}
 }
 
@@ -162,11 +162,8 @@ int __AddNetWork_UrlForPaly(const void *data){
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		goto exit0;
 	}
-	if(GetRecordeVoices_PthreadState() == PLAY_WAV){
-		WritePlayUrl_Log("add failed ,reocde voices pthread is PLAY_WAV\n");
-		goto exit0;
-	}else if(GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
-		goto exit0;
+	if(GetRecordeVoices_PthreadState() == START_SPEEK_VOICES||GetRecordeVoices_PthreadState() == START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() == END_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==PLAY_WAV){	
+		return -1;
 	}
 	int ret=-1;
 	HandlerText_t *handEvent = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
@@ -174,7 +171,10 @@ int __AddNetWork_UrlForPaly(const void *data){
 		WritePlayUrl_Log("add url ok\n");
 		handEvent->data = data;
 		handEvent->event=URL_VOICES_EVENT;
+		handEvent->EventNums=updateCurrentEventNums();
 		ret = AddworkEvent(handEvent,sizeof(HandlerText_t));
+	}else{
+		goto exit0;
 	}
 	return ret;
 exit0:
@@ -197,10 +197,7 @@ int __AddLocalMp3ForPaly(const char *localpath){
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		return -1;
 	}
-	if(GetRecordeVoices_PthreadState() == PLAY_WAV){	//处于播放qtts文件
-		DEBUG_EVENT(" PLAY_WAV \n");
-		return -1;
-	}else if(GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
+	if(GetRecordeVoices_PthreadState() == START_SPEEK_VOICES||GetRecordeVoices_PthreadState() == START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() == END_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==PLAY_WAV){	
 		return -1;
 	}
 	int ret=-1;
@@ -211,8 +208,8 @@ int __AddLocalMp3ForPaly(const char *localpath){
 			perror("calloc error !!!");
 			goto exit0;
 		}
-		sprintf(URL,"%s",localpath);		
-
+		sprintf(URL,"%s",localpath);	
+		handEvent->EventNums=updateCurrentEventNums();
 		handEvent->data = URL;
 		handEvent->event=LOCAL_MP3_EVENT;
 		ret = AddworkEvent(handEvent,sizeof(HandlerText_t));
@@ -320,20 +317,12 @@ void Create_CleanUrlEvent(void){
 返回值: 无
 ********************************************************/
 void Create_PlayQttsEvent(const char *txt,int type){
-	if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES){		
-		return;
-	}
-	if(GetRecordeVoices_PthreadState() == PLAY_WAV){	//解决在智能会话过程当中，添加播放系统语音、播放wifi 名字导致的死机现象  2017-3-26 
-		printf("%s: current is play wav\n",__func__);
-		return ;
-	}
-	if (GetRecordeVoices_PthreadState() == PLAY_DING_VOICES){
-		return ;
-	}
 	if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
 		return;
 	}	
-	if (GetRecordeVoices_PthreadState() == PLAY_URL){	//当前播放歌曲
+	if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES){
+		return;
+	}else if (GetRecordeVoices_PthreadState() == PLAY_URL){	//当前播放歌曲
 		Create_CleanUrlEvent();
 	}
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
@@ -450,44 +439,22 @@ static void Handle_PlayTaiBenToNONetWork(unsigned int playEventNums){
 	snprintf(file,64,"qtts/network_error_8K_%d.amr",i);
 	PlaySystemAmrVoices(file,playEventNums);
 }
-static void CreateCloseSystemLock(void){
+static void CreateCloseSystemLockFile(void){
 	FILE *fp = fopen(CLOSE_SYSTEM_LOCK_FILE,"w+");
 	if(fp){
 		fclose(fp);
 	}
 }
-//串口事件回调函数
-void UartEventcallFuntion(int event){
-	if(event==UART_EVENT_CLOSE_SYSTEM){	//结束音退出事件	
-		showFacePicture(CLOSE_SYSTEM_PICTURE);
-		CreateCloseSystemLock();
-#ifdef PALY_URL_SD
-		pool_add_task(Close_Mtk76xxSystem,NULL);//关机删除，长时间不用的文件
-#endif
-		cleanQuequeEvent();	//清理队列
-		if(GetRecordeVoices_PthreadState()==PLAY_WAV){
-		}
-		if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
-			NetStreamExitFile();
-		}
-		//创建一个播放系统结束音
-		Create_PlaySystemEventVoices(END_SYS_VOICES_PLAY);
-	}else if(event==UART_EVENT_LOW_BASTERRY){
-		Create_PlaySystemEventVoices(LOW_BATTERY_PLAY);
-	}	
-} 
-
 /*******************************************************
 函数功能: 创建一个播放系统声音事件，
 参数: sys_voices 系统音标号	
 返回值: 无
 ********************************************************/
 void Create_PlaySystemEventVoices(int sys_voices){
-	if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
-		return;
-	}
-	else if(GetRecordeVoices_PthreadState() ==PLAY_URL){
+	if(GetRecordeVoices_PthreadState() ==PLAY_URL){
 		Create_CleanUrlEvent();
+	}else if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES){
+		return;
 	}
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext){
@@ -498,8 +465,8 @@ void Create_PlaySystemEventVoices(int sys_voices){
 	}	
 	
 }
-//添加播放过渡音事件
-void Create_PlayTulingWaitVoices(int sys_voices){
+//添加播放过渡音、关机音等重要声音
+void Create_PlayImportVoices(int sys_voices){
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext){
 		handtext->event =SYS_VOICES_EVENT;
@@ -508,6 +475,21 @@ void Create_PlayTulingWaitVoices(int sys_voices){
 		AddworkEvent(handtext,sizeof(HandlerText_t));
 	}
 }
+//串口事件回调函数
+void UartEventcallFuntion(int event){
+	updateCurrentEventNums();
+	if(event==UART_EVENT_CLOSE_SYSTEM){	//结束音退出事件	
+		showFacePicture(CLOSE_SYSTEM_PICTURE);
+		disable_gpio();					//关闭gpio中断功能,防止关机过程再产生按键事件
+		CreateCloseSystemLockFile();
+		pool_add_task(Close_Mtk76xxSystem,NULL);//关机处理和保存后台数据
+		cleanQuequeEvent();				//清理事件队列，保证能够播放语音
+		Create_PlayImportVoices(END_SYS_VOICES_PLAY);//创建一个播放系统结束音
+	}else if(event==UART_EVENT_LOW_BASTERRY){
+		Create_PlayImportVoices(LOW_BATTERY_PLAY);
+	}	
+} 
+
 /*******************************************************
 函数功能: 系统音事件处理函数
 参数: sys_voices 系统音标号
@@ -526,7 +508,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			open_sys_led();
 #endif
 			led_lr_oc(closeled);
-			usleep(500*1000);
+			usleep(800*1000);
 			Mute_voices(MUTE);		//关闭功放
 			break;
 		case LOW_BATTERY_PLAY:						//低电关机
@@ -832,8 +814,8 @@ void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 		start_speek_wait();
 		endtime=time(&t);
 		voicesTime = endtime - speek->Starttime;
+		start_event_play_wav();
 		if(voicesTime<2||voicesTime>10){//时间太短或太长
-			pause_record_audio();
 			shortVoicesClean();
 			PlaySystemAmrVoices(SEND_ERROR,playEventNums);
 			return ;

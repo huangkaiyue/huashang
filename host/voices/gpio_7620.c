@@ -122,7 +122,7 @@ static void keyDownAck_userBind(void){
 		Create_PlaySystemEventVoices(BIND_OK_PLAY);
 		gpio.bindsign=BIND_DEV_ER;
 	}else{//没有接收到绑定请求
-		Create_PlayQttsEvent("快去邀请小伙伴一起来聊天吧。",QTTS_GBK);
+		Create_PlayQttsEvent("小朋友请让爸爸妈妈在微信界面当中邀请小伙伴一起来聊天吧。",QTTS_GBK);
 	}
 }
 //响应微信呼叫请求

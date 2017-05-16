@@ -101,20 +101,20 @@ void play_waitVoices(const char *filePath,unsigned int playEventNums){
 @ text:文本		type:文本类型
 @ 返回值: 无
 *********************************************************/
-void PlayQttsText(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums){
+int PlayQttsText(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums){
+	int ret =-1;
 	SetWm8960Rate(RECODE_RATE);
 	char *textbuf= (char *)calloc(1,strlen(text)+2);
 	if(textbuf==NULL){
 		perror("calloc error !!!");
-		goto exit;
+		return ret;
 	}
 	sprintf(textbuf,"%s%s",text,",");	//文本尾部添加",",保证文本播报出来
 	PlayQtts_log("play qtts start\n");
-	Qtts_voices_text(textbuf,type,playVoicesName,playEventNums);
+	ret =Qtts_voices_text(textbuf,type,playVoicesName,playEventNums);
 	free(textbuf);
-	return ;
-exit:
-	pause_record_audio();
+	return ret;
+
 }
 /********************************************************
 @ 函数功能:	播放图灵数据

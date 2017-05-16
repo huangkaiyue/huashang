@@ -15,7 +15,6 @@
 #define HUASHANG_JIAOYU
 //----------------------åŠŸèƒ½ç±»-----------------------------------
 
-#define SYSTEMLOCK				//æµ‹è¯•ç‰ˆæœ¬é™åˆ¶å¼€æœºæ¬¡æ•°
 #define CLOCESYSTEM				//è¶…æ—¶é€€å‡º
 //#define CLOSE_VOICE				//ä¸å·¥ä½œå¤„äºŽå…³é—­éŸ³é¢‘çŠ¶æ€
 #define SELECT_UDP				//å°†udpæ·»åŠ åˆ°select å½“ä¸­
@@ -89,10 +88,7 @@
 #define MP3_LIKEPATHLEN		sizeof(MP3_LIKEPATH)
 #endif
 
-#define SYSTEMLOCKNUM	500		//é™åˆ¶æ¬¡æ•°
-
-
-//#define DEBUG_SYSTEM_IP					//¿ªÆô°´¼ü°´ÏÂÓïÒô²¥·Åwifi ºÍIP µØÖ·¹¦ÄÜ
+//#define DEBUG_PLAY_SYSTEM_IP			//¿ªÆô°´¼ü°´ÏÂÓïÒô²¥·Åwifi ºÍIP µØÖ·¹¦ÄÜ
 //#define TEST_PLAY_EQ_MUSIC			//²âÊÔÒôÐ§		
 //#define PCM_TEST						//²âÊÔ±£´æpcmÎÄ¼þ
 

@@ -288,14 +288,12 @@ static void NetEndDown(int downLen){
 
 //退出当前流下载和播放
 void NetStreamExitFile(void){
-	//DEBUG_STREAM("NetStreamExitFile start (%d)...\n",getDownState());
 	if(getDownState()==DOWN_ING){		//退出下载
 		quitDownFile();
 		WriteEventlockLog("eventlock quitDownFile \n",2);
 	}
 	WriteEventlockLog("rate \n",st->rate);
 	int error_timeout_check=0;
-	//DEBUG_STREAM("=====NetStreamExitFile getDownState (%d)...\n",st->player.playState);
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//退出播放
 		pthread_mutex_lock(&st->mutex);
 		st->player.progress=0;
@@ -305,7 +303,7 @@ void NetStreamExitFile(void){
 		DecodeExit();
 		pthread_mutex_unlock(&st->mutex);
 		WriteEventlockLog("eventlock wait exit mp3 state \n",(int)st->player.playState);
-		DEBUG_STREAM("NetStreamExitFile while ...\n");
+		DEBUG_STREAM(" while wait exit ...\n");
 		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
 			WriteEventlockLog("error exit ,and set  \n",(int)st->player.playState);
 			st->player.playState=MAD_NEXT;
@@ -318,7 +316,7 @@ void NetStreamExitFile(void){
 		}
 		usleep(100);
 	}
-	DEBUG_STREAM("NetStreamExitFile end ...\n");
+	DEBUG_STREAM(" end ...\n");
 	WriteEventlockLog("eventlock exit end\n",4);
 }
 

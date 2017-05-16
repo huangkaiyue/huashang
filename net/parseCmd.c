@@ -512,23 +512,6 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		test_brocastCtr(sockfd,peer,recvdata);
 	}else if(!strcmp(pSub->valuestring,"qtts")){
 		Create_PlayQttsEvent(cJSON_GetObjectItem(pJson, "text")->valuestring,QTTS_UTF8);
-#ifdef	SYSTEMLOCK
-		if(!strcmp((cJSON_GetObjectItem(pJson, "text")->valuestring),"***rihuiwangxun_open***"))
-			setSystemLock(0);
-		if(!strcmp((cJSON_GetObjectItem(pJson, "text")->valuestring),"***rihuiwangxun_close***"))
-			setSystemLock(SYSTEMLOCKNUM);
-#endif
-#ifdef CLOCKTOALIYUN
-		if(strstr((cJSON_GetObjectItem(pJson, "text")->valuestring),"set_clock")){
-			char *data=cJSON_GetObjectItem(pJson, "text")->valuestring;
-			char time[12]={0};
-			char path[12]={0};
-			char state[12]={0};
-			char clocknum[12]={0};
-			sscanf(data,"set_clock:%[^:]:%[^:]:%[^:]:%s",clocknum,state,path,time);
-			SetClockToaliyun(atoi(clocknum),atoi(state),time,path);
-		}
-#endif
 	}
 	else if (!strcmp(pSub->valuestring,"speek")){//Î¢ÐÅ¶Ô½²
 		CreatePlayWeixinVoicesSpeekEvent((const char *)cJSON_GetObjectItem(pJson, "file")->valuestring);

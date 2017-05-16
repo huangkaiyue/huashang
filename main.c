@@ -97,9 +97,6 @@ static void loadLocalServer(int argc,char *argv[]){
 #ifdef	LED_LR
 	led_lr_oc(closeled);
 #endif
-#ifdef SYSTEMLOCK
-	checkSystemLock();
-#endif
 	srand((unsigned)time(NULL));	//取随机数基数
 	mkdir(CACHE_WAV_PATH,777);
 }

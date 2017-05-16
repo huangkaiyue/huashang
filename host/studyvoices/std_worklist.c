@@ -74,16 +74,17 @@ exit1:
 playUrl:云端语义结果播放链接地址
 playText: 云端语义解析内容
 */
-static void playTulingQtts(const char *playUrl,const char *playText,unsigned int playEventNums,unsigned short playLocalVoicesIndex){
+static int playTulingQtts(const char *playUrl,const char *playText,unsigned int playEventNums,unsigned short playLocalVoicesIndex){
+	int ret =-1;
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext==NULL){
-		return ;		
+		return ret;		
 	}
 	handtext->data= (char *)calloc(1,strlen(playUrl)+1);
 	if( handtext->data==NULL){
 		perror("calloc error !!!");
 		free(handtext);
-		return ;
+		return ret;
 	}
 	sprintf(handtext->data,"%s",playUrl);
 	DEBUG_STD_MSG("handtext->data:%s\n", handtext->data);
@@ -95,7 +96,7 @@ static void playTulingQtts(const char *playUrl,const char *playText,unsigned int
 	//Huashang_changePlayVoicesName();	//用于测试用，切换播音人
 	GetPlayVoicesName(playVoicesName);
 	if(!strcmp(playVoicesName,"tuling")){	//当前播音人采用图灵的
-		AddDownEvent((const char *)handtext,TULING_URL_MAIN);
+		ret =AddDownEvent((const char *)handtext,TULING_URL_MAIN);
 	}else{
 		PlayQttsText(playText,QTTS_UTF8,playVoicesName,playEventNums);	
 	}
@@ -318,8 +319,10 @@ static void HandleEventMessage(const char *data,int msgSize){
 			break;
 #endif		
 		case QTTS_PLAY_EVENT:		//QTTS事件
+			start_event_play_wav();
 			newEventNums=handText->EventNums;
 			PlayQttsText(handText->data,handText->playLocalVoicesIndex,"vinn",handText->EventNums);
+			pause_record_audio();
 			free((void *)handText->data);
 			free((void *)handText);
 			break;
