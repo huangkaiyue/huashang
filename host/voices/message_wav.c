@@ -102,7 +102,7 @@ void PlayImportVoices(const char *filePath,unsigned int playEventNums){
 @ text:文本		type:文本类型
 @ 返回值: 无
 *********************************************************/
-int PlayQttsText(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums){
+int PlayQttsText(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed){
 	int ret =-1;
 	SetWm8960Rate(RECODE_RATE);
 	char *textbuf= (char *)calloc(1,strlen(text)+2);
@@ -112,7 +112,7 @@ int PlayQttsText(const char *text,unsigned char type,const char *playVoicesName,
 	}
 	sprintf(textbuf,"%s%s",text,",");	//文本尾部添加",",保证文本播报出来
 	PlayQtts_log("play qtts start\n");
-	ret =Qtts_voices_text(textbuf,type,playVoicesName,playEventNums);
+	ret =Qtts_voices_text(textbuf,type,playVoicesName,playEventNums,playSpeed);
 	free(textbuf);
 	return ret;
 

@@ -113,7 +113,12 @@ void led_lr_oc(unsigned char type){
 			break;
 	}
 }
-
+//设备恢复出厂设置
+void ResetHostDevicesFactory(void){
+	ResetWeixinBindUserMessage();
+	Create_PlaySystemEventVoices(RESET_HOST_V_PLAY);
+	system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
+}
 #if defined(QITUTU_SHI)||defined(HUASHANG_JIAOYU)
 //按键按下绑定用户请求
 static void keyDownAck_userBind(void){
@@ -138,10 +143,14 @@ static void Ack_WeixinCall(void){
 	}
 }
 static void keyDown_AndSetGpioFor_play(void){
-	ioctl(gpio.fd, AUDIO_IC_CONTROL,0x01);//按下
+	if(GetRecordeVoices_PthreadState()!=PLAY_URL){
+		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x01);//按下
+	}
 }
 static void keyUp_AndSetGpioFor_play(void){
-	ioctl(gpio.fd, AUDIO_IC_CONTROL,0x20);//弹起
+	if(GetRecordeVoices_PthreadState()!=PLAY_URL){
+		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x20);//弹起
+	}
 }	
 #endif
 
@@ -353,8 +362,7 @@ static void signal_handler(int signum){
 	else if (signum == GPIO_DOWN){	//长按按键事件
 		switch(gpio.mount){
 			case RESET_KEY://恢复出厂设置
-				Create_PlaySystemEventVoices(RESET_HOST_V_PLAY);	//需要修改语音如下:
-				system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
+				ResetHostDevicesFactory();
 				break;
 					
 			case RESERVE_KEY2://会话对讲开关键
@@ -438,8 +446,9 @@ static void signal_handler(int signum){
 		switch(gpio.mount){
 			case NETWORK_KEY:		//播报WiFi名
 #ifdef TEST_PLAY_KEY
-				keydown_flashingLED();
-				GpioKey_SetStreamPlayState();
+//				keydown_flashingLED();
+//				GpioKey_SetStreamPlayState();
+				ResetHostDevicesFactory();
 				break;
 #endif
 				ShortKeyDown_ForPlayWifiMessage();
@@ -489,8 +498,7 @@ static void signal_handler(int signum){
 	else if (signum == GPIO_DOWN){	//长按按键事件
 		switch(gpio.mount){
 			case RESET_KEY://恢复出厂设置
-				Create_PlaySystemEventVoices(RESET_HOST_V_PLAY);	//需要修改语音如下:
-				system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
+				ResetHostDevicesFactory();
 				break;
 					
 			case RESERVE_KEY2://会话对讲开关键
@@ -661,8 +669,7 @@ static void signal_handler(int signum){
 	else if (signum == GPIO_DOWN){
 		switch(gpio.mount){
 			case RESET_KEY://恢复出厂设置
-				Create_PlaySystemEventVoices(RESET_HOST_V_PLAY);
-				system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
+				ResetHostDevicesFactory();
 				break;
 					
 			case RESERVE_KEY2://会话对讲开关键
@@ -738,8 +745,7 @@ static void signal_handler(int signum){
 	else if (signum == GPIO_DOWN){
 		switch(gpio.mount){
 			case RESET_KEY://恢复出厂设置
-				Create_PlaySystemEventVoices(RESET_HOST_V_PLAY);
-				system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
+				ResetHostDevicesFactory();
 				break;
 				
 			case NETWORK_KEY://配网键

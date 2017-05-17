@@ -141,6 +141,7 @@ static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 #if defined(HUASHANG_JIAOYU)
 	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
 		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_NETWORK);
+		free((void *)hand);
 	}else{
 		free((void *)hand->data);
 		free((void *)hand);
@@ -174,13 +175,15 @@ static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
 	if(hand->EventNums!=GetCurrentEventNums()){
 		goto exit0;
 	}
+	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic startplay");
 	start_event_play_url(); 	
-	usleep(500*1000);
+	usleep(300*1000);
 #ifdef PALY_URL_SD
 	PlayUrl((const void *)hand->data);
 #else
 	NetStreamDownFilePlay((const void *)hand->data);
 #endif
+	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic endplay");
 exit0:
 	free((void *)hand->data);
 	free((void *)hand);
@@ -225,7 +228,7 @@ int main(int argc, char **argv){
 				}
 				break;
 			case LOCAL_MP3_EVENT:	//本地播放
-				Main_Thread_AddPlayLocalSdcard_Music((const char *)msg);
+				Main_Thread_AddPlayLocalSdcard_Music((HandlerText_t *)msg);
 				break;		
 #ifdef PALY_URL_SD
 			case WEIXIN_DOWN_MP3_EVENT:	//微信端下载歌曲事件	

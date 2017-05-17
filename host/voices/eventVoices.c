@@ -324,6 +324,7 @@ void Create_PlayQttsEvent(const char *txt,int type){
 		return;
 	}else if (GetRecordeVoices_PthreadState() == PLAY_URL){	//当前播放歌曲
 		Create_CleanUrlEvent();
+		return;
 	}
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext){
@@ -337,7 +338,26 @@ void Create_PlayQttsEvent(const char *txt,int type){
 		}
 	}
 }
+void Handler_PlayQttsEvent(HandlerText_t *handText){
+	char xunPlayname[24]={0};
+	start_event_play_wav();
+	int playSpeed=0;
+#if defined(HUASHANG_JIAOYU)
+	GetPlayVoicesName(xunPlayname,&playSpeed);	
+	if(!strncmp(xunPlayname,"tuling",6)){
+		memset(xunPlayname,0,24);
+		snprintf(xunPlayname,24,"%s","vinn");
+	}
+#else
+	snprintf(xunPlayname,24,"%s","vinn");
+#endif
+	if(PlayQttsText(handText->data,handText->playLocalVoicesIndex,xunPlayname,handText->EventNums,playSpeed)==0){
+		pause_record_audio();
+	}
+	free((void *)handText->data);
+	free((void *)handText);
 
+}
 /*******************************************************
 函数功能: 会话按键按下信号,启动录音 
 参数: 无
@@ -535,6 +555,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 		case CONNET_ING_PLAY:			//正在连接，请稍等
 			showFacePicture(CONNECT_WIFI_ING_PICTURE);//正在连接wifi 		
 			PlaySystemAmrVoices(CHANGE_NETWORK,playEventNums);
+			start_event_play_wav();
 			PlaySystemAmrVoices(CONNET_TIME,playEventNums);
 			break;
 		case START_SMARTCONFIG_PLAY:		//启动配网
@@ -780,6 +801,8 @@ void Create_WeixinSpeekEvent(unsigned int gpioState){
 		return;
 	}else if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
 		return;
+	}else if(GetRecordeVoices_PthreadState() ==PLAY_WAV){
+		return;
 	}
 	DEBUG_EVENT("state %d\n",gpioState);
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
@@ -805,6 +828,7 @@ void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 		}else{
 			speek->Starttime=time(&t);
 			start_event_talk_message();
+			speek->freeVoiceNums=2;
 		}
 	}else if(gpioState==VOLKEYUP){			//弹起
 		DEBUG_EVENT("state(%d)\n",gpioState);
@@ -831,6 +855,12 @@ void SaveRecorderVoices(const char *voices_data,int size){
 	int i=0;
 	int endtime;
 	time_t t;
+#if defined(HUASHANG_JIAOYU)	
+	if(speek->freeVoiceNums>0){
+		speek->freeVoiceNums--;
+		return;
+	}
+#endif	
 	pthread_mutex_lock(&speek->mutex);
 	if(speek->savefilefp!=NULL){
 		endtime=time(&t);

@@ -257,6 +257,7 @@ void Mute_voices(unsigned char stat)
 int SetWm8960Rate(unsigned short rate){
 	I2S.play_size=0;
 	if(I2S.lockSetRate==1){
+		WriteRateTextLog("lockStateRate",I2S.tx_rate);
 		return -1;
 	}
 	I2S.lockSetRate=1;
@@ -266,9 +267,10 @@ int SetWm8960Rate(unsigned short rate){
 		Mute_voices(UNMUTE);
 #endif
 		I2S.lockSetRate=0;
+		WriteRateTextLog("Rate equal",rate);
 		return 0;
 	}
-	
+	WriteRateTextLog("set rate",I2S.tx_rate);
 	Mute_voices(MUTE);
 	set_rx_state(I2S.i2s_fd,0);		//先关闭发送和接收，切换采样率
 	set_tx_state(I2S.i2s_fd,0);

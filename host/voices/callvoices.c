@@ -270,10 +270,12 @@ static void *PthreadRecordVoices(void *arg){
 			}else{
 				starttime=time(&t);
 			}
+#if 0		
 			if((endtime-sysMes.Playlocaltime)>PLAYOUTTIME&&GetRecordeVoices_PthreadState()==PLAY_URL){
 				SetRecordeVoices_PthreadState(PLAY_OUT);
 				TimeLog("PLAY_OUT\n");
 			}
+#endif			
 		}
 #endif
 		switch(GetRecordeVoices_PthreadState()){

@@ -172,7 +172,7 @@ void TimeLog(const char *data){
 #endif
 }
 
-void RequestTulingLog(const char *data,unsigned char err){
+void RequestTulingLog(const char *data){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
 	char buf[128];
@@ -181,7 +181,7 @@ void RequestTulingLog(const char *data,unsigned char err){
 	}else{
 		fp =fopen("/log/request_tuling.log","a+");
 	}
-	sprintf(buf,"err:%d %s\n",err,data);
+	sprintf(buf,"%s\n",data);
 	if(NULL == fp ){
 		return ;
     }
@@ -376,4 +376,19 @@ void Write_huashangTextLog(const char *text){
 	}
 	return ;
 #endif	
+}
+void WriteRateTextLog(const char *text,int rate){
+#ifdef ENABLE_LOG	
+		FILE *fplog = NULL;
+		fplog =fopen("/log/commonRate.log","a+");		
+		if(NULL == fplog ){
+			return ;
+		}
+		if(fplog){
+			fprintf(fplog,"%s %d\n",text,rate);
+			fclose(fplog);
+		}
+		return ;
+#endif	
+
 }

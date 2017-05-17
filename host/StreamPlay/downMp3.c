@@ -7,6 +7,9 @@
 #include "../studyvoices/qtts_qisc.h"
 static unsigned int playTulingEventNums=0;
 static int playRet=-1;
+#define PLAY_FINNISH	0
+#define INTERRUPT_PLAY	-1
+
 //开始下载, 接口兼容，需要去掉streamLen
 static void tulingStartDown(const char *filename,int streamLen){
 	initputPcmdata();
@@ -18,7 +21,7 @@ static void tulingStartDown(const char *filename,int streamLen){
 static void  tulingGetStreamData(const char *data,int size){
 	if(playTulingEventNums!=GetCurrentEventNums()){
 		quitDownFile();
-		playRet=-1;
+		playRet=INTERRUPT_PLAY;
 		return;
 	}
 	putPcmStreamToQueue((const void *)data,size);
@@ -32,17 +35,19 @@ static void  tulingEndDown(int downLen){
 int downTulingMp3_forPlay(HandlerText_t *handtext){
 	SetWm8960Rate(RECODE_RATE); 
 	setDowning();
-	playRet=0;
-	RequestTulingLog("downTulingMp3_forPlay start",1);
+	playRet=PLAY_FINNISH;
+	RequestTulingLog("downTulingMp3_forPlay start");
 	playTulingEventNums = handtext->EventNums;
+	SetPlayFinnishKeepRecodeState(UPDATE_RECORD_STATE);
 	demoDownFile(handtext->data,10,tulingStartDown,tulingGetStreamData,tulingEndDown);
 	if(handtext->playLocalVoicesIndex==TULING_TEXT_MUSIC){	//表示播放图灵请求的故事和歌曲
-		while(getPlayVoicesQueueNums()>0&&playRet==0){	
-			usleep(1000);
-		}
+		SetPlayFinnishKeepRecodeState(KEEP_RECORD_STATE);
+		RequestTulingLog((const char *)"downTulingMp3_forPlay wait play");
+		while(getPlayVoicesQueueNums()>0&&playTulingEventNums==GetCurrentEventNums()){	
+			usleep(1000);//等待图灵前缀声音播放完
+		}		
 	}
-	pause_record_audio();
-	RequestTulingLog("downTulingMp3_forPlay end",1);
+	RequestTulingLog("downTulingMp3_forPlay end");
 	free((void *)handtext->data);
 	free((void *)handtext);
 	return playRet;

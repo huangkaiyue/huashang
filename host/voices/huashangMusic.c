@@ -138,7 +138,7 @@ void Huashang_keyDown_playkeyVoices(int state){
 
 void Huashang_changePlayVoicesName(void){
 	if(hsUser!=NULL){
-		if(++hsUser->playVoicesNameNums>1){
+		if(++hsUser->playVoicesNameNums>3){
 			hsUser->playVoicesNameNums=0;
 		}
 	}	
@@ -146,9 +146,10 @@ void Huashang_changePlayVoicesName(void){
 /**
 »ñÈ¡²¥ÒôÈË
 **/
-void GetPlayVoicesName(char *playVoicesName){
+void GetPlayVoicesName(char *playVoicesName,int *speek){
 	if(hsUser->playVoicesNameNums==NULL){
 		snprintf(playVoicesName,8,"tuling");
+		*speek =50;
 		return ;
 	}
 	switch(hsUser->playVoicesNameNums){
@@ -157,15 +158,19 @@ void GetPlayVoicesName(char *playVoicesName){
 			break;
 		case 1:
 			snprintf(playVoicesName,8,"vinn");
+			*speek =70;
 			break;
 		case 2:
 			snprintf(playVoicesName,8,"aisduck");
+			*speek =50;
 			break;
 		case 3:
 			snprintf(playVoicesName,8,"xiaoqi");
+			*speek =50;
 			break;
 		default:
 			snprintf(playVoicesName,8,"aisduck");
+			*speek =50;
 			break;
 	}
 }

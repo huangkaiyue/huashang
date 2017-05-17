@@ -329,6 +329,17 @@ void SetClockToaliyun(unsigned char clocknum,unsigned char state,const char *tim
 	free(szJSON);
 }
 #endif
+//清除微信绑定的用户
+void ResetWeixinBindUserMessage(void){
+	char* szJSON = NULL;
+	cJSON* pItem = NULL;
+	pItem = cJSON_CreateObject();
+	cJSON_AddStringToObject(pItem, "handler", "cleanbind");
+	szJSON = cJSON_Print(pItem);
+	SendtoaliyunServices(szJSON,strlen(szJSON));
+	cJSON_Delete(pItem);
+	free(szJSON);
+}
 void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer){
 	cJSON * pJson = cJSON_Parse(recvdata);
 	if(NULL == pJson){
@@ -511,6 +522,11 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	}else if(!strcmp(pSub->valuestring,"TestNet")){
 		test_brocastCtr(sockfd,peer,recvdata);
 	}else if(!strcmp(pSub->valuestring,"qtts")){
+#if defined(HUASHANG_JIAOYU)	
+		if(!strncmp(cJSON_GetObjectItem(pJson, "text")->valuestring,"123456",6)){
+			Huashang_changePlayVoicesName();
+		}
+#endif		
 		Create_PlayQttsEvent(cJSON_GetObjectItem(pJson, "text")->valuestring,QTTS_UTF8);
 	}
 	else if (!strcmp(pSub->valuestring,"speek")){//微信对讲

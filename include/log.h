@@ -10,7 +10,7 @@ void PlayQtts_log(const char *data);
 void udpLog(const char *data);
 void RecvTcp_dataLog(const char *data);
 void TimeLog(const char *data);
-void RequestTulingLog(const char *data,unsigned char err);
+void RequestTulingLog(const char *data);
 void musicdbLog(const char *data,const char *filename);
 void UartLog(const char *data,unsigned char number);
 void GpioLog(const char *data,unsigned char number);

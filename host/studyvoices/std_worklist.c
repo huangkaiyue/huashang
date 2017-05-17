@@ -21,6 +21,7 @@ static const char *key = "b1833040534a6bfd761215154069ea58";
 static WorkQueue *EventQue;
 static WorkQueue *PlayList=NULL;
 static unsigned int newEventNums=0;
+static unsigned char keepRecodeState=0;
 
 #define TLJSONERNUM 9.0
 //解析图灵请求错误内容，播放本地已经录制好的音频
@@ -92,12 +93,16 @@ static int playTulingQtts(const char *playUrl,const char *playText,unsigned int 
 	SetMainQueueLock(MAIN_QUEUE_UNLOCK);
 #if defined(HUASHANG_JIAOYU)	
 	char playVoicesName[12]={0};
+	int playSpeed=0;
 	//Huashang_changePlayVoicesName();	//用于测试用，切换播音人
-	GetPlayVoicesName(playVoicesName);
+	GetPlayVoicesName(playVoicesName,&playSpeed);
 	if(!strcmp(playVoicesName,"tuling")){	//当前播音人采用图灵的
 		ret =AddDownEvent((const char *)handtext,TULING_URL_MAIN);
 	}else{
-		PlayQttsText(playText,QTTS_UTF8,playVoicesName,playEventNums);	
+		PlayQttsText(playText,QTTS_UTF8,playVoicesName,playEventNums,playSpeed);	
+		if(playLocalVoicesIndex==TULING_TEXT_MUSIC){
+			SetPlayFinnishKeepRecodeState(KEEP_RECORD_STATE);	//设置播放线程不要切换录音线程状态，不然会导致，添加歌曲的时候，后面的歌曲不能播放
+		}
 	}
 #else
 	AddDownEvent((const char *)handtext,TULING_URL_MAIN);
@@ -185,8 +190,6 @@ exit2:
 	pSub = cJSON_GetObjectItem(pJson, "fileUrl"); 	//检查是否有mp3歌曲返回，如果有
 	if(NULL == pSub){	//直接播放语义之后的结果
 		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums,TULING_TEXT);
-		err=0;
-		goto exit1;
 	}else{				//识别出有语义结果和mp3链接地址结果，先播放前面的语义内容，再播放mp3链接地址内容
 		if(!strcmp(pSub->valuestring,"")){//如果出现空的链接地址，直接跳出
 			free(ttsURL);
@@ -206,14 +209,16 @@ exit2:
 		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums,TULING_TEXT_MUSIC);
 		HandlerText_t *handMainMusic = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 		if(handMainMusic==NULL){
-			goto exit1;	
+			free((void *)player);
+			goto exit0;	
 		}
 		//添加歌曲也要标记当前事件编号
 		handMainMusic->EventNums =handText->EventNums;
 		handMainMusic->data=(char *)player;
 		AddDownEvent((const char *)handMainMusic,TULING_URL_VOICES);
-		err=0;
 	}
+	cJSON_Delete(pJson);
+	return 0;
 exit1:
 	pause_record_audio();
 exit0:
@@ -235,7 +240,7 @@ static void runJsonEvent(HandlerText_t *handText){
 	free((void *)handText->data);
 	free((void *)handText);
 }
-int event_lock=0;
+static int event_lock=0;
 /*******************************************************
 @函数功能:	添加事件到链表
 @参数:	eventMsg 数据	
@@ -288,7 +293,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			break;
 			
 		case SYS_VOICES_EVENT:		//系统音事件
-			start_event_play_wav();
+			start_event_play_wav();	//切换成wav模式，播放系统音正常退出，则自动切换到挂起状态，否则保留最新打断状态
 			Handle_PlaySystemEventVoices(handText->playLocalVoicesIndex,handText->EventNums);
 			break;
 			
@@ -325,23 +330,17 @@ static void HandleEventMessage(const char *data,int msgSize){
 			break;
 #endif		
 		case QTTS_PLAY_EVENT:		//QTTS事件
-			start_event_play_wav();
 			newEventNums=handText->EventNums;
-			if(PlayQttsText(handText->data,handText->playLocalVoicesIndex,"vinn",handText->EventNums)==0){
-				pause_record_audio();
-			}
-			free((void *)handText->data);
-			free((void *)handText);
+			Handler_PlayQttsEvent(handText);
 			break;
 
 		case SPEEK_VOICES_EVENT:	//接收到语音消息	
 			showFacePicture(WEIXIN_PICTURE);
 			start_event_play_wav();
 			playspeekVoices(handText->data,handText->EventNums);
-			pause_record_audio();
 			usleep(1000);
+			free((void *)handText->data);
 			free((void *)handText);
-			free((void *)data);
 			break;
 			
 		case TALK_EVENT_EVENT:		//对讲事件
@@ -377,9 +376,6 @@ static void CleanEventMessage(const char *data,int msgSize){
 		free(data);
 #endif
 }
-#define START_PLAY_VOICES_LIST		1
-#define INTERRUPT_PLAY_VOICES_LIST	2
-#define CLEAN_PLAY_VOICES_LIST		3
 
 void putPcmDataToPlay(const void * data,int size){
 	putMsgQueue(PlayList,data,size); //添加到播放队列	
@@ -387,6 +383,13 @@ void putPcmDataToPlay(const void * data,int size){
 int getPlayVoicesQueueNums(void){
 	return getWorkMsgNum(PlayList);
 }
+#if 1
+//播放完之后保持当前录音状态,主要用于当遇到语音点播图灵歌曲时候，播放完前缀音，
+//继续播放图灵歌曲,切换采样率，不需要播放按键音
+void SetPlayFinnishKeepRecodeState(int state){
+		keepRecodeState=state;
+}
+#endif
 static void *PlayVoicesPthread(void *arg){
 	unsigned short playNetwork_pos=0;
 	unsigned char playSate=START_PLAY_VOICES_LIST;
@@ -394,12 +397,18 @@ static void *PlayVoicesPthread(void *arg){
 	int CacheNums=0;//保存打断这次播放之后缓存队列nums 数
 	PlayList = initQueue();
 	char *data=NULL; 
-	
 	while(1){
 		switch(playSate){
 			case START_PLAY_VOICES_LIST:
-				//if(getWorkMsgNum(PlayList)==0){//当前队列为空，挂起播放		
-				//}
+				if(getWorkMsgNum(PlayList)==0){//当前队列为空，挂起播放	
+					if(playNetwork_pos!=0){	//播放尾音
+						memset(play_buf+playNetwork_pos,0,I2S_PAGE_SIZE-playNetwork_pos);
+						write_pcm(play_buf);
+					}
+					if(keepRecodeState==UPDATE_RECORD_STATE){
+						pause_record_audio();
+					}
+				}
 				getMsgQueue(PlayList,&data,&pcmSize);
 				if(data){
 					for(i=0;i<pcmSize;i+=2){

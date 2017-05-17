@@ -102,13 +102,13 @@ static int text_to_speech(const char* src_text  ,const char* params,unsigned int
 @参数:	text 文本文件 
 @		VINN_GBK	文本转换语音参数
 ******************************************/
-int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums){
+int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed){
 	char params[128]={0};
 	if(type==QTTS_GBK){
-		snprintf(params,128,"voice_name=%s,text_encoding=gbk,sample_rate=8000,speed=70,volume=50,pitch=50,rdn =3",playVoicesName);
+		snprintf(params,128,"voice_name=%s,text_encoding=gbk,sample_rate=8000,speed=%d,volume=50,pitch=50,rdn =3",playVoicesName,playSpeed);
 	}
 	else if(type==QTTS_UTF8){
-		snprintf(params,128,"voice_name=%s,text_encoding=utf8,sample_rate=8000,speed=70,volume=50,pitch=50,rdn =3",playVoicesName);
+		snprintf(params,128,"voice_name=%s,text_encoding=utf8,sample_rate=8000,speed=%d,volume=50,pitch=50,rdn =3",playVoicesName,playSpeed);
 	}
 	return text_to_speech(text,(const char *)params,playEventNums);
 }

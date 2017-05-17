@@ -177,6 +177,7 @@ extern void ExitRecord_Voicespthread(void);
 //--------------------eventVoices.c-----------------------------------------------
 
 typedef struct{
+	unsigned char freeVoiceNums;
 	int file_len;
 	FILE *savefilefp;
 	int Starttime;	//录制微信对讲起始时间，用来检查文件录制长度，防止录制太短的音频
