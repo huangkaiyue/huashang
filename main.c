@@ -132,28 +132,30 @@ static void autoPlayNextMusic(unsigned char musicType){
 }
 #endif
 //主线程添加网络歌曲到队列当中播放
-static void Main_Thread_AddplayUrlMusic(const char *msg){
+static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 #ifdef PALY_URL_SD
-		PlayUrl((const void *)msg);
+		PlayUrl((const void *)hand->data);
 #else
-		NetStreamDownFilePlay((const void *)msg);
+		NetStreamDownFilePlay((const void *)hand->data);
 #endif
 #if defined(HUASHANG_JIAOYU)
 	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
-		CreatePlayListMuisc((const char *)msg,PLAY_MUSIC_NETWORK);
+		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_NETWORK);
 	}else{
-		free((void *)msg);
+		free((void *)hand->data);
+		free((void *)hand);
 	}
 #elif defined(QITUTU_SHI)
-		free((void *)msg);
+	free((void *)hand->data);
+	free((void *)hand);
 #endif
 }
 //主线程添加本地到队列当中播放
-static void Main_Thread_AddPlayLocalSdcard_Music(const char *msg){
-	playLocalMp3(msg);
+static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
+	playLocalMp3((const char *)hand->data);
 #if defined(HUASHANG_JIAOYU)	
 	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
-		CreatePlayListMuisc((const char *)msg,PLAY_MUSIC_SDCARD);
+		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_SDCARD);
 	}else{
 		if(getEventNum()==0&&getWorkMsgNum(DownEvent)==0){
 			autoPlayNextMusic(sysMes.localplayname);
@@ -164,7 +166,8 @@ static void Main_Thread_AddPlayLocalSdcard_Music(const char *msg){
 		autoPlayNextMusic(sysMes.localplayname);
 	}	
 #endif
-	free((void *)msg);
+	free((void *)hand->data);
+	free((void *)hand);
 	usleep(1000);
 }
 static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
@@ -172,6 +175,7 @@ static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
 		goto exit0;
 	}
 	start_event_play_url(); 	
+	usleep(500*1000);
 #ifdef PALY_URL_SD
 	PlayUrl((const void *)hand->data);
 #else
@@ -210,7 +214,7 @@ int main(int argc, char **argv){
 		}
 		switch(event){
 			case URL_VOICES_EVENT:	//url播放
-				Main_Thread_AddplayUrlMusic((const char *)msg);
+				Main_Thread_AddplayUrlMusic((HandlerText_t *)msg);
 				break;
 			case TULING_URL_VOICES:	//播放图灵 语音点歌、故事 url文件
 				Main_Thread_playTuLingMusic((HandlerText_t *)msg);

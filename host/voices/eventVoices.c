@@ -11,7 +11,7 @@
 #include "systools.h"
 #include "gpio_7620.h"
 
-#include "../host/studyvoices/qtts_qisc.h"
+#include "../studyvoices/qtts_qisc.h"
 #include "../sdcard/musicList.h"
 #include "uart/uart.h"
 #include "config.h"
@@ -668,11 +668,8 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 //-------end--------播放系统声音有关的、事件的产生、消费处理-----------------------------------------------------
 //播放微信发送过来语音文件  filename 发送过来的微信语音文件
 void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
-	if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
-		goto exit0;
-	}
-	else if(GetRecordeVoices_PthreadState() == PLAY_WAV){	//解决在智能会话过程当中，添加微信发送过来的语音导致的死机现象  2017-4-26 
-		goto exit0;
+	if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES){
+		return;
 	}
 	else if(GetRecordeVoices_PthreadState() ==PLAY_URL){
 		Create_CleanUrlEvent();

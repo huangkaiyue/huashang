@@ -334,7 +334,7 @@ void InitRecord_VoicesPthread(void){
 #if defined(HUASHANG_JIAOYU)
 	PlayImportVoices(WELCOME_PLAY,0);
 #else
-	play_waitVoices(START_SYS_VOICES,0);//开机启动音
+	PlayImportVoices(START_SYS_VOICES,0);//开机启动音
 #endif
 
 #ifdef TEST_MIC

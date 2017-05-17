@@ -62,7 +62,7 @@ void putPcmStreamToQueue(const void *data,int size){
 ***************************************************************************/
 static int text_to_speech(const char* src_text  ,const char* params,unsigned int playEventNums){
 	char* sess_id = NULL;
-	int ret = -1;
+	int ret = 0;
 	unsigned int text_len = 0;
 	unsigned int audio_len = 0;
 	int synth_status = 1;
@@ -85,15 +85,17 @@ static int text_to_speech(const char* src_text  ,const char* params,unsigned int
 			putPcmStreamToQueue(data,audio_len);
 		}
 		usleep(100*1000);
-		if (synth_status==2|| ret!= 0){		//退出
+		if (synth_status==2|| ret!= 0){		//正常退出
+			ret=0;
 			break;
 		}
 		if(GetCurrentEventNums()!=playEventNums){	//当前事件被切换，直接打断下载
+			ret=-1;
 			break;
 		}
 	}
-	ret = QTTSSessionEnd(sess_id, NULL);
-	return 0;
+	QTTSSessionEnd(sess_id, NULL);
+	return ret;
 }
 /****************************************
 @函数功能:	文本转换语音参数选择

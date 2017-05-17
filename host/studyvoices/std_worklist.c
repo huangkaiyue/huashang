@@ -327,8 +327,9 @@ static void HandleEventMessage(const char *data,int msgSize){
 		case QTTS_PLAY_EVENT:		//QTTS事件
 			start_event_play_wav();
 			newEventNums=handText->EventNums;
-			PlayQttsText(handText->data,handText->playLocalVoicesIndex,"vinn",handText->EventNums);
-			pause_record_audio();
+			if(PlayQttsText(handText->data,handText->playLocalVoicesIndex,"vinn",handText->EventNums)==0){
+				pause_record_audio();
+			}
 			free((void *)handText->data);
 			free((void *)handText);
 			break;
@@ -336,9 +337,10 @@ static void HandleEventMessage(const char *data,int msgSize){
 		case SPEEK_VOICES_EVENT:	//接收到语音消息	
 			showFacePicture(WEIXIN_PICTURE);
 			start_event_play_wav();
-			playspeekVoices(data,handText->EventNums);
+			playspeekVoices(handText->data,handText->EventNums);
 			pause_record_audio();
 			usleep(1000);
+			free((void *)handText);
 			free((void *)data);
 			break;
 			

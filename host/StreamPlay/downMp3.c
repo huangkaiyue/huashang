@@ -37,7 +37,7 @@ int downTulingMp3_forPlay(HandlerText_t *handtext){
 	playTulingEventNums = handtext->EventNums;
 	demoDownFile(handtext->data,10,tulingStartDown,tulingGetStreamData,tulingEndDown);
 	if(handtext->playLocalVoicesIndex==TULING_TEXT_MUSIC){	//表示播放图灵请求的故事和歌曲
-		while(getPlayVoicesQueueNums()>0){	
+		while(getPlayVoicesQueueNums()>0&&playRet==0){	
 			usleep(1000);
 		}
 	}
