@@ -180,6 +180,7 @@ static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
 	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic startplay");
 	start_event_play_url();
 	usleep(300*1000);
+	Show_musicPicture();
 #ifdef PALY_URL_SD
 	PlayUrl((const void *)hand->data);
 #else

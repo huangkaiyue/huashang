@@ -500,6 +500,9 @@ void Create_PlayImportVoices(int sys_voices){
 void UartEventcallFuntion(int event){
 	updateCurrentEventNums();
 	if(event==UART_EVENT_CLOSE_SYSTEM){	//结束音退出事件	
+		if(GetRecordeVoices_PthreadState() ==PLAY_URL){
+			Create_CleanUrlEvent();
+		}
 		showFacePicture(CLOSE_SYSTEM_PICTURE);
 		disable_gpio();					//关闭gpio中断功能,防止关机过程再产生按键事件
 		CreateCloseSystemLockFile();

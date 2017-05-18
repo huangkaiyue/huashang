@@ -110,7 +110,7 @@
 #define PLAYOUTTIME		60*MIN
 #define ERRORTIME		30*24*60*MIN
 
-#define LONG_TIME_NOT_USER_MUTE_VOICES	10		//10s不用 mute音频
+#define LONG_TIME_NOT_USER_MUTE_VOICES	15		//15s不用 mute音频
 
 #define START_UPLOAD	1
 #define END_UPLOAD		0
