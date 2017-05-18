@@ -149,7 +149,7 @@ static void Start_uploadVoicesData(void){
 	Setwm8960Vol(VOL_SET,PLAY_PASUSE_VOICES_VOL);
 	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
 #if defined(HUASHANG_JIAOYU)
-	Show_SmartTalkKey();	//显示智能会话表情
+
 #else
 	Create_PlayImportVoices(TULING_WAIT_VOICES);
 	usleep(200);
@@ -256,6 +256,7 @@ static void *PthreadRecordVoices(void *arg){
 			sysMes.Playlocaltime=time(&t);
 		}else{
 			if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
+				Show_waitCtrlPicture();
 				if((endtime-starttime)==LONG_TIME_NOT_USER_MUTE_VOICES){	//10s 之后，不用关闭音频
 					printf("%s: MUTE wm8960====%d===========\n",__func__,endtime-starttime);
 					Mute_voices(MUTE);

@@ -29,9 +29,7 @@
 #define UART_EVENT_CLOSE_SYSTEM	1	//mcu关机事件
 #define UART_EVENT_LOW_BASTERRY 3	//电量低
 
-
-#define OPEN_SYSTEM_PICTURE			1	//开机动画
-#define CLOSE_SYSTEM_PICTURE		2	//关机动画
+#if 0
 #define CONNECT_WIFI_ING_PICTURE	3	//wifi-连接过程动画
 #define CONNECT_WIFI_OK_PICTURE		4	//wifi-成功连接
 #define	BATTERY_PICTURE				5	//电池电量
@@ -39,11 +37,29 @@
 #define MUSIC_SHAPE_PICTURE			7	//音乐-波形动画
 #define MUSIC_HZ_PICTURE			8	//音乐-频谱动画
 
+
+
 #define FACE_jingya_42				42	//神态表情-惊讶
 #define FACE_qinqin_51				51	//神态表情-亲亲
 #define FACE_feel_happy_54			54	//神态表情-微笑
 #define FACE_thumbs_up_63			63	//神态表情-赞
 #define FACE_eye_show_64			64	//神态表情-眨眼
+#endif
+#define OPEN_SYSTEM_PICTURE			1	//开机动画
+#define CLOSE_SYSTEM_PICTURE		2	//关机动画
+#define CONNECT_WIFI_OK_PICTURE		3	//wifi-成功连接
+#define PLAY_MUSIC_NUM1				4	//播放音乐第1种
+#define PLAY_MUSIC_NUM2				5	//播放音乐第2种
+#define PLAY_MUSIC_NUM3				6	//播放音乐第3种
+#define PLAY_MUSIC_NUM4				7	//播放音乐第4种
+
+#define WAIT_CTRL_NUM1				8	//等待操作第1种
+#define WAIT_CTRL_NUM2				9	//等待操作第2种
+#define WAIT_CTRL_NUM3				10	//等待操作第3种
+#define WAIT_CTRL_NUM4				11	//等待操作第4种
+
+#define KEY_CTRL_PICTURE			12	//按键图片
+
 
 #define SERIAL_SOC_PATH		"/dev/ttyS0"
 #define SPEED_SOC			9600

@@ -207,7 +207,7 @@ int main(int argc, char **argv){
 	loadLocalServer(argc,argv);
 	char *msg=NULL;
 	int event=0;
-	showFacePicture(CONNECT_WIFI_ING_PICTURE);
+	//showFacePicture(CONNECT_WIFI_ING_PICTURE);
 	while(1){
 		getMsgQueue(DownEvent,&msg,&event);
 		if (mainQueLock == MAIN_QUEUE_LOCK){

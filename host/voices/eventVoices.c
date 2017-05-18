@@ -553,7 +553,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;
 //----------------------网络有关-----------------------------------------------------
 		case CONNET_ING_PLAY:			//正在连接，请稍等
-			showFacePicture(CONNECT_WIFI_ING_PICTURE);//正在连接wifi 		
+			//showFacePicture(CONNECT_WIFI_ING_PICTURE);//正在连接wifi 		
 			PlaySystemAmrVoices(CHANGE_NETWORK,playEventNums);
 			start_event_play_wav();
 			PlaySystemAmrVoices(CONNET_TIME,playEventNums);
@@ -572,7 +572,6 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			PlaySystemAmrVoices(LINK_SUCCESS,playEventNums);
 			Link_NetworkOk();		//连接成功关灯，开灯，状态设置
 			enable_gpio();
-			showFacePicture(MUSIC_HZ_PICTURE);
 			break;
 		case NOT_FIND_WIFI_PLAY:			//没有扫描到wifi
 			PlaySystemAmrVoices(NO_WIFI,playEventNums);
@@ -967,22 +966,49 @@ static void *waitLoadMusicList(void *arg){
 
 #ifdef HUASHANG_JIAOYU
 //显示智能会话表情
-void Show_SmartTalkKey(void){
-	int faceNumS=(1+(int) (3.0*rand()/(RAND_MAX+1.0)));	
+void Show_musicPicture(void){
+	int faceNumS=(1+(int) (4.0*rand()/(RAND_MAX+1.0)));	
 	switch(faceNumS){
 		case 1:
-			showFacePicture(FACE_jingya_42);
+			showFacePicture(PLAY_MUSIC_NUM1);
 			break;
 		case 2:
-			showFacePicture(FACE_qinqin_51);
+			showFacePicture(PLAY_MUSIC_NUM2);
 			break;
 		case 3:
-			showFacePicture(FACE_eye_show_64);
+			showFacePicture(PLAY_MUSIC_NUM3);
 			break;
+		case 4:
+			showFacePicture(PLAY_MUSIC_NUM4);
+			break;	
 		default:
-			showFacePicture(FACE_eye_show_64);
+			showFacePicture(PLAY_MUSIC_NUM4);
 			break;
 	}
+}
+void Show_KeyDownPicture(void){
+	showFacePicture(KEY_CTRL_PICTURE);
+}
+void Show_waitCtrlPicture(void){
+	int faceNumS=(1+(int) (4.0*rand()/(RAND_MAX+1.0)));	
+	switch(faceNumS){
+		case 1:
+			showFacePicture(WAIT_CTRL_NUM1);
+			break;
+		case 2:
+			showFacePicture(WAIT_CTRL_NUM2);
+			break;
+		case 3:
+			showFacePicture(WAIT_CTRL_NUM3);
+			break;
+		case 4:
+			showFacePicture(WAIT_CTRL_NUM4);
+			break;	
+		default:
+			showFacePicture(WAIT_CTRL_NUM4);
+			break;
+	}
+
 }
 #endif
 
