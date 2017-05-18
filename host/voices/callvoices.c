@@ -115,7 +115,8 @@ void start_event_play_url(void){
 /*****************************************************
 *暂停录音状态
 *****************************************************/
-void pause_record_audio(void){	
+void pause_record_audio(void){
+	Show_waitCtrlPicture();
 	SetRecordeVoices_PthreadState(RECODE_PAUSE);
 }
 
@@ -256,7 +257,7 @@ static void *PthreadRecordVoices(void *arg){
 			sysMes.Playlocaltime=time(&t);
 		}else{
 			if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
-				Show_waitCtrlPicture();
+				
 				if((endtime-starttime)==LONG_TIME_NOT_USER_MUTE_VOICES){	//10s 之后，不用关闭音频
 					printf("%s: MUTE wm8960====%d===========\n",__func__,endtime-starttime);
 					Mute_voices(MUTE);
@@ -335,7 +336,13 @@ void InitRecord_VoicesPthread(void){
         exit(-1);
 	}
 #if defined(HUASHANG_JIAOYU)
-	PlayImportVoices(WELCOME_PLAY,0);
+	char playFile[24]={0};
+	srand((unsigned)time(NULL));
+	int i=(rand()%4)+1;
+	if(i>=4)
+		i=4;
+	snprintf(playFile,24,"qtts/start_%d.amr",i);
+	PlayImportVoices(playFile,0);
 #else
 	PlayImportVoices(START_SYS_VOICES,0);//开机启动音
 #endif

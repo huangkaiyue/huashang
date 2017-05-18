@@ -91,6 +91,7 @@ static int playTulingQtts(const char *playUrl,const char *playText,unsigned int 
 	handtext->EventNums = playEventNums;
 	handtext->playLocalVoicesIndex=playLocalVoicesIndex;
 	SetMainQueueLock(MAIN_QUEUE_UNLOCK);
+	Show_musicPicture();
 #if defined(HUASHANG_JIAOYU)	
 	char playVoicesName[12]={0};
 	int playSpeed=0;
@@ -309,7 +310,6 @@ static void HandleEventMessage(const char *data,int msgSize){
 			break;
 			
 		case URL_VOICES_EVENT:		//URL网络播放事件
-			Show_musicPicture();
 			WritePlayUrl_Log("handler url voices event \n");
 			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		
 			NetStreamExitFile();
@@ -321,7 +321,6 @@ static void HandleEventMessage(const char *data,int msgSize){
 			
 #ifdef 	LOCAL_MP3
 		case LOCAL_MP3_EVENT:		//本地音乐播放事件
-			Show_musicPicture();
 			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
 			NetStreamExitFile();
 			start_event_play_url();

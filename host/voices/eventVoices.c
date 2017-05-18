@@ -365,6 +365,7 @@ void Handler_PlayQttsEvent(HandlerText_t *handText){
 ********************************************************/
 void TulingKeyDownSingal(void){
 	updateCurrentEventNums();
+	Show_KeyDownPicture();
 	Write_Speekkeylog((const char *)"TulingKeyDownSingal",0);
 	//处于微信对讲状态，直接退出	
 	if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES){		

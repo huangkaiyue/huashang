@@ -133,6 +133,7 @@ static void autoPlayNextMusic(unsigned char musicType){
 #endif
 //主线程添加网络歌曲到队列当中播放
 static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
+		Show_musicPicture();
 #ifdef PALY_URL_SD
 		PlayUrl((const void *)hand->data);
 #else
@@ -153,6 +154,7 @@ static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 }
 //主线程添加本地到队列当中播放
 static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
+	Show_musicPicture();
 	playLocalMp3((const char *)hand->data);
 #if defined(HUASHANG_JIAOYU)	
 	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
@@ -176,7 +178,7 @@ static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
 		goto exit0;
 	}
 	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic startplay");
-	start_event_play_url(); 	
+	start_event_play_url();
 	usleep(300*1000);
 #ifdef PALY_URL_SD
 	PlayUrl((const void *)hand->data);
