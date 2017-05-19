@@ -1,6 +1,8 @@
 #ifndef	_PROMPT_TONE_H
 #define _PROMPT_TONE_H
 
+#include "config.h"
+
 /*******************************************************************************
 固定合成的音频文件
 *******************************************************************************/
@@ -15,11 +17,13 @@
 #define CONNET_TIME			"qtts/waittime_network_8k.amr"	//联网过渡音
 #define START_INTERNET		"qtts/start_internet_8K.amr"	//开始配网，请发送wifi名以及密码
 #define CHECK_INTERNET		"qtts/check_internet_8K.amr"	//正在检查网络是否可用，可等待，或重新配网
+
 #define CHECK_WIFI			"qtts/check_wifi_8K.amr"		//检查WiFi
 #define CHECK_WIFI_WAIT		"qtts/check_wifi_wait_8K.amr"	//检查WiFi过渡音
 #define CHECK_WIFI_NO		"qtts/check_wifi_no_8K.amr"		//检查WiFi
 #define CHECK_WIFI_YES		"qtts/check_wifi_yes_8K.amr"	//检查WiFi
-#define LINK_SUCCESS		"qtts/link_conect_8k.amr"		//连接成功
+
+#define LINK_SUCCESS		"qtts/link_conect_8k.amr"		//连接成功,我们来聊天吧!!
 #define ERROR_INTER			"qtts/error_internet_8k.amr"	//您的网络有误，请检查网络并重新连接
 #define ERROR_PASSWORD		"qtts/error_password_8k.amr"	//您输入的密码有误，请重新输入
 #define NO_WIFI		        "qtts/NO_WIFI_8k.amr"			//无法扫描到您的wifi,请检查您的网络
@@ -75,6 +79,8 @@
 #define TALK_CONFIRM		"qtts/talk_confirm_8K.amr"			//在家么，在家么，有人在家么，有重要消息通知你哟，请按按键回复我。
 #define TALK_CONFIRM_OK		"qtts/talk_confirm_ok_8K.amr"		//确认消息回复成功，请发上传语音。
 #define TALK_CONFIRM_ER		"qtts/talk_confirm_er_8K.amr"		//当前还没有人呼叫你。
+
+#ifdef DOWN_IMAGE
 #define DOWNLOAD_ING		"qtts/download_ing_8K.amr"			//正在下载固件。
 #define DOWNLOAD_ERROE		"qtts/download_error_8K.amr"		//下载固件错误。
 #define DOWNLOAD_END		"qtts/download_end_8K.amr"			//下载固件结束。
@@ -84,6 +90,8 @@
 #define UPDATA_NEW			"qtts/updata_new_8K.amr"			//有新版本，需要更新。
 #define UPDATA_START		"qtts/updata_start_8K.amr"			//开始更新固件。
 #define UPDATA_ERROR		"qtts/updata_error_8K.amr"			//更新固件错误。
+#endif
+
 /*******************************************************************************
 零时音频文件路径
 *******************************************************************************/

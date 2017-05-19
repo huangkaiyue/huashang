@@ -592,6 +592,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 		case CONNET_CHECK_PLAY:			//检查网络是否可用
 			PlaySystemAmrVoices(CHECK_INTERNET,playEventNums);
 			break;
+#if 0			
 		case WIFI_CHECK_PLAY:			//检查网络
 			PlaySystemAmrVoices(CHECK_WIFI,playEventNums);
 			PlaySystemAmrVoices(CHECK_WIFI_WAIT,playEventNums);
@@ -602,6 +603,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 		case WIFI_YES:					//检查网络OK
 			PlaySystemAmrVoices(CHECK_WIFI_YES,playEventNums);
 			break;
+#endif			
 //----------------------对讲有关-----------------------------------------------------
 		case SEND_OK_PLAY:				//发送成功
 			PlaySystemAmrVoices(SEND_OK,playEventNums);
@@ -643,6 +645,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 		case TALK_CONFIRM_ER_PLAY:			//
 			PlaySystemAmrVoices(TALK_CONFIRM_ER,playEventNums);
 			break;
+#ifdef DOWN_IMAGE			
 		case DOWNLOAD_ING_PLAY:			//
 			PlaySystemAmrVoices(DOWNLOAD_ING,playEventNums);
 			break;
@@ -670,6 +673,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 		case UPDATA_ERROR_PLAY:			//
 			PlaySystemAmrVoices(UPDATA_ERROR,playEventNums);
 			break;
+#endif
 //==========================================================================
 		case NETWORK_ERROT_PLAY:				//网络连接失败
 			Handle_PlayTaiBenToNONetWork(playEventNums);

@@ -4,6 +4,7 @@
 #include "base/pool.h"
 #include "host/voices/wm8960i2s.h"
 #include "host/voices/WavAmrCon.h"
+#include "config.h"
 #define KB	1024
 
 
@@ -31,8 +32,10 @@
 
 #define DEBUG_VOICES_ERROR(fmt, args...) printf("Call voices: " fmt, ## args) 
 
-#define STD_RECODE_SIZE	((5*RECODE_RATE*16*1/8)+WAV_HEAD)
-#define STD_RECODE_SIZE_16K	2*(5*RECODE_RATE*16*1/8)+WAV_HEAD
+#define TIME_RECODE_S	8		
+
+#define STD_RECODE_SIZE	((TIME_RECODE_S*RECODE_RATE*16*1/8)+WAV_HEAD)
+
 //----------------------事件类型---------------------------------------
 #define STUDY_WAV_EVENT 		1		//学习音
 #define SYS_VOICES_EVENT		2		//系统声音事件
@@ -73,9 +76,7 @@
 #define PLAY_ERROT_PLAY				24	//播放失败
 #define TF_ERROT_PLAY				25	//TF加载失败
 #define NETWORK_ERROT_PLAY			26	//网络连接失败
-#define WIFI_CHECK_PLAY				27	//检查WiFi
-#define WIFI_NO						28	//检查网络环境失败
-#define WIFI_YES					29	//检查网络环境成功
+
 #define LIKE_ERROT_PLAY				30	//当前没有喜爱内容，快去收藏喜爱内容吧
 
 #define BIND_SSID_PLAY				31	//成功收到小伙伴的绑定请求。
@@ -84,6 +85,8 @@
 #define TALK_CONFIRM_PLAY			34	//在家么，在家么，有人在家么，有重要消息通知你哟，请按按键回复我。
 #define TALK_CONFIRM_OK_PLAY		35	//确认消息回复成功，请发上传语音。
 #define TALK_CONFIRM_ER_PLAY		36	//当前还没有人呼叫你。
+
+#ifdef DOWN_IMAGE
 #define DOWNLOAD_ING_PLAY			37	//正在下载固件。
 #define DOWNLOAD_ERROE_PLAY			38	//下载固件错误。
 #define DOWNLOAD_END_PLAY			39	//下载固件结束。
@@ -93,7 +96,7 @@
 #define UPDATA_NEW_PLAY				43	//有新版本，需要更新。
 #define UPDATA_START_PLAY			44	//开始更新固件。
 #define UPDATA_ERROR_PLAY			45	//更新固件错误。
-
+#endif
 
 #define AI_KEY_TALK_ERROR			46	//智能会话按键误触发，播放系统音
 #define MIN_10_NOT_USER_WARN		47	//10分钟不用提示用户
@@ -105,7 +108,7 @@
 
 #define SEC				1
 #define MIN				60*SEC
-#define SYSTEMOUTSIGN	5*MIN
+#define SYSTEMOUTSIGN	2*MIN
 #define SYSTEMOUTTIME	15*MIN
 #define PLAYOUTTIME		60*MIN
 #define ERRORTIME		30*24*60*MIN
