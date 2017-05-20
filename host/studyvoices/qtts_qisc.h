@@ -29,7 +29,8 @@
 extern void initputPcmdata(void);
 extern void setPlayAudioSize(int downSize);
 
-extern int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed);
+extern int Qtts_voices_text(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed);
+extern int QttsTextVoicesFile(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed,const char *outFile);
 
 extern int Init_Iat_MSPLogin(void);
 

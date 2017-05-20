@@ -178,7 +178,7 @@ static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
 		goto exit0;
 	}
 	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic startplay");
-	start_event_play_url();
+	start_event_play_Mp3music();
 	usleep(300*1000);
 	Show_musicPicture();
 #ifdef PALY_URL_SD

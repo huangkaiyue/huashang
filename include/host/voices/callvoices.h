@@ -14,7 +14,7 @@
 #define RECODE_PAUSE 			3 	//录音挂起
 #define PLAY_WAV				4	//播放wav原始数据音
 #define END_SPEEK_VOICES		5	//结束录音
-#define PLAY_URL				6	//播放url数据
+#define PLAY_MP3_MUSIC			6	//播放音乐数据
 #define TIME_OUT				7	//关闭系统
 #define TIME_SIGN				8	//长时间无事件
 #define PLAY_OUT				9	//关闭系统
@@ -22,6 +22,7 @@
 #define PLAY_DING_VOICES		11	//播放过渡音
 #define RECODE_STOP 			12  //录音停止,退出整个录音线程
 #define RECODE_EXIT_FINNISH		13	//录音正常退出
+#define SOUND_MIX_PLAY			14	//混音播放
 
 //#define DBG_VOICES
 #ifdef DBG_VOICES
@@ -169,7 +170,8 @@ extern unsigned int updateCurrentEventNums(void);	//更新当前事件编号，并返回事件
 extern void StartTuling_RecordeVoices(void);
 extern void StopTuling_RecordeVoices(void);
 extern void start_event_play_wav(void);
-extern void start_event_play_url(void);
+extern void start_event_play_Mp3music(void);
+extern void start_event_play_soundMix(void);
 extern void pause_record_audio(void);
 extern int GetRecordeVoices_PthreadState(void);
 extern void start_event_talk_message(void);
@@ -210,7 +212,7 @@ extern void SaveRecorderVoices(const char *voices_data,int size);
 #define PLAY_IS_COMPLETE		1		//完整播放   ---->适用在智能会话过渡音当中，不允许打断
 #define PLAY_IS_INTERRUPT		2		//可以打断播放
 
-extern int playspeekVoices(const char *filename,unsigned int playEventNums);
+extern int playspeekVoices(const char *filename,unsigned int playEventNums,unsigned char mixMode);
 extern int PlaySystemAmrVoices(const char *filePath,unsigned int playEventNums);
 extern void PlayImportVoices(const char *filepath,unsigned int playEventNums);
 

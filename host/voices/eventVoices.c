@@ -162,7 +162,7 @@ int __AddNetWork_UrlForPaly(const void *data){
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		goto exit0;
 	}
-	if(GetRecordeVoices_PthreadState() == START_SPEEK_VOICES||GetRecordeVoices_PthreadState() == START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() == END_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==PLAY_WAV){	
+	if(GetRecordeVoices_PthreadState() == START_SPEEK_VOICES||GetRecordeVoices_PthreadState() == START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() == END_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==PLAY_WAV||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){	
 		return -1;
 	}
 	int ret=-1;
@@ -197,7 +197,7 @@ int __AddLocalMp3ForPaly(const char *localpath){
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		return -1;
 	}
-	if(GetRecordeVoices_PthreadState() == START_SPEEK_VOICES||GetRecordeVoices_PthreadState() == START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() == END_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==PLAY_WAV){	
+	if(GetRecordeVoices_PthreadState() == START_SPEEK_VOICES||GetRecordeVoices_PthreadState() == START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() == END_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==PLAY_WAV||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){	
 		return -1;
 	}
 	int ret=-1;
@@ -317,18 +317,21 @@ void Create_CleanUrlEvent(void){
 返回值: 无
 ********************************************************/
 void Create_PlayQttsEvent(const char *txt,int type){
+	unsigned char mixMode =NORMAL_PLAY_PCM;
 	if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
 		return;
 	}	
-	if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES){
+	if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==SOUND_MIX_PLAY){
 		return;
-	}else if (GetRecordeVoices_PthreadState() == PLAY_URL){	//当前播放歌曲
-		Create_CleanUrlEvent();
-		return;
+	}else if (GetRecordeVoices_PthreadState() == PLAY_MP3_MUSIC){	//当前播放歌曲
+		mixMode =MIX_PLAY_PCM;
+		//Create_CleanUrlEvent();
+		//return;
 	}
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext){
 		handtext->EventNums= updateCurrentEventNums();
+		handtext->mixMode=mixMode;
 		handtext->data= (char *)calloc(1,strlen(txt)+1);
 		if (handtext->data){
 			sprintf(handtext->data,"%s",txt);
@@ -340,7 +343,6 @@ void Create_PlayQttsEvent(const char *txt,int type){
 }
 void Handler_PlayQttsEvent(HandlerText_t *handText){
 	char xunPlayname[24]={0};
-	start_event_play_wav();
 	int playSpeed=0;
 #if defined(HUASHANG_JIAOYU)
 	GetPlayVoicesName(xunPlayname,&playSpeed);	
@@ -351,8 +353,17 @@ void Handler_PlayQttsEvent(HandlerText_t *handText){
 #else
 	snprintf(xunPlayname,24,"%s","vinn");
 #endif
-	if(PlayQttsText(handText->data,handText->playLocalVoicesIndex,xunPlayname,handText->EventNums,playSpeed)==0){
-		pause_record_audio();
+	if(handText->mixMode==NORMAL_PLAY_PCM){
+		start_event_play_wav();
+		if(!PlayQttsText(handText->data,handText->playLocalVoicesIndex,(const char *)xunPlayname,handText->EventNums,playSpeed)){
+			pause_record_audio();
+		}
+	}else{
+		//混音处理
+		char outFile[]="qtts.pcm";
+		if(!QttsTextVoicesFile(handText->data,handText->playLocalVoicesIndex,(const char *)xunPlayname,handText->EventNums,playSpeed,outFile)){
+			playspeekVoices((const char *)outFile,handText->EventNums,handText->mixMode);
+		}
 	}
 	free((void *)handText->data);
 	free((void *)handText);
@@ -368,13 +379,13 @@ void TulingKeyDownSingal(void){
 	Show_KeyDownPicture();
 	Write_Speekkeylog((const char *)"TulingKeyDownSingal",0);
 	//处于微信对讲状态，直接退出	
-	if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES){		
+	if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){		
 		Write_Speekkeylog((const char *)"START_SPEEK_VOICES",GetRecordeVoices_PthreadState());
 		return;
 	}	
-	else if (GetRecordeVoices_PthreadState() == PLAY_URL){//处于播放歌曲状态	
+	else if (GetRecordeVoices_PthreadState() == PLAY_MP3_MUSIC){//处于播放歌曲状态	
 		Create_CleanUrlEvent();
-		Write_Speekkeylog((const char *)"PLAY_URL",GetRecordeVoices_PthreadState());
+		Write_Speekkeylog((const char *)"PLAY_MP3_MUSIC",GetRecordeVoices_PthreadState());
 	}else{		
 		if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
 			return;
@@ -472,9 +483,9 @@ static void CreateCloseSystemLockFile(void){
 返回值: 无
 ********************************************************/
 void Create_PlaySystemEventVoices(int sys_voices){
-	if(GetRecordeVoices_PthreadState() ==PLAY_URL){
+	if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){
 		Create_CleanUrlEvent();
-	}else if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES){
+	}else if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){
 		return;
 	}
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
@@ -500,7 +511,7 @@ void Create_PlayImportVoices(int sys_voices){
 void UartEventcallFuntion(int event){
 	updateCurrentEventNums();
 	if(event==UART_EVENT_CLOSE_SYSTEM){	//结束音退出事件	
-		if(GetRecordeVoices_PthreadState() ==PLAY_URL){
+		if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){
 			Create_CleanUrlEvent();
 		}
 		showFacePicture(CLOSE_SYSTEM_PICTURE);
@@ -696,11 +707,14 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 //-------end--------播放系统声音有关的、事件的产生、消费处理-----------------------------------------------------
 //播放微信发送过来语音文件  filename 发送过来的微信语音文件
 void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
-	if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES){
+	unsigned char mixMode =NORMAL_PLAY_PCM;
+	if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==SOUND_MIX_PLAY){
 		return;
 	}
-	else if(GetRecordeVoices_PthreadState() ==PLAY_URL){
-		Create_CleanUrlEvent();
+	else if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){
+		//Create_CleanUrlEvent();
+		start_event_play_soundMix();
+		mixMode =MIX_PLAY_PCM;
 	}
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext){
@@ -710,6 +724,7 @@ void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
 		}
 		sprintf(handtext->data,"%s",filename);
 		handtext->event = SPEEK_VOICES_EVENT;
+		handtext->mixMode=mixMode;
 		handtext->EventNums=updateCurrentEventNums();
 		if(AddworkEvent(handtext,sizeof(HandlerText_t))){
 			printf("add play amr voices failed ,and remove file \n");
@@ -803,12 +818,12 @@ void Create_WeixinSpeekEvent(unsigned int gpioState){
 	if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
 		return;
 	}
-	if(GetRecordeVoices_PthreadState() ==PLAY_URL){		//打断播放音乐
+	if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){		//打断播放音乐
 		Create_CleanUrlEvent();
 		return;
 	}else if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
 		return;
-	}else if(GetRecordeVoices_PthreadState() ==PLAY_WAV){
+	}else if(GetRecordeVoices_PthreadState() ==PLAY_WAV||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){
 		return;
 	}
 	DEBUG_EVENT("state %d\n",gpioState);
@@ -907,7 +922,7 @@ static int checkSdcard_MountState(void){
 //使能收藏歌曲，当处于在线播放音乐，才能收藏
 void Enable_SaveLoveMusicFlag(void){
 	if(!checkSdcard_MountState()){
-		if(GetRecordeVoices_PthreadState()!=PLAY_URL){	//检查当前是否在播放url下载的歌曲状态
+		if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){	//检查当前是否在播放url下载的歌曲状态
 			printf("%s: this is error save event current not online play music ,cannot save love music to sdcard \n",__func__);
 			return ;
 		}
@@ -918,7 +933,7 @@ void Enable_SaveLoveMusicFlag(void){
 //删除喜爱内容 delete
 void Delete_LoveMusic(void){
 	if(!checkSdcard_MountState()){
-		if(GetRecordeVoices_PthreadState()!=PLAY_URL){	//检查播放状态
+		if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){	//检查播放状态
 			printf("%s: this is error save event current not online play music ,cannot save love music to sdcard \n",__func__);
 			return ;
 		}

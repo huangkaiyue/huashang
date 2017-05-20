@@ -313,7 +313,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			WritePlayUrl_Log("handler url voices event \n");
 			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		
 			NetStreamExitFile();
-			start_event_play_url();
+			start_event_play_Mp3music();
 			WritePlayUrl_Log("start add url to mainQueue for play\n");
 			AddDownEvent((const char *)data,URL_VOICES_EVENT);
 			sleep(3);
@@ -323,7 +323,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 		case LOCAL_MP3_EVENT:		//本地音乐播放事件
 			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
 			NetStreamExitFile();
-			start_event_play_url();
+			start_event_play_Mp3music();
 			AddDownEvent((const char *)data,LOCAL_MP3_EVENT);
 			DEBUG_STD_MSG("handle_event_msg LOCAL_MP3_EVENT add end\n");
 			break;
@@ -335,8 +335,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 
 		case SPEEK_VOICES_EVENT:	//接收到语音消息	
 			//showFacePicture(WEIXIN_PICTURE);
-			start_event_play_wav();
-			playspeekVoices(handText->data,handText->EventNums);
+			playspeekVoices(handText->data,handText->EventNums,handText->mixMode);
 			usleep(1000);
 			free((void *)handText->data);
 			free((void *)handText);
@@ -350,7 +349,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 		case XUNFEI_AIFI_EVENT:
 			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
 			NetStreamExitFile();
-			start_event_play_url();
+			start_event_play_Mp3music();
 			AddDownEvent((const char *)data,LOCAL_MP3_EVENT);//添加到主线程当中播放华上教育内容
 			break;
 #endif			

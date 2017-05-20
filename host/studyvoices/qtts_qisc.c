@@ -53,6 +53,10 @@ void putPcmStreamToQueue(const void *data,int size){
 	}
 	putPcmDataToPlay((const void *)newdata,ret);	//添加到播放队列	
 }
+static void putStreamVoicesForPlay(const void *userdata,const void *data,int audio_len){
+	putPcmStreamToQueue(data,audio_len);
+
+}
 /***************************************************************************
 @函数功能:	文本转换语音
 @参数:	src_text 文本文件 
@@ -60,29 +64,36 @@ void putPcmStreamToQueue(const void *data,int size){
 @返回值:	0 成功
 @			其它	错误码
 ***************************************************************************/
-static int text_to_speech(const char* src_text  ,const char* params,unsigned int playEventNums){
+static int text_to_speech(const void *userdata,const char* src_text  ,const char* params,unsigned int playEventNums,void GetXunFeiVoicesData(const void *userdata,const void *voicesdata,int size)){
 	char* sess_id = NULL;
-	int ret = 0;
+	int ret = -1;
 	unsigned int text_len = 0;
 	unsigned int audio_len = 0;
 	int synth_status = 1;
+	char *textbuf= (char *)calloc(1,strlen(src_text)+2);
+	if(textbuf==NULL){
+		perror("calloc error !!!");
+		return ret;
+	}
+	sprintf(textbuf,"%s%s",src_text,",");	//文本尾部添加",",保证文本播报出来
+	
 	DEBUG_QTTS("\ntext_to_speech :begin to synth...\n");
-	text_len = (unsigned int)strlen(src_text);
+	text_len = (unsigned int)strlen(textbuf);
 	sess_id = QTTSSessionBegin(params, &ret);
 	if ( ret != MSP_SUCCESS ){
 		DEBUG_QTTS("QTTSSessionBegin: qtts begin session failed Error code %d\n",ret);
-		return ret;
+		goto exit0;
 	}
-	ret = QTTSTextPut(sess_id, src_text, text_len, NULL);
+	ret = QTTSTextPut(sess_id, textbuf, text_len, NULL);
 	if ( ret != MSP_SUCCESS ){
 		DEBUG_QTTS("QTTSTextPut: qtts put text failed Error code %d\n",ret);
 		QTTSSessionEnd(sess_id, "TextPutError");
-		return ret;
+		goto exit0;
 	}
 	while(1){
 		const void *data = QTTSAudioGet(sess_id, &audio_len, &synth_status, &ret);
 		if (NULL != data){
-			putPcmStreamToQueue(data,audio_len);
+			GetXunFeiVoicesData(userdata,(const void *)data,audio_len);
 		}
 		usleep(100*1000);
 		if (synth_status==2|| ret!= 0){		//正常退出
@@ -95,6 +106,8 @@ static int text_to_speech(const char* src_text  ,const char* params,unsigned int
 		}
 	}
 	QTTSSessionEnd(sess_id, NULL);
+exit0:
+	free(textbuf);
 	return ret;
 }
 /****************************************
@@ -102,7 +115,7 @@ static int text_to_speech(const char* src_text  ,const char* params,unsigned int
 @参数:	text 文本文件 
 @		VINN_GBK	文本转换语音参数
 ******************************************/
-int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed){
+int Qtts_voices_text(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed){
 	char params[128]={0};
 	if(type==QTTS_GBK){
 		snprintf(params,128,"voice_name=%s,text_encoding=gbk,sample_rate=8000,speed=%d,volume=50,pitch=50,rdn =3",playVoicesName,playSpeed);
@@ -110,9 +123,31 @@ int Qtts_voices_text(char *text,unsigned char type,const char *playVoicesName,un
 	else if(type==QTTS_UTF8){
 		snprintf(params,128,"voice_name=%s,text_encoding=utf8,sample_rate=8000,speed=%d,volume=50,pitch=50,rdn =3",playVoicesName,playSpeed);
 	}
-	return text_to_speech(text,(const char *)params,playEventNums);
+	return text_to_speech(NULL,text,(const char *)params,playEventNums,putStreamVoicesForPlay);
 }
+static void WriteXunfei_speeckVoicesToFile(const void *userdata,const void *voicesdata,int size){
+	FILE *fp = (FILE *)userdata;
+	if(fp){
+		fwrite(voicesdata,1,size,fp);
+	}
 
+}
+int QttsTextVoicesFile(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed,const char *outFile){
+	char params[128]={0};
+	int ret =-1;
+	if(type==QTTS_GBK){
+		snprintf(params,128,"voice_name=%s,text_encoding=gbk,sample_rate=8000,speed=%d,volume=50,pitch=50,rdn =3",playVoicesName,playSpeed);
+	}
+	else if(type==QTTS_UTF8){
+		snprintf(params,128,"voice_name=%s,text_encoding=utf8,sample_rate=8000,speed=%d,volume=50,pitch=50,rdn =3",playVoicesName,playSpeed);
+	}
+	FILE *fp = fopen(outFile,"w+");
+	if(fp){
+		ret = text_to_speech((const void *)fp,text,(const char *)params,playEventNums,WriteXunfei_speeckVoicesToFile);
+		fclose(fp);
+	}
+	return ret;
+}
 int Init_Iat_MSPLogin(void){
 	//APPID请勿随意改动
 	int ret = 0;

@@ -11,7 +11,14 @@
 
 #define TULING_TEXT			1
 #define TULING_TEXT_MUSIC	2	//播放text 携带有音乐(语音点歌)
+
+
+#define NORMAL_PLAY_PCM		0
+#define MIX_PLAY_PCM		1
+
+
 typedef struct{
+	unsigned char mixMode;			//混音播放处理
 	unsigned char event;			//当前处理事件
 	unsigned short playLocalVoicesIndex;	//播放本地录制好的台本编号
 	unsigned int EventNums;			//当前需要处理数据事件编号

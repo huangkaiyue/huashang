@@ -89,43 +89,6 @@ void DelSdcardMp3file(char * sdpath){
 	}
 	printf("del file end ... \n");
 }
-#ifdef TEST_SDK
-void WavtoAmrfile(char * sdpath,char *amrpath,unsigned char type)
-{
-	char filepath[128]={0};
-	char wavfilepath[128]={0};
-	char amrfilepath[128]={0};
-	DIR *dirptr = NULL;  
-	struct dirent *entry;  
-
-	if((dirptr = opendir(sdpath)) == NULL)	
-	{  
-		printf("open dir !\n"); 
-		return ;	
-	}
-	sleep(1);
-	while (entry = readdir(dirptr))  
-	{  
-		//去除当前目录和上一级目录
-		if( !strcmp(entry->d_name,".")||!strcmp(entry->d_name,"..") ){
-			continue;
-		}
-		printf("filename: %s\n",entry->d_name);
-		sscanf(entry->d_name,"%[^.].%*s",filepath);
-		snprintf(wavfilepath,128,"%s%s",sdpath,entry->d_name);
-		snprintf(amrfilepath,128,"%s%s%s",amrpath,filepath,".amr");
-		if(type==0){
-			WavToAmr8kFile(wavfilepath,amrfilepath);
-		}
-		else if(type==1){
-			playspeekVoices(amrfilepath);
-		}
-		memset(wavfilepath,0,128);
-		memset(amrfilepath,0,128);
-	}
-	printf("wav to amr file end ... \n");
-}
-#endif
 #if 0
 int main(int argc,char **argv){
 	int Capacity =0;

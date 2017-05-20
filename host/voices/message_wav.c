@@ -3,6 +3,7 @@
 #include "host/voices/callvoices.h"
 #include "host/studyvoices/prompt_tone.h"
 #include "host/voices/WavAmrCon.h"
+#include "host/voices/resexampleRate.h"
 #include "host/studyvoices/std_worklist.h"
 #include "config.h"
 #include "log.h"
@@ -26,7 +27,6 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 		printf("open sys failed \n");
 		return -1;
 	}
-	SetWm8960Rate(RECODE_RATE);
 	fseek(fp,WAV_HEAD,SEEK_SET);		//跳过wav头部	
 	while(1){
 		if(playMode==PLAY_IS_INTERRUPT&&playEventNums!=GetCurrentEventNums()){
@@ -41,7 +41,6 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 				memset(play_buf+pos,0,I2S_PAGE_SIZE-pos);		//清空上一次尾部杂音,并播放尾音
 				write_pcm(play_buf);
 			}
-			pause_record_audio();
 			CleanI2S_PlayCachedata();
 			break;
 		}
@@ -59,28 +58,56 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	return ret;
 }
+static int playResamplePlay(const char *filename,unsigned int playEventNums){
+	char *outfile ="speek.wav";
+	char * resRateFile ="resRate.pcm";
+	int  ret =AmrToWav8k(filename,(const char *)outfile);
+	if(ret){
+		printf("AmrToWav8k failed \n");
+		return -1;
+	}
+	if(ResamplerState_wavfileVoices((const char * )outfile,(const char * )resRateFile,44100)){
+		return -1;
+	}
+	ret =PlaySignleWavVoices((const char *)resRateFile,PLAY_IS_INTERRUPT,playEventNums);
+	remove(outfile);
+	remove(resRateFile);
+	return ret;
+}
+
 //播放单声道amr格式音频数据
-static int playAmrVoices(const char *filename,unsigned char playMode,unsigned int playEventNums){
+static int __playAmrVoices(const char *filename,unsigned char playMode,unsigned int playEventNums){
 	char *outfile ="speek.wav";
 	AmrToWav8k(filename,(const char *)outfile);
+	SetWm8960Rate(RECODE_RATE);
 	int ret = PlaySignleWavVoices((const char *)outfile,playMode,playEventNums);
+	if(ret==0){	//正常播放完，把录音线程挂起来
+		pause_record_audio();
+	}
 	remove(outfile);
 	return ret;
 }
-static int __playAmrVoices(const char *filePath,unsigned char playMode,unsigned int playEventNums){
+static int __playSystemAmrVoices(const char *filePath,unsigned char playMode,unsigned int playEventNums){
 	char path[128]={0};
 	snprintf(path,128,"%s%s",sysMes.localVoicesPath,filePath);
-	return playAmrVoices(path,playMode,playEventNums);
+	return __playAmrVoices(path,playMode,playEventNums);
 }
-
-
 /********************************************************
 @ 播放接收到手机发送的对讲消息
 @ filename:缓存到本地的wav数据的文件路径 (播放完需要删除)
 @
 *********************************************************/
-int playspeekVoices(const char *filename,unsigned int playEventNums){
-	int ret = playAmrVoices(filename,PLAY_IS_INTERRUPT,playEventNums);
+int playspeekVoices(const char *filename,unsigned int playEventNums,unsigned char mixMode){
+	int ret =-1;
+	if(mixMode==MIX_PLAY_PCM){
+		StreamPause();
+		ret =playResamplePlay(filename,playEventNums);
+		start_event_play_Mp3music();
+		keyStreamPlay();
+	}else{
+		start_event_play_wav();
+		ret= __playAmrVoices(filename,PLAY_IS_INTERRUPT,playEventNums);
+	}
 	remove(filename);
 	return ret;
 }
@@ -90,11 +117,11 @@ int playspeekVoices(const char *filename,unsigned int playEventNums){
 @ 返回值: 无
 *********************************************************/
 int PlaySystemAmrVoices(const char *filePath,unsigned int playEventNums){
-	return __playAmrVoices(filePath,PLAY_IS_INTERRUPT,playEventNums);
+	return __playSystemAmrVoices(filePath,PLAY_IS_INTERRUPT,playEventNums);
 }
 //播放过渡音，不允许打断
 void PlayImportVoices(const char *filePath,unsigned int playEventNums){
-	__playAmrVoices(filePath,PLAY_IS_COMPLETE,playEventNums);
+	__playSystemAmrVoices(filePath,PLAY_IS_COMPLETE,playEventNums);
 }
 
 /********************************************************
@@ -103,18 +130,8 @@ void PlayImportVoices(const char *filePath,unsigned int playEventNums){
 @ 返回值: 无
 *********************************************************/
 int PlayQttsText(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed){
-	int ret =-1;
 	SetWm8960Rate(RECODE_RATE);
-	char *textbuf= (char *)calloc(1,strlen(text)+2);
-	if(textbuf==NULL){
-		perror("calloc error !!!");
-		return ret;
-	}
-	sprintf(textbuf,"%s%s",text,",");	//文本尾部添加",",保证文本播报出来
-	PlayQtts_log("play qtts start\n");
-	ret =Qtts_voices_text(textbuf,type,playVoicesName,playEventNums,playSpeed);
-	free(textbuf);
-	return ret;
+	return Qtts_voices_text(text,type,playVoicesName,playEventNums,playSpeed);
 
 }
 /********************************************************

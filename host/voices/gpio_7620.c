@@ -143,12 +143,12 @@ static void Ack_WeixinCall(void){
 	}
 }
 static void keyDown_AndSetGpioFor_play(void){
-	if(GetRecordeVoices_PthreadState()!=PLAY_URL){
+	if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){
 		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x01);//°´ÏÂ
 	}
 }
 static void keyUp_AndSetGpioFor_play(void){
-	if(GetRecordeVoices_PthreadState()!=PLAY_URL){
+	if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){
 		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x20);//µ¯Æð
 	}
 }	

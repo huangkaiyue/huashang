@@ -107,11 +107,16 @@ void start_play_tuling(void){
 	SetRecordeVoices_PthreadState(PLAY_DING_VOICES);
 }
 /*****************************************************
-*进入播放URL状态
+*进入播放Mp3music状态
 *****************************************************/
-void start_event_play_url(void){
-	SetRecordeVoices_PthreadState(PLAY_URL);
+void start_event_play_Mp3music(void){
+	SetRecordeVoices_PthreadState(PLAY_MP3_MUSIC);
 }
+//混音播放
+void start_event_play_soundMix(void){
+	SetRecordeVoices_PthreadState(SOUND_MIX_PLAY);
+}
+
 /*****************************************************
 *暂停录音状态
 *****************************************************/
@@ -273,7 +278,7 @@ static void *PthreadRecordVoices(void *arg){
 				starttime=time(&t);
 			}
 #if 0		
-			if((endtime-sysMes.Playlocaltime)>PLAYOUTTIME&&GetRecordeVoices_PthreadState()==PLAY_URL){
+			if((endtime-sysMes.Playlocaltime)>PLAYOUTTIME&&GetRecordeVoices_PthreadState()==PLAY_MP3_MUSIC){
 				SetRecordeVoices_PthreadState(PLAY_OUT);
 				TimeLog("PLAY_OUT\n");
 			}
@@ -307,7 +312,7 @@ static void *PthreadRecordVoices(void *arg){
 				
 			case PLAY_OUT:		//播放超时退出
 				SetMucClose_Time(1);	//设置一分钟后关机
-				SetRecordeVoices_PthreadState(PLAY_URL);
+				SetRecordeVoices_PthreadState(PLAY_MP3_MUSIC);
 				sysMes.Playlocaltime=time(&t);
 				break;
 #endif
