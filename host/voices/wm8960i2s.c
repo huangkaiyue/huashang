@@ -12,13 +12,11 @@ I2SST I2S;
 
 //使能发送,先检查当前状态，再操作，防止内核态死锁
 static void set_tx_state(int i2s_fd,int enable){
-	if(I2S.tx_enable==0&&enable==1)
-	{
+	if(I2S.tx_enable==0&&enable==1){
 		I2S.tx_enable=1;
 		ioctl(i2s_fd, I2S_TX_ENABLE, 0);
 	}
-	else if(I2S.tx_enable==1&&enable==0)
-	{
+	else if(I2S.tx_enable==1&&enable==0){
 		I2S.tx_enable=0;
 		ioctl(i2s_fd, I2S_TX_DISABLE, 0);
 	}
@@ -193,8 +191,7 @@ void InitWm8960Voices(void){
 	GetVol_formRouteTable(&(I2S.tx_vol));//获取路由音量和播音人
 	I2S.tx_rate =RECODE_RATE;
 	I2S.i2s_fd = open(WM8960_NODE_PATH, O_RDWR|O_SYNC); 
-	if(I2S.i2s_fd<0)
-	{
+	if(I2S.i2s_fd<0){
 		perror("i2scmd init");
 		return ;
 	}

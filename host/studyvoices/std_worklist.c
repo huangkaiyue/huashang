@@ -335,7 +335,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 
 		case SPEEK_VOICES_EVENT:	//接收到语音消息	
 			//showFacePicture(WEIXIN_PICTURE);
-			playspeekVoices(handText->data,handText->EventNums,handText->mixMode);
+			PlayWeixin_SpeekAmrFileVoices(handText->data,handText->EventNums,handText->mixMode);
 			usleep(1000);
 			free((void *)handText->data);
 			free((void *)handText);

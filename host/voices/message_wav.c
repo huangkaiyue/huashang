@@ -58,21 +58,29 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	return ret;
 }
-static int playResamplePlay(const char *filename,unsigned int playEventNums){
-	char *outfile ="speek.wav";
+int __playResamplePlayPcmFile(const char *pcmFile,unsigned int playEventNums){
 	char * resRateFile ="resRate.pcm";
+	if(ResamplerState_wavfileVoices((const char * )pcmFile,(const char * )resRateFile,44100)){
+		return -1;
+	}
+	StreamPause();
+	start_event_play_soundMix();//切换到混音播放状态		
+	int ret =PlaySignleWavVoices((const char *)resRateFile,PLAY_IS_INTERRUPT,playEventNums);
+	start_event_play_Mp3music();
+	keyStreamPlay();
+	remove(resRateFile);
+	return ret;
+}
+static int playResamplePlayAmrFile(const char *filename,unsigned int playEventNums){
+	char *outfile ="speek.wav";
 	int  ret =AmrToWav8k(filename,(const char *)outfile);
 	if(ret){
 		printf("AmrToWav8k failed \n");
 		return -1;
 	}
-	if(ResamplerState_wavfileVoices((const char * )outfile,(const char * )resRateFile,44100)){
-		return -1;
-	}
-	ret =PlaySignleWavVoices((const char *)resRateFile,PLAY_IS_INTERRUPT,playEventNums);
+	ret = __playResamplePlayPcmFile(outfile,playEventNums);
 	remove(outfile);
-	remove(resRateFile);
-	return ret;
+	return ret ; 
 }
 
 //播放单声道amr格式音频数据
@@ -97,13 +105,10 @@ static int __playSystemAmrVoices(const char *filePath,unsigned char playMode,uns
 @ filename:缓存到本地的wav数据的文件路径 (播放完需要删除)
 @
 *********************************************************/
-int playspeekVoices(const char *filename,unsigned int playEventNums,unsigned char mixMode){
+int PlayWeixin_SpeekAmrFileVoices(const char *filename,unsigned int playEventNums,unsigned char mixMode){
 	int ret =-1;
 	if(mixMode==MIX_PLAY_PCM){
-		StreamPause();
-		ret =playResamplePlay(filename,playEventNums);
-		start_event_play_Mp3music();
-		keyStreamPlay();
+		ret =playResamplePlayAmrFile(filename,playEventNums);
 	}else{
 		start_event_play_wav();
 		ret= __playAmrVoices(filename,PLAY_IS_INTERRUPT,playEventNums);

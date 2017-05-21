@@ -343,8 +343,7 @@ static void signal_handler(int signum){
 				break;
 #endif
 			case PLAY_PAUSE_KEY:	//播放、暂停
-				keydown_flashingLED();	
-				keyStreamPlay();
+				KeyEventPlayPause();
 				break;
 			case RESERVE_KEY3:	//使能收藏歌曲
 				keydown_flashingLED();
@@ -428,7 +427,6 @@ static void signal_handler(int signum){
 #ifdef HUASHANG_JIAOYU		//华上教育
 //#define TEST_PLAY_KEY
 static void signal_handler(int signum){
-
 	static key_mutiple_t mutiple_key_SUB,mutiple_key_ADD,mutiple_key_speek;
 	//拿到底层按键事件号码
 	if (ioctl(gpio.fd, TANG_GET_NUMBER,&gpio.mount) < 0){
@@ -477,8 +475,7 @@ static void signal_handler(int signum){
 				break;
 #endif
 			case PLAY_PAUSE_KEY:	//播放、暂停
-				keydown_flashingLED();	
-				keyStreamPlay();
+				KeyEventPlayPause();
 				break;
 			case RESERVE_KEY3:	//华上教育，设置单曲循环和列表
 				keydown_flashingLED();
@@ -632,7 +629,7 @@ static void signal_handler(int signum){
 #endif
 			case RIGHTLED_KEY:
 				if(sysMes.localplayname==english){
-					keyStreamPlay();
+					KeyEventPlayPause();
 				}else{
 					Create_playMusicEvent((const void *)"english",PLAY_NEXT);
 				}
@@ -644,21 +641,21 @@ static void signal_handler(int signum){
 
 			case PLAY_PAUSE_KEY://播放暂停
 				if(sysMes.localplayname==guoxue){
-					keyStreamPlay();
+					KeyEventPlayPause();
 				}else{
 					Create_playMusicEvent((const void *)"guoxue",PLAY_NEXT);
 				}
 				break;
 			case RESERVE_KEY3:	//目录
 				if(sysMes.localplayname==mp3){
-					keyStreamPlay();
+					KeyEventPlayPause();
 				}else{
 					Create_playMusicEvent((const void *)"mp3",PLAY_NEXT);
 				}
 				break;
 			case LETFLED_KEY:	//left led
 				if(sysMes.localplayname==story){
-					keyStreamPlay();
+					KeyEventPlayPause();
 				}else{
 					Create_playMusicEvent((const void *)"story",PLAY_NEXT);
 				}

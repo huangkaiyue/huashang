@@ -14,7 +14,7 @@
 
 
 #define NORMAL_PLAY_PCM		0
-#define MIX_PLAY_PCM		1
+#define MIX_PLAY_PCM		1	//对当前声音进行重采样
 
 
 typedef struct{

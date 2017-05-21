@@ -64,32 +64,34 @@ static void putStreamVoicesForPlay(const void *userdata,const void *data,int aud
 @返回值:	0 成功
 @			其它	错误码
 ***************************************************************************/
-static int text_to_speech(const void *userdata,const char* src_text  ,const char* params,unsigned int playEventNums,void GetXunFeiVoicesData(const void *userdata,const void *voicesdata,int size)){
+static int text_to_speech(const char* src_text,const void *userdata,unsigned char type,const char* playVoicesName,int playSpeed,unsigned int playEventNums,void GetXunFeiVoicesData(const void *userdata,const void *voicesdata,int size)){
 	char* sess_id = NULL;
 	int ret = -1;
 	unsigned int text_len = 0;
 	unsigned int audio_len = 0;
-	int synth_status = 1;
-	char *textbuf= (char *)calloc(1,strlen(src_text)+2);
-	if(textbuf==NULL){
-		perror("calloc error !!!");
-		return ret;
+	int synth_status = 1;	
+	char params[128]={0};
+	if(type==QTTS_GBK){
+		snprintf(params,128,"voice_name=%s,text_encoding=gbk,sample_rate=8000,speed=%d,volume=50,pitch=50,rdn =3",playVoicesName,playSpeed);
 	}
-	sprintf(textbuf,"%s%s",src_text,",");	//文本尾部添加",",保证文本播报出来
-	
-	DEBUG_QTTS("\ntext_to_speech :begin to synth...\n");
-	text_len = (unsigned int)strlen(textbuf);
+	else if(type==QTTS_UTF8){
+		snprintf(params,128,"voice_name=%s,text_encoding=utf8,sample_rate=8000,speed=%d,volume=50,pitch=50,rdn =3",playVoicesName,playSpeed);
+	}	
+	DEBUG_QTTS("begin to synth...\n");
+	text_len = (unsigned int)strlen(src_text);
 	sess_id = QTTSSessionBegin(params, &ret);
 	if ( ret != MSP_SUCCESS ){
 		DEBUG_QTTS("QTTSSessionBegin: qtts begin session failed Error code %d\n",ret);
 		goto exit0;
 	}
-	ret = QTTSTextPut(sess_id, textbuf, text_len, NULL);
+	DEBUG_QTTS(" start put text\n");
+	ret = QTTSTextPut(sess_id, src_text, text_len, NULL);
 	if ( ret != MSP_SUCCESS ){
 		DEBUG_QTTS("QTTSTextPut: qtts put text failed Error code %d\n",ret);
 		QTTSSessionEnd(sess_id, "TextPutError");
 		goto exit0;
 	}
+	DEBUG_QTTS(" start QTTSAudioGet\n");
 	while(1){
 		const void *data = QTTSAudioGet(sess_id, &audio_len, &synth_status, &ret);
 		if (NULL != data){
@@ -98,16 +100,18 @@ static int text_to_speech(const void *userdata,const char* src_text  ,const char
 		usleep(100*1000);
 		if (synth_status==2|| ret!= 0){		//正常退出
 			ret=0;
+			DEBUG_QTTS(" synth_status ok exit\n");
 			break;
 		}
 		if(GetCurrentEventNums()!=playEventNums){	//当前事件被切换，直接打断下载
 			ret=-1;
+			DEBUG_QTTS(" event break exit\n");
 			break;
 		}
 	}
 	QTTSSessionEnd(sess_id, NULL);
 exit0:
-	free(textbuf);
+	DEBUG_QTTS(" exit qtts\n");
 	return ret;
 }
 /****************************************
@@ -116,35 +120,35 @@ exit0:
 @		VINN_GBK	文本转换语音参数
 ******************************************/
 int Qtts_voices_text(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed){
-	char params[128]={0};
-	if(type==QTTS_GBK){
-		snprintf(params,128,"voice_name=%s,text_encoding=gbk,sample_rate=8000,speed=%d,volume=50,pitch=50,rdn =3",playVoicesName,playSpeed);
-	}
-	else if(type==QTTS_UTF8){
-		snprintf(params,128,"voice_name=%s,text_encoding=utf8,sample_rate=8000,speed=%d,volume=50,pitch=50,rdn =3",playVoicesName,playSpeed);
-	}
-	return text_to_speech(NULL,text,(const char *)params,playEventNums,putStreamVoicesForPlay);
+	return text_to_speech(text,NULL,type,playVoicesName,playSpeed,playEventNums,putStreamVoicesForPlay);
 }
+typedef struct{
+	int audio_len;
+	FILE *fp;
+}FileQtts_t;
 static void WriteXunfei_speeckVoicesToFile(const void *userdata,const void *voicesdata,int size){
-	FILE *fp = (FILE *)userdata;
-	if(fp){
-		fwrite(voicesdata,1,size,fp);
+	FileQtts_t *fileQtts = (FileQtts_t *)userdata;
+	if(fileQtts->fp){
+		fwrite(voicesdata,1,size,fileQtts->fp);
+		fileQtts->audio_len +=size;
 	}
-
 }
 int QttsTextVoicesFile(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed,const char *outFile){
-	char params[128]={0};
 	int ret =-1;
-	if(type==QTTS_GBK){
-		snprintf(params,128,"voice_name=%s,text_encoding=gbk,sample_rate=8000,speed=%d,volume=50,pitch=50,rdn =3",playVoicesName,playSpeed);
-	}
-	else if(type==QTTS_UTF8){
-		snprintf(params,128,"voice_name=%s,text_encoding=utf8,sample_rate=8000,speed=%d,volume=50,pitch=50,rdn =3",playVoicesName,playSpeed);
-	}
-	FILE *fp = fopen(outFile,"w+");
-	if(fp){
-		ret = text_to_speech((const void *)fp,text,(const char *)params,playEventNums,WriteXunfei_speeckVoicesToFile);
-		fclose(fp);
+	FileQtts_t fileQtts;
+	struct wave_pcm_hdr wavhdr;
+	fileQtts.audio_len=0;
+	fileQtts.fp = fopen(outFile,"w+");
+	int wavHeadSize=sizeof(struct wave_pcm_hdr);	
+	memcpy(&wavhdr,&pcmwavhdr,wavHeadSize);	
+	if(fileQtts.fp){
+		fwrite((void *)&wavhdr,1,wavHeadSize,fileQtts.fp);
+		ret = text_to_speech(text,(const void *)&fileQtts,type,playVoicesName,playSpeed,playEventNums,WriteXunfei_speeckVoicesToFile);
+		wavhdr.size_8 = (fileQtts.audio_len+36);
+		wavhdr.data_size = fileQtts.audio_len;
+		fseek(fileQtts.fp,0,SEEK_SET);	
+		fwrite(&wavhdr,1,wavHeadSize,fileQtts.fp);
+		fclose(fileQtts.fp);
 	}
 	return ret;
 }

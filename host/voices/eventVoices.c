@@ -298,6 +298,14 @@ int Create_playMusicEvent(const void *play,unsigned char Mode){
 	return __AddNetWork_UrlForPaly(play);
 #endif	
 }
+void KeyEventPlayPause(void){
+#ifndef DATOU_JIANG
+	keydown_flashingLED();	
+#endif
+	if(GetRecordeVoices_PthreadState()==PLAY_MP3_MUSIC){
+		keyStreamPlay();
+	}
+}
 /*******************************************************
 函数功能: 清理URL事件
 参数: 无
@@ -332,9 +340,9 @@ void Create_PlayQttsEvent(const char *txt,int type){
 	if(handtext){
 		handtext->EventNums= updateCurrentEventNums();
 		handtext->mixMode=mixMode;
-		handtext->data= (char *)calloc(1,strlen(txt)+1);
+		handtext->data= (char *)calloc(1,strlen(txt)+4);
 		if (handtext->data){
-			sprintf(handtext->data,"%s",txt);
+			sprintf(handtext->data,"%s%s",txt,",");	//文本尾部添加",",保证文本播报出来
 			handtext->event =QTTS_PLAY_EVENT;
 			handtext->playLocalVoicesIndex=type;
 			AddworkEvent((const char *)handtext,sizeof(HandlerText_t));
@@ -359,15 +367,14 @@ void Handler_PlayQttsEvent(HandlerText_t *handText){
 			pause_record_audio();
 		}
 	}else{
-		//混音处理
-		char outFile[]="qtts.pcm";
+		char outFile[]="qtts.pcm";//混音处理
 		if(!QttsTextVoicesFile(handText->data,handText->playLocalVoicesIndex,(const char *)xunPlayname,handText->EventNums,playSpeed,outFile)){
-			playspeekVoices((const char *)outFile,handText->EventNums,handText->mixMode);
+			__playResamplePlayPcmFile((const char *)outFile,handText->EventNums);
+			remove(outFile);
 		}
 	}
 	free((void *)handText->data);
 	free((void *)handText);
-
 }
 /*******************************************************
 函数功能: 会话按键按下信号,启动录音 
@@ -713,7 +720,6 @@ void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
 	}
 	else if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){
 		//Create_CleanUrlEvent();
-		start_event_play_soundMix();
 		mixMode =MIX_PLAY_PCM;
 	}
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
