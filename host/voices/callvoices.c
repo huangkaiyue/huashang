@@ -272,15 +272,13 @@ static void *PthreadRecordVoices(void *arg){
 				}
 				if((endtime-starttime)>SYSTEMOUTTIME){		//第二次长时间不触发事件，则直接关机
 					SetRecordeVoices_PthreadState(TIME_OUT);
-					TimeLog("TIME_OUT\n");
 				}
 			}else{
 				starttime=time(&t);
 			}
-#if 0		
+#if 1		
 			if((endtime-sysMes.Playlocaltime)>PLAYOUTTIME&&GetRecordeVoices_PthreadState()==PLAY_MP3_MUSIC){
 				SetRecordeVoices_PthreadState(PLAY_OUT);
-				TimeLog("PLAY_OUT\n");
 			}
 #endif			
 		}

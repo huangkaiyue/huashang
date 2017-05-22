@@ -66,12 +66,11 @@
 #define NETWORK_ERROR_4		"qtts/network_error_8K_4.amr"		//网络连接失败
 #define NETWORK_ERROR_5		"qtts/network_error_8K_5.amr"		//网络连接失败
 //=============================================================================
-#define NO_STORY			"qtts/no_story_8K.amr"				//小朋友，我还没有故事，赶紧收藏故事，教我讲故事吧。
-#define NO_MUSIC			"qtts/no_music_8K.amr"				//小朋友，我还不会唱歌，赶紧收藏歌曲，教我唱歌吧。
 #define VOICE_ADD			"qtts/voice_add_8K.amr"				//音量加设置成功。
 #define VOICE_SUB			"qtts/voice_sub_8K.amr"				//音量减设置成功。
-#define SPEEK_WARNING		"qtts/speek_warning_8K.amr"			//小朋友快来跟我玩，跟我说话聊天吧。
+#define SPEEK_WARNING		"qtts/speek_warning_8K.amr"			//小朋友，你去哪里了，和我一起来玩吧!!
 #define WELCOME_PLAY		"qtts/welcome_play_8K.amr"			//来自开普勒星球的小培老师正在检查网络
+#define TIMEOUT_TLAK		"qtts/timeOut_talk.amr"				//要不我们今天学习一下国学内容吧，我的国学知识很丰富的!
 
 #define BIND_SSID			"qtts/bind_ssid_8K.amr"				//成功收到小伙伴的绑定请求。
 #define BIND_OK				"qtts/bind_ok_8K.amr"				//成功处理小伙伴的绑定请求。

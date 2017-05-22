@@ -138,31 +138,23 @@ int GetFileNameForPath(const char *path){
 	return (size-strlen(p)+1);
 }
 static void SaveLoveMp3File(const char *filepath){
-	char buf[200]={0};
-	if(CheckSdcardInfo(MP3_SDPATH)){	//内存不足50M删除指定数目的歌曲
-		return ;
-	}
+	char runCmd[200]={0};
 	switch(like_mp3_sign){
-	#if 0
 		case LOVE_MP3_SAVE_LOVE_MP3_EVENT:		//添加喜爱
-			snprintf(buf,200,"cp %s %s%s",filepath,MP3_LIKEPATH,st->mp3name);
-			like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;
-			system(buf);
-			InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name);
-			break;
-	#else
-		case LOVE_MP3_SAVE_LOVE_MP3_EVENT:		//添加喜爱
+			if(CheckSdcardInfo(MP3_SDPATH)){	//内存不足50M删除指定数目的歌曲
+				printf("%s: delete memory \n",__func__);
+				break;
+			}	
 			if(strcmp(st->mp3name,"")){
 				//插入数据库成功
 				if(InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name)==0){
-					snprintf(buf,200,"cp %s %s%s",filepath,MP3_LIKEPATH,st->mp3name);
-					system(buf);
+					snprintf(runCmd,200,"cp %s %s%s",filepath,MP3_LIKEPATH,st->mp3name);
+					system(runCmd);
 				}
 				
 			}	
 			like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;	
 			break;
-	#endif
 		case LOVE_MP3_DELETE_EVENT:		//删除喜爱
 			like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;
 			if(!strcmp(st->mp3name,"")){	//等于空

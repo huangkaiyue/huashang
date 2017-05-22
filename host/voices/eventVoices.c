@@ -212,6 +212,7 @@ int __AddLocalMp3ForPaly(const char *localpath){
 		handEvent->EventNums=updateCurrentEventNums();
 		handEvent->data = URL;
 		handEvent->event=LOCAL_MP3_EVENT;
+		setAutoPlayMusicTime();
 		ret = AddworkEvent(handEvent,sizeof(HandlerText_t));
 	}
 	return ret;	
@@ -700,7 +701,14 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			TaiBenToTulingNOVoices(playEventNums);
 			break;
 		case MIN_10_NOT_USER_WARN: 
-			PlaySystemAmrVoices(SPEEK_WARNING,playEventNums);
+			if(!PlaySystemAmrVoices(SPEEK_WARNING,playEventNums)){
+				start_event_play_wav();
+				if(!PlaySystemAmrVoices(TIMEOUT_TLAK,playEventNums)){
+#if defined(HUASHANG_JIAOYU)					
+					Create_playMusicEvent((const void *)HUASHANG_GUOXUE_DIR, PLAY_NEXT);
+#endif
+				}
+			}
 			break;
 		case TULING_WAIT_VOICES:
 			PlayImportVoices(TULING_WINT,playEventNums);

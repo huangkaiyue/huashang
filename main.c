@@ -103,7 +103,6 @@ static void loadLocalServer(int argc,char *argv[]){
 #ifdef LOCAL_MP3
 //自动播放下一首歌曲 musicType 播放歌曲类型(用来区分目录标识)
 static void autoPlayNextMusic(unsigned char musicType){
-	setAutoPlayMusicTime();
 	switch(musicType){
 		case mp3:
 			Create_playMusicEvent((const void *)"mp3", PLAY_NEXT);
