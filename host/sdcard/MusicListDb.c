@@ -119,6 +119,7 @@ int SysOnloadMusicList(const char *sdcard,const char *mp3Music,const char *story
 		return -1;
 
 	int i=0,listNum=MUSIC_LIST;
+#ifdef DATOU_JIANG	
 	GetTableName(mp3Music,Mlist->list[0].listname);
 	GetTableName(story,Mlist->list[1].listname);
 	GetTableName(english,Mlist->list[2].listname);
@@ -133,14 +134,15 @@ int SysOnloadMusicList(const char *sdcard,const char *mp3Music,const char *story
 		Mlist->list[i].playindex=cachelist.Nums;
 		printf("Mlist->list[%d].playindex =%d\n",i,Mlist->list[i].playindex);
 	}
+#endif
 
-
-#ifdef DOWN_URL_MUSIC	
+#ifdef QITUTU_SHI
 	CreateMusicTable(XIMALA_MUSIC);
 	GetXiaiMusicPlayIndex();
 #endif	
 	CreateMusicListMesage(MESSAGE_TABLE);
-	for(i=0;i<listNum;i++){
+#ifdef DATOU_JIANG
+	for(i=0;i<listNum;i++){		
 		GetMusicMessageSQL(MESSAGE_TABLE,&(Mlist->list[i]));
 		CreateMusicTable(Mlist->list[i].listname);
 		//printf("Mlist->list[0].listname =%s\n",Mlist->list[i].listname);
@@ -150,6 +152,7 @@ int SysOnloadMusicList(const char *sdcard,const char *mp3Music,const char *story
 			}
 		}
 	}
+#endif	
 	return 0;
 }
 
@@ -187,7 +190,7 @@ int GetSdcardMusic(const char *sdcard,const char *musicDir,char *getMusicname,un
 	printf("GetSdcardMusic : playindex=%d (%d)\n",Mlist->list[i].playindex,Mlist->list[i].Nums);
 	return GetTableSqlById(Mlist->list[i].listname,Mlist->list[i].playindex,getMusicname);
 }
-#ifdef DOWN_URL_MUSIC
+#ifdef QITUTU_SHI
 typedef struct{
 	unsigned char playMode;
 	char listname[24];
@@ -267,7 +270,7 @@ int InitMusicList(void){
 	if(Mlist==NULL){
 		return -1;
 	}
-#ifdef DOWN_URL_MUSIC	
+#ifdef QITUTU_SHI	
 	netmusic= (NetMusic_t *)calloc(1,sizeof(NetMusic_t));
 	if(netmusic==NULL){
 		return -1;
@@ -280,10 +283,12 @@ void CleanMusicList(void){
 		free(Mlist);
 		Mlist=NULL;
 	}
+#ifdef QITUTU_SHI	
 	if(netmusic){
 		free(netmusic);
 		netmusic=NULL;
 	}
+#endif	
 	CloseSql();
 }
 

@@ -138,6 +138,7 @@ int GetFileNameForPath(const char *path){
 	return (size-strlen(p)+1);
 }
 static void SaveLoveMp3File(const char *filepath){
+#if defined(QITUTU_SHI)	
 	char runCmd[200]={0};
 	switch(like_mp3_sign){
 		case LOVE_MP3_SAVE_LOVE_MP3_EVENT:		//添加喜爱
@@ -172,6 +173,7 @@ static void SaveLoveMp3File(const char *filepath){
 		default:	
 			break;
 	}
+#endif	
 }
 
 //喜爱
@@ -534,11 +536,13 @@ void HandlerWeixinDownMp3(const char *cacheFilename){
 	}
 	WritePlayUrl_Log(cacheFilename);
 	WritePlayUrl_Log(filename);
-	keydown_flashingLED();
+	keydown_flashingLED();	
+#if defined(QITUTU_SHI)	
 	if(InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)filename)==0){	//插入数据库成功
 		snprintf(rumCmd,200,"cp %s %s%s",cacheFilename,MP3_LIKEPATH,filename);
 		system(rumCmd);
 	}
+#endif	
 exit1:	
 	remove(cacheFilename);
 }

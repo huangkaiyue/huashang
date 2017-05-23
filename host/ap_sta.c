@@ -4,6 +4,7 @@
 #include "nvram.h"
 #include "base/cJSON.h"
 #include "base/pool.h"
+#include "host/voices/callvoices.h"
 #include "config.h"
 
 //#define MAIN_TEST
@@ -89,7 +90,25 @@ static int GetSsidAndPasswd(char *smartData,char *ssid,char *passwd,int *random)
 	}	
 	return -1;
 }
-
+//检查网络检查运行状态,异常状态启动，自动启动联网进程
+static void *CheckNetWork_taskRunState(void *arg){
+	int timeOut=0;
+	while(1){
+		if(++timeOut>30){
+			break;
+		}
+		CheckNetManger_PidRunState();
+		if(!checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
+			printf("network is ok\n");
+			break;
+		}
+		if(connetState==LOCK_SMART_CONFIG_WIFI){
+			break;
+		}
+		sleep(2);
+	}
+	return NULL;
+}
 static void *RunSmartConfig_Task(void *arg){
   	FILE *fp=NULL;
    	char *buf, *ptr;
@@ -156,6 +175,7 @@ exit0:
 	wifi->enableGpio();
 	free(wifi);
 	wifi=NULL;
+	pool_add_task(CheckNetWork_taskRunState, NULL);
 	return NULL;
 }
 int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){

@@ -100,10 +100,10 @@ static void loadLocalServer(int argc,char *argv[]){
 	srand((unsigned)time(NULL));	//取随机数基数
 	mkdir(CACHE_WAV_PATH,777);
 }
-#ifdef LOCAL_MP3
 //自动播放下一首歌曲 musicType 播放歌曲类型(用来区分目录标识)
 static void autoPlayNextMusic(unsigned char musicType){
 	switch(musicType){
+#if defined(DATOU_JIANG)		
 		case mp3:
 			Create_playMusicEvent((const void *)"mp3", PLAY_NEXT);
 			break;
@@ -116,10 +116,11 @@ static void autoPlayNextMusic(unsigned char musicType){
 		case guoxue:
 			Create_playMusicEvent((const void *)"guoxue", PLAY_NEXT);
 			break;
+#elif defined(QITUTU_SHI)				
 		case xiai:
 			Create_playMusicEvent((const void *)XIAI_DIR, PLAY_NEXT);
 			break;
-#if defined(HUASHANG_JIAOYU)			
+#elif defined(HUASHANG_JIAOYU)			
 		case huashang:
 			Create_playMusicEvent((const void *)HUASHANG_GUOXUE_DIR, PLAY_NEXT);
 			break;
@@ -129,7 +130,6 @@ static void autoPlayNextMusic(unsigned char musicType){
 		break;
 	}	
 }
-#endif
 //主线程添加网络歌曲到队列当中播放
 static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 		Show_musicPicture();

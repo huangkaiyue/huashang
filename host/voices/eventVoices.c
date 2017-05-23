@@ -59,22 +59,23 @@ int checkNetWorkLive(unsigned char enablePlayVoices){
 参数: pid_name	进程名字
 返回值: 无
 ********************************************************/
-static int get_pid_name(char *pid_name){
+static int Compare_PIDName(char *pid_name){
 	if(!strcmp(pid_name,"NetManger")){
 		return 0;
 	}
 	return -1;
 }
-static void StartNetServer(void){
-	system("NetManger -t 5 -wifi on &");
+//重新运行NetManger 这个进程
+static void Restart_RunNetManger(void){
+	system("NetManger -t 2 -wifi on &");
 	sleep(1);
 }
-static void CheckNetServer(void){
-	sleep(5);
-	if(judge_pid_exist(get_pid_name)){
+//检查后台联网进程(NetManger)运行状态
+void CheckNetManger_PidRunState(void){
+	if(judge_pid_exist(Compare_PIDName)){
 		remove(NET_SERVER_FILE_LOCK);
-		remove(INTEN_NETWORK_FILE_LOCK);
-		StartNetServer();
+		remove(INTEN_NETWORK_FILE_LOCK);	
+		Restart_RunNetManger();
 	}
 }
 //短按键按下获取wifi 名字并播放
@@ -106,11 +107,7 @@ void ShortKeyDown_ForPlayWifiMessage(void){
 返回值: 无
 ********************************************************/
 void LongNetKeyDown_ForConfigWifi(void){
-	if(judge_pid_exist(get_pid_name)){
-		remove(NET_SERVER_FILE_LOCK);
-		remove(INTEN_NETWORK_FILE_LOCK);
-		StartNetServer();
-	}
+	CheckNetManger_PidRunState();
 	WiterSmartConifg_Log("Network key down","ok");
 	if(!checkInternetFile()){
 		WiterSmartConifg_Log("startSmartConfig checkInternetFile","failed");
@@ -226,6 +223,7 @@ exit0:
 @ 0添加成功 -1添加失败
 */
 static int GetSdcardMusicNameforPlay(unsigned char menu,const char *path, unsigned char playMode){	
+#if defined(DATOU_JIANG)||defined(QITUTU_SHI)
 	char buf[128]={0};
 	char filename[64]={0};
 	int ret=-1;
@@ -258,6 +256,9 @@ static int GetSdcardMusicNameforPlay(unsigned char menu,const char *path, unsign
 	if(ret==0)
 		sysMes.localplayname=menu;
 	return ret;
+#else
+	return 0;
+#endif
 }
 #endif
 
@@ -268,7 +269,7 @@ static int GetSdcardMusicNameforPlay(unsigned char menu,const char *path, unsign
 返回值: 无
 ********************************************************/
 int Create_playMusicEvent(const void *play,unsigned char Mode){
-#ifdef LOCAL_MP3
+#if defined(DATOU_JIANG)
 	int ret=-1;
 	if(!strcmp((const char *)play,"mp3")){
 		ret=GetSdcardMusicNameforPlay(mp3,TF_MP3_PATH,Mode);
@@ -757,14 +758,12 @@ exit0:
 static Speek_t *speek=NULL;
 //先挂载录音再退出
 static void shortVoicesClean(void){
-	//lock
 	pthread_mutex_lock(&speek->mutex);
 	if(speek->savefilefp!=NULL){
 		fclose(speek->savefilefp);
 		speek->savefilefp=NULL;
 	}
 	pthread_mutex_unlock(&speek->mutex);
-	//unlock
 }
 /*******************************************************
 函数功能: 创建待发送的文件，并保持到本地当中,写入wav头
@@ -772,7 +771,6 @@ static void shortVoicesClean(void){
 返回值: 0 创建成果 -1 创建失败
 ********************************************************/
 static int CreateRecorderFile(void){
-	//lock
 	pthread_mutex_lock(&speek->mutex);
 	if(speek->savefilefp!=NULL){
 		fclose(speek->savefilefp);
@@ -781,14 +779,12 @@ static int CreateRecorderFile(void){
 	if((speek->savefilefp= fopen(SAVE_WAV_VOICES_DATA,"w+"))==NULL){
 		perror("open send file failed \n");
 		pthread_mutex_unlock(&speek->mutex);
-		//unlock
 		return -1;
 	}
 	speek->file_len=0;
 	fwrite((char *)&pcmwavhdr,WAV_HEAD,1,speek->savefilefp);
 	DEBUG_EVENT("create save file \n");
 	pthread_mutex_unlock(&speek->mutex);
-	//unlock
 	return 0;
 }
 /*******************************************************
@@ -973,7 +969,7 @@ void Create_SaveWeixinDownMp3_EventToMainQueue(const char *saveFileName){
 static void *waitLoadMusicList(void *arg){
 	int timeout=0;
 	char dirBuf[128]={0};
-	sleep(10);
+	sleep(20);
 	while(++timeout<20){
 		if(!access(TF_SYS_PATH, F_OK)){		//检查tf卡
 			break;
@@ -989,7 +985,11 @@ static void *waitLoadMusicList(void *arg){
 		mkdir(MP3_LIKEPATH,0777);	
 	}
 	SysOnloadMusicList((const char *)TF_SYS_PATH,(const char *)TF_MP3_PATH,(const char *)TF_STORY_PATH,(const char *)TF_ENGLISH_PATH,(const char *)TF_GUOXUE_PATH);
-	CheckNetServer();	//检查网络服务
+	timeout=0;
+	while(++timeout<8){
+		CheckNetManger_PidRunState();	//检查网络服务
+		sleep(1);
+	}
 	if(sysMes.netstate==NETWORK_UNKOWN){
 		sysMes.netstate=NETWORK_ER;
 		enable_gpio();
