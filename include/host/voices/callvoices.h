@@ -156,7 +156,8 @@ extern SysMessage sysMes;
 #endif //end DBG_EVENT
 
 static enum{
-	mp3=1,
+	networkUrl=1,
+	mp3,
 	story,
 	english,
 	guoxue,
@@ -192,7 +193,8 @@ extern void ShortKeyDown_ForPlayWifiMessage(void);
 extern void LongNetKeyDown_ForConfigWifi(void);
 extern void  setAutoPlayMusicTime(void);
 
-extern int Create_playMusicEvent(const void *play,unsigned char Mode);
+
+extern int GetSdcardMusicNameforPlay(unsigned char MuiscMenu,const char *MusicDir, unsigned char playMode);	
 extern void Create_CleanUrlEvent(void);
 extern void Create_PlayQttsEvent(const char *txt,int type);
 extern void TulingKeyDownSingal(void);

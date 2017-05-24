@@ -397,9 +397,9 @@ void keyStreamPlay(void){
 	}else if(st->player.playState==MAD_EXIT){
 #ifdef LOCAL_MP3
 #if defined(QITUTU_SHI)
-		Create_playMusicEvent((const void * )XIAI_DIR,PLAY_NEXT);//暂停状态，添加喜爱歌曲播放
+		GetSdcardMusicNameforPlay(xiai,XIMALA_MUSIC_DIRNAME,PLAY_NEXT);//暂停状态，添加喜爱歌曲播放
 #elif defined(HUASHANG_JIAOYU) 
-		Create_playMusicEvent((const void * )HUASHANG_GUOXUE_DIR,PLAY_NEXT);//暂停状态，添加华上教育歌曲播放
+		GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT);//暂停状态，添加华上教育歌曲播放
 #endif
 		usleep(1000);//防止添加按键太快	
 #endif		

@@ -236,17 +236,17 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 				if(mutiplekey->key_number == ADDVOL_KEY){
 					printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
 #if defined(QITUTU_SHI) 					
-					Create_playMusicEvent((const void *)XIAI_DIR,PLAY_NEXT);
-#elif defined(HUASHANG_JIAOYU)
-					Create_playMusicEvent((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT);
+					GetSdcardMusicNameforPlay(xiai,XIMALA_MUSIC_DIRNAME,PLAY_NEXT);
+#elif defined(HUASHANG_JIAOYU)				
+					GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT);
 #endif
 				}
 				else{
 					printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
 #if defined(QITUTU_SHI)					
-					Create_playMusicEvent((const void *)XIAI_DIR,PLAY_PREV);
+					GetSdcardMusicNameforPlay(xiai,XIAI_DIR,PLAY_PREV);
 #elif defined(HUASHANG_JIAOYU)
-					Create_playMusicEvent((const void *)HUASHANG_GUOXUE_DIR,PLAY_PREV);
+					GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_PREV);
 #endif
 
 				}
@@ -343,7 +343,7 @@ static void signal_handler(int signum){
 				break;
 #endif
 			case PLAY_PAUSE_KEY:	//播放、暂停
-				KeyEventPlayPause();
+				KeydownEventPlayPause();
 				break;
 			case RESERVE_KEY3:	//使能收藏歌曲
 				keydown_flashingLED();
@@ -475,7 +475,7 @@ static void signal_handler(int signum){
 				break;
 #endif
 			case PLAY_PAUSE_KEY:	//播放、暂停
-				KeyEventPlayPause();
+				KeydownEventPlayPause();
 				break;
 			case RESERVE_KEY3:	//华上教育，设置单曲循环和列表
 				keydown_flashingLED();
@@ -507,10 +507,6 @@ static void signal_handler(int signum){
 				break;
 				
 			case SPEEK_KEY://会话键
-#ifdef TEST_PLAY_KEY
-				Create_playMusicEvent((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT);
-				break;
-#endif
 				keyDown_AndSetGpioFor_play();
 				TulingKeyDownSingal();
 				break;
@@ -593,16 +589,16 @@ static void signal_handler(int signum){
 			case ADDVOL_KEY:	//play last
 				switch(sysMes.localplayname){
 					case mp3:
-						Create_playMusicEvent((const void *)"mp3",PLAY_PREV);
+						GetSdcardMusicNameforPlay(mp3,TF_MP3_PATH,PLAY_PREV);
 						break;
 					case story:
-						Create_playMusicEvent((const void *)"story",PLAY_PREV);
+						GetSdcardMusicNameforPlay(story,TF_STORY_PATH,PLAY_PREV);
 						break;
 					case english:
-						Create_playMusicEvent((const void *)"english",PLAY_PREV);
+						GetSdcardMusicNameforPlay(english,TF_ENGLISH_PATH,PLAY_PREV);
 						break;
 					case guoxue:
-						Create_playMusicEvent((const void *)"guoxue",PLAY_PREV);
+						GetSdcardMusicNameforPlay(guoxue,TF_GUOXUE_PATH,PLAY_PREV);
 						break;
 					default:
 						break;
@@ -611,16 +607,16 @@ static void signal_handler(int signum){
 			case SUBVOL_KEY:	//play next
 				switch(sysMes.localplayname){
 					case mp3:
-						Create_playMusicEvent((const void *)"mp3",PLAY_NEXT);
+						GetSdcardMusicNameforPlay(mp3,TF_MP3_PATH,PLAY_NEXT);
 						break;
 					case story:
-						Create_playMusicEvent((const void *)"story",PLAY_NEXT);
+						GetSdcardMusicNameforPlay(story,TF_STORY_PATH,PLAY_NEXT);
 						break;
 					case english:
-						Create_playMusicEvent((const void *)"english",PLAY_NEXT);
+						GetSdcardMusicNameforPlay(english,TF_ENGLISH_PATH,PLAY_NEXT);
 						break;
 					case guoxue:
-						Create_playMusicEvent((const void *)"guoxue",PLAY_NEXT);
+						GetSdcardMusicNameforPlay(guoxue,TF_GUOXUE_PATH,PLAY_NEXT);
 						break;
 					default:
 						break;
@@ -629,9 +625,9 @@ static void signal_handler(int signum){
 #endif
 			case RIGHTLED_KEY:
 				if(sysMes.localplayname==english){
-					KeyEventPlayPause();
+					KeydownEventPlayPause();
 				}else{
-					Create_playMusicEvent((const void *)"english",PLAY_NEXT);
+					GetSdcardMusicNameforPlay(english,TF_ENGLISH_PATH,PLAY_NEXT);
 				}
 				break;
 #ifdef	LOCAL_MP3
@@ -641,23 +637,23 @@ static void signal_handler(int signum){
 
 			case PLAY_PAUSE_KEY://播放暂停
 				if(sysMes.localplayname==guoxue){
-					KeyEventPlayPause();
+					KeydownEventPlayPause();
 				}else{
-					Create_playMusicEvent((const void *)"guoxue",PLAY_NEXT);
+					GetSdcardMusicNameforPlay(english,TF_GUOXUE_PATH,PLAY_NEXT);
 				}
 				break;
 			case RESERVE_KEY3:	//目录
 				if(sysMes.localplayname==mp3){
-					KeyEventPlayPause();
+					KeydownEventPlayPause();
 				}else{
-					Create_playMusicEvent((const void *)"mp3",PLAY_NEXT);
+					GetSdcardMusicNameforPlay(mp3,TF_MP3_PATH,PLAY_NEXT);
 				}
 				break;
 			case LETFLED_KEY:	//left led
 				if(sysMes.localplayname==story){
-					KeyEventPlayPause();
+					KeydownEventPlayPause();
 				}else{
-					Create_playMusicEvent((const void *)"story",PLAY_NEXT);
+					GetSdcardMusicNameforPlay(story,TF_STORY_PATH,PLAY_NEXT);
 				}
 				break;
 #endif

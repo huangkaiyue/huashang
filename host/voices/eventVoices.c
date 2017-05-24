@@ -36,7 +36,6 @@ static int getNetWorkLive(void){
 @ 0: 连接网络正常  -1: 连接网络失败
 */
 int checkNetWorkLive(unsigned char enablePlayVoices){
-#if 1
 	if(getNetWorkLive()==NETWORK_ER||getNetWorkLive()==NETWORK_UNKOWN){
 		//播报台本
 		if(getEventNum()>0){	//检查是否添加过事件
@@ -50,9 +49,6 @@ int checkNetWorkLive(unsigned char enablePlayVoices){
 		return 0;
 	}
 	return -1;
-#else
-	return 0;
-#endif
 }
 /*******************************************************
 函数功能: 查看NetManger进程是否存在pid号
@@ -178,7 +174,7 @@ exit0:
 	free(data);
 	return -1;
 }
-#ifdef LOCAL_MP3
+
 //设置自动播放模式下，记录的起始时间
 void setAutoPlayMusicTime(void){
 	time_t t;
@@ -219,88 +215,51 @@ exit0:
 }
 /*
 @ 根据目录菜单和路径获取本地sdcatd 歌曲名字进行播放
-@ menu 目录菜单(英语/科技/国学/收藏等内容分类 ) path sdcard目录路径 playMode播放模式 下一首/上一首
+@ MuiscMenu 目录菜单(英语/科技/国学/收藏等内容分类 ) 
+	MusicDir sdcard目录路径 playMode播放模式 下一首/上一首
 @ 0添加成功 -1添加失败
 */
-static int GetSdcardMusicNameforPlay(unsigned char menu,const char *path, unsigned char playMode){	
+int GetSdcardMusicNameforPlay(unsigned char MuiscMenu,const char *MusicDir, unsigned char playMode){	
+	int ret=0;
 #if defined(DATOU_JIANG)||defined(QITUTU_SHI)
 	char buf[128]={0};
 	char filename[64]={0};
-	int ret=-1;
+	
 	if(access(TF_SYS_PATH, F_OK)){	//检查tf卡
 		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE)
 			Create_PlaySystemEventVoices(TF_ERROT_PLAY);
 		return ret;
 	}
-	int len =snprintf(buf,128,"%s%s",TF_SYS_PATH,path);
-	if(menu==xiai){		//获取喜爱目录下的歌曲路径名
-		if(PlayxiaiMusic((const char *)TF_SYS_PATH,path,filename, playMode) == -2){
+	int len =snprintf(buf,128,"%s%s",TF_SYS_PATH,MusicDir);
+	if(MuiscMenu==xiai){		//获取喜爱目录下的歌曲路径名
+		if(PlayxiaiMusic((const char *)TF_SYS_PATH,MusicDir,filename, playMode) == -2){
 			Create_PlaySystemEventVoices(LIKE_ERROT_PLAY);
-			return ret;
+			return -1;
 		}
 		if(!strcmp(filename,"")){//获取的路径名为空，直接退出
 			//Create_PlaySystemEventVoices(LIKE_ERROT_PLAY);
-			return ret;
+			return -1;
 		}
 	}else{				//获取客户自定义存放歌曲路径名
-		if(GetSdcardMusic((const char *)TF_SYS_PATH,path,filename, playMode)){
+		if(GetSdcardMusic((const char *)TF_SYS_PATH,MusicDir,filename, playMode)){
 			Create_PlaySystemEventVoices(PLAY_ERROT_PLAY);
 			return ret;
 		}
 		if(!strcmp(filename,"")){//获取的路径名为空，直接退出
-			return ret;
+			return -1;
 		}
 	}
 	snprintf(buf+len,128-len,"%s",filename);
 	ret=__AddLocalMp3ForPaly((const char *)buf);			//添加歌曲到队列播放
 	if(ret==0)
-		sysMes.localplayname=menu;
-	return ret;
-#else
-	return 0;
-#endif
-}
-#endif
-
-
-/*******************************************************
-函数功能: 播放MP3
-参数: play 本地MP3播放命令 或 URL地址
-返回值: 无
-********************************************************/
-int Create_playMusicEvent(const void *play,unsigned char Mode){
-#if defined(DATOU_JIANG)
-	int ret=-1;
-	if(!strcmp((const char *)play,"mp3")){
-		ret=GetSdcardMusicNameforPlay(mp3,TF_MP3_PATH,Mode);
-	}
-	else if(!strcmp((const char *)play,"story")){
-		ret=GetSdcardMusicNameforPlay(story,TF_STORY_PATH,Mode);
-	}
-	else if(!strcmp((const char *)play,"english")){
-		ret=GetSdcardMusicNameforPlay(english,TF_ENGLISH_PATH,Mode);
-	}
-	else if(!strcmp((const char *)play,"guoxue")){
-		ret=GetSdcardMusicNameforPlay(guoxue,TF_GUOXUE_PATH,Mode);
-	}
-	else if(!strcmp((const char *)play,XIAI_DIR)){
-		ret=GetSdcardMusicNameforPlay(xiai,XIMALA_MUSIC_DIRNAME,Mode);
-	}
-#if defined(HUASHANG_JIAOYU)	
-	else if(!strcmp((const char *)play,HUASHANG_GUOXUE_DIR)){
-		GetScard_forPlayHuashang_Music(Mode,(const void *)play);
-	}
+		sysMes.localplayname=CleanMtkPlatfrom76xx;
 #endif	
-	else{
-		ret=0;
-		__AddNetWork_UrlForPaly(play);
-	}
 	return ret;
-#else
-	return __AddNetWork_UrlForPaly(play);
-#endif	
 }
-void KeyEventPlayPause(void){
+/**
+处理按下播放暂停键
+**/
+void KeydownEventPlayPause(void){
 #ifndef DATOU_JIANG
 	keydown_flashingLED();	
 #endif
@@ -384,7 +343,7 @@ void Handler_PlayQttsEvent(HandlerText_t *handText){
 返回值: 无
 ********************************************************/
 void TulingKeyDownSingal(void){
-	updateCurrentEventNums();
+	updateCurrentEventNums();	
 	Show_KeyDownPicture();
 	Write_Speekkeylog((const char *)"TulingKeyDownSingal",0);
 	//处于微信对讲状态，直接退出	
@@ -570,7 +529,6 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;
 		case UPDATA_END_PLAY:						//更新固件结束
 			PlaySystemAmrVoices(UPDATA_END,playEventNums);
-			//system("sleep 8 && reboot &");
 			break;
 		case TIMEOUT_PLAY_LOCALFILE:				//请求服务器超时，播放本地已经录制好的音频
 			TaiwanToTulingError(playEventNums);
@@ -594,10 +552,10 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 		case CONNECT_OK_PLAY:			//连接成功	
 			showFacePicture(CONNECT_WIFI_OK_PICTURE);	
 			PlaySystemAmrVoices(LINK_SUCCESS,playEventNums);
-			Link_NetworkOk();		//连接成功关灯，开灯，状态设置
+			Link_NetworkOk();			//连接成功关灯，开灯，状态设置
 			enable_gpio();
 			break;
-		case NOT_FIND_WIFI_PLAY:			//没有扫描到wifi
+		case NOT_FIND_WIFI_PLAY:		//没有扫描到wifi
 			PlaySystemAmrVoices(NO_WIFI,playEventNums);
 			enable_gpio();
 			break;
@@ -611,19 +569,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;
 		case CONNET_CHECK_PLAY:			//检查网络是否可用
 			PlaySystemAmrVoices(CHECK_INTERNET,playEventNums);
-			break;
-#if 0			
-		case WIFI_CHECK_PLAY:			//检查网络
-			PlaySystemAmrVoices(CHECK_WIFI,playEventNums);
-			PlaySystemAmrVoices(CHECK_WIFI_WAIT,playEventNums);
-			break;
-		case WIFI_NO:					//检查网络NO
-			PlaySystemAmrVoices(CHECK_WIFI_NO,playEventNums);
-			break;
-		case WIFI_YES:					//检查网络OK
-			PlaySystemAmrVoices(CHECK_WIFI_YES,playEventNums);
-			break;
-#endif			
+			break;		
 //----------------------对讲有关-----------------------------------------------------
 		case SEND_OK_PLAY:				//发送成功
 			PlaySystemAmrVoices(SEND_OK,playEventNums);
@@ -706,7 +652,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 				start_event_play_wav();
 				if(!PlaySystemAmrVoices(TIMEOUT_TLAK,playEventNums)){
 #if defined(HUASHANG_JIAOYU)					
-					Create_playMusicEvent((const void *)HUASHANG_GUOXUE_DIR, PLAY_NEXT);
+					GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT);
 #endif
 				}
 			}
@@ -999,54 +945,6 @@ static void *waitLoadMusicList(void *arg){
 #endif
 	return NULL;
 } 
-#endif
-
-#ifdef HUASHANG_JIAOYU
-//显示智能会话表情
-void Show_musicPicture(void){
-	int faceNumS=(1+(int) (4.0*rand()/(RAND_MAX+1.0)));	
-	switch(faceNumS){
-		case 1:
-			showFacePicture(PLAY_MUSIC_NUM1);
-			break;
-		case 2:
-			showFacePicture(PLAY_MUSIC_NUM2);
-			break;
-		case 3:
-			showFacePicture(PLAY_MUSIC_NUM3);
-			break;
-		case 4:
-			showFacePicture(PLAY_MUSIC_NUM4);
-			break;	
-		default:
-			showFacePicture(PLAY_MUSIC_NUM4);
-			break;
-	}
-}
-void Show_KeyDownPicture(void){
-	showFacePicture(KEY_CTRL_PICTURE);
-}
-void Show_waitCtrlPicture(void){
-	int faceNumS=(1+(int) (4.0*rand()/(RAND_MAX+1.0)));	
-	switch(faceNumS){
-		case 1:
-			showFacePicture(WAIT_CTRL_NUM1);
-			break;
-		case 2:
-			showFacePicture(WAIT_CTRL_NUM2);
-			break;
-		case 3:
-			showFacePicture(WAIT_CTRL_NUM3);
-			break;
-		case 4:
-			showFacePicture(WAIT_CTRL_NUM4);
-			break;	
-		default:
-			showFacePicture(WAIT_CTRL_NUM4);
-			break;
-	}
-
-}
 #endif
 
 /******************************************************************

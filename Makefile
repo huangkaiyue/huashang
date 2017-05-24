@@ -29,7 +29,7 @@ all +=srvwork/workinter.o
 all +=net/network.o
 all +=net/parseCmd.o
 all +=uart/uart.o
-#all +=mtkwifiLib/mtkwifi.o
+all +=uart/showFace.o
 all +=usrdb/sysdata.o
 
 all +=host/voices/wm8960i2s.o

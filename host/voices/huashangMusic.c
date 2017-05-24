@@ -53,7 +53,7 @@ void openSystemload_huashangData(void){
 exit0:	
 	free(filebuf);
 }
-int GetScard_forPlayHuashang_Music(unsigned char playMode,const void *playDir){
+int GetScard_forPlayHuashang_Music(const void *playDir,unsigned char playMode){
 	int ret=-1;
 	char playBuf[128]={0};
 	if(access(TF_SYS_PATH, F_OK)){	//¼ì²étf¿¨

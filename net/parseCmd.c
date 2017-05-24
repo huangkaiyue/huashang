@@ -413,7 +413,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 					player->musicTime = cJSON_GetObjectItem(pJson, "time")->valueint;
 				}
 
-				Create_playMusicEvent(player,0);
+				__AddNetWork_UrlForPaly(player);
 			}
 		}else if (!strcmp(pSub->valuestring,"pause")){
 			//mute_recorde_vol(MUTE);

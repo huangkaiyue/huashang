@@ -105,24 +105,24 @@ static void autoPlayNextMusic(unsigned char musicType){
 	switch(musicType){
 #if defined(DATOU_JIANG)		
 		case mp3:
-			Create_playMusicEvent((const void *)"mp3", PLAY_NEXT);
+			GetSdcardMusicNameforPlay(mp3,TF_MP3_PATH,PLAY_NEXT);
 			break;
 		case story:
-			Create_playMusicEvent((const void *)"story", PLAY_NEXT);
+			GetSdcardMusicNameforPlay(story,TF_STORY_PATH,PLAY_NEXT);
 			break;
 		case english:
-			Create_playMusicEvent((const void *)"english", PLAY_NEXT);
+			GetSdcardMusicNameforPlay(english,TF_ENGLISH_PATH,PLAY_NEXT);
 			break;
 		case guoxue:
-			Create_playMusicEvent((const void *)"guoxue", PLAY_NEXT);
+			GetSdcardMusicNameforPlay(guoxue,TF_GUOXUE_PATH,PLAY_NEXT);
 			break;
 #elif defined(QITUTU_SHI)				
 		case xiai:
-			Create_playMusicEvent((const void *)XIAI_DIR, PLAY_NEXT);
+			GetSdcardMusicNameforPlay(xiai,XIMALA_MUSIC_DIRNAME,PLAY_NEXT);
 			break;
 #elif defined(HUASHANG_JIAOYU)			
 		case huashang:
-			Create_playMusicEvent((const void *)HUASHANG_GUOXUE_DIR, PLAY_NEXT);
+			GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT);
 			break;
 #endif			
 		default:
