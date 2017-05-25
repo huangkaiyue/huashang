@@ -112,5 +112,7 @@
 
 #define XIAI_DIR 				"xiai"
 #define HUASHANG_GUOXUE_DIR		"huashangedu"	
+
+#define DEFALUT_URL_JSON		"/home/defalutUrl.json"
 //#define TEST_ERROR_TULING
 

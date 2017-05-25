@@ -3,6 +3,7 @@
 #include "host/studyvoices/std_worklist.h"
 #include "host/studyvoices/prompt_tone.h"
 #include "base/pool.h"
+#include "base/cJSON.h"
 #include "host/voices/callvoices.h"
 #include "host/ap_sta.h"
 #include "nvram.h"
@@ -492,6 +493,66 @@ void UartEventcallFuntion(int event){
 		Create_PlayImportVoices(LOW_BATTERY_PLAY);
 	}	
 } 
+//获取本地默认json 歌曲url地址
+static int GetDefaultMusicJson_forPlay(char *getUrlBuf){
+	int ret =-1;
+	char *readBuf = readFileBuf((const char * )DEFALUT_URL_JSON);
+	if(readBuf==NULL){
+		return -1;
+	}
+	cJSON * pJson = cJSON_Parse(readBuf);
+	if(NULL == pJson){
+		goto exit0;
+	}
+	cJSON * pArray =cJSON_GetObjectItem(pJson, "music");
+	if(NULL == pArray){
+		printf("cJSON_Parse DEFALUT_URL_JSON failed \n");
+		goto exit1;
+	}
+	int iCount = cJSON_GetArraySize(pArray);
+	//printf("name	 iCount == %d \n",iCount);
+	float randMax=(float)iCount-1;
+	int randNums=(1+(int)(randMax*rand()/(RAND_MAX+1.0)));
+#if 0
+	int i=0;
+	for (i=0; i < iCount; ++i) {
+		cJSON* pItem = cJSON_GetArrayItem(pArray, i);
+		if (NULL == pItem){
+			continue;
+		}
+		char *name = cJSON_GetObjectItem(pItem,"name")->valuestring;
+		printf("name[%d] = %s\n",i,name);
+	}
+#endif
+	cJSON* pItem = cJSON_GetArrayItem(pArray, randNums);
+	if(pItem){
+		cJSON *cjson = cJSON_GetObjectItem(pItem,"name");
+			if(cjson){
+				snprintf(getUrlBuf,128,"%s",cjson->valuestring);
+				ret =0;
+			}
+	}
+exit1:
+	cJSON_Delete(pJson);
+exit0:
+	free(readBuf);
+	return ret;
+}
+//创建播放默认url歌曲
+static void CreatePlayDefaultMusic_forPlay(void){
+	Player_t *player = (Player_t *)calloc(1,sizeof(Player_t));
+	if(player==NULL){
+		perror("calloc error !!!");
+		return;
+	}
+	if(GetDefaultMusicJson_forPlay(player->playfilename)){
+		free(player);
+		return ;
+	}
+	player->musicTime=100;
+	snprintf(player->musicname,64,"%s","devicesplay");
+	__AddNetWork_UrlForPaly((const void *) player);
+}
 
 /*******************************************************
 函数功能: 系统音事件处理函数
@@ -653,6 +714,8 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 				if(!PlaySystemAmrVoices(TIMEOUT_TLAK,playEventNums)){
 #if defined(HUASHANG_JIAOYU)					
 					GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT);
+#else	
+					CreatePlayDefaultMusic_forPlay();
 #endif
 				}
 			}
