@@ -183,10 +183,11 @@ void setAutoPlayMusicTime(void){
 }
 /*******************************************************
 函数功能: 添加本地音乐到队列进行播放
-参数: localpath 本地MP3播放地址	
+参数: localpath 本地MP3播放路径
+EventSource:事件来源 (外部事件触发/自身触发)
 返回值: 0添加成功 -1添加失败
 ********************************************************/
-int __AddLocalMp3ForPaly(const char *localpath){
+int __AddLocalMp3ForPaly(const char *localpath,unsigned char EventSource){
 	if(getEventNum()>0){	//事件任务过多，直接丢掉，防止添加过快，导致后面清理时间过长
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		return -1;
@@ -197,14 +198,14 @@ int __AddLocalMp3ForPaly(const char *localpath){
 	int ret=-1;
 	HandlerText_t *handEvent = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));	
 	if(handEvent){
-		char *URL= (char *)calloc(1,strlen(localpath)+1);
-		if(URL==NULL){
+		Player_t *player= (char *)calloc(1,sizeof(Player_t));
+		if(player==NULL){
 			perror("calloc error !!!");
 			goto exit0;
 		}
-		sprintf(URL,"%s",localpath);	
+		sprintf(player->playfilename,"%s",localpath);	
 		handEvent->EventNums=updateCurrentEventNums();
-		handEvent->data = URL;
+		handEvent->data = (char *)player;
 		handEvent->event=LOCAL_MP3_EVENT;
 		setAutoPlayMusicTime();
 		ret = AddworkEvent(handEvent,sizeof(HandlerText_t));
@@ -223,35 +224,35 @@ exit0:
 int GetSdcardMusicNameforPlay(unsigned char MuiscMenu,const char *MusicDir, unsigned char playMode){	
 	int ret=0;
 #if defined(DATOU_JIANG)||defined(QITUTU_SHI)
-	char buf[128]={0};
-	char filename[64]={0};
+	char filePath[128]={0};	//歌曲路径和名字
+	char musicName[64]={0};//歌曲的名字
 	
 	if(access(TF_SYS_PATH, F_OK)){	//检查tf卡
 		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE)
 			Create_PlaySystemEventVoices(TF_ERROT_PLAY);
 		return ret;
 	}
-	int len =snprintf(buf,128,"%s%s",TF_SYS_PATH,MusicDir);
+	int len =snprintf(filePath,128,"%s%s",TF_SYS_PATH,MusicDir);
 	if(MuiscMenu==xiai){		//获取喜爱目录下的歌曲路径名
-		if(PlayxiaiMusic((const char *)TF_SYS_PATH,MusicDir,filename, playMode) == -2){
+		if(PlayxiaiMusic((const char *)TF_SYS_PATH,MusicDir,musicName, playMode) == -2){
 			Create_PlaySystemEventVoices(LIKE_ERROT_PLAY);
 			return -1;
 		}
-		if(!strcmp(filename,"")){//获取的路径名为空，直接退出
+		if(!strcmp(musicName,"")){//获取的路径名为空，直接退出
 			//Create_PlaySystemEventVoices(LIKE_ERROT_PLAY);
 			return -1;
 		}
 	}else{				//获取客户自定义存放歌曲路径名
-		if(GetSdcardMusic((const char *)TF_SYS_PATH,MusicDir,filename, playMode)){
+		if(GetSdcardMusic((const char *)TF_SYS_PATH,MusicDir,musicName, playMode)){
 			Create_PlaySystemEventVoices(PLAY_ERROT_PLAY);
 			return ret;
 		}
-		if(!strcmp(filename,"")){//获取的路径名为空，直接退出
+		if(!strcmp(musicName,"")){//获取的路径名为空，直接退出
 			return -1;
 		}
 	}
-	snprintf(buf+len,128-len,"%s",filename);
-	ret=__AddLocalMp3ForPaly((const char *)buf);			//添加歌曲到队列播放
+	snprintf(filePath+len,128-len,"%s",musicName);	//完整歌曲路径
+	ret=__AddLocalMp3ForPaly((const char *)filePath,EXTERN_PLAY_EVENT);//添加歌曲到队列播放
 	if(ret==0)
 		sysMes.localplayname=CleanMtkPlatfrom76xx;
 #endif	
@@ -494,7 +495,7 @@ void UartEventcallFuntion(int event){
 	}	
 } 
 //获取本地默认json 歌曲url地址
-static int GetDefaultMusicJson_forPlay(char *getUrlBuf){
+static int GetDefaultMusicJson_forPlay(char *getUrlBuf,unsigned char musicType){
 	int ret =-1;
 	char *readBuf = readFileBuf((const char * )DEFALUT_URL_JSON);
 	if(readBuf==NULL){
@@ -539,13 +540,13 @@ exit0:
 	return ret;
 }
 //创建播放默认url歌曲
-static void CreatePlayDefaultMusic_forPlay(void){
+static void CreatePlayDefaultMusic_forPlay(unsigned char musicType){
 	Player_t *player = (Player_t *)calloc(1,sizeof(Player_t));
 	if(player==NULL){
 		perror("calloc error !!!");
 		return;
 	}
-	if(GetDefaultMusicJson_forPlay(player->playfilename)){
+	if(GetDefaultMusicJson_forPlay(player->playfilename,musicType)){
 		free(player);
 		return ;
 	}
@@ -573,7 +574,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 #endif
 			led_lr_oc(closeled);
 			usleep(800*1000);
-			Mute_voices(MUTE);		//关闭功放
+			Mute_voices(MUTE);						//关闭功放
 			break;
 		case LOW_BATTERY_PLAY:						//低电关机
 #ifdef PALY_URL_SD
@@ -595,7 +596,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			TaiwanToTulingError(playEventNums);
 			break;
 //----------------------网络有关-----------------------------------------------------
-		case CONNET_ING_PLAY:			//正在连接，请稍等
+		case CONNET_ING_PLAY:						//正在连接，请稍等
 			//showFacePicture(CONNECT_WIFI_ING_PICTURE);//正在连接wifi 		
 			PlaySystemAmrVoices(CHANGE_NETWORK,playEventNums);
 			start_event_play_wav();
@@ -713,9 +714,9 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 				start_event_play_wav();
 				if(!PlaySystemAmrVoices(TIMEOUT_TLAK,playEventNums)){
 #if defined(HUASHANG_JIAOYU)					
-					GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT);
+					GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT,AUTO_PLAY_EVENT);
 #else	
-					CreatePlayDefaultMusic_forPlay();
+					CreatePlayDefaultMusic_forPlay(1);
 #endif
 				}
 			}

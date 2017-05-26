@@ -32,7 +32,7 @@ typedef struct{
 	short progress;				//播放进度
 	short proflag;				//播放进度标记
 	unsigned short musicTime;	//音乐总时长
-	char playfilename[128];		//当前播放的url地址
+	char playfilename[128];		//当前播放的地址
 	char musicname[48];			//当前播放的歌曲名字		
 }Player_t;
 
@@ -68,8 +68,7 @@ extern Mp3Stream *st;
 #endif
 
 extern void NetStreamExitFile(void);	//退出播放,耗时退出
-extern void PlayUrl(const void *data);	//播放URL接口，本地存在就不下载了
-extern int NetStreamDownFilePlay(const void *data);//开始边下边播放 阻塞 耗时下载，后台线程播放
+extern void Mad_PlayMusic(Player_t *play);	//播放URL接口，本地存在就不下载了
 extern void StreamPause(void);
 extern void StreamPlay(void);
 extern void SetStreamPlayState(unsigned char playliststate);
@@ -77,9 +76,6 @@ extern int GetStreamPlayState(void);
 extern void keyStreamPlay(void);
 
 extern void getStreamState(void *data,void StreamState(void *data,Player_t *player));	//获取播放流状态
-
-extern void playLocalMp3(const char *mp3file);	//播放本地音频流 
-
 //初始化 ，WritePcmData写入音频数据流回调函数  SetI2SRate 设置采样率回调函数
 extern void initStream(void ack_playCtr(int nettype,Player_t *player,unsigned char playState),void WritePcmData(char *data,int size),void SetI2SRate(int rate),int GetVol(void));
 extern void cleanStream(void);//清除

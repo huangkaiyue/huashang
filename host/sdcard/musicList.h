@@ -13,6 +13,7 @@ typedef struct{
 
 #define PLAY_NEXT		1		//播放下一首歌曲
 #define PLAY_PREV		2 		//播放上一首歌曲
+#define PLAY_RANDOM		3		//随机播放
 
 #ifdef QITUTU_SHI
 #define XIMALA_MUSIC	"ximalaya"	//喜马拉雅收藏的歌曲		

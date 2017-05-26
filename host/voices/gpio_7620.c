@@ -238,7 +238,7 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 #if defined(QITUTU_SHI) 					
 					GetSdcardMusicNameforPlay(xiai,XIMALA_MUSIC_DIRNAME,PLAY_NEXT);
 #elif defined(HUASHANG_JIAOYU)				
-					GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT);
+					GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT,EXTERN_PLAY_EVENT);
 #endif
 				}
 				else{
@@ -246,7 +246,7 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 #if defined(QITUTU_SHI)					
 					GetSdcardMusicNameforPlay(xiai,XIAI_DIR,PLAY_PREV);
 #elif defined(HUASHANG_JIAOYU)
-					GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_PREV);
+					GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_PREV,EXTERN_PLAY_EVENT);
 #endif
 
 				}

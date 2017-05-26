@@ -53,7 +53,7 @@ void openSystemload_huashangData(void){
 exit0:	
 	free(filebuf);
 }
-int GetScard_forPlayHuashang_Music(const void *playDir,unsigned char playMode){
+int GetScard_forPlayHuashang_Music(const void *playDir,unsigned char playMode,unsigned char EventSource){
 	int ret=-1;
 	char playBuf[128]={0};
 	if(access(TF_SYS_PATH, F_OK)){	//¼ì²étf¿¨
@@ -74,11 +74,12 @@ int GetScard_forPlayHuashang_Music(const void *playDir,unsigned char playMode){
 				hsUser->PlayHuashang_MusicIndex=HUASHANG_MUSIC_TOTAL_NUM-1;
 			}
 		}
+	}else if(playMode==PLAY_RANDOM){
 	}	
 	snprintf(playBuf,128,"%s%s/%d.mp3",TF_SYS_PATH,HUASHANG_GUOXUE_DIR,hsUser->PlayHuashang_MusicIndex);
 	if(access(playBuf, F_OK)==0){
 		Write_huashang_log((const char *)"get play file ok",(const char * )playBuf,2);
-		ret=__AddLocalMp3ForPaly((const char *)playBuf);
+		ret=__AddLocalMp3ForPaly((const char *)playBuf,EventSource);
 	}else{
 		Write_huashang_log((const char *)"get play file failed",(const char * )playBuf,3);
 	}	
@@ -120,10 +121,12 @@ musicType:ÒôÀÖÀàÐÍ  ÍøÂç¸èÇú/±¾µØ¸èÇú
 
 ***/
 void CreatePlayListMuisc(const void *data,int musicType){
+	Player_t * player =NULL;
 	if(PLAY_MUSIC_NETWORK==musicType){
 		__AddNetWork_UrlForPaly(data);
 	}else if(PLAY_MUSIC_SDCARD==musicType){
-		__AddLocalMp3ForPaly((const char *)data);
+		player= (Player_t *)data;
+		__AddLocalMp3ForPaly((const char *)player->playfilename,EXTERN_PLAY_EVENT);
 	}
 }
 //------------------------------------------------------------------------------

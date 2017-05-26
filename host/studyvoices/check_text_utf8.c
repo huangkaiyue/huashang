@@ -46,7 +46,7 @@ int HandlerPlay_checkTextResult(int cmd,const char *playname,unsigned int playEv
 		case CMD_MUSIC_MEUN:
 			pause_record_audio();//需要切换到暂停状态，才能添加歌曲进去播放------------>当前状态为播放wav状态
 			Write_huashangTextLog(playname);
-			ret =__AddLocalMp3ForPaly(playname);		
+			ret =__AddLocalMp3ForPaly(playname,EXTERN_PLAY_EVENT);		
 			break;
 		case CMD_WHO_NAME:
 			ret =PlaySystemAmrVoices(TULING_HAHAXIONG,playEventNums);

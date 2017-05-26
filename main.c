@@ -122,7 +122,7 @@ static void autoPlayNextMusic(unsigned char musicType){
 			break;
 #elif defined(HUASHANG_JIAOYU)			
 		case huashang:
-			GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT);
+			GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT,EXTERN_PLAY_EVENT);
 			break;
 #endif			
 		default:
@@ -132,12 +132,8 @@ static void autoPlayNextMusic(unsigned char musicType){
 }
 //主线程添加网络歌曲到队列当中播放
 static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
-		Show_musicPicture();
-#ifdef PALY_URL_SD
-		PlayUrl((const void *)hand->data);
-#else
-		NetStreamDownFilePlay((const void *)hand->data);
-#endif
+	Show_musicPicture();
+	Mad_PlayMusic((Player_t *)hand->data);
 #if defined(HUASHANG_JIAOYU)
 	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
 		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_NETWORK);
@@ -154,11 +150,11 @@ static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 //主线程添加本地到队列当中播放
 static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 	Show_musicPicture();
-	playLocalMp3((const char *)hand->data);
+	Mad_PlayMusic((const char *)hand->data);
 #if defined(HUASHANG_JIAOYU)	
 	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
 		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_SDCARD);
-	}else{
+	}else{											//自动播放
 		if(getEventNum()==0&&getWorkMsgNum(DownEvent)==0){
 			autoPlayNextMusic(sysMes.localplayname);
 		}	
@@ -180,11 +176,7 @@ static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
 	start_event_play_Mp3music();
 	usleep(300*1000);
 	Show_musicPicture();
-#ifdef PALY_URL_SD
-	PlayUrl((const void *)hand->data);
-#else
-	NetStreamDownFilePlay((const void *)hand->data);
-#endif
+	Mad_PlayMusic((Player_t *)hand->data);
 	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic endplay");
 exit0:
 	free((void *)hand->data);
@@ -238,8 +230,6 @@ int main(int argc, char **argv){
 				free((void *)msg);
 				break;
 #endif				
-			case UPLOAD_TULING_EVENT:	//将耗时操作的上传接口放到队列当中
-				break;
 			case QUIT_MAIN:
 				printf("end main !!!\n");
 				goto exit0;

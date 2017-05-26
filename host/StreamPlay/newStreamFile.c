@@ -315,16 +315,15 @@ void NetStreamExitFile(void){
 }
 
 //拷贝推送过来的信息
-static void CopyUrlMessage(Player_t *App,Player_t *Dev){
-	snprintf(Dev->playfilename,128,"%s",App->playfilename);	
-	snprintf(Dev->musicname,64,"%s",App->musicname);
-	Dev->musicTime = App->musicTime;
+static void CopyUrlMessage(Player_t *srcPlayer,Player_t *DestPlayer){
+	snprintf(DestPlayer->playfilename,128,"%s",srcPlayer->playfilename);	
+	snprintf(DestPlayer->musicname,64,"%s",srcPlayer->musicname);
+	DestPlayer->musicTime = srcPlayer->musicTime;
 }
 //开始边下边播放 
-int NetStreamDownFilePlay(const void *data){
+static int NetStreamDownFilePlay(Player_t *play){
 	int ret=0;
 	setDowning();
-	Player_t *play =(Player_t *)data; 
 	st->player.progress=0;
 	st->streamLen=0;
 	st->playSize=0;
@@ -332,10 +331,6 @@ int NetStreamDownFilePlay(const void *data){
 	WritePlayUrl_Log("play url:\n");
 	WritePlayUrl_Log(play->playfilename);
 	WritePlayUrl_Log("\n");
-#ifndef PALY_URL_SD
-	CopyUrlMessage((Player_t *)data,(Player_t *)&st->player);
-	//snprintf(st->player.playfilename,128,"%s",play->playfilename);
-#endif
 	st->player.playState=MAD_NEXT;
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 
@@ -399,7 +394,7 @@ void keyStreamPlay(void){
 #if defined(QITUTU_SHI)
 		GetSdcardMusicNameforPlay(xiai,XIMALA_MUSIC_DIRNAME,PLAY_NEXT);//暂停状态，添加喜爱歌曲播放
 #elif defined(HUASHANG_JIAOYU) 
-		GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT);//暂停状态，添加华上教育歌曲播放
+		GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT,EXTERN_PLAY_EVENT);//暂停状态，添加华上教育歌曲播放
 #endif
 		usleep(1000);//防止添加按键太快	
 #endif		
@@ -454,8 +449,8 @@ static void InputlocalStream(const void * inputMsg,int inputSize){
 	fread(inputMsg,1,inputSize,st->rfp);
 	st->playSize+=inputSize;
 }
-//播放本地歌曲
-void playLocalMp3(const char *mp3file){
+//播放本地音频流 
+static void playLocalMp3(const char *mp3file){
 	st->player.progress=0;
 	st->streamLen=0;
 	st->playSize=0;
@@ -504,28 +499,27 @@ void playLocalMp3(const char *mp3file){
 	DEBUG_STREAM(" exit play ok \n");
 	WriteEventlockLog("playLocalMp3  exit play ok \n",(int)st->player.playState);
 }
-#ifdef PALY_URL_SD
-void PlayUrl(const void *data){
+void Mad_PlayMusic(Player_t *play){
 	char domain[64] = {0};
 	char filename[128]={0};
 	int port = 80;
-	Player_t *play =(Player_t *)data;
-	parse_url(play->playfilename, domain, &port, filename);
-	CopyUrlMessage((Player_t *)data,(Player_t *)&st->player);
-	char likebuf[256]={0};
-	snprintf(likebuf,256,"%s%s",MP3_LIKEPATH,filename);	
-	snprintf(st->mp3name,128,"%s",filename);			//将名字写入结构体中
-	if(!access(likebuf,F_OK)){
-		DEBUG_STREAM("music ximalaya dir :%s \n",filename);
-		playLocalMp3(likebuf);
+	if(!access(play->playfilename,F_OK)){
+		playLocalMp3(play->playfilename);
 	}else{
-		DEBUG_STREAM("down load url for network: %s \n",filename);
-		NetStreamDownFilePlay(data);
+		parse_url(play->playfilename, domain, &port, filename);
+		CopyUrlMessage(play,(Player_t *)&st->player);
+		char likebuf[256]={0};
+		snprintf(likebuf,256,"%s%s",MP3_LIKEPATH,filename);	
+		snprintf(st->mp3name,128,"%s",filename);			
+		if(!access(likebuf,F_OK)){
+			DEBUG_STREAM("find music in sdcard:%s \n",filename);
+			playLocalMp3(likebuf);
+		}else{
+			DEBUG_STREAM("network play music : %s \n",filename);
+			NetStreamDownFilePlay(play);
+		}
 	}
 }
-#endif
-
-
 #ifdef PALY_URL_SD
 //cacheFilename :微信端下载缓存的路径  /Down/xxxxxxxxxx.mp3
 void HandlerWeixinDownMp3(const char *cacheFilename){

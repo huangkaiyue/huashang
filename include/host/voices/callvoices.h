@@ -49,10 +49,7 @@
 #define QUIT_MAIN				10		//退出main函数
 #define TULING_URL_MAIN			11		//图灵URL事件
 #define TULING_URL_VOICES		12		//图灵mp3事件
-#define TEST_PLAY_EQ_WAV		13		//测试播放wav音频文件
-#define WEIXIN_DOWN_MP3_EVENT	14		//微信端下载歌曲事件
-#define XUNFEI_AIFI_EVENT		15
-#define UPLOAD_TULING_EVENT		16		//上传语音接口
+#define WEIXIN_DOWN_MP3_EVENT	13		//微信端下载歌曲事件
 
 //----------------------系统音---------------------------------------
 #define END_SYS_VOICES_PLAY			1	//结束音
@@ -189,11 +186,15 @@ typedef struct{
 	int Starttime;	//录制微信对讲起始时间，用来检查文件录制长度，防止录制太短的音频
 	pthread_mutex_t mutex;
 }Speek_t;
+
 extern void ShortKeyDown_ForPlayWifiMessage(void);
 extern void LongNetKeyDown_ForConfigWifi(void);
 extern void  setAutoPlayMusicTime(void);
 
+#define	EXTERN_PLAY_EVENT	1	//外部产生邋播放事件
+#define AUTO_PLAY_EVENT		2	//内部自身产生播放事件
 
+extern int __AddLocalMp3ForPaly(const char *localpath,unsigned char EventSource);
 extern int GetSdcardMusicNameforPlay(unsigned char MuiscMenu,const char *MusicDir, unsigned char playMode);	
 extern void Create_CleanUrlEvent(void);
 extern void Create_PlayQttsEvent(const char *txt,int type);

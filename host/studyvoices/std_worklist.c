@@ -343,16 +343,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			
 		case TALK_EVENT_EVENT:		//对讲事件
 			Handle_WeixinSpeekEvent(handText->playLocalVoicesIndex,handText->EventNums);
-			break;
-			
-#if defined(HUASHANG_JIAOYU)
-		case XUNFEI_AIFI_EVENT:
-			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
-			NetStreamExitFile();
-			start_event_play_Mp3music();
-			AddDownEvent((const char *)data,LOCAL_MP3_EVENT);//添加到主线程当中播放华上教育内容
-			break;
-#endif			
+			break;		
 		default:
 			DEBUG_STD_MSG("not event msg !!!\n");
 			break;
