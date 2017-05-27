@@ -114,21 +114,7 @@ void closeSystemSave_huashangData(void){
 	}
 }
 
-/***
-播放列表歌曲，按键控制单曲还是列表播放 
-data:播放的数据
-musicType:音乐类型  网络歌曲/本地歌曲
 
-***/
-void CreatePlayListMuisc(const void *data,int musicType){
-	Player_t * player =NULL;
-	if(PLAY_MUSIC_NETWORK==musicType){
-		__AddNetWork_UrlForPaly(data);
-	}else if(PLAY_MUSIC_SDCARD==musicType){
-		player= (Player_t *)data;
-		__AddLocalMp3ForPaly((const char *)player->playfilename,EXTERN_PLAY_EVENT);
-	}
-}
 //------------------------------------------------------------------------------
 
 //华上教育按键按下播放按键

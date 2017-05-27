@@ -203,10 +203,11 @@ int __AddLocalMp3ForPaly(const char *localpath,unsigned char EventSource){
 			perror("calloc error !!!");
 			goto exit0;
 		}
+		player->playListState=EventSource;
 		sprintf(player->playfilename,"%s",localpath);	
 		handEvent->EventNums=updateCurrentEventNums();
 		handEvent->data = (char *)player;
-		handEvent->event=LOCAL_MP3_EVENT;
+		handEvent->event=LOCAL_MP3_EVENT;	
 		setAutoPlayMusicTime();
 		ret = AddworkEvent(handEvent,sizeof(HandlerText_t));
 	}
@@ -540,7 +541,7 @@ exit0:
 	return ret;
 }
 //创建播放默认url歌曲
-static void CreatePlayDefaultMusic_forPlay(unsigned char musicType){
+void CreatePlayDefaultMusic_forPlay(unsigned char musicType){
 	Player_t *player = (Player_t *)calloc(1,sizeof(Player_t));
 	if(player==NULL){
 		perror("calloc error !!!");
@@ -551,8 +552,24 @@ static void CreatePlayDefaultMusic_forPlay(unsigned char musicType){
 		return ;
 	}
 	player->musicTime=100;
+	player->playListState=AUTO_PLAY_EVENT;
 	snprintf(player->musicname,64,"%s","devicesplay");
 	__AddNetWork_UrlForPaly((const void *) player);
+}
+/***
+播放列表歌曲，按键控制单曲还是列表播放 
+data:播放的数据
+musicType:音乐类型  网络歌曲/本地歌曲
+
+***/
+void CreatePlayListMuisc(const void *data,int musicType){
+	Player_t * player =NULL;
+	if(PLAY_MUSIC_NETWORK==musicType){
+		__AddNetWork_UrlForPaly(data);
+	}else if(PLAY_MUSIC_SDCARD==musicType){
+		player= (Player_t *)data;
+		__AddLocalMp3ForPaly((const char *)player->playfilename,EXTERN_PLAY_EVENT);
+	}
 }
 
 /*******************************************************
@@ -716,7 +733,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 #if defined(HUASHANG_JIAOYU)					
 					GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT,AUTO_PLAY_EVENT);
 #else	
-					CreatePlayDefaultMusic_forPlay(1);
+					CreatePlayDefaultMusic_forPlay(1);	//musictype 暂时没定义好,后续分类好
 #endif
 				}
 			}

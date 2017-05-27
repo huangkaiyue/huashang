@@ -132,26 +132,26 @@ static void autoPlayNextMusic(unsigned char musicType){
 }
 //主线程添加网络歌曲到队列当中播放
 static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
+	Player_t *play =(Player_t *)hand->data;
 	Show_musicPicture();
-	Mad_PlayMusic((Player_t *)hand->data);
-#if defined(HUASHANG_JIAOYU)
-	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
-		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_NETWORK);
-		free((void *)hand);
-	}else{
-		free((void *)hand->data);
-		free((void *)hand);
+	Mad_PlayMusic(play);
+	if(play->playListState==AUTO_PLAY_EVENT){
+		CreatePlayDefaultMusic_forPlay(1);
+		goto exit1;
 	}
-#elif defined(QITUTU_SHI)
+	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环 hand->data 添加到队列，不能释放
+		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_NETWORK);
+		goto exit0;
+	}
+exit1:
 	free((void *)hand->data);
+exit0:
 	free((void *)hand);
-#endif
 }
 //主线程添加本地到队列当中播放
 static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 	Show_musicPicture();
 	Mad_PlayMusic((const char *)hand->data);
-#if defined(HUASHANG_JIAOYU)	
 	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
 		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_SDCARD);
 	}else{											//自动播放
@@ -159,11 +159,6 @@ static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 			autoPlayNextMusic(sysMes.localplayname);
 		}	
 	}
-#elif defined(QITUTU_SHI)
-	if(getEventNum()==0&&getWorkMsgNum(DownEvent)==0){
-		autoPlayNextMusic(sysMes.localplayname);
-	}	
-#endif
 	free((void *)hand->data);
 	free((void *)hand);
 	usleep(1000);
