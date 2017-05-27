@@ -135,13 +135,14 @@ static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 	Player_t *play =(Player_t *)hand->data;
 	Show_musicPicture();
 	Mad_PlayMusic(play);
-	if(play->playListState==AUTO_PLAY_EVENT){
+	if(play->playListState==AUTO_PLAY_EVENT){	//内部自身产生播放事件
 		CreatePlayDefaultMusic_forPlay(1);
 		goto exit1;
-	}
-	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环 hand->data 添加到队列，不能释放
-		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_NETWORK);
-		goto exit0;
+	}else{
+		if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环 hand->data 添加到队列，不能释放
+			CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_NETWORK);
+			goto exit0;
+		}
 	}
 exit1:
 	free((void *)hand->data);

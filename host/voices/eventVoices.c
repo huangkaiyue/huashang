@@ -568,7 +568,7 @@ void CreatePlayListMuisc(const void *data,int musicType){
 		__AddNetWork_UrlForPaly(data);
 	}else if(PLAY_MUSIC_SDCARD==musicType){
 		player= (Player_t *)data;
-		__AddLocalMp3ForPaly((const char *)player->playfilename,EXTERN_PLAY_EVENT);
+		__AddLocalMp3ForPaly((const char *)player->playfilename,player->playListState);
 	}
 }
 

@@ -335,6 +335,9 @@ static int NetStreamDownFilePlay(Player_t *play){
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 
 	demoDownFile(play->playfilename,15,NetStartDown,NetGetStreamData,NetEndDown);
+	while(st->player.playState!=MAD_EXIT){
+		usleep(500000);
+	}
 	DEBUG_STREAM("NetStreamDownFilePlay end ...\n");
 	return ret;
 }
@@ -499,6 +502,7 @@ static void playLocalMp3(const char *mp3file){
 	DEBUG_STREAM(" exit play ok \n");
 	WriteEventlockLog("playLocalMp3  exit play ok \n",(int)st->player.playState);
 }
+//播放歌曲接口  play: 播放信息结构体
 void Mad_PlayMusic(Player_t *play){
 	char domain[64] = {0};
 	char filename[128]={0};
