@@ -106,7 +106,7 @@
 
 #define SEC				1
 #define MIN				60*SEC
-#define SYSTEMOUTSIGN	2*MIN
+#define SYSTEMOUTSIGN	1*MIN+20	//80s
 #define SYSTEMOUTTIME	15*MIN
 #define PLAYOUTTIME		60*MIN
 #define ERRORTIME		30*24*60*MIN

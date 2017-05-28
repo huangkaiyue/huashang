@@ -382,6 +382,7 @@ void SetPlayFinnishKeepRecodeState(int state){
 static void *PlayVoicesPthread(void *arg){
 	unsigned short playNetwork_pos=0;
 	unsigned char playSate=START_PLAY_VOICES_LIST;
+	int WaitingDown=1;
 	int i=0,pcmSize=0,CleanendVoicesNums=0;
 	int CacheNums=0;//保存打断这次播放之后缓存队列nums 数
 	PlayList = initQueue();
@@ -389,8 +390,10 @@ static void *PlayVoicesPthread(void *arg){
 	while(1){
 		switch(playSate){
 			case START_PLAY_VOICES_LIST:
-				if(getWorkMsgNum(PlayList)==0){//当前队列为空，挂起播放	
-					if(playNetwork_pos!=0){	//播放尾音
+				printf("getPlayVoicesQueueNums=%d\n",getPlayVoicesQueueNums());
+				if(getWorkMsgNum(PlayList)==0){	//当前队列为空，挂起播放	
+					if(playNetwork_pos!=0){		//播放尾音
+						WaitingDown=1;
 						memset(play_buf+playNetwork_pos,0,I2S_PAGE_SIZE-playNetwork_pos);
 						write_pcm(play_buf);
 					}
@@ -399,6 +402,10 @@ static void *PlayVoicesPthread(void *arg){
 					}
 				}
 				getMsgQueue(PlayList,&data,&pcmSize);
+				if(WaitingDown){
+					usleep(5000);
+					WaitingDown=0;
+				}
 				if(data){
 					for(i=0;i<pcmSize;i+=2){
 						memcpy(play_buf+playNetwork_pos,data+i,2);

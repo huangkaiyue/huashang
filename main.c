@@ -136,7 +136,7 @@ static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 	Show_musicPicture();
 	Mad_PlayMusic(play);
 	if(play->playListState==AUTO_PLAY_EVENT){	//内部自身产生播放事件
-		CreatePlayDefaultMusic_forPlay(1);
+		CreatePlayDefaultMusic_forPlay(play->musicname);//musicname 暂时定义采用这个结构成语变量存放播放类型
 		goto exit1;
 	}else{
 		if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环 hand->data 添加到队列，不能释放
@@ -165,12 +165,12 @@ static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 	usleep(1000);
 }
 static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
+	usleep(800*1000);
 	if(hand->EventNums!=GetCurrentEventNums()){
 		goto exit0;
 	}
 	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic startplay");
 	start_event_play_Mp3music();
-	usleep(300*1000);
 	Show_musicPicture();
 	Mad_PlayMusic((Player_t *)hand->data);
 	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic endplay");

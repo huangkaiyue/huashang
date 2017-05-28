@@ -294,21 +294,21 @@ static void *PthreadRecordVoices(void *arg){
 			case START_TAIK_MESSAGE:	//对讲录音
 				pBuf = I2sGetvoicesData();
 				SaveRecorderVoices((const char *)pBuf,I2S_PAGE_SIZE);
-				usleep(5000);		//不会有快进的感觉
+				usleep(5000);			//不会有快进的感觉
 				break;
 #ifdef CLOCESYSTEM
-			case TIME_SIGN:		//提示休息很久了
+			case TIME_SIGN:				//提示休息很久了
 				Create_PlaySystemEventVoices(MIN_10_NOT_USER_WARN);
 				sleep(1);
 				break;
 				
-			case TIME_OUT:		//挂起超时退出
+			case TIME_OUT:				//挂起超时退出
 				SetMucClose_Time(1);	//设置一分钟后关机
 				pause_record_audio();
 				starttime=time(&t);
 				break;
 				
-			case PLAY_OUT:		//播放超时退出
+			case PLAY_OUT:				//播放超时退出
 				SetMucClose_Time(1);	//设置一分钟后关机
 				SetRecordeVoices_PthreadState(PLAY_MP3_MUSIC);
 				sysMes.Playlocaltime=time(&t);

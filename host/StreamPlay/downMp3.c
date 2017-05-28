@@ -45,6 +45,7 @@ int downTulingMp3_forPlay(HandlerText_t *handtext){
 		RequestTulingLog((const char *)"downTulingMp3_forPlay wait play");
 		while(getPlayVoicesQueueNums()>0&&playTulingEventNums==GetCurrentEventNums()){	
 			usleep(1000);//等待图灵前缀声音播放完
+			printf("wait play tuling exit : state =%d getPlayVoicesQueueNums=%d\n",GetRecordeVoices_PthreadState(),getPlayVoicesQueueNums());
 		}		
 	}
 	RequestTulingLog("downTulingMp3_forPlay end");

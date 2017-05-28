@@ -481,22 +481,24 @@ void Create_PlayImportVoices(int sys_voices){
 //串口事件回调函数
 void UartEventcallFuntion(int event){
 	updateCurrentEventNums();
-	if(event==UART_EVENT_CLOSE_SYSTEM){	//结束音退出事件	
+	if(event==UART_EVENT_CLOSE_SYSTEM){	//结束音退出事件
+		disable_gpio();					//关闭gpio中断功能,防止关机过程再产生按键事件
+		cleanQuequeEvent();				//清理事件队列，保证能够播放语音
 		if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){
+			printf("Create Clean url event \n");
 			Create_CleanUrlEvent();
 		}
-		showFacePicture(CLOSE_SYSTEM_PICTURE);
-		disable_gpio();					//关闭gpio中断功能,防止关机过程再产生按键事件
+		showFacePicture(CLOSE_SYSTEM_PICTURE);	
 		CreateCloseSystemLockFile();
 		pool_add_task(Close_Mtk76xxSystem,NULL);//关机处理和保存后台数据
-		cleanQuequeEvent();				//清理事件队列，保证能够播放语音
 		Create_PlayImportVoices(END_SYS_VOICES_PLAY);//创建一个播放系统结束音
 	}else if(event==UART_EVENT_LOW_BASTERRY){
-		Create_PlayImportVoices(LOW_BATTERY_PLAY);
+		Create_PlaySystemEventVoices(LOW_BATTERY_PLAY);
 	}	
 } 
+//--------------------------------------------------------------------------------------------------------
 //获取本地默认json 歌曲url地址
-static int GetDefaultMusicJson_forPlay(char *getUrlBuf,unsigned char musicType){
+static int GetDefaultMusicJson_forPlay(char *getUrlBuf,const char *musicType){
 	int ret =-1;
 	char *readBuf = readFileBuf((const char * )DEFALUT_URL_JSON);
 	if(readBuf==NULL){
@@ -506,7 +508,7 @@ static int GetDefaultMusicJson_forPlay(char *getUrlBuf,unsigned char musicType){
 	if(NULL == pJson){
 		goto exit0;
 	}
-	cJSON * pArray =cJSON_GetObjectItem(pJson, "music");
+	cJSON * pArray =cJSON_GetObjectItem(pJson, musicType);
 	if(NULL == pArray){
 		printf("cJSON_Parse DEFALUT_URL_JSON failed \n");
 		goto exit1;
@@ -541,7 +543,7 @@ exit0:
 	return ret;
 }
 //创建播放默认url歌曲
-void CreatePlayDefaultMusic_forPlay(unsigned char musicType){
+void CreatePlayDefaultMusic_forPlay(const char* musicType){
 	Player_t *player = (Player_t *)calloc(1,sizeof(Player_t));
 	if(player==NULL){
 		perror("calloc error !!!");
@@ -553,9 +555,41 @@ void CreatePlayDefaultMusic_forPlay(unsigned char musicType){
 	}
 	player->musicTime=100;
 	player->playListState=AUTO_PLAY_EVENT;
-	snprintf(player->musicname,64,"%s","devicesplay");
+	snprintf(player->musicname,64,"%s",musicType);//musicname 暂时定义采用这个结构成语变量存放播放类型
 	__AddNetWork_UrlForPaly((const void *) player);
 }
+//客户后台定制推送的内容
+void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
+	int randNums=(1+(int)(2.0*rand()/(RAND_MAX+1.0)));
+	int ret =-1;
+	char musictype[12]={0};
+	start_event_play_wav();
+	switch(randNums){
+		case 1:
+			ret =PlaySystemAmrVoices(TIMEOUT_music,playEventNums);
+			snprintf(musictype,12,"%s","music");	//播放音乐内容
+			break;
+		case 2:
+			ret =PlaySystemAmrVoices(TIMEOUT_guoxue,playEventNums);
+			snprintf(musictype,12,"%s","guoxue");	//播放国学内容
+			break;
+		case 3:
+			ret =PlaySystemAmrVoices(TIMEOUT_chengyu,playEventNums);
+			snprintf(musictype,12,"%s","chengyu");	//播放成语故事
+			break;
+		default:
+			ret =PlaySystemAmrVoices(TIMEOUT_music,playEventNums);
+			break;
+	}
+	if(!ret){
+#if defined(HUASHANG_JIAOYU)					
+	GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT,AUTO_PLAY_EVENT);
+#else	
+	CreatePlayDefaultMusic_forPlay(musictype);	//musictype 暂时没定义好,后续分类好
+#endif
+	}
+}
+
 /***
 播放列表歌曲，按键控制单曲还是列表播放 
 data:播放的数据
@@ -571,6 +605,7 @@ void CreatePlayListMuisc(const void *data,int musicType){
 		__AddLocalMp3ForPaly((const char *)player->playfilename,player->playListState);
 	}
 }
+//--------------------------------------------------------------------------------------------------------
 
 /*******************************************************
 函数功能: 系统音事件处理函数
@@ -728,14 +763,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;
 		case MIN_10_NOT_USER_WARN: 
 			if(!PlaySystemAmrVoices(SPEEK_WARNING,playEventNums)){
-				start_event_play_wav();
-				if(!PlaySystemAmrVoices(TIMEOUT_TLAK,playEventNums)){
-#if defined(HUASHANG_JIAOYU)					
-					GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT,AUTO_PLAY_EVENT);
-#else	
-					CreatePlayDefaultMusic_forPlay(1);	//musictype 暂时没定义好,后续分类好
-#endif
-				}
+				Custom_Interface_RunPlayVoices(playEventNums);//后台推送内容播放
 			}
 			break;
 		case TULING_WAIT_VOICES:
