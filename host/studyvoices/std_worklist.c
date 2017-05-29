@@ -161,10 +161,16 @@ static int parseJson_string(HandlerText_t *handText){
 		DEBUG_STD_MSG("get info failed\n");
 		goto exit1;
     }
+	char *infoText = pSub->valuestring;
 	DEBUG_STD_MSG("info: %s\n",pSub->valuestring);			//语音识别出来的汉字	
 	Write_tulingTextLog(pSub->valuestring);
 	char getPlayMusicName[128]={0};
-	int cmd = CheckinfoText_forContorl((const char *)pSub->valuestring,getPlayMusicName);
+	pSub = cJSON_GetObjectItem(pJson, "text");				//解析到语音结果
+	if(NULL == pSub){
+		DEBUG_STD_MSG("get text failed\n");
+		goto exit1;
+	}	
+	int cmd = CheckinfoText_forContorl(infoText,(const char *)pSub->valuestring,getPlayMusicName);
 	if(cmd<0){
 	}else{//正确加载里面的文字内容，播放系统音
 		if(HandlerPlay_checkTextResult(cmd,(const char *)getPlayMusicName,handText->EventNums)){
@@ -174,11 +180,6 @@ static int parseJson_string(HandlerText_t *handText){
 		}
 	}
 exit2:	
-	pSub = cJSON_GetObjectItem(pJson, "text");		//解析到说话的内容
-	if(NULL == pSub){
-		DEBUG_STD_MSG("get text failed\n");
-		goto exit1;
-	}
 	DEBUG_STD_MSG("text: %s\n",pSub->valuestring);
 	pSub = cJSON_GetObjectItem(pJson, "ttsUrl");		//解析到说话的内容的链接地址，需要下载播放
     if(NULL == pSub||(!strcmp(pSub->valuestring,""))){	//如果出现空的链接地址，直接跳出

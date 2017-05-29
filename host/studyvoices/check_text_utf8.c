@@ -16,27 +16,27 @@
 @参数:  text 匹配的文本
 @返回:  匹配的关键命令
 *********************************************************/
-int CheckinfoText_forContorl(const char *text,char *getPlayMusicName){
+int CheckinfoText_forContorl(const char *infoText,const char *text,char *getPlayMusicName){
 	int ret = CMD_UNKOWN;
-	if(strstr(text,"你是谁")||strstr(text,"日辉")||strstr(text,"智娃")||strstr(text,"名字")){	
+	if(strstr(infoText,"你是谁")||strstr(infoText,"日辉")||strstr(text,"智娃")||strstr(text,"名字")){	
 		ret =CMD_WHO_NAME;
 	}
-	else if(strstr(text,"音量")){
-		if((strstr(text,"加")&&strstr(text,"减"))||(strstr(text,"大")&&strstr(text,"小")))
+	else if(strstr(infoText,"音量")){
+		if((strstr(infoText,"加")&&strstr(infoText,"减"))||(strstr(infoText,"大")&&strstr(infoText,"小")))
 			ret =CMD_UNKOWN;
-		else if(strstr(text,"加")||strstr(text,"大")){	
+		else if(strstr(infoText,"加")||strstr(infoText,"大")){	
 			ret =CMD_ADD_VOL;
 		}
-		else if(strstr(text,"减")||strstr(text,"小")){	
+		else if(strstr(infoText,"减")||strstr(infoText,"小")){	
 			ret =CMD_SUB_VOL;
 		}
-	}else if(strstr(text,"拜拜")||strstr(text,"关机")){
+	}else if(strstr(infoText,"拜拜")||strstr(infoText,"关机")){
 			ret =CMD_CLOSE;
 	}
 #if defined(HUASHANG_JIAOYU)	
-	else if(strstr(text,"播放")){
-		Write_huashangTextLog(text);
-		if(Huashang_Checkutf8(text,getPlayMusicName)==0){
+	else if(strstr(infoText,"播放")){
+		Write_huashangTextLog(infoText);
+		if(Huashang_Checkutf8(infoText,getPlayMusicName)==0){
 			ret =CMD_MUSIC_MEUN;
 		}
 	}
