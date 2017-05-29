@@ -135,7 +135,7 @@ static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 	Player_t *play =(Player_t *)hand->data;
 	Show_musicPicture();
 	Mad_PlayMusic(play);
-	if(play->playListState==AUTO_PLAY_EVENT){	//内部自身产生播放事件
+	if(play->playListState==AUTO_PLAY_EVENT){			//内部自身产生播放事件
 		CreatePlayDefaultMusic_forPlay(play->musicname);//musicname 暂时定义采用这个结构成语变量存放播放类型
 		goto exit1;
 	}else{

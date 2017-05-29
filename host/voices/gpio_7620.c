@@ -349,8 +349,9 @@ static void signal_handler(int signum){
 				keydown_flashingLED();
 				Enable_SaveLoveMusicFlag();
 				break;
-			case LETFLED_KEY:	//回复键
-				Ack_WeixinCall();
+			case WEIXIN_SPEEK_KEY:	//回复键
+				//Ack_WeixinCall();
+				Create_WeixinSpeekEvent(VOLKEYUP);
 				break;
 			case RIGHTLED_KEY:	//bind键
 				keyDownAck_userBind();
@@ -409,7 +410,8 @@ static void signal_handler(int signum){
 				ack_VolCtr("sub",GetVol());		//----------->音量减
 				GpioLog("key down",SUBVOL_KEY);
 				break;
-			case LETFLED_KEY:	//play next
+			case WEIXIN_SPEEK_KEY:	//微信对讲
+				Create_WeixinSpeekEvent(VOLKEYDOWN);
 				break;
 #endif
 			case RESERVE_KEY3:	//长按，删除收藏歌曲

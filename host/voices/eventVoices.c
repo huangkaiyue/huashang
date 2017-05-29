@@ -315,7 +315,7 @@ void Create_PlayQttsEvent(const char *txt,int type){
 }
 void Handler_PlayQttsEvent(HandlerText_t *handText){
 	char xunPlayname[24]={0};
-	int playSpeed=0;
+	int playSpeed=50;	//默认播放速度为5
 #if defined(HUASHANG_JIAOYU)
 	GetPlayVoicesName(xunPlayname,&playSpeed);	
 	if(!strncmp(xunPlayname,"tuling",6)){

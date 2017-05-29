@@ -30,6 +30,7 @@
 
 #define LETFLED_KEY					21	//素质
 #define HUASHANG_WEIXIN_SPEEK_KEY	LETFLED_KEY	//华上教育微信对讲
+#define WEIXIN_SPEEK_KEY			LETFLED_KEY	//微信对讲
 
 
 #define GPIO_DEV	"/dev/gpio"
