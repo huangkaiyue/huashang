@@ -18,7 +18,7 @@
 *********************************************************/
 int CheckinfoText_forContorl(const char *infoText,const char *text,char *getPlayMusicName){
 	int ret = CMD_UNKOWN;
-	if(strstr(infoText,"你是谁")||strstr(infoText,"日辉")||strstr(text,"智娃")||strstr(text,"名字")){	
+	if(strstr(infoText,"你是谁")||strstr(infoText,"名字")||strstr(text,"日辉")||strstr(text,"智娃")){	
 		ret =CMD_WHO_NAME;
 	}
 	else if(strstr(infoText,"音量")){

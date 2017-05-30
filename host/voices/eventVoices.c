@@ -140,13 +140,24 @@ static void Link_NetworkError(void){
 #endif
 	setNetWorkLive(NETWORK_ER);
 }
+
+//设置自动播放模式下，记录的起始时间,
+void setAutoPlayMusic_countState(unsigned char state){
+	time_t t;
+	sysMes.auto_count_starttime=time(&t);
+	if(state==ENABLE_auto_count_time){
+		sysMes.enableCountStarttime=ENABLE_auto_count_time;
+	}else{
+		sysMes.enableCountStarttime=DISABLE_count_time;
+	}
+}
 //--------------end config network and set system network state---------------------------------------------------------
 /*******************************************************
 函数功能: 添加网络URL地址到队列当中进行播放
 参数: data 播放歌曲信息，已经malloc申请内存了	
 返回值: 无
 ********************************************************/
-int __AddNetWork_UrlForPaly(const void *data){
+int __AddNetWork_UrlForPaly(Player_t *player){
 	WritePlayUrl_Log("url start add \n");
 	if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
 		goto exit0;
@@ -163,7 +174,12 @@ int __AddNetWork_UrlForPaly(const void *data){
 	HandlerText_t *handEvent = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handEvent){
 		WritePlayUrl_Log("add url ok\n");
-		handEvent->data = data;
+		if(player->playListState==AUTO_PLAY_EVENT){
+			setAutoPlayMusic_countState(ENABLE_auto_count_time);//设置自动播放模式下，记录的起始时间
+		}else{
+			setAutoPlayMusic_countState(DISABLE_count_time);
+		}
+		handEvent->data = (char *)player;
 		handEvent->event=URL_VOICES_EVENT;
 		handEvent->EventNums=updateCurrentEventNums();
 		ret = AddworkEvent(handEvent,sizeof(HandlerText_t));
@@ -172,14 +188,8 @@ int __AddNetWork_UrlForPaly(const void *data){
 	}
 	return ret;
 exit0:
-	free(data);
+	free(player);
 	return -1;
-}
-
-//设置自动播放模式下，记录的起始时间
-void setAutoPlayMusicTime(void){
-	time_t t;
-	sysMes.Playlocaltime=time(&t);
 }
 /*******************************************************
 函数功能: 添加本地音乐到队列进行播放
@@ -204,11 +214,15 @@ int __AddLocalMp3ForPaly(const char *localpath,unsigned char EventSource){
 			goto exit0;
 		}
 		player->playListState=EventSource;
+		if(EventSource==AUTO_PLAY_EVENT){
+			setAutoPlayMusic_countState(ENABLE_auto_count_time);//设置自动播放模式下，记录的起始时间
+		}else{
+			setAutoPlayMusic_countState(DISABLE_count_time);
+		}
 		sprintf(player->playfilename,"%s",localpath);	
 		handEvent->EventNums=updateCurrentEventNums();
 		handEvent->data = (char *)player;
 		handEvent->event=LOCAL_MP3_EVENT;	
-		setAutoPlayMusicTime();
 		ret = AddworkEvent(handEvent,sizeof(HandlerText_t));
 	}
 	return ret;	
@@ -556,7 +570,7 @@ void CreatePlayDefaultMusic_forPlay(const char* musicType){
 	player->musicTime=100;
 	player->playListState=AUTO_PLAY_EVENT;
 	snprintf(player->musicname,64,"%s",musicType);//musicname 暂时定义采用这个结构成语变量存放播放类型
-	__AddNetWork_UrlForPaly((const void *) player);
+	__AddNetWork_UrlForPaly(player);
 }
 //客户后台定制推送的内容
 void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
@@ -599,7 +613,7 @@ musicType:音乐类型  网络歌曲/本地歌曲
 void CreatePlayListMuisc(const void *data,int musicType){
 	Player_t * player =NULL;
 	if(PLAY_MUSIC_NETWORK==musicType){
-		__AddNetWork_UrlForPaly(data);
+		__AddNetWork_UrlForPaly((Player_t *)data);
 	}else if(PLAY_MUSIC_SDCARD==musicType){
 		player= (Player_t *)data;
 		__AddLocalMp3ForPaly((const char *)player->playfilename,player->playListState);
@@ -613,6 +627,7 @@ void CreatePlayListMuisc(const void *data,int musicType){
 返回值: 无
 ********************************************************/
 void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
+	int vol=0;
 	switch(sys_voices){
 		case END_SYS_VOICES_PLAY:					//结束音
 			PlaySystemAmrVoices(END_SYS_VOICES,playEventNums);
@@ -767,8 +782,10 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			}
 			break;
 		case TULING_WAIT_VOICES:
+			vol =GetVol();
+			Setwm8960Vol(VOL_APP_SET,PLAY_PASUSE_VOICES_VOL);
 			PlayImportVoices(TULING_WINT,playEventNums);
-			printf("%s: play wait voices ok\n",__func__);
+			Setwm8960Vol(VOL_SET_VAULE,vol);
 			break;
 		default:
 			pause_record_audio();

@@ -104,12 +104,14 @@
 #define VOICES_MIN	13200	//是否是大于0.5秒的音频，采样率16000、量化位16位
 #define VOICES_ERR	2000	//误触发
 
-#define SEC				1
-#define MIN				60*SEC
-#define SYSTEMOUTSIGN	1*MIN	//60s
-#define SYSTEMOUTTIME	15*MIN
-#define PLAYOUTTIME		60*MIN
-#define ERRORTIME		30*24*60*MIN
+#define SEC								1
+#define MIN								60*SEC
+#define SYSTEMOUTSIGN					1*MIN	//60s
+#define TIME_OUT_NOT_USER_FOR_CLOSE		6*MIN	//8分钟不用，就自动关机
+#define ERRORTIME						30*24*60*MIN
+
+#define ENABLE_auto_count_time			1		//使能自动计时时间，8分钟自动关机
+#define DISABLE_count_time				0
 
 #define LONG_TIME_NOT_USER_MUTE_VOICES	15		//15s不用 mute音频
 
@@ -135,10 +137,11 @@ typedef struct{
 #define PLAY_MUSIC_SDCARD			2	//播放歌曲为sdcard 存储歌曲
 
 typedef struct{
-	unsigned char localplayname;//当前播放本地歌曲目录
-	unsigned char netstate;		//板子连接外部网络状态
-	int Playlocaltime;			//记录板子最后一次未使用时间，用来和当前时间比较，10分钟提示用户长时间未使用
-	char localVoicesPath[20];	//板子系统音存放路径
+	unsigned char localplayname;		//当前播放本地歌曲目录
+	unsigned char netstate;				//板子连接外部网络状态
+	unsigned char enableCountStarttime;	//使能自动计数起始时间
+	int auto_count_starttime;			//记录板子最后一次未使用起始时间，8分钟未使用自动关机
+	char localVoicesPath[20];			//板子系统音存放路径
 }SysMessage;
 extern SysMessage sysMes;
 //--------------------eventVoices.c----------------------------------------
@@ -189,7 +192,7 @@ typedef struct{
 
 extern void ShortKeyDown_ForPlayWifiMessage(void);
 extern void LongNetKeyDown_ForConfigWifi(void);
-extern void  setAutoPlayMusicTime(void);
+extern void  setAutoPlayMusic_countState(unsigned char state);
 
 #define	EXTERN_PLAY_EVENT	1	//外部产生邋播放事件
 #define AUTO_PLAY_EVENT		2	//内部自身产生播放事件

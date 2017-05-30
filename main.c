@@ -80,7 +80,8 @@ static void loadLocalServer(int argc,char *argv[]){
 	time_t t;
 	sysMes.localplayname=0;			//本地播放目录
 	sysMes.netstate=NETWORK_UNKOWN;	//开机不属于未知网络状态
-	sysMes.Playlocaltime=time(&t);
+	sysMes.auto_count_starttime=time(&t);
+	sysMes.enableCountStarttime=DISABLE_count_time;
 	set_pthread_sigblock();
 	pool_init(4);	
 	InitTuling((const char *) user_id,(const char *) token);	//userId需要保存到路由表当中 ，token 也需要保存

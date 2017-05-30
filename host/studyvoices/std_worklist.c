@@ -391,20 +391,21 @@ static void *PlayVoicesPthread(void *arg){
 	while(1){
 		switch(playSate){
 			case START_PLAY_VOICES_LIST:
-				printf("getPlayVoicesQueueNums=%d\n",getPlayVoicesQueueNums());
+				//printf("getPlayVoicesQueueNums=%d\n",getWorkMsgNum(PlayList));
 				if(getWorkMsgNum(PlayList)==0){	//当前队列为空，挂起播放	
 					if(playNetwork_pos!=0){		//播放尾音
-						WaitingDown=1;
 						memset(play_buf+playNetwork_pos,0,I2S_PAGE_SIZE-playNetwork_pos);
 						write_pcm(play_buf);
 					}
 					if(keepRecodeState==UPDATE_RECORD_STATE){
 						pause_record_audio();
 					}
+					WaitingDown=1;
 				}
 				getMsgQueue(PlayList,&data,&pcmSize);
+				//printf("WaitingDown=%d\n",WaitingDown);
 				if(WaitingDown){
-					usleep(5000);
+					usleep(60000);
 					WaitingDown=0;
 				}
 				if(data){
@@ -447,6 +448,7 @@ static void *PlayVoicesPthread(void *arg){
 					free(data);
 				}else{
 					playSate=START_PLAY_VOICES_LIST;
+					WaitingDown=1;
 				}
 				break;
 		}

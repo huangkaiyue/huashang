@@ -367,7 +367,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			Setwm8960Vol(VOL_SUB,0);
 			ack_VolCtr("sub",GetVol());//----------->音量减
 		}else if (!strcmp(pSub->valuestring,"no")){
-			Setwm8960Vol(VOL_SET,cJSON_GetObjectItem(pJson, "data")->valueint);
+			Setwm8960Vol(VOL_APP_SET,cJSON_GetObjectItem(pJson, "data")->valueint);
 			ack_VolCtr("no",GetVol());//----------->设置固定音量
 		}
 	}//end vol 音量大小

@@ -152,7 +152,6 @@ static void Start_uploadVoicesData(void){
 		return ;
 	}
 	RV->uploadState = START_UPLOAD;
-	Setwm8960Vol(VOL_SET,PLAY_PASUSE_VOICES_VOL);
 	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
 #if defined(HUASHANG_JIAOYU)
 
@@ -259,7 +258,6 @@ static void *PthreadRecordVoices(void *arg){
 		endtime=time(&t);
 		if((endtime-starttime)>ERRORTIME){	//开机时候，没有获取网络时间，导致时间差过大
 			starttime=time(&t);
-			sysMes.Playlocaltime=time(&t);
 		}else{
 			if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
 				
@@ -270,14 +268,11 @@ static void *PthreadRecordVoices(void *arg){
 				if((endtime-starttime)==SYSTEMOUTSIGN){		//第一次长时间不触发事件，则关闭
 					SetRecordeVoices_PthreadState(TIME_SIGN);
 				}
-				if((endtime-starttime)>SYSTEMOUTTIME){		//第二次长时间不触发事件，则直接关机
-					SetRecordeVoices_PthreadState(TIME_OUT);
-				}
 			}else{
 				starttime=time(&t);
 			}
 #if 1		
-			if((endtime-sysMes.Playlocaltime)>PLAYOUTTIME&&GetRecordeVoices_PthreadState()==PLAY_MP3_MUSIC){
+			if(sysMes.enableCountStarttime==ENABLE_auto_count_time&&(endtime-sysMes.auto_count_starttime)>TIME_OUT_NOT_USER_FOR_CLOSE){
 				SetRecordeVoices_PthreadState(PLAY_OUT);
 			}
 #endif			
@@ -309,9 +304,11 @@ static void *PthreadRecordVoices(void *arg){
 				break;
 				
 			case PLAY_OUT:				//播放超时退出
+				printf("-----------------------\n close system --------------------\n");
 				SetMucClose_Time(1);	//设置一分钟后关机
+				sysMes.enableCountStarttime=DISABLE_count_time;
+				sysMes.auto_count_starttime=time(&t);
 				SetRecordeVoices_PthreadState(PLAY_MP3_MUSIC);
-				sysMes.Playlocaltime=time(&t);
 				break;
 #endif
 			case PLAY_DING_VOICES:

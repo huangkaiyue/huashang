@@ -308,6 +308,7 @@ static void signal_handler(int signum){
 	}
 	lock_msgEv();
 	if (signum == GPIO_UP){			//短按按键事件
+		setAutoPlayMusic_countState(DISABLE_count_time);	
 		switch(gpio.mount){
 			case NETWORK_KEY:		//播报WiFi名
 				ShortKeyDown_ForPlayWifiMessage();
@@ -443,6 +444,7 @@ static void signal_handler(int signum){
 	}
 	lock_msgEv();
 	if (signum == GPIO_UP){			//短按按键事件
+		setAutoPlayMusic_countState(DISABLE_count_time);
 		switch(gpio.mount){
 			case NETWORK_KEY:		//播报WiFi名
 #ifdef TEST_PLAY_KEY

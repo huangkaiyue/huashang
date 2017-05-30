@@ -108,14 +108,15 @@ int Setwm8960Vol(int dir,int vol){
 		case VOL_ADD:
 			I2S.tx_vol+=VOL_NUM;
 			break;
-		case VOL_SET:	//适配app 0-99音量大小刻度算法
+		case VOL_APP_SET:	//适配app 0-99音量大小刻度算法
 			if(vol==0)
-				I2S.tx_vol=0;
+				I2S.tx_vol=VOL_DWON;
 			else
 				I2S.tx_vol=VOL_SET_DATA(vol);
 			break;
 		default:
-			return;
+			I2S.tx_vol=vol;
+			break;
 	}
 		
 	if(I2S.tx_vol>=VOL_UP){
@@ -123,7 +124,7 @@ int Setwm8960Vol(int dir,int vol){
 		ret = -1;
 	}
 	else if(I2S.tx_vol<=VOL_DWON){
-		I2S.tx_vol=0;
+		I2S.tx_vol=VOL_DWON;
 		ret = -1;
 	}
 	SET_TX_VOL(I2S.i2s_fd,I2S.tx_vol);
