@@ -21,6 +21,7 @@ static const char *key = "b1833040534a6bfd761215154069ea58";
 static WorkQueue *EventQue;
 static WorkQueue *PlayList=NULL;
 static unsigned int newEventNums=0;
+static unsigned char downState=0;
 static unsigned char keepRecodeState=0;
 static unsigned int cacheNetWorkPlaySize=0;
 #define TLJSONERNUM 9.0
@@ -100,10 +101,12 @@ static int playTulingQtts(const char *playUrl,const char *playText,unsigned int 
 	if(!strcmp(playVoicesName,"tuling")){	//当前播音人采用图灵的
 		ret =AddDownEvent((const char *)handtext,TULING_URL_MAIN);
 	}else{
+		enabledownNetworkVoiceState();
 		PlayQttsText(playText,QTTS_UTF8,playVoicesName,playEventNums,playSpeed);	
 		if(playLocalVoicesIndex==TULING_TEXT_MUSIC){
-			SetPlayFinnishKeepRecodeState(KEEP_RECORD_STATE);	//设置播放线程不要切换录音线程状态，不然会导致，添加歌曲的时候，后面的歌曲不能播放
+			//设置播放线程不要切换录音线程状态，不然会导致，添加歌曲的时候，后面的歌曲不能播放
 		}
+		disabledownNetworkVoiceState();
 	}
 #else
 	AddDownEvent((const char *)handtext,TULING_URL_MAIN);
@@ -377,10 +380,16 @@ int getPlayVoicesQueueNums(void){
 #if 1
 //播放完之后保持当前录音状态,主要用于当遇到语音点播图灵歌曲时候，播放完前缀音，
 //继续播放图灵歌曲,切换采样率，不需要播放按键音
+void enabledownNetworkVoiceState(void){
+	downState=1;
+}
+void disabledownNetworkVoiceState(void){
+	downState=0;
+}
+#endif
 void SetPlayFinnishKeepRecodeState(int state){
 		keepRecodeState=state;
 }
-#endif
 static void *PlayVoicesPthread(void *arg){
 	unsigned short playNetwork_pos=0;
 	unsigned char playSate=START_PLAY_VOICES_LIST;
@@ -408,7 +417,11 @@ static void *PlayVoicesPthread(void *arg){
 					if(newEventNums!=GetCurrentEventNums()){
 						break;
 					}
-					if(cacheNetWorkPlaySize>4096){
+					if(cacheNetWorkPlaySize>12*KB){
+						usleep(10000);
+						break;
+					}
+					if(downState==0){
 						break;
 					}
 					usleep(10000);

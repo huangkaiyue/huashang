@@ -38,16 +38,16 @@ int downTulingMp3_forPlay(HandlerText_t *handtext){
 	playRet=PLAY_FINNISH;
 	RequestTulingLog("downTulingMp3_forPlay start");
 	playTulingEventNums = handtext->EventNums;
-	SetPlayFinnishKeepRecodeState(UPDATE_RECORD_STATE);
+	enabledownNetworkVoiceState();
 	demoDownFile(handtext->data,10,tulingStartDown,tulingGetStreamData,tulingEndDown);
 	if(handtext->playLocalVoicesIndex==TULING_TEXT_MUSIC){	//表示播放图灵请求的故事和歌曲
-		SetPlayFinnishKeepRecodeState(KEEP_RECORD_STATE);
 		RequestTulingLog((const char *)"downTulingMp3_forPlay wait play");
 		while(getPlayVoicesQueueNums()>0&&playTulingEventNums==GetCurrentEventNums()){	
 			usleep(1000);//等待图灵前缀声音播放完
 			printf("wait play tuling exit : state =%d getPlayVoicesQueueNums=%d\n",GetRecordeVoices_PthreadState(),getPlayVoicesQueueNums());
 		}		
 	}
+	disabledownNetworkVoiceState();
 	RequestTulingLog("downTulingMp3_forPlay end");
 	free((void *)handtext->data);
 	free((void *)handtext);
