@@ -22,7 +22,7 @@ static WorkQueue *EventQue;
 static WorkQueue *PlayList=NULL;
 static unsigned int newEventNums=0;
 static unsigned char keepRecodeState=0;
-
+static unsigned int cacheNetWorkPlaySize=0;
 #define TLJSONERNUM 9.0
 //解析图灵请求错误内容，播放本地已经录制好的音频
 static int playTulingRequestErrorVoices(unsigned int playEventNums){
@@ -368,6 +368,7 @@ static void CleanEventMessage(const char *data,int msgSize){
 }
 
 void putPcmDataToPlay(const void * data,int size){
+	cacheNetWorkPlaySize+=size;
 	putMsgQueue(PlayList,data,size); //添加到播放队列	
 }
 int getPlayVoicesQueueNums(void){
@@ -383,7 +384,6 @@ void SetPlayFinnishKeepRecodeState(int state){
 static void *PlayVoicesPthread(void *arg){
 	unsigned short playNetwork_pos=0;
 	unsigned char playSate=START_PLAY_VOICES_LIST;
-	int WaitingDown=1;
 	int i=0,pcmSize=0,CleanendVoicesNums=0;
 	int CacheNums=0;//保存打断这次播放之后缓存队列nums 数
 	PlayList = initQueue();
@@ -400,13 +400,18 @@ static void *PlayVoicesPthread(void *arg){
 					if(keepRecodeState==UPDATE_RECORD_STATE){
 						pause_record_audio();
 					}
-					WaitingDown=1;
+					cacheNetWorkPlaySize=0;
 				}
 				getMsgQueue(PlayList,&data,&pcmSize);
 				//printf("WaitingDown=%d\n",WaitingDown);
-				if(WaitingDown){
-					usleep(60000);
-					WaitingDown=0;
+				while(1){
+					if(newEventNums!=GetCurrentEventNums()){
+						break;
+					}
+					if(cacheNetWorkPlaySize>4096){
+						break;
+					}
+					usleep(10000);
 				}
 				if(data){
 					for(i=0;i<pcmSize;i+=2){
@@ -448,7 +453,7 @@ static void *PlayVoicesPthread(void *arg){
 					free(data);
 				}else{
 					playSate=START_PLAY_VOICES_LIST;
-					WaitingDown=1;
+					cacheNetWorkPlaySize=0;
 				}
 				break;
 		}
