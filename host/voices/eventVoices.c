@@ -1005,7 +1005,7 @@ static int checkSdcard_MountState(void){
 void Enable_SaveLoveMusicFlag(void){
 	if(!checkSdcard_MountState()){
 		if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){	//检查当前是否在播放url下载的歌曲状态
-			printf("%s: this is error save event current not online play music ,cannot save love music to sdcard \n",__func__);
+			printf("%s: this is error save event current not online play music ,cannot save love music to sdcard =%d\n",__func__,GetRecordeVoices_PthreadState);
 			return ;
 		}
 		printf("%s: like music add \n",__func__);

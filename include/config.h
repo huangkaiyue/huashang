@@ -76,18 +76,13 @@
 #endif
 
 #define URL_SDPATH				"/home/cache.tmp"		//url缂撳瓨璺緞
-#ifdef PALY_URL_SD
 #ifdef TEST_SDK	
 	#define MP3_SDPATH			"/mnt/neirong/music/"			//url淇濆瓨璺緞
 	#define MP3_LIKEPATH		"/mnt/neirong/ximalaya/"		//url鍠滅埍璺緞
 #else
-	#define MP3_SDPATH			"/media/mmcblk0p1/music/"	//url淇濆瓨璺緞
+	#define MP3_SDPATH			"/media/mmcblk0p1/"	//url淇濆瓨璺緞
 	#define MP3_LIKEPATH		"/media/mmcblk0p1/ximalaya/"//url鍠滅埍璺緞
 #endif
-#define MP3_PATHLEN			sizeof(MP3_SDPATH)
-#define MP3_LIKEPATHLEN		sizeof(MP3_LIKEPATH)
-#endif
-
 //#define DEBUG_PLAY_SYSTEM_IP			//开启按键按下语音播放wifi 和IP 地址功能
 //#define TEST_PLAY_EQ_MUSIC			//测试音效		
 //#define PCM_TEST						//测试保存pcm文件

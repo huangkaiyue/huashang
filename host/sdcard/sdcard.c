@@ -76,7 +76,7 @@ void DelSdcardMp3file(char * sdpath){
 		}else{			//删除长时间不用的文件
 			if(remove(filepath) == 0){
 				printf("Removed %s.\n", filepath);
-				//DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)entry->d_name);
+				DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)entry->d_name);
 				delmp3Num++;
 				if(delmp3Num>REMOVE_MP3_NUM){
 					break;

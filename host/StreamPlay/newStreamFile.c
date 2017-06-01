@@ -142,15 +142,21 @@ static void SaveLoveMp3File(const char *filepath){
 	char runCmd[200]={0};
 	switch(like_mp3_sign){
 		case LOVE_MP3_SAVE_LOVE_MP3_EVENT:		//添加喜爱
+#if 0
 			if(CheckSdcardInfo(MP3_SDPATH)){	//内存不足50M删除指定数目的歌曲
-				printf("%s: delete memory \n",__func__);
+				printf("%s: delete memory ,path %s\n",__func__,MP3_SDPATH);
+				DelSdcardMp3file((char *)MP3_LIKEPATH);
 				break;
 			}	
+#endif
 			if(strcmp(st->mp3name,"")){
 				//插入数据库成功
 				if(InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name)==0){
+					printf("%s: save music ok \n",__func__);
 					snprintf(runCmd,200,"cp %s %s%s",filepath,MP3_LIKEPATH,st->mp3name);
 					system(runCmd);
+				}else{
+					printf("%s: save music failed \n",__func__);
 				}
 				
 			}	
@@ -336,6 +342,7 @@ static int NetStreamDownFilePlay(Player_t *play){
 
 	demoDownFile(play->playfilename,15,NetStartDown,NetGetStreamData,NetEndDown);
 	while(st->player.playState!=MAD_EXIT){
+		printf("wait exit play state: %d \n",GetRecordeVoices_PthreadState());
 		usleep(500000);
 	}
 	DEBUG_STREAM("NetStreamDownFilePlay end ...\n");
@@ -496,7 +503,7 @@ static void playLocalMp3(const char *mp3file){
 	DecodePlayMusic(InputlocalStream);
 	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//发送结束状态
 #ifdef PALY_URL_SD
-	SaveLoveMp3File(mp3file);		//删除喜爱歌曲
+	//SaveLoveMp3File(mp3file);		//删除喜爱歌曲
 #endif
 	cleanStreamData(st);	//状态切换是否加锁
 	DEBUG_STREAM(" exit play ok \n");
