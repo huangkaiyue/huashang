@@ -244,7 +244,7 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 				else{
 					printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
 #if defined(QITUTU_SHI)					
-					GetSdcardMusicNameforPlay(xiai,XIAI_DIR,PLAY_PREV);
+					GetSdcardMusicNameforPlay(xiai,XIMALA_MUSIC_DIRNAME,PLAY_PREV);
 #elif defined(HUASHANG_JIAOYU)
 					GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_PREV,EXTERN_PLAY_EVENT);
 #endif
