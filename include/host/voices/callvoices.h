@@ -15,7 +15,6 @@
 #define PLAY_WAV				4	//播放wav原始数据音
 #define END_SPEEK_VOICES		5	//结束录音
 #define PLAY_MP3_MUSIC			6	//播放音乐数据
-#define TIME_OUT				7	//关闭系统
 #define TIME_SIGN				8	//长时间无事件
 #define PLAY_OUT				9	//关闭系统
 #define SPEEK_WAIT				10	//对讲事件
@@ -99,6 +98,7 @@
 #define AI_KEY_TALK_ERROR			46	//智能会话按键误触发，播放系统音
 #define MIN_10_NOT_USER_WARN		47	//10分钟不用提示用户
 #define TULING_WAIT_VOICES			48	//播放图灵系统等待音
+#define CONTINUE_PLAY_MUSIC_VOICES	49	//请继续点播吧
 
 //---------------------------------------------------------
 #define VOICES_MIN	13200	//是否是大于0.5秒的音频，采样率16000、量化位16位
@@ -145,9 +145,6 @@ typedef struct{
 }SysMessage;
 extern SysMessage sysMes;
 //--------------------eventVoices.c----------------------------------------
-
-#define XIMALA_MUSIC_DIRNAME	"ximalaya/"	//喜马拉雅收藏的歌曲目录名		
-
 #define DBG_EVENT
 #ifdef DBG_EVENT  
 #define DEBUG_EVENT(fmt, args...) printf("%s:"fmt,__func__, ## args)  

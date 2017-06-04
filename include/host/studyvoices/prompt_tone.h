@@ -92,6 +92,7 @@
 #define UPDATA_START		"qtts/updata_start_8K.amr"			//开始更新固件。
 #define UPDATA_ERROR		"qtts/updata_error_8K.amr"			//更新固件错误。
 #endif
+#define PLAY_CONTINUE_MUSIC	"qtts/please_playmusic.amr"			//请继续点播吧
 
 /*******************************************************************************
 零时音频文件路径

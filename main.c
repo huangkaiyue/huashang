@@ -144,6 +144,9 @@ static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 			CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_NETWORK);
 			goto exit0;
 		}
+#ifdef HUASHANG_JIAOYU
+		//Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
+#endif
 	}
 exit1:
 	free((void *)hand->data);

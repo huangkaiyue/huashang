@@ -46,7 +46,7 @@ typedef struct{
 	unsigned int streamLen;			//数据流大小
 	Player_t player; 
 	pthread_mutex_t mutex;			//资源锁
-	void (*SetI2SRate)(int rate);	//切换音频采样率
+	void (*SetI2SRate)(int rate,const char *function);	//切换音频采样率
 	int (*GetVol)(void);			//获取音量大小	
 	void (*ack_playCtr)(int nettype,Player_t *player,unsigned char playState);//回复给app状态
 	char mp3name[128];
@@ -77,6 +77,6 @@ extern void keyStreamPlay(void);
 
 extern void getStreamState(void *data,void StreamState(void *data,Player_t *player));	//获取播放流状态
 //初始化 ，WritePcmData写入音频数据流回调函数  SetI2SRate 设置采样率回调函数
-extern void initStream(void ack_playCtr(int nettype,Player_t *player,unsigned char playState),void WritePcmData(char *data,int size),void SetI2SRate(int rate),int GetVol(void));
+extern void initStream(void ack_playCtr(int nettype,Player_t *player,unsigned char playState),void WritePcmData(char *data,int size),void SetI2SRate(int rate,const char *function),int GetVol(void));
 extern void cleanStream(void);//清除
 #endif

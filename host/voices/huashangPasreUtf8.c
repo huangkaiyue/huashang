@@ -269,7 +269,7 @@ static void Parse_NumberMenu(const char *txt,int *playIndex){
 
 }
 //---------------------------------------------------------------------- end 解析数字篇
-int Huashang_Checkutf8(const char *txt,char *playName){
+int Huashang_Checkutf8(const char *txt,char *playName,int *getPlayIndex){
 	int playIndex=0;
 #ifdef MAIN_TEST	
 	if(strstr(txt,"播放"))
@@ -294,6 +294,7 @@ int Huashang_Checkutf8(const char *txt,char *playName){
 	}else if(playIndex>MAX_PLAY_NUMBER){
 		playIndex =MAX_PLAY_NUMBER;
 	}
+	*getPlayIndex=playIndex;
 	snprintf(playName,128,"/media/mmcblk0p1/%s/%d.mp3",HUASHANG_GUOXUE_DIR,playIndex);
 	return 0;
 }
@@ -304,7 +305,7 @@ int main(void){
 	PASRE_UTF8_LOG("str len = %d\n",strlen(str));
 	char playName[128]={0};
 	char inputStr[128]={0};
-
+	int playIndex=0;
 	while(1){
 		memset(inputStr,0,sizeof(inputStr));
 		PASRE_UTF8_LOG("statrt input:\n");
@@ -313,7 +314,7 @@ int main(void){
 			break;
 		}
 		PASRE_UTF8_LOG("\nintput : %s\n",inputStr);
-		Huashang_Checkutf8(inputStr,playName);
+		Huashang_Checkutf8(inputStr,playName,&playIndex);
 		printf("playName = %s\n",playName);
 	}
 	return 0;  

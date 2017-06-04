@@ -37,7 +37,7 @@ static void delInternetLock(void){
 	remove(INTEN_NETWORK_FILE_LOCK);
 }
 
-static int SendSsidPasswd_toNetServer(const char *ssid,const char *passwd,int random){
+int SendSsidPasswd_toNetServer(const char *ssid,const char *passwd,int random){
 	int ret=0;
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;

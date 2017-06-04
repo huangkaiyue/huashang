@@ -158,22 +158,24 @@ void setAutoPlayMusic_countState(unsigned char state){
 返回值: 无
 ********************************************************/
 int __AddNetWork_UrlForPaly(Player_t *player){
-	WritePlayUrl_Log("url start add \n");
+	//WritePlayUrl_Log("start"," url add ");
 	if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
 		goto exit0;
 	}
 	//防止添加过快
 	if(getEventNum()>0||getplayEventNum()>0){
 		DEBUG_EVENT("num =%d \n",getEventNum());
+		WritePlayUrl_Log("__AddNetWork_UrlForPaly"," getEventNum ");
 		goto exit0;
 	}
 	if(GetRecordeVoices_PthreadState() == START_SPEEK_VOICES||GetRecordeVoices_PthreadState() == START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() == END_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==PLAY_WAV||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){	
+		WritePlayUrl_Log("__AddNetWork_UrlForPaly"," GetRecordeVoices_PthreadState failed ");
 		return -1;
 	}
 	int ret=-1;
 	HandlerText_t *handEvent = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handEvent){
-		WritePlayUrl_Log("add url ok\n");
+		WritePlayUrl_Log("url"," add ok");
 		if(player->playListState==AUTO_PLAY_EVENT){
 			setAutoPlayMusic_countState(ENABLE_auto_count_time);//设置自动播放模式下，记录的起始时间
 		}else{
@@ -376,7 +378,7 @@ void TulingKeyDownSingal(void){
 			return;
 		}
 		NetStreamExitFile();	//在微信端推送歌曲，没有进行播放下一首歌曲的时候，突然按下智能会话按键，需要切换采样率，才能进入智能会话状态
-		if(SetWm8960Rate(RECODE_RATE)){	//切换采样率失败，退出(防止多线程当中切换，资源冲突问题)
+		if(SetWm8960Rate(RECODE_RATE,(const char *)"TulingKeyDownSingal set rate")){	//切换采样率失败，退出(防止多线程当中切换，资源冲突问题)
 			return ;
 		}
 		StartTuling_RecordeVoices();
@@ -619,6 +621,19 @@ void CreatePlayListMuisc(const void *data,int musicType){
 		__AddLocalMp3ForPaly((const char *)player->playfilename,player->playListState);
 	}
 }
+//长时间不用，需要重新扫描一下网络  
+static int scanWifi_Again(void){
+	char ssid[64]={0},pwd[64]={0};
+	char *curSsid= nvram_bufget(RT2860_NVRAM, "ApCliSsid");
+	if(!strcmp(curSsid,"")){
+		return -1;
+	}
+	snprintf(ssid,64,"%s",curSsid);
+	char *passwd= nvram_bufget(RT2860_NVRAM, "ApCliWPAPSK");
+	snprintf(pwd,64,"%s",passwd);
+	//snprintf(pwd,64,"%s","lemeitong168");
+	return SendSsidPasswd_toNetServer((const char *)ssid,(const char *)pwd,1);
+}
 //--------------------------------------------------------------------------------------------------------
 
 /*******************************************************
@@ -642,6 +657,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			led_lr_oc(closeled);
 			usleep(800*1000);
 			Mute_voices(MUTE);						//关闭功放
+			enable_gpio();
 			break;
 		case LOW_BATTERY_PLAY:						//低电关机
 #ifdef PALY_URL_SD
@@ -697,7 +713,8 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			enable_gpio();
 			break;
 		case CONNET_CHECK_PLAY:			//检查网络是否可用
-			PlaySystemAmrVoices(CHECK_INTERNET,playEventNums);
+			scanWifi_Again();
+			//PlaySystemAmrVoices(CHECK_INTERNET,playEventNums);
 			break;		
 //----------------------对讲有关-----------------------------------------------------
 		case SEND_OK_PLAY:				//发送成功
@@ -786,6 +803,9 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			Setwm8960Vol(VOL_APP_SET,PLAY_PASUSE_VOICES_VOL);
 			PlayImportVoices(TULING_WINT,playEventNums);
 			Setwm8960Vol(VOL_SET_VAULE,vol);
+			break;
+		case CONTINUE_PLAY_MUSIC_VOICES:
+			PlaySystemAmrVoices(PLAY_CONTINUE_MUSIC,playEventNums);
 			break;
 		default:
 			pause_record_audio();

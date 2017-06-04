@@ -74,6 +74,7 @@ void DelSdcardMp3file(char * sdpath){
 		if((timep-Mp3info.st_ctime)<FILETIME){
 			continue;
 		}else{			//删除长时间不用的文件
+#if defined(QITUTU_SHI)		
 			if(remove(filepath) == 0){
 				printf("Removed %s.\n", filepath);
 				DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)entry->d_name);
@@ -84,7 +85,8 @@ void DelSdcardMp3file(char * sdpath){
 			}
 			else
 				perror("remove");
-		}
+#endif			
+		}		
 		usleep(1000);
 	}
 	printf("del file end ... \n");

@@ -33,7 +33,7 @@ static void  tulingEndDown(int downLen){
 }
 
 int downTulingMp3_forPlay(HandlerText_t *handtext){
-	SetWm8960Rate(RECODE_RATE); 
+	SetWm8960Rate(RECODE_RATE,"downTulingMp3_forPlay set rate"); 
 	setDowning();
 	playRet=PLAY_FINNISH;
 	RequestTulingLog("downTulingMp3_forPlay start");

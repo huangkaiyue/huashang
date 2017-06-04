@@ -114,7 +114,11 @@ void closeSystemSave_huashangData(void){
 	}
 }
 
-
+void updatePlayindex(int playIndex){
+	if(hsUser){
+		hsUser->PlayHuashang_MusicIndex=playIndex;
+	}
+}
 //------------------------------------------------------------------------------
 
 //华上教育按键按下播放按键

@@ -116,14 +116,12 @@ static void InputNetStream(const void * inputMsg,int inputSize){
 #endif
 	pthread_mutex_unlock(&st->mutex);
 }
-
 #define LOVE_MP3_UNKOWN_EVENT				0		//未知状态
 #define LOVE_MP3_SAVE_LOVE_MP3_EVENT		1		//添加喜爱
 #define LOVE_MP3_DELETE_EVENT				2		//删除喜爱
 #define DEFAULT_SAVE_MP3_EVENT				3		//默认保存mp3文件
 
 static unsigned char like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;
-#ifdef PALY_URL_SD
 int GetFileNameForPath(const char *path){
 	int i=0;
 	int size=strlen(path);
@@ -138,7 +136,7 @@ int GetFileNameForPath(const char *path){
 	return (size-strlen(p)+1);
 }
 static void SaveLoveMp3File(const char *filepath){
-#if defined(QITUTU_SHI)	
+#if defined(QITUTU_SHI)		
 	char runCmd[200]={0};
 	switch(like_mp3_sign){
 		case LOVE_MP3_SAVE_LOVE_MP3_EVENT:		//添加喜爱
@@ -190,7 +188,7 @@ void Save_like_music(void){
 void Del_like_music(void){
 	like_mp3_sign=LOVE_MP3_DELETE_EVENT;
 }
-#endif
+
 //播放网络流音频文件
 static void *NetplayStreamMusic(void *arg){
 	unsigned short rate_one=0,rate_two=0;
@@ -224,7 +222,7 @@ static void *NetplayStreamMusic(void *arg){
 		st->rate=44100;
 
 	DEBUG_STREAM("music st->rate =%d st->channel=%d \n",st->rate,st->channel);
-	st->SetI2SRate(st->rate);
+	st->SetI2SRate(st->rate,"NetplayStreamMusic set rate");
 	DecodePlayMusic(InputNetStream);
 
 #ifdef PALY_URL_SD
@@ -316,7 +314,7 @@ void NetStreamExitFile(void){
 		}
 		usleep(100);
 	}
-	DEBUG_STREAM(" end ...\n");
+	printf("%s: paly end ...\n",__func__);
 	WriteEventlockLog("eventlock exit end\n",4);
 }
 
@@ -334,9 +332,7 @@ static int NetStreamDownFilePlay(Player_t *play){
 	st->streamLen=0;
 	st->playSize=0;
 	st->cacheSize=0;
-	WritePlayUrl_Log("play url:\n");
-	WritePlayUrl_Log(play->playfilename);
-	WritePlayUrl_Log("\n");
+	WritePlayUrl_Log("play url",play->playfilename);
 	st->player.playState=MAD_NEXT;
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 
@@ -497,7 +493,7 @@ static void playLocalMp3(const char *mp3file){
 		st->rate=44100;
 	
 	DEBUG_STREAM("music st->rate =%d st->channel=%d \n",st->rate,st->channel);
-	st->SetI2SRate(st->rate);
+	st->SetI2SRate(st->rate,"playLocalMp3 set rate");
 	SetDecodeSize(st->streamLen);
 	DEBUG_STREAM("music start play \n");
 	DecodePlayMusic(InputlocalStream);
@@ -539,8 +535,7 @@ void HandlerWeixinDownMp3(const char *cacheFilename){
 	if(!strcmp(filename,"")){
 		goto exit1;
 	}
-	WritePlayUrl_Log(cacheFilename);
-	WritePlayUrl_Log(filename);
+	WritePlayUrl_Log(cacheFilename,filename);
 	keydown_flashingLED();	
 #if defined(QITUTU_SHI)	
 	if(InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)filename)==0){	//插入数据库成功
@@ -557,7 +552,7 @@ void getStreamState(void *data,void StreamState(void *data,Player_t *player)){
 	st->player.vol = st->GetVol();
 	StreamState(data,&st->player);
 }
-void initStream(void ack_playCtr(int nettype,Player_t *player,unsigned char playState),void WritePcmData(char *data,int size),void SetI2SRate(int rate),int GetVol(void)){
+void initStream(void ack_playCtr(int nettype,Player_t *player,unsigned char playState),void WritePcmData(char *data,int size),void SetI2SRate(int rate,const char *function),int GetVol(void)){
 	st = calloc(1,MP3STEAM_SIZE);
 	if(st==NULL){
 		perror("calloc st memory failed");

@@ -1,7 +1,7 @@
 #ifndef _LOG_H
 #define _LOG_H
 
-void WritePlayUrl_Log(const char *data);
+void WritePlayUrl_Log(const char *data1,const char *data2);
 void PlaySystemAmrVoicesLog(const char *data);
 void cleanplayLog(const char *data);
 void WriteEventlockLog(const char *data,int lock);
@@ -9,7 +9,7 @@ void handleeventLog(const char *data,unsigned char msgSize);
 void PlayQtts_log(const char *data);
 void udpLog(const char *data);
 void RecvTcp_dataLog(const char *data);
-void TimeLog(const char *data);
+void systemTimeLog(const char *data);
 void RequestTulingLog(const char *data);
 void musicdbLog(const char *data,const char *filename);
 void UartLog(const char *data,unsigned char number);

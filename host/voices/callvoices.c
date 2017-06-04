@@ -265,7 +265,7 @@ static void *PthreadRecordVoices(void *arg){
 					printf("%s: MUTE wm8960====%d===========\n",__func__,endtime-starttime);
 					Mute_voices(MUTE);
 				}
-				if((endtime-starttime)==SYSTEMOUTSIGN){		//第一次长时间不触发事件，则关闭
+				if((endtime-starttime)>SYSTEMOUTSIGN){		//第一次长时间不触发事件，则关闭
 					SetRecordeVoices_PthreadState(TIME_SIGN);
 				}
 			}else{
@@ -293,18 +293,14 @@ static void *PthreadRecordVoices(void *arg){
 				break;
 #ifdef CLOCESYSTEM
 			case TIME_SIGN:				//提示休息很久了
+				systemTimeLog("time out for play music");
 				Create_PlaySystemEventVoices(MIN_10_NOT_USER_WARN);
 				sleep(1);
 				break;
 				
-			case TIME_OUT:				//挂起超时退出
-				SetMucClose_Time(1);	//设置一分钟后关机
-				pause_record_audio();
-				starttime=time(&t);
-				break;
-				
 			case PLAY_OUT:				//播放超时退出
 				printf("-----------------------\n close system --------------------\n");
+				systemTimeLog("close system");
 				SetMucClose_Time(1);	//设置一分钟后关机
 				sysMes.enableCountStarttime=DISABLE_count_time;
 				sysMes.auto_count_starttime=time(&t);

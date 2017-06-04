@@ -87,7 +87,7 @@ static int playResamplePlayAmrFile(const char *filename,unsigned int playEventNu
 static int __playAmrVoices(const char *filename,unsigned char playMode,unsigned int playEventNums){
 	char *outfile ="speek.wav";
 	AmrToWav8k(filename,(const char *)outfile);
-	SetWm8960Rate(RECODE_RATE);
+	SetWm8960Rate(RECODE_RATE,(const char *)"__playAmrVoices set rate");
 	int ret = PlaySignleWavVoices((const char *)outfile,playMode,playEventNums);
 	if(ret==0){	//正常播放完，把录音线程挂起来
 		pause_record_audio();
@@ -135,7 +135,7 @@ void PlayImportVoices(const char *filePath,unsigned int playEventNums){
 @ 返回值: 无
 *********************************************************/
 int PlayQttsText(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed){
-	SetWm8960Rate(RECODE_RATE);
+	SetWm8960Rate(RECODE_RATE,(const char *)"PlayQttsText set rate");
 	return Qtts_voices_text(text,type,playVoicesName,playEventNums,playSpeed);
 
 }

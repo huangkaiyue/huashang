@@ -72,7 +72,7 @@ extern int Setwm8960Vol(int dir,int vol);
 extern int GetVol(void);
 extern void Mute_voices(unsigned char stat);
 extern void mute_recorde_vol(int change);
-extern int SetWm8960Rate(unsigned short rate);
+extern int SetWm8960Rate(unsigned short rate,const char *function);
 extern char *I2sGetvoicesData(void);
 extern void DestoryWm8960Voices(void);
 extern void InitWm8960Voices(void);

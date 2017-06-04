@@ -18,6 +18,7 @@
 *********************************************************/
 int CheckinfoText_forContorl(const char *infoText,const char *text,char *getPlayMusicName){
 	int ret = CMD_UNKOWN;
+	int playIndex=0;
 	if(strstr(infoText,"你是谁")||strstr(infoText,"名字")||strstr(text,"日辉")||strstr(text,"智娃")){	
 		ret =CMD_WHO_NAME;
 	}
@@ -36,7 +37,8 @@ int CheckinfoText_forContorl(const char *infoText,const char *text,char *getPlay
 #if defined(HUASHANG_JIAOYU)	
 	else if(strstr(infoText,"播放")){
 		Write_huashangTextLog(infoText);
-		if(Huashang_Checkutf8(infoText,getPlayMusicName)==0){
+		if(Huashang_Checkutf8(infoText,getPlayMusicName,&playIndex)==0){
+			updatePlayindex(playIndex);
 			ret =CMD_MUSIC_MEUN;
 		}
 	}

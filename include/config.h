@@ -10,9 +10,9 @@
 #endif
 
 //#define DATOU_JIANG		//è’‹æ€»
-#define QITUTU_SHI		//çŸ³æ€»
+//#define QITUTU_SHI		//çŸ³æ€»
 //#define TANGTANG_LUO		//ç½—æ€»
-//#define HUASHANG_JIAOYU
+#define HUASHANG_JIAOYU
 //----------------------åŠŸèƒ½ç±»-----------------------------------
 
 #define CLOCESYSTEM				//è¶…æ—¶é€€å‡º
@@ -104,8 +104,7 @@
 #define CLOSE_SYSTEM_LOCK_FILE			"/var/close_system.lock"
 #endif
 
-
-#define XIAI_DIR 				"xiai"
+#define XIMALA_MUSIC_DIRNAME	"ximalaya/"	//Ï²ÂíÀ­ÑÅÊÕ²ØµÄ¸èÇúÄ¿Â¼Ãû		
 #define HUASHANG_GUOXUE_DIR		"huashangedu"	
 
 #define DEFALUT_URL_JSON		"/home/defalutUrl.json"

@@ -8,37 +8,6 @@
 
 #include "config.h"
 
-#if 0
-#define LEVEL_PLAY_NETWORK_0		0		//播放当前连接名字
-#define LEVEL_PLAY_QTTS_1		1
-#define LEVEL_PLAY_WEIXIN_SPEEK_1	1
-#define LEVEL_PLAY_SYSTEM_VOICES_1	1
-#define LEVEL_PLAY_NETWORK_URL_1	1
-#define LEVEL_PLAY_SDCARD_MUSIC_1	1
-#define LEVEL_RECODER_WEIXIN_2		2	
-#define LEVEL_RECODER_AI_SPEEK_2	2
-int checkPlayVoicesWorkState(int checkLevel){
-	if(checkNetWorkLive()){	//检查网络
-		return -1;
-	}
-	if(getEventNum()>0||getplayEventNum()>0){//防止添加过快
-		DEBUG_EVENT("num =%d \n",getEventNum());
-		return -1;
-	}
-	int playState = GetRecordeVoices_PthreadState();
-	if(playState>checkLevel){
-		return -1;
-	}
-	switch(playState){
-		case PLAY_WAV:	//执行相应的退出，并切换工作状态
-			WritePlayUrl_Log("add failed ,reocde voices pthread is PLAY_WAV\n");
-			break;
-	}
-}
-#endif
-
-
-
 #ifdef TEST_MIC
 /*******************************************************
 函数功能: 测试录音并直接播放出来

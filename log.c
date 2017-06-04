@@ -1,22 +1,29 @@
 #include "comshead.h"
 #include "config.h"
 
+static void GetDate(char *date){
+    //const char* wday[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+    //const char* mon[]={"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+    time_t timep;
+    struct tm* p;
+    time(&timep);
+    p = gmtime(&timep);
+    snprintf(date,128,"%d-%02d-%02d-%02d:%02d:%02d",(1900+p->tm_year),p->tm_mon+1,p->tm_mday,p->tm_hour, p->tm_min, p->tm_sec);
+    printf("%s\n", date);
+}
 
-void WritePlayUrl_Log(const char *data){
+void WritePlayUrl_Log(const char *data1,const char *data2){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
-	if(!strcmp(data,"url start add \n")){
+	if(!strcmp(data1,"start")){
 		fp =fopen("/log/playurl.log","w+");
 	}else{
 		fp =fopen("/log/playurl.log","a+");
 	}
-	
 	if(NULL == fp ){
 		return ;
     }
-	int size = strlen(data);
-    fwrite(data,1,size,fp);
-	fwrite("\n",1,1,fp);
+    fprintf(fp,"%s:%s\n",data1,data2);
   	fflush(fp);
 	fclose(fp);
 #endif	
@@ -153,19 +160,16 @@ void RecvTcp_dataLog(const char *data){
 	return ;
 #endif
 }
-void TimeLog(const char *data){
+void systemTimeLog(const char *data){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
-	if(!strcmp(data,"time_start\n")){
-		fp =fopen("/log/time_log.log","w+");
-	}else{
-		fp =fopen("/log/time_log.log","a+");
-	}
+	fp =fopen("/log/time_log.log","a+");
 	if(NULL == fp ){
 		return ;
     }
-	int size = strlen(data);
-    fwrite(data,1,size,fp);
+	char date[128]={0};
+	GetDate(date);
+	fprintf(fp,"%s--->%s\n",date,data);
   	fflush(fp);
 	fclose(fp);
 	return ;
@@ -377,7 +381,7 @@ void Write_huashangTextLog(const char *text){
 	return ;
 #endif	
 }
-void WriteRateTextLog(const char *text,int rate){
+void WriteRateTextLog(const char *funtion,const char *text,int rate){
 #ifdef ENABLE_LOG	
 		FILE *fplog = NULL;
 		fplog =fopen("/log/commonRate.log","a+");		
@@ -385,7 +389,7 @@ void WriteRateTextLog(const char *text,int rate){
 			return ;
 		}
 		if(fplog){
-			fprintf(fplog,"%s %d\n",text,rate);
+			fprintf(fplog,"%s: %s %d\n",funtion,text,rate);
 			fclose(fplog);
 		}
 		return ;

@@ -207,6 +207,7 @@ exit2:
 			goto exit1;
 		}
 		snprintf(player->playfilename,128,"%s",pSub->valuestring);
+		//snprintf(player->playfilename,128,"%s","");
 		snprintf(player->musicname,64,"%s","speek");
 		player->musicTime = 0;
 		Write_tulinglog((const char *)"play url:");
@@ -307,18 +308,17 @@ static void HandleEventMessage(const char *data,int msgSize){
 			WriteEventlockLog("eventlock_start\n",event_lock);
 			SetMainQueueLock(MAIN_QUEUE_LOCK);
 			NetStreamExitFile();
-			SetWm8960Rate(RECODE_RATE);
+			SetWm8960Rate(RECODE_RATE,(const char *)"HandleEventMessage SET_RATE_EVENT");
 			event_lock=0;
 			pause_record_audio();
 			WriteEventlockLog("eventlock end\n",event_lock);
 			break;
 			
 		case URL_VOICES_EVENT:		//URLÍøÂç²¥·ÅÊÂ¼þ
-			WritePlayUrl_Log("handler url voices event \n");
 			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		
 			NetStreamExitFile();
 			start_event_play_Mp3music();
-			WritePlayUrl_Log("start add url to mainQueue for play\n");
+			WritePlayUrl_Log("HandleEventMessage","start add url to mainQueue for play");
 			AddDownEvent((const char *)data,URL_VOICES_EVENT);
 			sleep(3);
 			break;
