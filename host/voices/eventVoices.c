@@ -621,19 +621,7 @@ void CreatePlayListMuisc(const void *data,int musicType){
 		__AddLocalMp3ForPaly((const char *)player->playfilename,player->playListState);
 	}
 }
-//长时间不用，需要重新扫描一下网络  
-static int scanWifi_Again(void){
-	char ssid[64]={0},pwd[64]={0};
-	char *curSsid= nvram_bufget(RT2860_NVRAM, "ApCliSsid");
-	if(!strcmp(curSsid,"")){
-		return -1;
-	}
-	snprintf(ssid,64,"%s",curSsid);
-	char *passwd= nvram_bufget(RT2860_NVRAM, "ApCliWPAPSK");
-	snprintf(pwd,64,"%s",passwd);
-	//snprintf(pwd,64,"%s","lemeitong168");
-	return SendSsidPasswd_toNetServer((const char *)ssid,(const char *)pwd,1);
-}
+
 //--------------------------------------------------------------------------------------------------------
 
 /*******************************************************
@@ -713,7 +701,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			enable_gpio();
 			break;
 		case CONNET_CHECK_PLAY:			//检查网络是否可用
-			scanWifi_Again();
+			ScanWifi_AgainForConnect(enable_gpio);
 			//PlaySystemAmrVoices(CHECK_INTERNET,playEventNums);
 			break;		
 //----------------------对讲有关-----------------------------------------------------
@@ -1078,11 +1066,16 @@ static void *waitLoadMusicList(void *arg){
 	}
 	SysOnloadMusicList((const char *)TF_SYS_PATH,(const char *)TF_MP3_PATH,(const char *)TF_STORY_PATH,(const char *)TF_ENGLISH_PATH,(const char *)TF_GUOXUE_PATH);
 	timeout=0;
-	while(++timeout<8){
+	while(++timeout<35){
 		CheckNetManger_PidRunState();	//检查网络服务
 		sleep(1);
+		if(sysMes.netstate==NETWORK_OK){
+			break;
+		}else if(sysMes.netstate==NETWORK_ER){
+			break;
+		}
 	}
-	if(sysMes.netstate==NETWORK_UNKOWN){
+	if(sysMes.netstate==NETWORK_UNKOWN){	//默认是未知状态，长时间未收到联网进程发送过来的状态，直接使能gpio
 		sysMes.netstate=NETWORK_ER;
 		enable_gpio();
 	}
