@@ -782,6 +782,9 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			TaiBenToTulingNOVoices(playEventNums);
 			break;
 		case MIN_10_NOT_USER_WARN: 
+			if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
+				break;
+			}
 			if(!PlaySystemAmrVoices(SPEEK_WARNING,playEventNums)){
 				Custom_Interface_RunPlayVoices(playEventNums);//后台推送内容播放
 			}

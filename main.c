@@ -76,7 +76,7 @@ static void loadLocalServer(int argc,char *argv[]){
 			WriteLocalserver_Version((const char *)argv[i+1]);
 		}
 	}
-	
+	sleep(sleeptime);	//增加一定睡眠时间，防止加载sdcard和sock冲突，导致udp sock不能通信
 	time_t t;
 	sysMes.localplayname=0;			//本地播放目录
 	sysMes.netstate=NETWORK_UNKOWN;	//开机不属于未知网络状态
@@ -86,7 +86,7 @@ static void loadLocalServer(int argc,char *argv[]){
 	pool_init(4);	
 	InitTuling((const char *) user_id,(const char *) token);	//userId需要保存到路由表当中 ，token 也需要保存
 	InitMtkPlatfrom76xx();
-	sleep(sleeptime);	//增加一定睡眠时间，防止加载sdcard和sock冲突，导致udp sock不能通信
+	
 	DownEvent = initQueue();
 	
 #ifdef WORK_INTER

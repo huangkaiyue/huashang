@@ -338,9 +338,10 @@ void InitRecord_VoicesPthread(void){
 	if(i>=4)
 		i=4;
 	snprintf(playFile,24,"qtts/start_%d.amr",i);
-	PlayImportVoices(playFile,0);
+	PlayStartPcm(playFile,0);
 #else
-	PlayImportVoices(START_SYS_VOICES,0);//开机启动音
+	//PlayImportVoices(START_SYS_VOICES,0);//开机启动音
+	PlayStartPcm(START_SYS_VOICES);
 #endif
 
 #ifdef TEST_MIC

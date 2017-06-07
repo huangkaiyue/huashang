@@ -18,6 +18,59 @@ void WritePcmData(char *data,int size){
 	I2S.play_size +=size;
 }
 //播放单声道wav格式音频数据
+static int PlayStartWavVoices(const char *playfilename){
+	int r_size=0,pos=0;
+	char readbuf[2]={0};
+	int ret=0;
+	FILE *fp= fopen(playfilename,"r");
+	if(fp==NULL){
+		printf("open sys failed \n");
+		return -1;
+	}
+	fseek(fp,WAV_HEAD,SEEK_SET);		//跳过wav头部	
+	FILE *file = fopen("out2.pcm","w+");
+	if(file==NULL){
+		printf("open sys failed \n");
+		return -1;
+	}
+	while(1){
+		r_size= fread(readbuf,1,2,fp);
+		if(r_size==0){
+			break;
+		}
+		fwrite(readbuf,2,1,file);
+		fwrite(readbuf,2,1,file);
+	}
+	fclose(fp);
+	fclose(file);
+	file = fopen("out2.pcm","r");
+	if(file==NULL){
+		printf("open sys failed \n");
+		return -1;
+	}
+	while(1){
+		r_size= fread(play_buf,1,I2S_PAGE_SIZE,file);
+		if(r_size==0){
+			break;
+		}
+		if(r_size!=I2S_PAGE_SIZE){
+			memset(play_buf+r_size,0,I2S_PAGE_SIZE-r_size);
+		}
+		write_pcm(play_buf);
+	}
+	memset(play_buf,0,I2S_PAGE_SIZE);	
+	remove("out2.pcm");
+	return ret;
+}
+void PlayStartPcm(const char *filename){
+	char *outfile ="speek.wav";
+	char path[128]={0};
+	snprintf(path,128,"%s%s",sysMes.localVoicesPath,filename);
+	AmrToWav8k(path,(const char *)outfile);
+	PlayStartWavVoices(outfile);
+
+}
+//播放单声道wav格式音频数据
 static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,unsigned int playEventNums){
 	int r_size=0,pos=0;
 	char readbuf[2]={0};
