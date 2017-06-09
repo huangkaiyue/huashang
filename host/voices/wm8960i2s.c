@@ -201,7 +201,7 @@ void InitWm8960Voices(void){
 #endif	
 	close_wm8960_voices();//----------------------
 	SET_RATE(I2S.i2s_fd, I2S.tx_rate);
-	SET_RX_VOL(I2S.i2s_fd, AUDIO_RX_VOICE);
+	//SET_RX_VOL(I2S.i2s_fd, AUDIO_RX_VOICE);
 	
 #if defined(CONFIG_RALINK_MT7628) /*(CONFIG_I2S_WORD_LEN)*/
 	ioctl(I2S.i2s_fd, I2S_WORD_LEN, 16);
@@ -220,6 +220,7 @@ void InitWm8960Voices(void){
 	set_tx_state(I2S.i2s_fd, 1);
 	I2S.execute_mode = EXTERNAL_LBK2;
 	SET_TX_VOL(I2S.i2s_fd, I2S.tx_vol);
+	SET_RX_VOL(I2S.i2s_fd, AUDIO_RX_VOICE);
 	open_wm8960_voices();//----------------------
 }
 #if 1
@@ -276,6 +277,7 @@ int SetWm8960Rate(unsigned short rate,const char *function){
 	I2S.tx_enable=0;
 	set_rx_state(I2S.i2s_fd,1);
 	set_tx_state(I2S.i2s_fd,1);
+	SET_RX_VOL(I2S.i2s_fd, AUDIO_RX_VOICE);
 	I2S.execute_mode = PLAY_MODE;	
 	Mute_voices(UNMUTE);
 	I2S.tx_rate=rate;				//生效采样率

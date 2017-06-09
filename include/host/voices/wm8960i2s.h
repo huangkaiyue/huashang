@@ -8,7 +8,7 @@
 #define WM8960_NODE_PATH	"/dev/i2s0"
 
 #define RECODE_RATE 			8000 
-#define AUDIO_RX_VOICE 			118  	//录音大小
+#define AUDIO_RX_VOICE 			108  	//录音大小
 #ifdef TEST_SDK
 #define AUDIO_TX_VOICE 			100
 #else
