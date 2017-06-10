@@ -63,6 +63,7 @@ static void ack_progress(void){
 }
 //实现写入音频流的接口, 需要输入的数据内存存放位置 inputMsg  inputSize 输入的数据流大小
 static void InputNetStream(const void * inputMsg,int inputSize){
+	printf("InputNetStream inputSize=%d\n",inputSize);
 	while(st->playSize+inputSize>st->cacheSize){
 		if(getDownState()==DOWN_QUIT){	//已经退出下载，停止播放	
 			DEBUG_STREAM("exit ...st->cacheSize =%d st->playSize%d\n",st->cacheSize,st->playSize);
@@ -191,26 +192,18 @@ void Del_like_music(void){
 
 //播放网络流音频文件
 static void *NetplayStreamMusic(void *arg){
-	unsigned short rate_one=0,rate_two=0;
 	pthread_mutex_lock(&st->mutex);
 	if(st->rfp==NULL){
 		st->rfp = fopen(URL_SDPATH,"r");
 		if(st->rfp==NULL){
 			perror("fopen read failed ");
+			st->player.playState=MAD_EXIT;
+			DecodeExit();
 			pthread_mutex_unlock(&st->mutex);
 			return NULL;
 		}
 	}
-#if 0
 	get_mp3head(st->rfp,&st->rate,&st->channel);
-#else
-	get_mp3head(st->rfp,&st->rate,&st->channel);
-	if(st->rfp != 44100){
-		get_mp3head(st->rfp,&rate_one,&st->channel);
-		get_mp3head(st->rfp,&rate_two,&st->channel);
-		st->rate=rate_one>rate_two?rate_one:rate_two;
-	}
-#endif
 #ifdef SAFE_READ_WRITER
 	fclose(st->rfp);
 	st->rfp=NULL;
@@ -268,9 +261,9 @@ static void NetGetStreamData(const char *data,int size){
 #endif
 	pthread_mutex_unlock(&st->mutex);
 	//队列缓存到8*KB数据，开始播放
-	if(st->player.playState==MAD_NEXT&&st->cacheSize>CACHE_PLAY_SIZE&&getDownState()==DOWN_ING)
-	{
+	if(st->player.playState==MAD_NEXT&&st->cacheSize>CACHE_PLAY_SIZE&&getDownState()==DOWN_ING){
 		st->player.playState=MAD_PLAY;
+		DecodeStart();
 		pool_add_task(NetplayStreamMusic,NULL);
 	}
 }
@@ -290,7 +283,7 @@ void NetStreamExitFile(void){
 		quitDownFile();
 		WriteEventlockLog("eventlock quitDownFile \n",2);
 	}
-	WriteEventlockLog("rate \n",st->rate);
+	printf("%s: rate =%d\n",__func__,st->rate);
 	int error_timeout_check=0;
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//退出播放
 		pthread_mutex_lock(&st->mutex);
@@ -301,21 +294,23 @@ void NetStreamExitFile(void){
 		DecodeExit();
 		pthread_mutex_unlock(&st->mutex);
 		WriteEventlockLog("eventlock wait exit mp3 state \n",(int)st->player.playState);
-		DEBUG_STREAM(" while wait exit ...\n");
+		printf("%s: while wait exit ...\n",__func__);
 		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
 			WriteEventlockLog("error exit ,and set  \n",(int)st->player.playState);
+			printf("%s: error RECODE_PAUSE exit ,and set ... st->player.playState=%d\n",__func__,st->player.playState);
 			st->player.playState=MAD_NEXT;
 			break;
 		}
 		if(++error_timeout_check>300000){
 			WriteEventlockLog("error timeout_check ,and set exit \n",(int)st->player.playState);
+			printf("%s: error timeout_check exit ,and set ... st->player.playState=%d\n",__func__,st->player.playState);
 			st->player.playState=MAD_NEXT;
 			break;
 		}
 		usleep(100);
 	}
-	printf("%s: paly end ...\n",__func__);
-	WriteEventlockLog("eventlock exit end\n",4);
+	printf("%s: paly end ... st->player.playState=%d\n",__func__,st->player.playState);
+	WriteEventlockLog("eventlock exit end\n",st->player.playState);
 }
 
 //拷贝推送过来的信息
@@ -340,6 +335,16 @@ static int NetStreamDownFilePlay(Player_t *play){
 	while(st->player.playState!=MAD_EXIT){
 		printf("wait exit play state: %d \n",GetRecordeVoices_PthreadState());
 		usleep(500000);
+		if(st->GetWm8960Rate==8000){
+			printf("\n-------------------------\nplay music rate is error exit\n ------------------\n");
+			DecodeExit();
+			st->player.playState=MAD_EXIT;
+			break;
+		}
+		if(GetDecodeState()==MAD_EXIT){
+			printf("\n-------------------------\n not run play pthread exit\n ------------------\n");
+			break;
+		}
 	}
 	DEBUG_STREAM("NetStreamDownFilePlay end ...\n");
 	return ret;
@@ -357,8 +362,7 @@ void StreamPause(void){
 }
 //播放
 void StreamPlay(void){
-	if(st->player.playState==MAD_PAUSE)
-	{
+	if(st->player.playState==MAD_PAUSE){
 		st->player.playState=MAD_PLAY;
 		DecodeStart();
 		PlayorPause();
@@ -460,7 +464,6 @@ static void playLocalMp3(const char *mp3file){
 	st->player.progress=0;
 	st->streamLen=0;
 	st->playSize=0;
-	unsigned short rate_one=0,rate_two=0;
 	st->rfp = fopen(mp3file,"r");
 	if(st->rfp==NULL){
 		perror("fopen read failed ");
@@ -472,16 +475,7 @@ static void playLocalMp3(const char *mp3file){
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	
 	printf("=============ack_playCtr=============\n"); //---bug,不能删
-#if 0
 	get_mp3head(st->rfp,&st->rate,&st->channel);
-#else
-	get_mp3head(st->rfp,&st->rate,&st->channel);
-	if(st->rfp != 44100){
-		get_mp3head(st->rfp,&rate_one,&st->channel);
-		get_mp3head(st->rfp,&rate_two,&st->channel);
-		st->rate=rate_one>rate_two?rate_one:rate_two;
-	}
-#endif
 	fseek(st->rfp,0,SEEK_END);
 	st->streamLen = ftell(st->rfp);
 	fseek(st->rfp,0,SEEK_SET);
@@ -495,6 +489,7 @@ static void playLocalMp3(const char *mp3file){
 	DEBUG_STREAM("music st->rate =%d st->channel=%d \n",st->rate,st->channel);
 	st->SetI2SRate(st->rate,"playLocalMp3 set rate");
 	SetDecodeSize(st->streamLen);
+	DecodeStart();
 	DEBUG_STREAM("music start play \n");
 	DecodePlayMusic(InputlocalStream);
 	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//发送结束状态
@@ -552,7 +547,7 @@ void getStreamState(void *data,void StreamState(void *data,Player_t *player)){
 	st->player.vol = st->GetVol();
 	StreamState(data,&st->player);
 }
-void initStream(void ack_playCtr(int nettype,Player_t *player,unsigned char playState),void WritePcmData(char *data,int size),void SetI2SRate(int rate,const char *function),int GetVol(void)){
+void initStream(void ack_playCtr(int nettype,Player_t *player,unsigned char playState),void WritePcmData(char *data,int size),void SetI2SRate(int rate,const char *function),int GetVol(void),void GetWm8960Rate(void)){
 	st = calloc(1,MP3STEAM_SIZE);
 	if(st==NULL){
 		perror("calloc st memory failed");
@@ -561,6 +556,7 @@ void initStream(void ack_playCtr(int nettype,Player_t *player,unsigned char play
 	st->ack_playCtr=ack_playCtr;
 	st->SetI2SRate=SetI2SRate;
 	st->GetVol=GetVol;
+	st->GetWm8960Rate;
 	st->player.playState=MUSIC_PLAY_LIST;
 	pthread_mutex_init(&st->mutex, NULL);
 	initCurl();

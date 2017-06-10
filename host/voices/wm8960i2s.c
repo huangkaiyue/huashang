@@ -248,6 +248,10 @@ void Mute_voices(unsigned char stat)
 			break;
 	}
 }
+//获取当前播放采样率
+int GetWm8960Rate(void){
+	return I2S.tx_rate;
+}
 /*
 @ 设置8960 声卡采样率 
 @ rate 采样率值

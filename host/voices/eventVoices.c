@@ -164,7 +164,7 @@ int __AddNetWork_UrlForPaly(Player_t *player){
 	}
 	//·ÀÖ¹Ìí¼Ó¹ý¿ì
 	if(getEventNum()>0||getplayEventNum()>0){
-		DEBUG_EVENT("num =%d \n",getEventNum());
+		DEBUG_EVENT("num =%d getplayEventNum() =%d\n",getEventNum(),getplayEventNum());
 		WritePlayUrl_Log("__AddNetWork_UrlForPaly"," getEventNum ");
 		goto exit0;
 	}
@@ -1104,7 +1104,7 @@ void InitMtkPlatfrom76xx(void){
 	InitMtk76xx_gpio();
 	InitWm8960Voices();
 	InitRecord_VoicesPthread();
-	initStream(ack_playCtr,WritePcmData,SetWm8960Rate,GetVol);
+	initStream(ack_playCtr,WritePcmData,SetWm8960Rate,GetVol,GetWm8960Rate);
 	InitEventMsgPthread();
 	
 #ifdef LOCAL_MP3

@@ -144,9 +144,11 @@ static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 			CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_NETWORK);
 			goto exit0;
 		}
-#ifdef HUASHANG_JIAOYU
-		//Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
-#endif
+//#ifdef HUASHANG_JIAOYU
+		if(hand->EventNums==GetCurrentEventNums()){
+			Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
+		}
+//#endif
 	}
 exit1:
 	free((void *)hand->data);
@@ -177,6 +179,9 @@ static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
 	start_event_play_Mp3music();
 	Show_musicPicture();
 	Mad_PlayMusic((Player_t *)hand->data);
+	if(hand->EventNums==GetCurrentEventNums()){
+		Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
+	}	
 	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic endplay");
 exit0:
 	free((void *)hand->data);
@@ -212,22 +217,27 @@ int main(int argc, char **argv){
 		switch(event){
 			case URL_VOICES_EVENT:	//url播放
 				Main_Thread_AddplayUrlMusic((HandlerText_t *)msg);
+				printf("%s: Main_Thread_AddplayUrlMusic end\n",__func__);
 				break;
 			case TULING_URL_VOICES:	//播放图灵 语音点歌、故事 url文件
 				Main_Thread_playTuLingMusic((HandlerText_t *)msg);
+				printf("%s: Main_Thread_playTuLingMusic end\n",__func__);
 				break;
 			case TULING_URL_MAIN:	//播放图灵 tts文件
 				if(PlayTulingText((HandlerText_t *)msg)){	//异常退出，需要清理后面的url播放事件
 					SetMainQueueLock(MAIN_QUEUE_LOCK);		//清理后面mp3播放
 				}
+				printf("%s: PlayTulingText end\n",__func__);
 				break;
 			case LOCAL_MP3_EVENT:	//本地播放
 				Main_Thread_AddPlayLocalSdcard_Music((HandlerText_t *)msg);
+				printf("%s: Main_Thread_AddPlayLocalSdcard_Music end\n",__func__);
 				break;		
 #ifdef PALY_URL_SD
 			case WEIXIN_DOWN_MP3_EVENT:	//微信端下载歌曲事件	
 				HandlerWeixinDownMp3((const void *)msg);
 				free((void *)msg);
+				printf("%s: HandlerWeixinDownMp3 end\n",__func__);
 				break;
 #endif				
 			case QUIT_MAIN:
