@@ -7,8 +7,8 @@ KERNEL_PATH =$(SDK_PATH)/linux-2.6.36.x
 
 OTHEN_LIB=-lmsc463
 SYSTEM_LIB=-ldl -lpthread -lrt  $(SDK_PATH)/lib/libnvram/libnvram-0.9.28.so
-OPEN_LIB= -lz -lcurl -lssl -lcrypto -lmad  -lopencore-amrnb -lsqlite3 -lspeexdsp
-MY_LIB=-lbase463  -ldownFile463 -ldemoquick463 -lsystools463   -lDemoDecodeMp3 -lrateSpeek 
+OPEN_LIB= -lz -lcurl -lssl -lcrypto -lmad  -lopencore-amrnb -lsqlite3 
+MY_LIB=-lbase463  -ldownFile463 -ldemoquick463 -lsystools463   -lDemoDecodeMp3  
 OPENSRC_DIR=/home/openSrc/src
 
 

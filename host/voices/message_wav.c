@@ -111,17 +111,18 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 	memset(play_buf,0,I2S_PAGE_SIZE);
 	return ret;
 }
+
 int __playResamplePlayPcmFile(const char *pcmFile,unsigned int playEventNums){
-	char * resRateFile ="resRate.pcm";
-	if(ResamplerState_wavfileVoices((const char * )pcmFile,(const char * )resRateFile,44100)){
-		return -1;
-	}
+	int currentRate = 0;
 	StreamPause();
+	currentRate = GetWm8960Rate();
 	start_event_play_soundMix();//切换到混音播放状态		
-	int ret =PlaySignleWavVoices((const char *)resRateFile,PLAY_IS_INTERRUPT,playEventNums);
+	SetWm8960Rate(RECODE_RATE,(const char *)"__playResamplePlayPcmFile set rate");
+	int ret =PlaySignleWavVoices((const char *)pcmFile,PLAY_IS_INTERRUPT,playEventNums);	
 	start_event_play_Mp3music();
+	//需要优化一下，检查到还有音频文件
+	SetWm8960Rate(currentRate,(const char *)"__playResamplePlayPcmFile set rate");
 	keyStreamPlay();
-	remove(resRateFile);
 	return ret;
 }
 static int playResamplePlayAmrFile(const char *filename,unsigned int playEventNums){

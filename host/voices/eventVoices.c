@@ -309,9 +309,9 @@ void Create_PlayQttsEvent(const char *txt,int type){
 	if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
 		return;
 	}	
-	if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==SOUND_MIX_PLAY){
+	if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES){
 		return;
-	}else if (GetRecordeVoices_PthreadState() == PLAY_MP3_MUSIC){	//当前播放歌曲
+	}else if (GetRecordeVoices_PthreadState() == PLAY_MP3_MUSIC||GetRecordeVoices_PthreadState() ==SOUND_MIX_PLAY){	//当前播放歌曲
 		mixMode =MIX_PLAY_PCM;
 		//Create_CleanUrlEvent();
 		//return;
@@ -916,7 +916,7 @@ void Create_WeixinSpeekEvent(unsigned int gpioState){
 		return;
 	}else if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
 		return;
-	}else if(GetRecordeVoices_PthreadState() ==PLAY_WAV||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){
+	}else if(GetRecordeVoices_PthreadState() ==PLAY_WAV||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY||GetRecordeVoices_PthreadState()==START_SPEEK_VOICES){
 		return;
 	}
 	DEBUG_EVENT("state %d\n",gpioState);

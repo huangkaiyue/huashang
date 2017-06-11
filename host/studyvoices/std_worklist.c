@@ -24,6 +24,8 @@ static unsigned int newEventNums=0;
 static unsigned char downState=0;
 static unsigned char keepRecodeState=0;
 static unsigned int cacheNetWorkPlaySize=0;
+static int event_lock=0;
+
 #define TLJSONERNUM 9.0
 //解析图灵请求错误内容，播放本地已经录制好的音频
 static int playTulingRequestErrorVoices(unsigned int playEventNums){
@@ -246,7 +248,7 @@ static void runJsonEvent(HandlerText_t *handText){
 	free((void *)handText->data);
 	free((void *)handText);
 }
-static int event_lock=0;
+
 /*******************************************************
 @函数功能:	添加事件到链表
 @参数:	eventMsg 数据	
