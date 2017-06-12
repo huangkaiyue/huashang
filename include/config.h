@@ -108,5 +108,7 @@
 #define HUASHANG_GUOXUE_DIR		"huashangedu"	
 
 #define DEFALUT_URL_JSON		"/home/defalutUrl.json"
+#define DEFALUT_HUASHANG_JSON 	"/home/huashang_server.json"
+
 //#define TEST_ERROR_TULING
 

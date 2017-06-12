@@ -85,6 +85,53 @@ int GetScard_forPlayHuashang_Music(const void *playDir,unsigned char playMode,un
 	}	
 	return ret;
 }
+int huashang_CreatePlayDefaultMusic_forPlay(char *getBuf,const char* musicType){
+	char *readBuf = readFileBuf((const char * )DEFALUT_HUASHANG_JSON);
+	if(readBuf==NULL){
+		return -1;
+	}
+	int ret=-1;
+	int min=0, max=0;
+	cJSON * pJson = cJSON_Parse(readBuf);
+	if(NULL == pJson){
+		printf("pasre json is failed \n");
+		goto exit0;
+	}
+	cJSON * pArray =cJSON_GetObjectItem(pJson, musicType);
+	if(NULL == pArray){
+		printf("cJSON_Parse DEFALUT_URL_JSON failed \n");
+		goto exit1;
+	}
+	cJSON* pItem = cJSON_GetArrayItem(pArray, 0);
+	if(pItem==NULL){
+		goto exit1;
+	}
+	cJSON *cj = cJSON_GetObjectItem(pItem, "max");
+	if(cj!=NULL){
+		printf("cj->valueint= %d\n",cj->valueint);
+		max = cj->valueint;
+	}
+	cj = cJSON_GetObjectItem(pItem, "min");
+	if(cj!=NULL){
+		printf("cj->valueint= %d\n",cj->valueint);
+		min = cj->valueint;
+	}
+	float randMax=0;
+	if(max<=min)
+		randMax=1;
+	else
+		randMax=(float)(max-min-1);
+	int randNums=(1+(int)(randMax*rand()/(RAND_MAX+1.0)));
+	min +=randMax;
+	snprintf(getBuf,128,"%s%s/%d.mp3",TF_SYS_PATH,HUASHANG_GUOXUE_DIR,randNums);
+	ret=0;
+exit1:
+	cJSON_Delete(pJson);
+exit0:
+	free(readBuf);
+	return ret;
+}
+
 //关机保存华上教育内容播放记录数据
 void closeSystemSave_huashangData(void){
 	char jsonfile[128]={0};

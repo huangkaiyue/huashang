@@ -547,10 +547,10 @@ static int GetDefaultMusicJson_forPlay(char *getUrlBuf,const char *musicType){
 	cJSON* pItem = cJSON_GetArrayItem(pArray, randNums);
 	if(pItem){
 		cJSON *cjson = cJSON_GetObjectItem(pItem,"name");
-			if(cjson){
-				snprintf(getUrlBuf,128,"%s",cjson->valuestring);
-				ret =0;
-			}
+		if(cjson){
+			snprintf(getUrlBuf,128,"%s",cjson->valuestring);
+			ret =0;
+		}
 	}
 exit1:
 	cJSON_Delete(pJson);
@@ -565,10 +565,14 @@ void CreatePlayDefaultMusic_forPlay(const char* musicType){
 		perror("calloc error !!!");
 		return;
 	}
+#if defined(HUASHANG_JIAOYU)					
+	huashang_CreatePlayDefaultMusic_forPlay(player->playfilename,musicType);
+#else
 	if(GetDefaultMusicJson_forPlay(player->playfilename,musicType)){
 		free(player);
 		return ;
 	}
+#endif
 	player->musicTime=100;
 	player->playListState=AUTO_PLAY_EVENT;
 	snprintf(player->musicname,64,"%s",musicType);//musicname 暂时定义采用这个结构成语变量存放播放类型
@@ -576,9 +580,25 @@ void CreatePlayDefaultMusic_forPlay(const char* musicType){
 }
 //客户后台定制推送的内容
 void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
-	int randNums=(1+(int)(2.0*rand()/(RAND_MAX+1.0)));
 	int ret =-1;
 	char musictype[12]={0};
+	time_t timep;
+	struct tm *p;
+	time(&timep);
+	p=localtime(&timep);
+#if 0
+	if((p->tm_hour)+8>=24){
+		p->tm_hour=(p->tm_hour)+8-24;
+	}else{
+		p->tm_hour=(p->tm_hour)+8;
+	}
+#endif
+	if(p->tm_hour>21){
+		ret =PlaySystemAmrVoices(TIMEOUT_sleep,playEventNums);
+		snprintf(musictype,12,"%s","sleep");	//播放音乐内容
+		goto exit0;
+	}
+	int randNums=(1+(int)(2.0*rand()/(RAND_MAX+1.0)));
 	start_event_play_wav();
 	switch(randNums){
 		case 1:
@@ -593,16 +613,17 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 			ret =PlaySystemAmrVoices(TIMEOUT_chengyu,playEventNums);
 			snprintf(musictype,12,"%s","chengyu");	//播放成语故事
 			break;
+		case 4:
+			ret =PlaySystemAmrVoices(TIMEOUT_baike,playEventNums);
+			snprintf(musictype,12,"%s","baike");	//播放百科知识
+			break;
 		default:
 			ret =PlaySystemAmrVoices(TIMEOUT_music,playEventNums);
 			break;
 	}
+exit0:	
 	if(!ret){
-#if defined(HUASHANG_JIAOYU)					
-	GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT,AUTO_PLAY_EVENT);
-#else	
-	CreatePlayDefaultMusic_forPlay(musictype);	//musictype 暂时没定义好,后续分类好
-#endif
+		CreatePlayDefaultMusic_forPlay(musictype);	//musictype 
 	}
 }
 

@@ -73,6 +73,8 @@
 #define TIMEOUT_music		"qtts/timeOut_music.amr"			//要不我们今天听一下歌曲
 #define TIMEOUT_guoxue		"qtts/timeOut_guoxue.amr"			//要不我们今天学习一下国学内容吧，我的国学知识很丰富的!
 #define TIMEOUT_chengyu		"qtts/timeOut_chengyu.amr"			//要不我们今天学习一下成语
+#define TIMEOUT_baike		"qtts/timeOut_baike.amr"			//上知天文，下知地理，我给你讲百科知识吧!
+#define TIMEOUT_sleep		"qtts/timeOut_sleep.amr"			//小主人今天已经很晚了，早睡早起做一个乖宝宝，我给你放睡眠曲吧!
 
 #define BIND_SSID			"qtts/bind_ssid_8K.amr"				//成功收到小伙伴的绑定请求。
 #define BIND_OK				"qtts/bind_ok_8K.amr"				//成功处理小伙伴的绑定请求。
