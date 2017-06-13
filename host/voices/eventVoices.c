@@ -582,21 +582,20 @@ void CreatePlayDefaultMusic_forPlay(const char* musicType){
 void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 	int ret =-1;
 	char musictype[12]={0};
+	if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
+		return;
+	}
 	time_t timep;
 	struct tm *p;
 	time(&timep);
 	p=localtime(&timep);
-#if 0
-	if((p->tm_hour)+8>=24){
-		p->tm_hour=(p->tm_hour)+8-24;
-	}else{
-		p->tm_hour=(p->tm_hour)+8;
-	}
-#endif
-	if(p->tm_hour>21){
+	if(p->tm_hour+8>21){
 		ret =PlaySystemAmrVoices(TIMEOUT_sleep,playEventNums);
 		snprintf(musictype,12,"%s","sleep");	//播放音乐内容
-		goto exit0;
+		goto exit1;
+	}
+	if(PlaySystemAmrVoices(SPEEK_WARNING,playEventNums)){
+		goto exit0;	//异常打断退出
 	}
 	int randNums=(1+(int)(2.0*rand()/(RAND_MAX+1.0)));
 	start_event_play_wav();
@@ -621,10 +620,12 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 			ret =PlaySystemAmrVoices(TIMEOUT_music,playEventNums);
 			break;
 	}
-exit0:	
+exit1:	
 	if(!ret){
 		CreatePlayDefaultMusic_forPlay(musictype);	//musictype 
 	}
+exit0:
+	return;
 }
 
 /***
@@ -803,12 +804,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			TaiBenToTulingNOVoices(playEventNums);
 			break;
 		case MIN_10_NOT_USER_WARN: 
-			if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
-				break;
-			}
-			if(!PlaySystemAmrVoices(SPEEK_WARNING,playEventNums)){
-				Custom_Interface_RunPlayVoices(playEventNums);//后台推送内容播放
-			}
+			Custom_Interface_RunPlayVoices(playEventNums);
 			break;
 		case TULING_WAIT_VOICES:
 			vol =GetVol();
