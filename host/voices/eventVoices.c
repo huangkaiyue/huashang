@@ -566,7 +566,10 @@ void CreatePlayDefaultMusic_forPlay(const char* musicType){
 		return;
 	}
 #if defined(HUASHANG_JIAOYU)					
-	huashang_CreatePlayDefaultMusic_forPlay(player->playfilename,musicType);
+	if(huashang_CreatePlayDefaultMusic_forPlay(player->playfilename,musicType)){
+		free(player);
+		return ;
+	}
 #else
 	if(GetDefaultMusicJson_forPlay(player->playfilename,musicType)){
 		free(player);

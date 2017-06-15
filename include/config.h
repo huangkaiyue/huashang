@@ -50,12 +50,8 @@
 //----------------------用户数据类-------------------------------
 
 #define UDP_BRO_PORT 		20001						// 本地广播端口
-
-#ifndef TEST_SDK	
-	#define TF_SYS_PATH 		"/media/mmcblk0p1/"		//tf卡路径
-#else
-	#define TF_SYS_PATH 		"/mnt/neirong/"			//tf卡路径
-#endif
+	
+#define TF_SYS_PATH 		"/media/mmcblk0p1/"		//tf卡路径
 #ifdef LOCAL_MP3
 #ifdef	LED_LR
 #if 0

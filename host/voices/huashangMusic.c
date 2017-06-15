@@ -99,7 +99,7 @@ int huashang_CreatePlayDefaultMusic_forPlay(char *getBuf,const char* musicType){
 	}
 	cJSON * pArray =cJSON_GetObjectItem(pJson, musicType);
 	if(NULL == pArray){
-		printf("cJSON_Parse DEFALUT_URL_JSON failed \n");
+		printf("cJSON_Parse DEFALUT_HUASHANG_JSON failed \n");
 		goto exit1;
 	}
 	cJSON* pItem = cJSON_GetArrayItem(pArray, 0);
@@ -125,6 +125,7 @@ int huashang_CreatePlayDefaultMusic_forPlay(char *getBuf,const char* musicType){
 	min +=randMax;
 	snprintf(getBuf,128,"%s%s/%d.mp3",TF_SYS_PATH,HUASHANG_GUOXUE_DIR,randNums);
 	ret=0;
+	WritePlayUrl_Log("getBuf",getBuf);
 exit1:
 	cJSON_Delete(pJson);
 exit0:
