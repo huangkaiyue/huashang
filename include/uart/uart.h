@@ -60,6 +60,10 @@
 
 #define KEY_CTRL_PICTURE			12	//°´¼üÍ¼Æ¬
 
+#define SHOW_TLAK_LIGHT				13	//ÏÔÊ¾×ìµÆ
+#define CLOSE_TLAK_LIGHT			14	//¹Ø±Õ×ìµÆ
+
+
 
 #define SERIAL_SOC_PATH		"/dev/ttyS0"
 #define SPEED_SOC			9600

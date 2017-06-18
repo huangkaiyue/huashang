@@ -53,4 +53,13 @@ void Show_waitCtrlPicture(void){
 	}
 #endif
 }
-
+void Show_tlak_Light(void){
+#if defined(HUASHANG_JIAOYU)
+	showFacePicture(SHOW_TLAK_LIGHT);
+#endif
+}
+void Close_tlak_Light(void){
+#if defined(HUASHANG_JIAOYU)	
+	showFacePicture(CLOSE_TLAK_LIGHT);
+#endif
+}

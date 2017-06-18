@@ -81,6 +81,7 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 		return -1;
 	}
 	fseek(fp,WAV_HEAD,SEEK_SET);		//跳过wav头部	
+	Show_tlak_Light();
 	while(1){
 		if(playMode==PLAY_IS_INTERRUPT&&playEventNums!=GetCurrentEventNums()){
 			CleanI2S_PlayCachedata();//清理
@@ -110,6 +111,7 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 	}
 	fclose(fp);
 	memset(play_buf,0,I2S_PAGE_SIZE);
+	Close_tlak_Light();
 	return ret;
 }
 

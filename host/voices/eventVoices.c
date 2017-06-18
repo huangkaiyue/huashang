@@ -658,7 +658,9 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 	int vol=0;
 	switch(sys_voices){
 		case END_SYS_VOICES_PLAY:					//Ω· ¯“Ù
+#ifndef HUASHANG_JIAOYU		
 			PlaySystemAmrVoices(END_SYS_VOICES,playEventNums);
+#endif
 			Led_vigue_close();
 			Led_System_vigue_close();
 #if defined(TANGTANG_LUO) || defined(QITUTU_SHI) || defined(HUASHANG_JIAOYU)
@@ -1072,6 +1074,9 @@ void Create_SaveWeixinDownMp3_EventToMainQueue(const char *saveFileName){
 static void *waitLoadMusicList(void *arg){
 	int timeout=0;
 	char dirBuf[128]={0};
+#ifdef HUASHANG_JIAOYU	
+	InitHuashang();
+#endif
 	sleep(20);
 	while(++timeout<20){
 		if(!access(TF_SYS_PATH, F_OK)){		//ºÏ≤Ètfø®

@@ -531,7 +531,10 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		if(!strncmp(cJSON_GetObjectItem(pJson, "text")->valuestring,"123456",6)){
 			Huashang_changePlayVoicesName();
 		}
-#endif		
+#endif	
+		if(!strncmp(cJSON_GetObjectItem(pJson, "text")->valuestring,"openwifi",8)){
+			system("ifconfig ra0 up");
+		}
 		Create_PlayQttsEvent(cJSON_GetObjectItem(pJson, "text")->valuestring,QTTS_UTF8);
 	}
 	else if (!strcmp(pSub->valuestring,"speek")){//Î¢ÐÅ¶Ô½²

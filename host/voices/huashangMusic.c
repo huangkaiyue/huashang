@@ -20,15 +20,17 @@ typedef struct{
 }HuashangUser_t;
 
 static HuashangUser_t *hsUser=NULL;
-//开机获取华上教育内容播放记录
-void openSystemload_huashangData(void){
-	char jsonfile[128]={0};
+
+void InitHuashang(void){
 	hsUser = (HuashangUser_t *)calloc(1,sizeof(HuashangUser_t));
 	if(hsUser==NULL){
 		perror("calloc hsUser failed ");
 		return ;
 	}
-
+}
+//开机获取华上教育内容播放记录
+void openSystemload_huashangData(void){
+	char jsonfile[128]={0};
 	snprintf(jsonfile,128,"%s%s",TF_SYS_PATH,HUASHANG_JIAOYU_PLAY_JSON_FILE);
 	char *filebuf = readFileBuf(jsonfile);
 	if(filebuf==NULL){
@@ -204,7 +206,7 @@ int WeiXin_playhuaShangMusic(int playIndex){
 获取播音人
 **/
 void GetPlayVoicesName(char *playVoicesName,int *speek){
-	if(hsUser->playVoicesNameNums==NULL){
+	if(hsUser==NULL){
 		snprintf(playVoicesName,8,"tuling");
 		*speek =50;
 		return ;

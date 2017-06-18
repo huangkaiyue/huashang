@@ -433,6 +433,7 @@ static void *PlayVoicesPthread(void *arg){
 					}
 					cacheNetWorkPlaySize=0;
 					playlistVoicesSate =END_PLAY_VOICES_LIST;
+					Close_tlak_Light();
 				}
 				getMsgQueue(PlayList,&data,&pcmSize);
 				playlistVoicesSate=START_PLAY_VOICES_LIST;
@@ -442,10 +443,12 @@ static void *PlayVoicesPthread(void *arg){
 						break;
 					}
 					if(cacheNetWorkPlaySize>12*KB){
+						Show_tlak_Light();
 						usleep(10000);
 						break;
 					}
 					if(downState==0){
+						Show_tlak_Light();
 						break;
 					}
 					usleep(10000);
