@@ -124,6 +124,10 @@ int huashang_CreatePlayDefaultMusic_forPlay(char *getBuf,const char* musicType){
 	int randNums=(1+(int)(randMax*rand()/(RAND_MAX+1.0)));
 	min +=randMax;
 	snprintf(getBuf,128,"%s%s/%d.mp3",TF_SYS_PATH,HUASHANG_GUOXUE_DIR,randNums);
+	if(access(getBuf, F_OK)){
+		ret=-1;
+		goto exit1;
+	}
 	ret=0;
 	WritePlayUrl_Log("getBuf",getBuf);
 exit1:
@@ -169,20 +173,32 @@ void updatePlayindex(int playIndex){
 }
 //------------------------------------------------------------------------------
 
-//华上教育按键按下播放按键
-void Huashang_keyDown_playkeyVoices(int state){
-	if(state==GPIO_UP){
-	}else {
-
-	}
-}
-
 void Huashang_changePlayVoicesName(void){
 	if(hsUser!=NULL){
 		if(++hsUser->playVoicesNameNums>3){
 			hsUser->playVoicesNameNums=0;
 		}
 	}	
+}
+
+int WeiXin_playhuaShangMusic(int playIndex){
+	int ret=-1;
+	char playBuf[128]={0};
+	if(access(TF_SYS_PATH, F_OK)){	//检查tf卡
+		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE)
+			Create_PlaySystemEventVoices(TF_ERROT_PLAY);
+		return ret;
+	}
+	if(playIndex>HUASHANG_MUSIC_TOTAL_NUM-1||playIndex<0){
+		hsUser->PlayHuashang_MusicIndex=0;
+	}else{
+		hsUser->PlayHuashang_MusicIndex =playIndex;
+	}
+	snprintf(playBuf,128,"%s%s/%d.mp3",TF_SYS_PATH,HUASHANG_GUOXUE_DIR,hsUser->PlayHuashang_MusicIndex);
+	if(access(playBuf, F_OK)==0){	
+		ret =__AddLocalMp3ForPaly((const char *)playBuf,EXTERN_PLAY_EVENT);
+	}
+	return ret;
 }
 /**
 获取播音人

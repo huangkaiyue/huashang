@@ -501,13 +501,16 @@ static void playLocalMp3(const char *mp3file){
 	WriteEventlockLog("playLocalMp3  exit play ok \n",(int)st->player.playState);
 }
 //播放歌曲接口  play: 播放信息结构体
-void Mad_PlayMusic(Player_t *play){
+int Mad_PlayMusic(Player_t *play){
 	char domain[64] = {0};
 	char filename[128]={0};
 	int port = 80;
 	if(!access(play->playfilename,F_OK)){
 		playLocalMp3(play->playfilename);
 	}else{
+		if(strstr(play->playfilename,"http")==NULL){
+			return -1;
+		}
 		parse_url(play->playfilename, domain, &port, filename);
 		CopyUrlMessage(play,(Player_t *)&st->player);
 		char likebuf[256]={0};
@@ -521,6 +524,7 @@ void Mad_PlayMusic(Player_t *play){
 			NetStreamDownFilePlay(play);
 		}
 	}
+	return 0;
 }
 #ifdef PALY_URL_SD
 //cacheFilename :微信端下载缓存的路径  /Down/xxxxxxxxxx.mp3

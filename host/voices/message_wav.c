@@ -86,6 +86,7 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 			CleanI2S_PlayCachedata();//清理
 			StopplayI2s();			 //最后一片数据丢掉
 			ret=-1;
+			Mute_voices(MUTE);
 			break;
 		}	
 		r_size= fread(readbuf,1,2,fp);

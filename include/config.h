@@ -1,13 +1,7 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 //----------------------ç‰ˆæœ¬ç±»-----------------------------------
-
-//#define TEST_SDK					//æµ‹è¯•SDK
-
 //#define WORK_INTER
-
-#ifdef TEST_SDK						//ä½¿èƒ½å‘½ä»¤è¾“å…¥è¡Œ
-#endif
 
 //#define DATOU_JIANG		//è’‹æ€»
 //#define QITUTU_SHI		//çŸ³æ€»
@@ -71,14 +65,9 @@
 #endif
 #endif
 
-#define URL_SDPATH				"/home/cache.tmp"		//urlç¼“å­˜è·¯å¾„
-#ifdef TEST_SDK	
-	#define MP3_SDPATH			"/mnt/neirong/music/"			//urlä¿å­˜è·¯å¾„
-	#define MP3_LIKEPATH		"/mnt/neirong/ximalaya/"		//urlå–œçˆ±è·¯å¾„
-#else
-	#define MP3_SDPATH			"/media/mmcblk0p1/"	//urlä¿å­˜è·¯å¾„
-	#define MP3_LIKEPATH		"/media/mmcblk0p1/ximalaya/"//urlå–œçˆ±è·¯å¾„
-#endif
+#define URL_SDPATH			"/home/cache.tmp"		//urlç¼“å­˜è·¯å¾„
+#define MP3_SDPATH			"/media/mmcblk0p1/"	//urlä¿å­˜è·¯å¾„
+#define MP3_LIKEPATH		"/media/mmcblk0p1/ximalaya/"//urlå–œçˆ±è·¯å¾„
 //#define DEBUG_PLAY_SYSTEM_IP			//¿ªÆô°´¼ü°´ÏÂÓïÒô²¥·Åwifi ºÍIP µØÖ·¹¦ÄÜ
 //#define TEST_PLAY_EQ_MUSIC			//²âÊÔÒôĞ§		
 //#define PCM_TEST						//²âÊÔ±£´æpcmÎÄ¼ş

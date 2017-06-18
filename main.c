@@ -158,7 +158,9 @@ exit0:
 //主线程添加本地到队列当中播放
 static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 	Show_musicPicture();
-	Mad_PlayMusic((const char *)hand->data);
+	if(Mad_PlayMusic((const char *)hand->data)){
+		goto exit0;
+	}
 	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
 		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_SDCARD);
 	}else{											//自动播放
@@ -166,6 +168,7 @@ static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 			autoPlayNextMusic(sysMes.localplayname);
 		}	
 	}
+exit0:	
 	free((void *)hand->data);
 	free((void *)hand);
 	usleep(1000);

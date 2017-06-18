@@ -181,6 +181,11 @@ static void Save_VoicesPackt(const char *data,int size){
 			test_Save_VoicesPackt_function_log((const char *)"STD_RECODE_SIZE is >5s",RV->len_voices);
 			goto exit1;
 		}
+#if defined(HUASHANG_JIAOYU)
+		//if(--RV->freeVoicesNum>0){
+		//	return ;
+		//}
+#endif
 #if 0		
 		//只有有声道有数据，左声道没有，需要拷贝2、3两个数据
 		for(i=2; i<size; i+=4){
@@ -220,6 +225,9 @@ exit1:
 exit0:
 	memset(RV->buf_voices,0,RV->len_voices);
 	RV->len_voices = 0;
+#if defined(HUASHANG_JIAOYU)
+	RV->freeVoicesNum =FREE_VOICE_NUMS;
+#endif	
 	return ;
 }
 //关机，将当前系统时间发送给MCU
@@ -342,6 +350,10 @@ void InitRecord_VoicesPthread(void){
 #else
 	//PlayImportVoices(START_SYS_VOICES,0);//开机启动音
 	PlayStartPcm(START_SYS_VOICES);
+#endif
+
+#if defined(HUASHANG_JIAOYU)
+	RV->freeVoicesNum =FREE_VOICE_NUMS;
 #endif
 
 #ifdef TEST_MIC

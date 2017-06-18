@@ -547,8 +547,10 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}
 	}
 	else if (!strcmp(pSub->valuestring,"call")){		//微信界面发送过来的呼叫请求
+#if defined(QITUTU_SHI)	
 		EnableCallDev();
 		Create_PlaySystemEventVoices(TALK_CONFIRM_PLAY);
+#endif		
 	}
 	else if (!strcmp(pSub->valuestring,"uploadfile")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
@@ -603,17 +605,9 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}
 	}
 #if defined(HUASHANG_JIAOYU)	//华上语音识别接口，识别出来的结果
-#ifdef XUN_FEI_OK
-	else if(!strcmp(pSub->valuestring,"xunfei")){
-		pSub = cJSON_GetObjectItem(pJson, "status");
-		if(pSub){
-			if(!strcmp(pSub->valuestring,"ok"))	//正确识别出播放的语音
-				GetHuashang_xunfei_aifiVoices(cJSON_GetObjectItem(pJson, "musicname")->valuestring,cJSON_GetObjectItem(pJson, "playindex")->valueint);
-			else
-				GetHuashang_xunfei_aifiFailed();
-		}
-	}
-#endif	
+	else if(!strcmp(pSub->valuestring,"localMp3")){
+		WeiXin_playhuaShangMusic(cJSON_GetObjectItem(pJson, "nums")->valueint);
+	}
 #endif	
 exit:
 	cJSON_Delete(pJson);

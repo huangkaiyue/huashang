@@ -69,7 +69,7 @@ extern Mp3Stream *st;
 #endif
 
 extern void NetStreamExitFile(void);	//退出播放,耗时退出
-extern void Mad_PlayMusic(Player_t *play);	//播放URL接口，本地存在就不下载了
+extern int Mad_PlayMusic(Player_t *play);	//播放URL接口，本地存在就不下载了
 extern void StreamPause(void);
 extern void StreamPlay(void);
 extern void SetStreamPlayState(unsigned char playliststate);

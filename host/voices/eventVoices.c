@@ -971,7 +971,7 @@ void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 		endtime=time(&t);
 		voicesTime = endtime - speek->Starttime;
 		start_event_play_wav();
-		if(voicesTime<2||voicesTime>10){//时间太短或太长
+		if(voicesTime<1||voicesTime>10){//时间太短或太长
 			shortVoicesClean();
 			PlaySystemAmrVoices(SEND_ERROR,playEventNums);
 			return ;
@@ -1104,7 +1104,10 @@ static void *waitLoadMusicList(void *arg){
 	}
 #ifdef HUASHANG_JIAOYU
 	openSystemload_huashangData();
+	//Huashang_changePlayVoicesName();	//用于测试用，切换播音人
 #endif
+	sleep(10);
+	system("ifconfig ra0 down &");
 	return NULL;
 } 
 #endif

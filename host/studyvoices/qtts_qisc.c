@@ -54,6 +54,7 @@ void putPcmStreamToQueue(const void *data,int size){
 	putPcmDataToPlay((const void *)newdata,ret);	//添加到播放队列	
 }
 static void putStreamVoicesForPlay(const void *userdata,const void *data,int audio_len){
+	//printf("%s: audio_len = %d \n",__func__,audio_len);
 	putPcmStreamToQueue(data,audio_len);
 
 }

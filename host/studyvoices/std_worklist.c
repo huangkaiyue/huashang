@@ -24,6 +24,7 @@ static unsigned int newEventNums=0;
 static unsigned char downState=0;
 static unsigned char keepRecodeState=0;
 static unsigned int cacheNetWorkPlaySize=0;
+static unsigned char playlistVoicesSate=0;
 static int event_lock=0;
 
 #define TLJSONERNUM 9.0
@@ -81,13 +82,13 @@ static int playTulingQtts(const char *playUrl,const char *playText,unsigned int 
 	int ret =-1;
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext==NULL){
-		return ret;		
+		return -1;		
 	}
 	handtext->data= (char *)calloc(1,strlen(playUrl)+1);
 	if( handtext->data==NULL){
 		perror("calloc error !!!");
 		free(handtext);
-		return ret;
+		return -1;
 	}
 	sprintf(handtext->data,"%s",playUrl);
 	DEBUG_STD_MSG("handtext->data:%s\n", handtext->data);
@@ -98,7 +99,6 @@ static int playTulingQtts(const char *playUrl,const char *playText,unsigned int 
 #if defined(HUASHANG_JIAOYU)	
 	char playVoicesName[12]={0};
 	int playSpeed=0;
-	//Huashang_changePlayVoicesName();	//用于测试用，切换播音人
 	GetPlayVoicesName(playVoicesName,&playSpeed);
 	if(!strcmp(playVoicesName,"tuling")){	//当前播音人采用图灵的
 		ret =AddDownEvent((const char *)handtext,TULING_URL_MAIN);
@@ -107,12 +107,28 @@ static int playTulingQtts(const char *playUrl,const char *playText,unsigned int 
 		PlayQttsText(playText,QTTS_UTF8,playVoicesName,playEventNums,playSpeed);	
 		if(playLocalVoicesIndex==TULING_TEXT_MUSIC){
 			//设置播放线程不要切换录音线程状态，不然会导致，添加歌曲的时候，后面的歌曲不能播放
+			while(1){
+				if(getPlaylistVoicesSate()==END_PLAY_VOICES_LIST){
+					ret=0;
+					printf("%s : exit play tuing qtts voices ,not playNums \n",__func__);
+					usleep(100000);
+					break;
+				}
+				if(GetCurrentEventNums()!=playEventNums){
+					printf("%s : exit play tuing qtts voices ,interrupts \n",__func__);
+					ret=-1;
+					break;
+				}
+				printf("%s : wait play tuing qtts voices nums[%d] \n",__func__,getWorkMsgNum(PlayList));
+				usleep(100000);
+			}
 		}
 		disabledownNetworkVoiceState();
 	}
 #else
-	AddDownEvent((const char *)handtext,TULING_URL_MAIN);
+	ret = AddDownEvent((const char *)handtext,TULING_URL_MAIN);
 #endif
+	return ret;
 }
 /*******************************************
 @函数功能:	json解析服务器数据
@@ -199,13 +215,11 @@ exit2:
 		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums,TULING_TEXT);
 	}else{				//识别出有语义结果和mp3链接地址结果，先播放前面的语义内容，再播放mp3链接地址内容
 		if(!strcmp(pSub->valuestring,"")){//如果出现空的链接地址，直接跳出
-			free(ttsURL);
 			goto exit1;
 		}
 		Player_t *player=(Player_t *)calloc(1,sizeof(Player_t));
 		if(player==NULL){
 			perror("calloc error !!!");
-			free(ttsURL);
 			goto exit1;
 		}
 		snprintf(player->playfilename,128,"%s",pSub->valuestring);
@@ -214,7 +228,10 @@ exit2:
 		player->musicTime = 0;
 		Write_tulinglog((const char *)"play url:");
 		Write_tulinglog((const char *)pSub->valuestring);
-		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums,TULING_TEXT_MUSIC);
+		if(playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums,TULING_TEXT_MUSIC)){
+			free((void *)player);
+			goto exit0;
+		}
 		HandlerText_t *handMainMusic = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 		if(handMainMusic==NULL){
 			free((void *)player);
@@ -392,15 +409,18 @@ void disabledownNetworkVoiceState(void){
 void SetPlayFinnishKeepRecodeState(int state){
 		keepRecodeState=state;
 }
+unsigned char getPlaylistVoicesSate(void){
+	return playlistVoicesSate;
+}
 static void *PlayVoicesPthread(void *arg){
 	unsigned short playNetwork_pos=0;
-	unsigned char playSate=START_PLAY_VOICES_LIST;
+	playlistVoicesSate=START_PLAY_VOICES_LIST;
 	int i=0,pcmSize=0,CleanendVoicesNums=0;
 	int CacheNums=0;//保存打断这次播放之后缓存队列nums 数
 	PlayList = initQueue();
 	char *data=NULL; 
 	while(1){
-		switch(playSate){
+		switch(playlistVoicesSate){
 			case START_PLAY_VOICES_LIST:
 				//printf("getPlayVoicesQueueNums=%d\n",getWorkMsgNum(PlayList));
 				if(getWorkMsgNum(PlayList)==0){	//当前队列为空，挂起播放	
@@ -412,8 +432,10 @@ static void *PlayVoicesPthread(void *arg){
 						pause_record_audio();
 					}
 					cacheNetWorkPlaySize=0;
+					playlistVoicesSate =END_PLAY_VOICES_LIST;
 				}
 				getMsgQueue(PlayList,&data,&pcmSize);
+				playlistVoicesSate=START_PLAY_VOICES_LIST;
 				//printf("WaitingDown=%d\n",WaitingDown);
 				while(1){
 					if(newEventNums!=GetCurrentEventNums()){
@@ -439,8 +461,9 @@ static void *PlayVoicesPthread(void *arg){
 							playNetwork_pos=0;
 						}
 						if(newEventNums!=GetCurrentEventNums()){	//当前播放事件编号和最新事件编号
+							Mute_voices(MUTE);
 							CleanendVoicesNums=4;	//清除尾部数据片
-							playSate=INTERRUPT_PLAY_VOICES_LIST;
+							playlistVoicesSate=INTERRUPT_PLAY_VOICES_LIST;
 							CacheNums =getWorkMsgNum(PlayList);
 							break;
 						}
@@ -454,7 +477,7 @@ static void *PlayVoicesPthread(void *arg){
 				StopplayI2s();			 //最后一片数据丢掉
 #else		
 				if(--CleanendVoicesNums<=0){
-					playSate=CLEAN_PLAY_VOICES_LIST;
+					playlistVoicesSate=CLEAN_PLAY_VOICES_LIST;
 				}
 				memset(play_buf,0,I2S_PAGE_SIZE);
 				write_pcm(play_buf);
@@ -467,7 +490,7 @@ static void *PlayVoicesPthread(void *arg){
 					getMsgQueue(PlayList,&data,&pcmSize);
 					free(data);
 				}else{
-					playSate=START_PLAY_VOICES_LIST;
+					playlistVoicesSate=START_PLAY_VOICES_LIST;
 					cacheNetWorkPlaySize=0;
 				}
 				break;

@@ -117,9 +117,14 @@
 
 #define START_UPLOAD	1
 #define END_UPLOAD		0
+
+#define FREE_VOICE_NUMS	3
 typedef struct{
 	unsigned char recorde_live;
 	unsigned char uploadState;
+#if defined(HUASHANG_JIAOYU)
+	unsigned char freeVoicesNum;
+#endif	
 	int len_voices;
 	unsigned int CurrentuploadEventNums;
 	char buf_voices[STD_RECODE_SIZE];

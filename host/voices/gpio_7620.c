@@ -359,16 +359,16 @@ static void signal_handler(int signum){
 	}// end gpio_up
 	else if (signum == GPIO_DOWN){	//长按按键事件
 		switch(gpio.mount){
+			case NETWORK_KEY:	//配网键
+				LongNetKeyDown_ForConfigWifi();
+				break;
+				
 			case RESET_KEY:		//恢复出厂设置
 				ResetHostDevicesFactory();
 				break;
 					
 			case RESERVE_KEY2:	//会话对讲开关键
 				ReadSpeekGpio();
-				break;
-				
-			case NETWORK_KEY:	//配网键
-				LongNetKeyDown_ForConfigWifi();
 				break;
 				
 			case SPEEK_KEY:		//智能会话按键

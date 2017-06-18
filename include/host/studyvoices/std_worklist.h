@@ -36,9 +36,12 @@ extern void CleanEventMsgPthread(void);
 #define START_PLAY_VOICES_LIST		1	//开始播放列表声音
 #define INTERRUPT_PLAY_VOICES_LIST	2	//打断播放列表声音
 #define CLEAN_PLAY_VOICES_LIST		3	//清除播放列表数据
+#define END_PLAY_VOICES_LIST		4	//播放完
 
 #define KEEP_RECORD_STATE			1	//保持当前录音状态
 #define UPDATE_RECORD_STATE			0	//更新当前录音状态	
+
+extern unsigned char getPlaylistVoicesSate(void);
 
 extern void putPcmDataToPlay(const void * data,int size);
 extern int getPlayVoicesQueueNums(void);

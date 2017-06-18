@@ -20,16 +20,8 @@ extern int GetScard_forPlayHuashang_Music(const void *playDir,unsigned char play
 extern void closeSystemSave_huashangData(void);
 //创建播放音乐列表
 extern void CreatePlayListMuisc(const void *data,int musicType);
-//华上教育按键按下，播放按键音
-extern void Huashang_keyDown_playkeyVoices(int state);
 
-//检查图灵语音添加权限
-extern int check_tuingAifiPermison(void);
-//发送华上离线语音识别
-extern void Huashang_SendnotOnline_xunfeiVoices(const char *filename);
-//获取华上讯飞离线语音识别结果
-extern void GetHuashang_xunfei_aifiVoices(const char *musicname,int playIndex);
-//获取华上讯飞离线语音识别失败
-extern void GetHuashang_xunfei_aifiFailed(void);
+extern void Huashang_changePlayVoicesName(void);
+
 
 #endif
