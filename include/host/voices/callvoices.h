@@ -142,6 +142,7 @@ typedef struct{
 #define PLAY_MUSIC_SDCARD			2	//播放歌曲为sdcard 存储歌曲
 
 typedef struct{
+	unsigned char wifiState;
 	unsigned char localplayname;		//当前播放本地歌曲目录
 	unsigned char netstate;				//板子连接外部网络状态
 	unsigned char enableCountStarttime;	//使能自动计数起始时间

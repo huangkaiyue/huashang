@@ -20,6 +20,18 @@
 
 SysMessage sysMes;
 //------------------------config network and set system network state---------------------------------------------------------
+static void CloseWifi(void){
+	if(sysMes.wifiState==0){
+		sysMes.wifiState=1;
+		system("ifconfig ra0 down &");
+	}
+}
+void OpenWifi(void){
+	if(sysMes.wifiState==1){
+		sysMes.wifiState=0;
+		system("ifconfig ra0 up &");
+	}
+}
 /*
 @ 设置网络状态
 @ 
@@ -941,6 +953,7 @@ void Create_WeixinSpeekEvent(unsigned int gpioState){
 	}else if(GetRecordeVoices_PthreadState() ==PLAY_WAV||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY||GetRecordeVoices_PthreadState()==START_SPEEK_VOICES){
 		return;
 	}
+	CloseWifi();
 	DEBUG_EVENT("state %d\n",gpioState);
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext){	
@@ -965,7 +978,7 @@ void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 		}else{
 			speek->Starttime=time(&t);
 			start_event_talk_message();
-			speek->freeVoiceNums=2;
+			speek->freeVoiceNums=4;
 		}
 	}else if(gpioState==VOLKEYUP){			//弹起
 		DEBUG_EVENT("state(%d)\n",gpioState);
@@ -1110,9 +1123,7 @@ static void *waitLoadMusicList(void *arg){
 #ifdef HUASHANG_JIAOYU
 	openSystemload_huashangData();
 	//Huashang_changePlayVoicesName();	//用于测试用，切换播音人
-#endif
-	sleep(10);
-	system("ifconfig ra0 down &");
+#endif	
 	return NULL;
 } 
 #endif
