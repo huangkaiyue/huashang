@@ -45,7 +45,6 @@ extern unsigned char getPlaylistVoicesSate(void);
 
 extern void putPcmDataToPlay(const void * data,int size);
 extern int getPlayVoicesQueueNums(void);
-extern void SetPlayFinnishKeepRecodeState(int state);
 
 
 #endif

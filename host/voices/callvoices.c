@@ -149,6 +149,7 @@ static void *uploadPcmPthread(void *arg){
 *****************************************/
 static void Start_uploadVoicesData(void){
 	if(RV->uploadState==START_UPLOAD){
+		printf("%s add upload voices failed \n",__func__);
 		return ;
 	}
 	RV->uploadState = START_UPLOAD;
@@ -178,6 +179,7 @@ static void Save_VoicesPackt(const char *data,int size){
 	int i;
 	if(data != NULL){
 		if((RV->len_voices+size) > (STD_RECODE_SIZE-WAV_HEAD)){//大于5秒的音频丢掉
+			printf("%s > STD_RECODE_SIZE RV->len_voices=%d\n",__func__,RV->len_voices);
 			test_Save_VoicesPackt_function_log((const char *)"STD_RECODE_SIZE is >5s",RV->len_voices);
 			goto exit1;
 		}
@@ -206,15 +208,18 @@ static void Save_VoicesPackt(const char *data,int size){
 			led_lr_oc(openled);
 #endif
 			test_Save_VoicesPackt_function_log((const char *)"start upload",GetRecordeVoices_PthreadState());
+			printf("%s Start_uploadVoicesData RV->len_voices=%d\n",__func__,RV->len_voices);
 			Start_uploadVoicesData();		//开始上传语音
 			goto exit0;
 		}
 		else if(RV->len_voices < VOICES_ERR){			//
+			printf("%s < VOICES_ERR RV->len_voices=%d\n",__func__,RV->len_voices);
 			test_Save_VoicesPackt_function_log((const char *)"< VOICES_ERR",GetRecordeVoices_PthreadState());
 			goto exit1;	//误触发
 		}
 		else{	//VOICES_ERR --->VOICES_MIN 区间的音频，认定为无效音频
 			//Create_PlaySystemEventVoices(AI_KEY_TALK_ERROR);
+			printf("%s < VOICES_MIN RV->len_voices=%d\n",__func__,RV->len_voices);
 			test_Save_VoicesPackt_function_log((const char *)"< VOICES_MIN",GetRecordeVoices_PthreadState());
 			goto exit1;
 		}

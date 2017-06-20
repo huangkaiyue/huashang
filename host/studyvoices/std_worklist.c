@@ -22,7 +22,6 @@ static WorkQueue *EventQue;
 static WorkQueue *PlayList=NULL;
 static unsigned int newEventNums=0;
 static unsigned char downState=0;
-static unsigned char keepRecodeState=0;
 static unsigned int cacheNetWorkPlaySize=0;
 static unsigned char playlistVoicesSate=0;
 static int event_lock=0;
@@ -406,9 +405,6 @@ void disabledownNetworkVoiceState(void){
 	downState=0;
 }
 #endif
-void SetPlayFinnishKeepRecodeState(int state){
-		keepRecodeState=state;
-}
 unsigned char getPlaylistVoicesSate(void){
 	return playlistVoicesSate;
 }
@@ -428,9 +424,7 @@ static void *PlayVoicesPthread(void *arg){
 						memset(play_buf+playNetwork_pos,0,I2S_PAGE_SIZE-playNetwork_pos);
 						write_pcm(play_buf);
 					}
-					if(keepRecodeState==UPDATE_RECORD_STATE){
-						pause_record_audio();
-					}
+					pause_record_audio();
 					cacheNetWorkPlaySize=0;
 					playlistVoicesSate =END_PLAY_VOICES_LIST;
 					Close_tlak_Light();
