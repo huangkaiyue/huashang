@@ -424,7 +424,7 @@ static void *PlayVoicesPthread(void *arg){
 						memset(play_buf+playNetwork_pos,0,I2S_PAGE_SIZE-playNetwork_pos);
 						write_pcm(play_buf);
 					}
-					pause_record_audio();
+					lock_pause_record_audio();
 					cacheNetWorkPlaySize=0;
 					playlistVoicesSate =END_PLAY_VOICES_LIST;
 					Close_tlak_Light();

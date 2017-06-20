@@ -509,7 +509,7 @@ static void signal_handler(int signum){
 			
 			case PLAY_PAUSE_KEY://长按播放/暂停  切换智能会话播音人
 				keyDown_AndSetGpioFor_play();
-				Huashang_changePlayVoicesName();
+				//Huashang_changePlayVoicesName();
 				break;
 			case ADDVOL_KEY:	//长按音量加
 				keydown_flashingLED();

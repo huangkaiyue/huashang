@@ -978,7 +978,7 @@ void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 		}else{
 			speek->Starttime=time(&t);
 			start_event_talk_message();
-			speek->freeVoiceNums=4;
+			speek->freeVoiceNums=5;
 		}
 	}else if(gpioState==VOLKEYUP){			//µ¯Æð
 		DEBUG_EVENT("state(%d)\n",gpioState);

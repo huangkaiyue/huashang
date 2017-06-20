@@ -124,6 +124,14 @@ void pause_record_audio(void){
 	Show_waitCtrlPicture();
 	SetRecordeVoices_PthreadState(RECODE_PAUSE);
 }
+void lock_pause_record_audio(void){
+	Show_waitCtrlPicture();
+	if(RV->recorde_live==PLAY_WAV){
+		SetRecordeVoices_PthreadState(RECODE_PAUSE);
+	}else{
+		printf("%s cannot interrupt state \n",__func__);
+	}
+}
 
 /*****************************************************
 *Â¼ÖÆ¶ÌÏûÏ¢×´Ì¬
