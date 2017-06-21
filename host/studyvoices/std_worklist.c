@@ -425,6 +425,9 @@ static void *PlayVoicesPthread(void *arg){
 						write_pcm(play_buf);
 					}
 					lock_pause_record_audio();
+#if defined(HUASHANG_JIAOYU)					
+					led_lr_oc(openled);
+#endif
 					cacheNetWorkPlaySize=0;
 					playlistVoicesSate =END_PLAY_VOICES_LIST;
 					Close_tlak_Light();
@@ -437,7 +440,10 @@ static void *PlayVoicesPthread(void *arg){
 						break;
 					}
 					if(cacheNetWorkPlaySize>12*KB){
+#if defined(HUASHANG_JIAOYU)						
 						Show_tlak_Light();
+						led_lr_oc(closeled);
+#endif						
 						usleep(10000);
 						break;
 					}

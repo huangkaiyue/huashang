@@ -211,6 +211,7 @@ void GetPlayVoicesName(char *playVoicesName,int *speek){
 		*speek =50;
 		return ;
 	}
+	hsUser->playVoicesNameNums=1;
 	switch(hsUser->playVoicesNameNums){
 		case 0:
 			snprintf(playVoicesName,8,"tuling");

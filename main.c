@@ -157,8 +157,13 @@ exit0:
 }
 //主线程添加本地到队列当中播放
 static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
+	Player_t * player =NULL;
 	Show_musicPicture();
 	if(Mad_PlayMusic((const char *)hand->data)){
+		goto exit0;
+	}
+	if(player->playListState==AUTO_PLAY_EVENT){			//内部自身产生播放事件
+		CreatePlayDefaultMusic_forPlay(player->musicname);//musicname 暂时定义采用这个结构成语变量存放播放类型
 		goto exit0;
 	}
 	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环

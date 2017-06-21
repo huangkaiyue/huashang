@@ -5,6 +5,7 @@
 #include "host/voices/WavAmrCon.h"
 #include "host/voices/resexampleRate.h"
 #include "host/studyvoices/std_worklist.h"
+#include "gpio_7620.h"
 #include "config.h"
 #include "log.h"
 
@@ -81,7 +82,10 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 		return -1;
 	}
 	fseek(fp,WAV_HEAD,SEEK_SET);		//跳过wav头部	
-	Show_tlak_Light();
+#if defined(HUASHANG_JIAOYU)	
+	Show_tlak_Light();	
+	led_lr_oc(closeled);
+#endif
 	while(1){
 		if(playMode==PLAY_IS_INTERRUPT&&playEventNums!=GetCurrentEventNums()){
 			CleanI2S_PlayCachedata();//清理
@@ -111,7 +115,10 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 	}
 	fclose(fp);
 	memset(play_buf,0,I2S_PAGE_SIZE);
+#if defined(HUASHANG_JIAOYU)	
 	Close_tlak_Light();
+	led_lr_oc(openled);
+#endif	
 	return ret;
 }
 

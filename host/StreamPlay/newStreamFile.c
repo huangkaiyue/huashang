@@ -8,6 +8,7 @@
 #include "curldown.h"
 #include "../sdcard/musicList.h"
 #include "host/voices/callvoices.h"
+#include "../voices/gpio_7620.h"
 #include "log.h"
 
 Mp3Stream *st=NULL;
@@ -502,6 +503,9 @@ static void playLocalMp3(const char *mp3file){
 }
 //播放歌曲接口  play: 播放信息结构体
 int Mad_PlayMusic(Player_t *play){
+#if defined(HUASHANG_JIAOYU)
+	led_lr_oc(closeled);
+#endif
 	char domain[64] = {0};
 	char filename[128]={0};
 	int port = 80;
@@ -509,6 +513,7 @@ int Mad_PlayMusic(Player_t *play){
 		playLocalMp3(play->playfilename);
 	}else{
 		if(strstr(play->playfilename,"http")==NULL){
+			led_lr_oc(openled);
 			return -1;
 		}
 		parse_url(play->playfilename, domain, &port, filename);
@@ -524,6 +529,9 @@ int Mad_PlayMusic(Player_t *play){
 			NetStreamDownFilePlay(play);
 		}
 	}
+#if defined(HUASHANG_JIAOYU)	
+	led_lr_oc(openled);
+#endif
 	return 0;
 }
 #ifdef PALY_URL_SD
