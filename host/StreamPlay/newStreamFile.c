@@ -509,6 +509,7 @@ int Mad_PlayMusic(Player_t *play){
 	char domain[64] = {0};
 	char filename[128]={0};
 	int port = 80;
+	printf("%s: play->playfilename =%s\n",__func__,play->playfilename);
 	if(!access(play->playfilename,F_OK)){
 		playLocalMp3(play->playfilename);
 	}else{

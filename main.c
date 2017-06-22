@@ -157,7 +157,7 @@ exit0:
 }
 //主线程添加本地到队列当中播放
 static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
-	Player_t * player =NULL;
+	Player_t * player =hand->data;
 	Show_musicPicture();
 	if(Mad_PlayMusic((const char *)hand->data)){
 		goto exit0;
