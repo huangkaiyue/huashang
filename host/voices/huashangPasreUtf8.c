@@ -268,13 +268,15 @@ static void Parse_NumberMenu(const char *txt,int *playIndex){
 	PASRE_UTF8_LOG("user_point.playIndexNum = %d \n",user_point.playIndexNum);
 
 }
+#define PLAY_CMD	"播放"
 //---------------------------------------------------------------------- end 解析数字篇
 int Huashang_Checkutf8(const char *txt,char *playName,int *getPlayIndex){
 	int playIndex=0;
 #ifdef MAIN_TEST	
-	if(strstr(txt,"播放"))
+	if(strstr(txt,PLAY_CMD))
 #endif		
 	{
+#if 0	
 		PASRE_UTF8_LOG("check play cmd  \n");
 		if(strstr(txt,"第")||strstr(txt,"的")||strstr(txt,"首")||strstr(txt,"手")){	//直接进入数字篇
 			Parse_NumberMenu(txt,&playIndex);
@@ -283,6 +285,14 @@ int Huashang_Checkutf8(const char *txt,char *playName,int *getPlayIndex){
 		}else{	//其他项，采用二分查找
 			Parse_playCmdMenu(txt,&playIndex);
 		}
+#else
+		int playNums = atoi(txt+strlen(PLAY_CMD));
+		if(playNums){
+			playIndex = playNums;
+		}else{
+			Parse_playCmdMenu(txt,&playIndex);
+		}
+#endif
 	}
 		
 	printf("%s: playIndex = %d\n",__func__,playIndex);

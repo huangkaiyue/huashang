@@ -58,23 +58,21 @@ exit0:
 int GetScard_forPlayHuashang_Music(const void *playDir,unsigned char playMode,unsigned char EventSource){
 	int ret=-1;
 	char playBuf[128]={0};
+	if(hsUser==NULL){
+		return ret;
+	}
 	if(access(TF_SYS_PATH, F_OK)){	//¼ì²étf¿¨
 		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE)
 			Create_PlaySystemEventVoices(TF_ERROT_PLAY);
 		return ret;
 	}
 	if(playMode==PLAY_NEXT){
-		if(hsUser!=NULL){
-			if(++hsUser->PlayHuashang_MusicIndex>HUASHANG_MUSIC_TOTAL_NUM-1){
-				hsUser->PlayHuashang_MusicIndex=0;
-			}
+		if(++hsUser->PlayHuashang_MusicIndex>HUASHANG_MUSIC_TOTAL_NUM-1){
+			hsUser->PlayHuashang_MusicIndex=0;
 		}
-		
 	}else if(playMode==PLAY_PREV){
-		if(hsUser!=NULL){
-			if(--hsUser->PlayHuashang_MusicIndex<=0){
-				hsUser->PlayHuashang_MusicIndex=HUASHANG_MUSIC_TOTAL_NUM-1;
-			}
+		if(--hsUser->PlayHuashang_MusicIndex<=0){
+			hsUser->PlayHuashang_MusicIndex=HUASHANG_MUSIC_TOTAL_NUM-1;
 		}
 	}else if(playMode==PLAY_RANDOM){
 	}	
@@ -124,8 +122,8 @@ int huashang_CreatePlayDefaultMusic_forPlay(char *getBuf,const char* musicType){
 	else
 		randMax=(float)(max-min-1);
 	int randNums=(1+(int)(randMax*rand()/(RAND_MAX+1.0)));
-	min +=randMax;
-	snprintf(getBuf,128,"%s%s/%d.mp3",TF_SYS_PATH,HUASHANG_GUOXUE_DIR,randNums);
+	min +=randNums;
+	snprintf(getBuf,128,"%s%s/%d.mp3",TF_SYS_PATH,HUASHANG_GUOXUE_DIR,min);
 	if(access(getBuf, F_OK)){
 		ret=-1;
 		goto exit1;

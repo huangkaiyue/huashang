@@ -1,7 +1,7 @@
 #ifndef _HUASHANGMUSIC_H
 #define _HUASHANGMUSIC_H
 
-#define	HUASHANG_MUSIC_TOTAL_NUM 	3819
+#define	HUASHANG_MUSIC_TOTAL_NUM 	3838
 
 #define UNKOWN_AIFI_STATE	0	//初始状态
 #define	TULING_AIFI_OK		1	//图灵请求成功状态

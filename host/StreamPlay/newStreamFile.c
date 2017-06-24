@@ -446,17 +446,15 @@ static void InputlocalStream(const void * inputMsg,int inputSize){
 		float getPercent=0;
 		progressBar(st->playSize,st->streamLen,&getPercent);
 #endif	
-#if 0
-		st->player.progress = (st->playSize*100)/st->streamLen;
-		st->ack_playCtr(UDP_ACK,&st->player,st->player.playState);	//回应播放进度
-#else
 		ack_progress();
-#endif
 	}
 	else{
 		DEBUG_STREAM(" InputNetStream : streamLen == %d \n ");
 	}
 #endif
+	if(st->GetWm8960Rate==8000){
+		DecodeExit();
+	}
 	fread(inputMsg,1,inputSize,st->rfp);
 	st->playSize+=inputSize;
 }
@@ -560,7 +558,7 @@ void getStreamState(void *data,void StreamState(void *data,Player_t *player)){
 	st->player.vol = st->GetVol();
 	StreamState(data,&st->player);
 }
-void initStream(void ack_playCtr(int nettype,Player_t *player,unsigned char playState),void WritePcmData(char *data,int size),void SetI2SRate(int rate,const char *function),int GetVol(void),void GetWm8960Rate(void)){
+void initStream(void ack_playCtr(int nettype,Player_t *player,unsigned char playState),void WritePcmData(char *data,int size),void SetI2SRate(int rate,const char *function),int GetVol(void),int GetWm8960Rate(void)){
 	st = calloc(1,MP3STEAM_SIZE);
 	if(st==NULL){
 		perror("calloc st memory failed");

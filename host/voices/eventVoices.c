@@ -385,6 +385,7 @@ void TulingKeyDownSingal(void){
 	else if (GetRecordeVoices_PthreadState() == PLAY_MP3_MUSIC){//处于播放歌曲状态	
 		Create_CleanUrlEvent();
 		Write_Speekkeylog((const char *)"PLAY_MP3_MUSIC",GetRecordeVoices_PthreadState());
+		Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
 	}else{		
 		if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
 			return;

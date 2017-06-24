@@ -102,7 +102,7 @@ static void loadLocalServer(int argc,char *argv[]){
 	mkdir(CACHE_WAV_PATH,777);
 }
 //自动播放下一首歌曲 musicType 播放歌曲类型(用来区分目录标识)
-static void autoPlayNextMusic(unsigned char musicType){
+static void autoPlayNextMusic(HandlerText_t *hand,unsigned char musicType){
 	switch(musicType){
 #if defined(DATOU_JIANG)		
 		case mp3:
@@ -127,8 +127,11 @@ static void autoPlayNextMusic(unsigned char musicType){
 			break;
 #endif			
 		default:
+			if(hand->EventNums==GetCurrentEventNums()){
+				Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
+			}
 			sysMes.localplayname=0;
-		break;
+			break;
 	}	
 }
 //主线程添加网络歌曲到队列当中播放
@@ -170,7 +173,7 @@ static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_SDCARD);
 	}else{											//自动播放
 		if(getEventNum()==0&&getWorkMsgNum(DownEvent)==0){
-			autoPlayNextMusic(sysMes.localplayname);
+			autoPlayNextMusic(hand,sysMes.localplayname);
 		}	
 	}
 exit0:	
