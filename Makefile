@@ -52,6 +52,7 @@ all +=host/ap_sta.o
 
 all +=host/StreamPlay/newStreamFile.o
 all +=host/StreamPlay/downMp3.o
+all +=host/StreamPlay/DemoMp3head.o
 
 export CC
 $(TAR): $(all)

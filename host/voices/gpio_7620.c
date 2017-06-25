@@ -442,7 +442,7 @@ static void signal_handler(int signum){
 #ifdef TEST_PLAY_KEY
 //				keydown_flashingLED();
 //				GpioKey_SetStreamPlayState();
-				ResetHostDevicesFactory();
+				__AddLocalMp3ForPaly((const char *)"/media/mmcblk0p1/huashangedu/3838.mp3",EXTERN_PLAY_EVENT);
 				break;
 #endif
 				ShortKeyDown_ForPlayWifiMessage();

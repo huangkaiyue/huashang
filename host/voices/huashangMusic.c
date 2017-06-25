@@ -67,12 +67,12 @@ int GetScard_forPlayHuashang_Music(const void *playDir,unsigned char playMode,un
 		return ret;
 	}
 	if(playMode==PLAY_NEXT){
-		if(++hsUser->PlayHuashang_MusicIndex>HUASHANG_MUSIC_TOTAL_NUM-1){
+		if(++hsUser->PlayHuashang_MusicIndex>HUASHANG_MUSIC_TOTAL_NUM){
 			hsUser->PlayHuashang_MusicIndex=0;
 		}
 	}else if(playMode==PLAY_PREV){
 		if(--hsUser->PlayHuashang_MusicIndex<=0){
-			hsUser->PlayHuashang_MusicIndex=HUASHANG_MUSIC_TOTAL_NUM-1;
+			hsUser->PlayHuashang_MusicIndex=HUASHANG_MUSIC_TOTAL_NUM;
 		}
 	}else if(playMode==PLAY_RANDOM){
 	}	

@@ -1,6 +1,6 @@
 #include "comshead.h"
 #include "base/pool.h"
-#include "base/head_mp3.h"
+
 #include "base/fileMes.h"
 #include "StreamFile.h"
 #include "mplay.h"
@@ -9,6 +9,7 @@
 #include "../sdcard/musicList.h"
 #include "host/voices/callvoices.h"
 #include "../voices/gpio_7620.h"
+#include "DemoMp3head.h"
 #include "log.h"
 
 Mp3Stream *st=NULL;
@@ -204,7 +205,12 @@ static void *NetplayStreamMusic(void *arg){
 			return NULL;
 		}
 	}
-	get_mp3head(st->rfp,&st->rate,&st->channel);
+	Mp3Demo_t mp3;
+	memset(&mp3,0,sizeof(Mp3Demo_t));
+	if(DemoGetMp3head(st->rfp,&mp3)){
+		mp3.rate=44100;
+	}
+	st->rate=mp3.rate;
 #ifdef SAFE_READ_WRITER
 	fclose(st->rfp);
 	st->rfp=NULL;
@@ -474,7 +480,12 @@ static void playLocalMp3(const char *mp3file){
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	
 	printf("=============ack_playCtr=============\n"); //---bug,²»ÄÜÉ¾
-	get_mp3head(st->rfp,&st->rate,&st->channel);
+	Mp3Demo_t mp3;
+	memset(&mp3,0,sizeof(Mp3Demo_t));
+	if(DemoGetMp3head(st->rfp,&mp3)){
+		mp3.rate=44100;
+	}
+	st->rate= mp3.rate;
 	fseek(st->rfp,0,SEEK_END);
 	st->streamLen = ftell(st->rfp);
 	fseek(st->rfp,0,SEEK_SET);

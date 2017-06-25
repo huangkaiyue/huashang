@@ -273,7 +273,7 @@ int SetWm8960Rate(unsigned short rate,const char *function){
 		WriteRateTextLog(function,"equal rate",rate);
 		return 0;
 	}
-	WriteRateTextLog(function,"Set Rate",I2S.tx_rate);
+	WriteRateTextLog(function,"Set Rate",rate);
 	Mute_voices(MUTE);
 	set_rx_state(I2S.i2s_fd,0);		//先关闭发送和接收，切换采样率
 	set_tx_state(I2S.i2s_fd,0);

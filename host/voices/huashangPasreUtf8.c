@@ -11,7 +11,7 @@
 
 #define HUASHANG_MUSIC_FILE	"home/huashang.bnf"
 #define HUASHANG_GUOXUE_DIR		"huashangedu"
-#define MAX_PLAY_NUMBER			3819
+#define MAX_PLAY_NUMBER			3838
 
 //#define MAIN_TEST
 //#define PASRE_UTF8_LOG(fmt, args...) printf("%s: " fmt,__func__, ## args)
