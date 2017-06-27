@@ -427,10 +427,10 @@ static void *PlayVoicesPthread(void *arg){
 					lock_pause_record_audio();
 #if defined(HUASHANG_JIAOYU)					
 					led_lr_oc(openled);
+					Close_tlak_Light();
 #endif
 					cacheNetWorkPlaySize=0;
 					playlistVoicesSate =END_PLAY_VOICES_LIST;
-					Close_tlak_Light();
 				}
 				getMsgQueue(PlayList,&data,&pcmSize);
 				playlistVoicesSate=START_PLAY_VOICES_LIST;

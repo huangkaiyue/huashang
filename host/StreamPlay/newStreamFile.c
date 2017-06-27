@@ -523,7 +523,9 @@ int Mad_PlayMusic(Player_t *play){
 		playLocalMp3(play->playfilename);
 	}else{
 		if(strstr(play->playfilename,"http")==NULL){
+#if defined(HUASHANG_JIAOYU)			
 			led_lr_oc(openled);
+#endif
 			return -1;
 		}
 		parse_url(play->playfilename, domain, &port, filename);

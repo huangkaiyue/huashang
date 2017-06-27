@@ -605,7 +605,7 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 	struct tm *p;
 	time(&timep);
 	p=localtime(&timep);
-	if(p->tm_hour+8>21){
+	if(p->tm_hour+8>=21){
 		ret =PlaySystemAmrVoices(TIMEOUT_sleep,playEventNums);
 		snprintf(musictype,12,"%s","sleep");	//²¥·ÅÒôÀÖÄÚÈİ
 		goto exit1;
