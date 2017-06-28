@@ -22,6 +22,7 @@
 #define RECODE_STOP 			12  //录音停止,退出整个录音线程
 #define RECODE_EXIT_FINNISH		13	//录音正常退出
 #define SOUND_MIX_PLAY			14	//混音播放
+#define HUASHANG_SLEEP			15	//华上睡眠状态
 
 //#define DBG_VOICES
 #ifdef DBG_VOICES
@@ -100,6 +101,8 @@
 #define TULING_WAIT_VOICES			48	//播放图灵系统等待音
 #define CONTINUE_PLAY_MUSIC_VOICES	49	//请继续点播吧
 
+#define HUASHANG_SLEEP_VOICES 		50	//华上睡眠提示音
+
 //---------------------------------------------------------
 #define VOICES_MIN	13200	//是否是大于0.5秒的音频，采样率16000、量化位16位
 #define VOICES_ERR	2000	//误触发
@@ -124,6 +127,7 @@ typedef struct{
 	unsigned char uploadState;
 #if defined(HUASHANG_JIAOYU)
 	unsigned char freeVoicesNum;
+	unsigned char WaitSleep;
 #endif	
 	int len_voices;
 	unsigned int CurrentuploadEventNums;

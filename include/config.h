@@ -4,9 +4,9 @@
 //#define WORK_INTER
 
 //#define DATOU_JIANG		//蒋总
-#define QITUTU_SHI		//石总
+//#define QITUTU_SHI		//石总
 //#define TANGTANG_LUO		//罗总
-//#define HUASHANG_JIAOYU
+#define HUASHANG_JIAOYU
 //----------------------功能类-----------------------------------
 
 #define CLOCESYSTEM				//超时退出

@@ -485,9 +485,14 @@ static void CreateCloseSystemLockFile(void){
 void Create_PlaySystemEventVoices(int sys_voices){
 	if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){
 		Create_CleanUrlEvent();
+		usleep(3000);
 	}else if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){
 		return;
 	}
+	char addsys_voices[128]={0};
+	sprintf(addsys_voices,"Create_PlaySystemEventVoices%d",sys_voices);
+	printf("addsys_voices =%s\n",addsys_voices);
+	Write_huashangTextLog(addsys_voices);
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext){
 		handtext->EventNums =updateCurrentEventNums();
@@ -495,7 +500,6 @@ void Create_PlaySystemEventVoices(int sys_voices){
 		handtext->event =SYS_VOICES_EVENT;
 		AddworkEvent(handtext,sizeof(HandlerText_t));
 	}	
-	
 }
 //添加播放过渡音、关机音等重要声音
 void Create_PlayImportVoices(int sys_voices){
@@ -577,10 +581,12 @@ void CreatePlayDefaultMusic_forPlay(const char* musicType){
 	if(player==NULL){
 		perror("calloc error !!!");
 		return;
-	}
-#if defined(HUASHANG_JIAOYU)					
+	}	
+	player->musicTime=100;
+	player->playListState=AUTO_PLAY_EVENT;
+	snprintf(player->musicname,64,"%s",musicType);//musicname 暂时定义采用这个结构成语变量存放播放类型
+#if defined(HUASHANG_JIAOYU)		
 	if(huashang_CreatePlayDefaultMusic_forPlay(player->playfilename,musicType)){
-		free(player);
 		return ;
 	}
 #else
@@ -589,9 +595,6 @@ void CreatePlayDefaultMusic_forPlay(const char* musicType){
 		return ;
 	}
 #endif
-	player->musicTime=100;
-	player->playListState=AUTO_PLAY_EVENT;
-	snprintf(player->musicname,64,"%s",musicType);//musicname 暂时定义采用这个结构成语变量存放播放类型
 	__AddNetWork_UrlForPaly(player);
 }
 //客户后台定制推送的内容
@@ -613,7 +616,7 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 	if(PlaySystemAmrVoices(SPEEK_WARNING,playEventNums)){
 		goto exit0;	//异常打断退出
 	}
-	int randNums=(1+(int)(2.0*rand()/(RAND_MAX+1.0)));
+	int randNums=(1+(int)(3.0*rand()/(RAND_MAX+1.0)));
 	start_event_play_wav();
 	switch(randNums){
 		case 1:
@@ -833,6 +836,13 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 		case CONTINUE_PLAY_MUSIC_VOICES:
 			PlaySystemAmrVoices(PLAY_CONTINUE_MUSIC,playEventNums);
 			break;
+#ifdef HUASHANG_JIAOYU				
+		case HUASHANG_SLEEP_VOICES:
+			if(!PlaySystemAmrVoices(END_SYS_VOICES,playEventNums)){
+				SleepRecoder_Phthread();
+			}		
+			break;
+#endif				
 		default:
 			pause_record_audio();
 			break;

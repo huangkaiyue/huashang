@@ -133,6 +133,24 @@ void lock_pause_record_audio(void){
 	}
 }
 
+
+void SleepRecoder_Phthread(void){
+	SetRecordeVoices_PthreadState(HUASHANG_SLEEP);
+}
+int Huashang_SleepSystem(void){
+	if(++RV->WaitSleep==4){
+		SleepRecoder_Phthread();
+		led_lr_oc(openled);
+		Close_tlak_Light();
+		Create_PlayImportVoices(HUASHANG_SLEEP_VOICES);
+		return -1;
+	}
+	return 0;
+}
+void WaitSleepSystem(void){
+	RV->WaitSleep =0;
+}
+
 /*****************************************************
 *录制短消息状态
 ******************************************************/
@@ -275,15 +293,13 @@ static void *PthreadRecordVoices(void *arg){
 	starttime=time(&t);
 	endtime=time(&t);
 	while(GetRecordeVoices_PthreadState()!=RECODE_STOP){
-#ifdef CLOCESYSTEM
 		endtime=time(&t);
+		//printf("%s: time=%d  =GetRecordeVoices_PthreadState =%d\n",__func__,endtime-starttime,GetRecordeVoices_PthreadState());
 		if((endtime-starttime)>ERRORTIME){	//开机时候，没有获取网络时间，导致时间差过大
 			starttime=time(&t);
 		}else{
 			if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
-				
 				if((endtime-starttime)==LONG_TIME_NOT_USER_MUTE_VOICES){	//10s 之后，不用关闭音频
-					printf("%s: MUTE wm8960====%d===========\n",__func__,endtime-starttime);
 					Mute_voices(MUTE);
 				}
 				if((endtime-starttime)>SYSTEMOUTSIGN){		//第一次长时间不触发事件，则关闭
@@ -292,13 +308,12 @@ static void *PthreadRecordVoices(void *arg){
 			}else{
 				starttime=time(&t);
 			}
-#if 1		
+#ifdef QITUTU_SHI
 			if(sysMes.enableCountStarttime==ENABLE_auto_count_time&&(endtime-sysMes.auto_count_starttime)>TIME_OUT_NOT_USER_FOR_CLOSE){
 				SetRecordeVoices_PthreadState(PLAY_OUT);
 			}
 #endif			
 		}
-#endif
 		switch(GetRecordeVoices_PthreadState()){
 			case START_SPEEK_VOICES:	//会话录音
 				pBuf = I2sGetvoicesData();
@@ -312,10 +327,16 @@ static void *PthreadRecordVoices(void *arg){
 				SaveRecorderVoices((const char *)pBuf,I2S_PAGE_SIZE);
 				usleep(5000);			//不会有快进的感觉
 				break;
-#ifdef CLOCESYSTEM
+
 			case TIME_SIGN:				//提示休息很久了
 				systemTimeLog("time out for play music");
-				Create_PlaySystemEventVoices(MIN_10_NOT_USER_WARN);
+#ifdef HUASHANG_JIAOYU
+				if(!Huashang_SleepSystem())
+#endif					
+				{
+					Create_PlaySystemEventVoices(MIN_10_NOT_USER_WARN);
+				}
+				
 				sleep(1);
 				break;
 				
@@ -327,8 +348,11 @@ static void *PthreadRecordVoices(void *arg){
 				sysMes.auto_count_starttime=time(&t);
 				SetRecordeVoices_PthreadState(PLAY_MP3_MUSIC);
 				break;
-#endif
 			case PLAY_DING_VOICES:
+				usleep(50000);
+				break;
+			case HUASHANG_SLEEP:		//华上睡眠状态
+				I2sGetvoicesData();		//默认状态清除音频
 				usleep(50000);
 				break;
 			default:

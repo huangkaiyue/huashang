@@ -102,8 +102,14 @@ static int playTulingQtts(const char *playUrl,const char *playText,unsigned int 
 	if(!strcmp(playVoicesName,"tuling")){	//当前播音人采用图灵的
 		ret =AddDownEvent((const char *)handtext,TULING_URL_MAIN);
 	}else{
+		char *huashangPlayText=(char *)calloc(1,strlen(playText)+8);
+		if(huashangPlayText==NULL){
+			return ret;
+		}
+		sprintf(huashangPlayText,"%s%s",playText," ,");
 		enabledownNetworkVoiceState();
 		PlayQttsText(playText,QTTS_UTF8,playVoicesName,playEventNums,playSpeed);	
+		free(huashangPlayText);
 		if(playLocalVoicesIndex==TULING_TEXT_MUSIC){
 			//设置播放线程不要切换录音线程状态，不然会导致，添加歌曲的时候，后面的歌曲不能播放
 			while(1){
@@ -149,6 +155,7 @@ static int parseJson_string(HandlerText_t *handText){
 		//暂时定义，用于临时存放校验值，每请求一次服务器都返回token
 		updateTokenValue((const char *) pSub->valuestring);
 	}
+#ifndef HUASHANG_JIAOYU
     pSub = cJSON_GetObjectItem(pJson, "code");
    	if(NULL == pSub){
 		DEBUG_STD_MSG("get code failed\n");
@@ -176,6 +183,7 @@ static int parseJson_string(HandlerText_t *handText){
 				goto exit1;
 			}
 	}
+#endif	
 	pSub = cJSON_GetObjectItem(pJson, "info");		//返回结果
     if(NULL == pSub){
 		DEBUG_STD_MSG("get info failed\n");
@@ -280,6 +288,9 @@ int AddworkEvent(HandlerText_t *eventMsg,int msgSize){
 	WriteEventlockLog("event_lock add ok\n",event_lock);
 	return putMsgQueue(EventQue,(const char *)eventMsg,msgSize);
 }
+int GetEvent_lock(void){
+	return event_lock;
+}
 /*
 @ 
 @ 获取队列当中事件数
@@ -323,7 +334,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			
 		case SET_RATE_EVENT:		//URL清理事件
 			event_lock=1;			//受保护状态事件
-			WriteEventlockLog("eventlock_start\n",event_lock);
+			//WriteEventlockLog("eventlock_start\n",event_lock);
 			SetMainQueueLock(MAIN_QUEUE_LOCK);
 			NetStreamExitFile();
 			SetWm8960Rate(RECODE_RATE,(const char *)"HandleEventMessage SET_RATE_EVENT");

@@ -139,20 +139,36 @@ static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 	Player_t *play =(Player_t *)hand->data;
 	Show_musicPicture();
 	Mad_PlayMusic(play);
+#ifdef HUASHANG_JIAOYU
+	int timeout=0;
+	if(hand->EventNums==GetCurrentEventNums()){
+		Create_CleanUrlEvent();
+		while(1){
+			usleep(100000);
+			if(hand->EventNums!=GetCurrentEventNums()){		
+				goto exit1;
+			}
+			if(GetEvent_lock()==0){
+				Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
+				break;
+			}
+			if(++timeout>=23){
+				break;
+			}
+			continue;
+		}
+		goto exit1;
+	}
+//	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环 hand->data 添加到队列，不能释放
+//		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_NETWORK);
+//		goto exit0;
+//	}
+#else
 	if(play->playListState==AUTO_PLAY_EVENT){			//内部自身产生播放事件
 		CreatePlayDefaultMusic_forPlay(play->musicname);//musicname 暂时定义采用这个结构成语变量存放播放类型
 		goto exit1;
-	}else{
-		if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环 hand->data 添加到队列，不能释放
-			CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_NETWORK);
-			goto exit0;
-		}
-//#ifdef HUASHANG_JIAOYU
-		if(hand->EventNums==GetCurrentEventNums()){
-			Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
-		}
-//#endif
 	}
+#endif
 exit1:
 	free((void *)hand->data);
 exit0:
@@ -165,10 +181,7 @@ static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 	if(Mad_PlayMusic((const char *)hand->data)){
 		goto exit0;
 	}
-	if(player->playListState==AUTO_PLAY_EVENT){			//内部自身产生播放事件
-		CreatePlayDefaultMusic_forPlay(player->musicname);//musicname 暂时定义采用这个结构成语变量存放播放类型
-		goto exit0;
-	}
+	Write_huashangTextLog("Main_Thread_AddPlayLocalSdcard_Music");
 	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
 		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_SDCARD);
 	}else{											//自动播放
@@ -187,7 +200,6 @@ static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
 		goto exit0;
 	}
 	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic startplay");
-	start_event_play_Mp3music();
 	Show_musicPicture();
 	Mad_PlayMusic((Player_t *)hand->data);
 	if(hand->EventNums==GetCurrentEventNums()){

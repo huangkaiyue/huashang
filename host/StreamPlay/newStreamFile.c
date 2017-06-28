@@ -233,7 +233,6 @@ static void *NetplayStreamMusic(void *arg){
 	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//发送结束状态
 	cleanStreamData(st);	//状态切换是否加锁
 	
-	pause_record_audio();
 	DEBUG_STREAM("exit play ok \n");
 	return NULL;
 }
@@ -337,7 +336,6 @@ static int NetStreamDownFilePlay(Player_t *play){
 	WritePlayUrl_Log("play url",play->playfilename);
 	st->player.playState=MAD_NEXT;
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
-
 	demoDownFile(play->playfilename,15,NetStartDown,NetGetStreamData,NetEndDown);
 	while(st->player.playState!=MAD_EXIT){
 		printf("wait exit play state: %d \n",GetRecordeVoices_PthreadState());
@@ -353,6 +351,7 @@ static int NetStreamDownFilePlay(Player_t *play){
 			break;
 		}
 	}
+	pause_record_audio();
 	DEBUG_STREAM("NetStreamDownFilePlay end ...\n");
 	return ret;
 }
@@ -512,6 +511,7 @@ static void playLocalMp3(const char *mp3file){
 }
 //播放歌曲接口  play: 播放信息结构体
 int Mad_PlayMusic(Player_t *play){
+	start_event_play_Mp3music();
 #if defined(HUASHANG_JIAOYU)
 	led_lr_oc(closeled);
 #endif
