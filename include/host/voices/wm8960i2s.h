@@ -24,7 +24,7 @@
 
 
 
-#define VOL_UP			120				//音量上限
+#define VOL_UP			125				//音量上限
 #define VOL_DWON		100				//音量下限
 #define VOL_NUM			3				//每次增加
 #define VOL_SET_DATA(x) (x/5)+VOL_DWON	//APP设置值算法

@@ -26,7 +26,7 @@ extern void DecodeExit(void);
 extern int GetDecodeState(void);
 extern void SetDecodeSize(int fileLen);
 
-extern int DecodePlayMusic(void InputMusicStream(const void *msg,int size));
+extern int DecodePlayMusic(void GetMusicMessage(int rate,int channels),void InputMusicStream(const void *msg,int size));
 extern void InitDecode(void WritePcmData(char *data,int size));
 extern void CleanDecode(void);
 

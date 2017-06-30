@@ -29,22 +29,7 @@
 #define UART_EVENT_CLOSE_SYSTEM	1	//mcu关机事件
 #define UART_EVENT_LOW_BASTERRY 3	//电量低
 
-#if 0
-#define CONNECT_WIFI_ING_PICTURE	3	//wifi-连接过程动画
-#define CONNECT_WIFI_OK_PICTURE		4	//wifi-成功连接
-#define	BATTERY_PICTURE				5	//电池电量
-#define	WEIXIN_PICTURE				6	//消息
-#define MUSIC_SHAPE_PICTURE			7	//音乐-波形动画
-#define MUSIC_HZ_PICTURE			8	//音乐-频谱动画
-
-
-
-#define FACE_jingya_42				42	//神态表情-惊讶
-#define FACE_qinqin_51				51	//神态表情-亲亲
-#define FACE_feel_happy_54			54	//神态表情-微笑
-#define FACE_thumbs_up_63			63	//神态表情-赞
-#define FACE_eye_show_64			64	//神态表情-眨眼
-#endif
+#define CLEAR_SYSTEM_PICTURE		0	//清屏目
 #define OPEN_SYSTEM_PICTURE			1	//开机动画
 #define CLOSE_SYSTEM_PICTURE		2	//关机动画
 #define CONNECT_WIFI_OK_PICTURE		3	//wifi-成功连接

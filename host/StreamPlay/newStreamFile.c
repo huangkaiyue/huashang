@@ -63,6 +63,10 @@ static void ack_progress(void){
 		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	}
 }
+static void GetMusicMessage(int rate,int channels){
+	st->rate = rate;
+	st->SetI2SRate(rate,"NetplayStreamMusic set rate");
+}
 //实现写入音频流的接口, 需要输入的数据内存存放位置 inputMsg  inputSize 输入的数据流大小
 static void InputNetStream(const void * inputMsg,int inputSize){
 	printf("InputNetStream inputSize=%d\n",inputSize);
@@ -205,12 +209,14 @@ static void *NetplayStreamMusic(void *arg){
 			return NULL;
 		}
 	}
+#if 0	
 	Mp3Demo_t mp3;
 	memset(&mp3,0,sizeof(Mp3Demo_t));
 	if(DemoGetMp3head(st->rfp,&mp3)){
 		mp3.rate=44100;
 	}
 	st->rate=mp3.rate;
+#endif	
 #ifdef SAFE_READ_WRITER
 	fclose(st->rfp);
 	st->rfp=NULL;
@@ -222,8 +228,8 @@ static void *NetplayStreamMusic(void *arg){
 		st->rate=44100;
 
 	DEBUG_STREAM("music st->rate =%d st->channel=%d \n",st->rate,st->channel);
-	st->SetI2SRate(st->rate,"NetplayStreamMusic set rate");
-	DecodePlayMusic(InputNetStream);
+	
+	DecodePlayMusic(GetMusicMessage,InputNetStream);
 
 #ifdef PALY_URL_SD
 	if(st->cacheSize==st->streamLen){	//下载结束
@@ -500,7 +506,7 @@ static void playLocalMp3(const char *mp3file){
 	SetDecodeSize(st->streamLen);
 	DecodeStart();
 	DEBUG_STREAM("music start play \n");
-	DecodePlayMusic(InputlocalStream);
+	DecodePlayMusic(GetMusicMessage,InputlocalStream);
 	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//发送结束状态
 #ifdef PALY_URL_SD
 	//SaveLoveMp3File(mp3file);		//删除喜爱歌曲
@@ -511,6 +517,7 @@ static void playLocalMp3(const char *mp3file){
 }
 //播放歌曲接口  play: 播放信息结构体
 int Mad_PlayMusic(Player_t *play){
+	int ret =1;
 	start_event_play_Mp3music();
 #if defined(HUASHANG_JIAOYU)
 	led_lr_oc(closeled);
@@ -522,29 +529,21 @@ int Mad_PlayMusic(Player_t *play){
 	if(!access(play->playfilename,F_OK)){
 		playLocalMp3(play->playfilename);
 	}else{
-		if(strstr(play->playfilename,"http")==NULL){
-#if defined(HUASHANG_JIAOYU)			
-			led_lr_oc(openled);
-#endif
-			return -1;
+		if(strstr(play->playfilename,"/media/mmcblk0p1/")){
+			goto exit0;
 		}
 		parse_url(play->playfilename, domain, &port, filename);
 		CopyUrlMessage(play,(Player_t *)&st->player);
-		char likebuf[256]={0};
-		snprintf(likebuf,256,"%s%s",MP3_LIKEPATH,filename);	
 		snprintf(st->mp3name,128,"%s",filename);			
-		if(!access(likebuf,F_OK)){
-			DEBUG_STREAM("find music in sdcard:%s \n",filename);
-			playLocalMp3(likebuf);
-		}else{
-			DEBUG_STREAM("network play music : %s \n",filename);
-			NetStreamDownFilePlay(play);
-		}
+		DEBUG_STREAM("network play music : %s \n",filename);
+		NetStreamDownFilePlay(play);
 	}
+	ret =0;
+exit0:	
 #if defined(HUASHANG_JIAOYU)	
 	led_lr_oc(openled);
 #endif
-	return 0;
+	return ret;
 }
 #ifdef PALY_URL_SD
 //cacheFilename :微信端下载缓存的路径  /Down/xxxxxxxxxx.mp3

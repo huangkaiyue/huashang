@@ -189,7 +189,7 @@ int WeiXin_playhuaShangMusic(int playIndex){
 			Create_PlaySystemEventVoices(TF_ERROT_PLAY);
 		return ret;
 	}
-	if(playIndex>HUASHANG_MUSIC_TOTAL_NUM-1||playIndex<0){
+	if(playIndex>HUASHANG_MUSIC_TOTAL_NUM||playIndex<0){
 		hsUser->PlayHuashang_MusicIndex=0;
 	}else{
 		hsUser->PlayHuashang_MusicIndex =playIndex;

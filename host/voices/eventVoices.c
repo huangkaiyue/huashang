@@ -665,6 +665,20 @@ void CreatePlayListMuisc(const void *data,int musicType){
 
 //--------------------------------------------------------------------------------------------------------
 
+static void *updateHuashangFacePthread(void *arg){
+	int eventNums = *(int *)arg;
+	int i=0;
+	sleep(1);
+	for(i=0;i<3;i++){
+		if(eventNums!=GetCurrentEventNums()){
+			break;
+		}
+		sleep(1);
+	}
+	if(eventNums==GetCurrentEventNums()){
+		showFacePicture(CONNECT_WIFI_OK_PICTURE);	
+	}
+}
 /*******************************************************
 函数功能: 系统音事件处理函数
 参数: sys_voices 系统音标号
@@ -727,9 +741,13 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;
 		case CONNECT_OK_PLAY:			//连接成功	
 			showFacePicture(CONNECT_WIFI_OK_PICTURE);	
+#ifdef HUASHANG_JIAOYU
+			pool_add_task(updateHuashangFacePthread,&playEventNums);
+#endif			
 			PlaySystemAmrVoices(LINK_SUCCESS,playEventNums);
 			Link_NetworkOk();			//连接成功关灯，开灯，状态设置
 			enable_gpio();
+
 			break;
 		case NOT_FIND_WIFI_PLAY:		//没有扫描到wifi
 			PlaySystemAmrVoices(NO_WIFI,playEventNums);
@@ -840,6 +858,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 		case HUASHANG_SLEEP_VOICES:
 			if(!PlaySystemAmrVoices(END_SYS_VOICES,playEventNums)){
 				SleepRecoder_Phthread();
+				showFacePicture(CLEAR_SYSTEM_PICTURE);
 			}		
 			break;
 #endif				

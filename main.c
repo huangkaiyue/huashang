@@ -143,6 +143,9 @@ static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 	int timeout=0;
 	if(hand->EventNums==GetCurrentEventNums()){
 		Create_CleanUrlEvent();
+		if(play->playListState==AUTO_PLAY_EVENT){	//华上自动推送进入显示等待1状态
+			showFacePicture(WAIT_CTRL_NUM1);
+		}
 		while(1){
 			usleep(100000);
 			if(hand->EventNums!=GetCurrentEventNums()){		

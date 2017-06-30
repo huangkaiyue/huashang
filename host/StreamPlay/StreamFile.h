@@ -13,7 +13,7 @@
 //#define SHOW_progressBar		//显示播放进度
 
 #define KB	1024
-#define CACHE_PLAY_SIZE		8*KB
+#define CACHE_PLAY_SIZE		16*KB
 #define LIST_CACHE_SIZE		4*KB
 #define BUF_TANG			16*KB
 
