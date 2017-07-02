@@ -230,7 +230,7 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 
 		printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
 		
-		if(time_ms < 750){		//before is 500  2017.6.28 22:43
+		if(time_ms < 500){		//before is 500  2017.6.28 22:43
 			if(mutiplekey->key_state == VOLKEYUP)
 			{
 				if(mutiplekey->key_number == ADDVOL_KEY){
@@ -259,7 +259,7 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 		}
 		
 
-		if(time_ms >=750){		//before is 500  2017.6.28 22:43
+		if(time_ms >=500){		//before is 500  2017.6.28 22:43
 			if(playDownVoicesFlag==0){
 				keyDown_AndSetGpioFor_play();
 				playDownVoicesFlag++;

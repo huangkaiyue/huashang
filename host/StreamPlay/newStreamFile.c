@@ -520,7 +520,7 @@ int Mad_PlayMusic(Player_t *play){
 	int ret =1;
 	start_event_play_Mp3music();
 #if defined(HUASHANG_JIAOYU)
-	led_lr_oc(closeled);
+	//led_lr_oc(closeled);
 #endif
 	char domain[64] = {0};
 	char filename[128]={0};
@@ -541,7 +541,7 @@ int Mad_PlayMusic(Player_t *play){
 	ret =0;
 exit0:	
 #if defined(HUASHANG_JIAOYU)	
-	led_lr_oc(openled);
+	//led_lr_oc(openled);
 #endif
 	return ret;
 }

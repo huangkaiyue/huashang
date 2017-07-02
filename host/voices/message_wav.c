@@ -19,7 +19,7 @@ void WritePcmData(char *data,int size){
 	I2S.play_size +=size;
 }
 //播放单声道wav格式音频数据
-static int PlayStartWavVoices(const char *playfilename){
+static int PlayStartWavVoices(const char *playfilename,int eventsNum){
 	int r_size=0,pos=0;
 	char readbuf[2]={0};
 	int ret=0;
@@ -49,7 +49,17 @@ static int PlayStartWavVoices(const char *playfilename){
 		printf("open sys failed \n");
 		return -1;
 	}
+	int playInterruptEvent =1;	//过滤第一次事件打断,直到第二次事件打断才会退出
 	while(1){
+		if(eventsNum!=0){
+			if(GetCurrentEventNums()!=eventsNum){
+				--playInterruptEvent;
+			}
+			if(playInterruptEvent==0){
+				break;
+			}
+			
+		}
 		r_size= fread(play_buf,1,I2S_PAGE_SIZE,file);
 		if(r_size==0){
 			break;
@@ -63,12 +73,13 @@ static int PlayStartWavVoices(const char *playfilename){
 	remove("out2.pcm");
 	return ret;
 }
-void PlayStartPcm(const char *filename){
+//开机播放的起始音
+void PlayStartPcm(const char *filename,int eventsNum){
 	char *outfile ="speek.wav";
 	char path[128]={0};
 	snprintf(path,128,"%s%s",sysMes.localVoicesPath,filename);
 	AmrToWav8k(path,(const char *)outfile);
-	PlayStartWavVoices(outfile);
+	PlayStartWavVoices(outfile,eventsNum);
 
 }
 //播放单声道wav格式音频数据

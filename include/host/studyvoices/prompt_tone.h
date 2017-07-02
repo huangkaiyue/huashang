@@ -94,7 +94,8 @@
 #define UPDATA_START		"qtts/updata_start_8K.amr"			//开始更新固件。
 #define UPDATA_ERROR		"qtts/updata_error_8K.amr"			//更新固件错误。
 #endif
-#define PLAY_CONTINUE_MUSIC	"qtts/please_playmusic.amr"			//请继续点播吧
+#define PLAY_CONTINUE_MUSIC			"qtts/please_playmusic.amr"	//请继续点播吧
+#define PLAY_START_HUASHANG_MUSIC	"qtts/start_10.amr"			//每晚8点半小培老师都会到你的床边给你讲好听的故事,呵呵,到时叫上妈妈一起吧！
 
 /*******************************************************************************
 零时音频文件路径

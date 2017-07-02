@@ -94,7 +94,7 @@ static int playTulingQtts(const char *playUrl,const char *playText,unsigned int 
 	handtext->EventNums = playEventNums;
 	handtext->playLocalVoicesIndex=playLocalVoicesIndex;
 	SetMainQueueLock(MAIN_QUEUE_UNLOCK);
-	Show_musicPicture();
+	showFacePicture(PLAY_MUSIC_NUM3);
 #if defined(HUASHANG_JIAOYU)	
 	char playVoicesName[12]={0};
 	int playSpeed=0;
@@ -437,8 +437,8 @@ static void *PlayVoicesPthread(void *arg){
 					}
 					lock_pause_record_audio();
 #if defined(HUASHANG_JIAOYU)					
-					led_lr_oc(openled);
 					Close_tlak_Light();
+					led_lr_oc(openled);
 #endif
 					cacheNetWorkPlaySize=0;
 					playlistVoicesSate =END_PLAY_VOICES_LIST;

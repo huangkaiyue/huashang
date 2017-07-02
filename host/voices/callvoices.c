@@ -121,11 +121,9 @@ void start_event_play_soundMix(void){
 *暂停录音状态
 *****************************************************/
 void pause_record_audio(void){
-	Show_waitCtrlPicture();
 	SetRecordeVoices_PthreadState(RECODE_PAUSE);
 }
 void lock_pause_record_audio(void){
-	Show_waitCtrlPicture();
 	if(RV->recorde_live==PLAY_WAV){
 		SetRecordeVoices_PthreadState(RECODE_PAUSE);
 	}else{
@@ -133,7 +131,7 @@ void lock_pause_record_audio(void){
 	}
 }
 
-
+#if defined(HUASHANG_JIAOYU)
 void SleepRecoder_Phthread(void){
 	SetRecordeVoices_PthreadState(HUASHANG_SLEEP);
 }
@@ -150,7 +148,7 @@ int Huashang_SleepSystem(void){
 void WaitSleepSystem(void){
 	RV->WaitSleep =0;
 }
-
+#endif
 /*****************************************************
 *录制短消息状态
 ******************************************************/
@@ -230,9 +228,6 @@ static void Save_VoicesPackt(const char *data,int size){
 	}else{
 		if(RV->len_voices > VOICES_MIN)	//大于0.5s 音频，则上传到服务器当中开始识别  13200
 		{
-#ifdef DATOU_JIANG	//在上传过程当中闪烁灯
-			led_lr_oc(openled);
-#endif
 			test_Save_VoicesPackt_function_log((const char *)"start upload",GetRecordeVoices_PthreadState());
 			printf("%s Start_uploadVoicesData RV->len_voices=%d\n",__func__,RV->len_voices);
 			Start_uploadVoicesData();		//开始上传语音
@@ -366,7 +361,11 @@ static void *PthreadRecordVoices(void *arg){
 	test_Save_VoicesPackt_function_log("recorde pthread exit",0);
 	return NULL;
 }
-
+static void *start_playHuashang(void *arg){
+	int eventsNum = updateCurrentEventNums();
+	PlayStartPcm("qtts/start_10.amr",eventsNum);
+	return NULL;
+}
 /*****************************************************
 开启录音工作线程
 *****************************************************/
@@ -379,18 +378,17 @@ void InitRecord_VoicesPthread(void){
 #if defined(HUASHANG_JIAOYU)
 	char playFile[24]={0};
 	srand((unsigned)time(NULL));
-	int i=(rand()%4)+1;
-	if(i>=4)
-		i=4;
+	int i=(rand()%5)+1;
+	if(i>=5)
+		i=5;
+	//i=5;
 	snprintf(playFile,24,"qtts/start_%d.amr",i);
 	PlayStartPcm(playFile,0);
-#else
-	//PlayImportVoices(START_SYS_VOICES,0);//开机启动音
-	PlayStartPcm(START_SYS_VOICES);
-#endif
-
-#if defined(HUASHANG_JIAOYU)
+	//pool_add_task(start_playHuashang,NULL);
 	RV->freeVoicesNum =FREE_VOICE_NUMS;
+#else
+	//PlayImportVoices(START_SYS_VOICES,0);
+	PlayStartPcm(START_SYS_VOICES,0);//开机启动音
 #endif
 
 #ifdef TEST_MIC

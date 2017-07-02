@@ -102,6 +102,7 @@
 #define CONTINUE_PLAY_MUSIC_VOICES	49	//请继续点播吧
 
 #define HUASHANG_SLEEP_VOICES 		50	//华上睡眠提示音
+#define HUASHANG_START_10_VOICES 	51	//华上开机提示语音
 
 //---------------------------------------------------------
 #define VOICES_MIN	13200	//是否是大于0.5秒的音频，采样率16000、量化位16位

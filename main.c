@@ -134,38 +134,37 @@ static void autoPlayNextMusic(HandlerText_t *hand,unsigned char musicType){
 			break;
 	}	
 }
+static void Create_playContinueMusic(HandlerText_t *hand){
+	int timeout=0;
+	Player_t *play =(Player_t *)hand->data;
+	if(hand->EventNums==GetCurrentEventNums()){
+		Create_CleanUrlEvent();
+		showFacePicture(WAIT_CTRL_NUM1);
+		if(play->playListState==AUTO_PLAY_EVENT){	//华上自动推送进入显示等待1状态
+			
+		}
+	}
+	while(1){
+		usleep(100000);
+		if(hand->EventNums!=GetCurrentEventNums()){ 	
+			break;
+		}
+		if(GetEvent_lock()==0){
+			Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
+			break;
+		}
+		if(++timeout>=23){
+			break;
+		}
+	}
+}
 //主线程添加网络歌曲到队列当中播放
 static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 	Player_t *play =(Player_t *)hand->data;
 	Show_musicPicture();
 	Mad_PlayMusic(play);
 #ifdef HUASHANG_JIAOYU
-	int timeout=0;
-	if(hand->EventNums==GetCurrentEventNums()){
-		Create_CleanUrlEvent();
-		if(play->playListState==AUTO_PLAY_EVENT){	//华上自动推送进入显示等待1状态
-			showFacePicture(WAIT_CTRL_NUM1);
-		}
-		while(1){
-			usleep(100000);
-			if(hand->EventNums!=GetCurrentEventNums()){		
-				goto exit1;
-			}
-			if(GetEvent_lock()==0){
-				Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
-				break;
-			}
-			if(++timeout>=23){
-				break;
-			}
-			continue;
-		}
-		goto exit1;
-	}
-//	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环 hand->data 添加到队列，不能释放
-//		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_NETWORK);
-//		goto exit0;
-//	}
+	Create_playContinueMusic(hand);
 #else
 	if(play->playListState==AUTO_PLAY_EVENT){			//内部自身产生播放事件
 		CreatePlayDefaultMusic_forPlay(play->musicname);//musicname 暂时定义采用这个结构成语变量存放播放类型
@@ -206,7 +205,7 @@ static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
 	Show_musicPicture();
 	Mad_PlayMusic((Player_t *)hand->data);
 	if(hand->EventNums==GetCurrentEventNums()){
-		Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
+		Create_playContinueMusic(hand);
 	}	
 	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic endplay");
 exit0:

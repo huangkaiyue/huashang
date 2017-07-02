@@ -283,7 +283,7 @@ int GetSdcardMusicNameforPlay(unsigned char MuiscMenu,const char *MusicDir, unsi
 	snprintf(filePath+len,128-len,"%s",musicName);	//完整歌曲路径
 	ret=__AddLocalMp3ForPaly((const char *)filePath,EXTERN_PLAY_EVENT);//添加歌曲到队列播放
 	if(ret==0)
-		sysMes.localplayname=CleanMtkPlatfrom76xx;
+		sysMes.localplayname=MuiscMenu;
 #endif	
 	return ret;
 }
@@ -608,6 +608,7 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 	struct tm *p;
 	time(&timep);
 	p=localtime(&timep);
+	showFacePicture(WAIT_CTRL_NUM3);
 	if(p->tm_hour+8>=21){
 		ret =PlaySystemAmrVoices(TIMEOUT_sleep,playEventNums);
 		snprintf(musictype,12,"%s","sleep");	//播放音乐内容
@@ -676,7 +677,7 @@ static void *updateHuashangFacePthread(void *arg){
 		sleep(1);
 	}
 	if(eventNums==GetCurrentEventNums()){
-		showFacePicture(CONNECT_WIFI_OK_PICTURE);	
+		showFacePicture(PLAY_MUSIC_NUM4);	
 	}
 }
 /*******************************************************
@@ -744,10 +745,13 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 #ifdef HUASHANG_JIAOYU
 			pool_add_task(updateHuashangFacePthread,&playEventNums);
 #endif			
-			PlaySystemAmrVoices(LINK_SUCCESS,playEventNums);
 			Link_NetworkOk();			//连接成功关灯，开灯，状态设置
 			enable_gpio();
-
+			if(!PlaySystemAmrVoices(LINK_SUCCESS,playEventNums)){
+#ifdef HUASHANG_JIAOYU				
+				PlaySystemAmrVoices(PLAY_START_HUASHANG_MUSIC,playEventNums);
+#endif
+			}
 			break;
 		case NOT_FIND_WIFI_PLAY:		//没有扫描到wifi
 			PlaySystemAmrVoices(NO_WIFI,playEventNums);
@@ -856,10 +860,14 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;
 #ifdef HUASHANG_JIAOYU				
 		case HUASHANG_SLEEP_VOICES:
+			showFacePicture(WAIT_CTRL_NUM4);
 			if(!PlaySystemAmrVoices(END_SYS_VOICES,playEventNums)){
 				SleepRecoder_Phthread();
 				showFacePicture(CLEAR_SYSTEM_PICTURE);
 			}		
+			break;
+		case HUASHANG_START_10_VOICES:
+			PlaySystemAmrVoices(PLAY_START_HUASHANG_MUSIC,playEventNums);
 			break;
 #endif				
 		default:
@@ -1009,7 +1017,8 @@ void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 			speek->Starttime=time(&t);
 			start_event_talk_message();
 			speek->freeVoiceNums=5;
-		}
+		}	
+		showFacePicture(WAIT_CTRL_NUM2);
 	}else if(gpioState==VOLKEYUP){			//弹起
 		DEBUG_EVENT("state(%d)\n",gpioState);
 		start_speek_wait();
