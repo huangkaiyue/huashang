@@ -131,16 +131,22 @@ void lock_pause_record_audio(void){
 	}
 }
 
-#if defined(HUASHANG_JIAOYU)
+
 void SleepRecoder_Phthread(void){
 	SetRecordeVoices_PthreadState(HUASHANG_SLEEP);
 }
-int Huashang_SleepSystem(void){
+int SleepSystem(void){
 	if(++RV->WaitSleep==4){
+		printf("-----------------------\n close system --------------------\n");
+		systemTimeLog("close system");
 		SleepRecoder_Phthread();
+#if defined(HUASHANG_JIAOYU)		
 		led_lr_oc(openled);
 		Close_tlak_Light();
 		Create_PlayImportVoices(HUASHANG_SLEEP_VOICES);
+#else
+		SetMucClose_Time(1);	//设置一分钟后关机
+#endif
 		return -1;
 	}
 	return 0;
@@ -148,7 +154,7 @@ int Huashang_SleepSystem(void){
 void WaitSleepSystem(void){
 	RV->WaitSleep =0;
 }
-#endif
+
 /*****************************************************
 *录制短消息状态
 ******************************************************/
@@ -302,12 +308,7 @@ static void *PthreadRecordVoices(void *arg){
 				}
 			}else{
 				starttime=time(&t);
-			}
-#ifdef QITUTU_SHI
-			if(sysMes.enableCountStarttime==ENABLE_auto_count_time&&(endtime-sysMes.auto_count_starttime)>TIME_OUT_NOT_USER_FOR_CLOSE){
-				SetRecordeVoices_PthreadState(PLAY_OUT);
-			}
-#endif			
+			}		
 		}
 		switch(GetRecordeVoices_PthreadState()){
 			case START_SPEEK_VOICES:	//会话录音
@@ -325,23 +326,10 @@ static void *PthreadRecordVoices(void *arg){
 
 			case TIME_SIGN:				//提示休息很久了
 				systemTimeLog("time out for play music");
-#ifdef HUASHANG_JIAOYU
-				if(!Huashang_SleepSystem())
-#endif					
-				{
+				if(!SleepSystem())	{
 					Create_PlaySystemEventVoices(MIN_10_NOT_USER_WARN);
 				}
-				
 				sleep(1);
-				break;
-				
-			case PLAY_OUT:				//播放超时退出
-				printf("-----------------------\n close system --------------------\n");
-				systemTimeLog("close system");
-				SetMucClose_Time(1);	//设置一分钟后关机
-				sysMes.enableCountStarttime=DISABLE_count_time;
-				sysMes.auto_count_starttime=time(&t);
-				SetRecordeVoices_PthreadState(PLAY_MP3_MUSIC);
 				break;
 			case PLAY_DING_VOICES:
 				usleep(50000);

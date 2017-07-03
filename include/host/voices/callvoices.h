@@ -16,13 +16,12 @@
 #define END_SPEEK_VOICES		5	//结束录音
 #define PLAY_MP3_MUSIC			6	//播放音乐数据
 #define TIME_SIGN				8	//长时间无事件
-#define PLAY_OUT				9	//关闭系统
-#define SPEEK_WAIT				10	//对讲事件
-#define PLAY_DING_VOICES		11	//播放过渡音
-#define RECODE_STOP 			12  //录音停止,退出整个录音线程
-#define RECODE_EXIT_FINNISH		13	//录音正常退出
-#define SOUND_MIX_PLAY			14	//混音播放
-#define HUASHANG_SLEEP			15	//华上睡眠状态
+#define SPEEK_WAIT				9	//对讲事件
+#define PLAY_DING_VOICES		10	//播放过渡音
+#define RECODE_STOP 			11  //录音停止,退出整个录音线程
+#define RECODE_EXIT_FINNISH		12	//录音正常退出
+#define SOUND_MIX_PLAY			13	//混音播放
+#define HUASHANG_SLEEP			14	//华上睡眠状态
 
 //#define DBG_VOICES
 #ifdef DBG_VOICES
@@ -114,9 +113,6 @@
 #define TIME_OUT_NOT_USER_FOR_CLOSE		6*MIN	//8分钟不用，就自动关机
 #define ERRORTIME						30*24*60*MIN
 
-#define ENABLE_auto_count_time			1		//使能自动计时时间，8分钟自动关机
-#define DISABLE_count_time				0
-
 #define LONG_TIME_NOT_USER_MUTE_VOICES	15		//15s不用 mute音频
 
 #define START_UPLOAD	1
@@ -128,8 +124,8 @@ typedef struct{
 	unsigned char uploadState;
 #if defined(HUASHANG_JIAOYU)
 	unsigned char freeVoicesNum;
-	unsigned char WaitSleep;
 #endif	
+	unsigned char WaitSleep;
 	int len_voices;
 	unsigned int CurrentuploadEventNums;
 	char buf_voices[STD_RECODE_SIZE];
@@ -150,8 +146,6 @@ typedef struct{
 	unsigned char wifiState;
 	unsigned char localplayname;		//当前播放本地歌曲目录
 	unsigned char netstate;				//板子连接外部网络状态
-	unsigned char enableCountStarttime;	//使能自动计数起始时间
-	int auto_count_starttime;			//记录板子最后一次未使用起始时间，8分钟未使用自动关机
 	char localVoicesPath[20];			//板子系统音存放路径
 }SysMessage;
 extern SysMessage sysMes;
@@ -200,7 +194,6 @@ typedef struct{
 
 extern void ShortKeyDown_ForPlayWifiMessage(void);
 extern void LongNetKeyDown_ForConfigWifi(void);
-extern void  setAutoPlayMusic_countState(unsigned char state);
 
 #define	EXTERN_PLAY_EVENT	1	//外部产生邋播放事件
 #define AUTO_PLAY_EVENT		2	//内部自身产生播放事件

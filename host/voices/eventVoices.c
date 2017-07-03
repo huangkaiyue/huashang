@@ -153,16 +153,6 @@ static void Link_NetworkError(void){
 	setNetWorkLive(NETWORK_ER);
 }
 
-//设置自动播放模式下，记录的起始时间,
-void setAutoPlayMusic_countState(unsigned char state){
-	time_t t;
-	sysMes.auto_count_starttime=time(&t);
-	if(state==ENABLE_auto_count_time){
-		sysMes.enableCountStarttime=ENABLE_auto_count_time;
-	}else{
-		sysMes.enableCountStarttime=DISABLE_count_time;
-	}
-}
 //--------------end config network and set system network state---------------------------------------------------------
 /*******************************************************
 函数功能: 添加网络URL地址到队列当中进行播放
@@ -188,11 +178,6 @@ int __AddNetWork_UrlForPaly(Player_t *player){
 	HandlerText_t *handEvent = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handEvent){
 		WritePlayUrl_Log("url"," add ok");
-		if(player->playListState==AUTO_PLAY_EVENT){
-			setAutoPlayMusic_countState(ENABLE_auto_count_time);//设置自动播放模式下，记录的起始时间
-		}else{
-			setAutoPlayMusic_countState(DISABLE_count_time);
-		}
 		handEvent->data = (char *)player;
 		handEvent->event=URL_VOICES_EVENT;
 		handEvent->EventNums=updateCurrentEventNums();
@@ -228,11 +213,6 @@ int __AddLocalMp3ForPaly(const char *localpath,unsigned char EventSource){
 			goto exit0;
 		}
 		player->playListState=EventSource;
-		if(EventSource==AUTO_PLAY_EVENT){
-			setAutoPlayMusic_countState(ENABLE_auto_count_time);//设置自动播放模式下，记录的起始时间
-		}else{
-			setAutoPlayMusic_countState(DISABLE_count_time);
-		}
 		sprintf(player->playfilename,"%s",localpath);	
 		handEvent->EventNums=updateCurrentEventNums();
 		handEvent->data = (char *)player;

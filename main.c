@@ -80,8 +80,6 @@ static void loadLocalServer(int argc,char *argv[]){
 	time_t t;
 	sysMes.localplayname=0;			//本地播放目录
 	sysMes.netstate=NETWORK_UNKOWN;	//开机不属于未知网络状态
-	sysMes.auto_count_starttime=time(&t);
-	sysMes.enableCountStarttime=DISABLE_count_time;
 	set_pthread_sigblock();
 	pool_init(4);	
 	InitTuling((const char *) user_id,(const char *) token);	//userId需要保存到路由表当中 ，token 也需要保存
@@ -166,10 +164,13 @@ static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 #ifdef HUASHANG_JIAOYU
 	Create_playContinueMusic(hand);
 #else
+	Create_playContinueMusic(hand);
+#if 0
 	if(play->playListState==AUTO_PLAY_EVENT){			//内部自身产生播放事件
 		CreatePlayDefaultMusic_forPlay(play->musicname);//musicname 暂时定义采用这个结构成语变量存放播放类型
 		goto exit1;
 	}
+#endif	
 #endif
 exit1:
 	free((void *)hand->data);

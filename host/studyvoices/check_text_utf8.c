@@ -3,6 +3,7 @@
 #include "host/voices/wm8960i2s.h"
 #include "host/voices/callvoices.h"
 #include "host/studyvoices/prompt_tone.h"
+#include "nvram.h"
 
 #define CMD_UNKOWN					-1	//未知命令
 #define CMD_MUSIC_MEUN				0	//点播音乐
@@ -10,6 +11,7 @@
 #define CMD_ADD_VOL					2	//发现重要的text
 #define CMD_SUB_VOL					3	//发现重要的text
 #define CMD_CLOSE					4	//发现重要的text
+#define CMD_ID						5	//发现重要的text
 
 /********************************************************
 @函数功能:      匹配文字语音控制
@@ -33,6 +35,8 @@ int CheckinfoText_forContorl(const char *infoText,const char *text,char *getPlay
 		}
 	}else if(strstr(infoText,"拜拜")||strstr(infoText,"关机")){
 			ret =CMD_CLOSE;
+	}else if(strstr(infoText,"id")&&strstr(infoText,"我的")){
+		ret = CMD_ID;
 	}
 #if defined(HUASHANG_JIAOYU)	
 	else if(strstr(infoText,"播放")){
@@ -48,6 +52,8 @@ int CheckinfoText_forContorl(const char *infoText,const char *text,char *getPlay
 
 int HandlerPlay_checkTextResult(int cmd,const char *playname,unsigned int playEventNums){
 	int ret=-1;
+	char *list=NULL;
+	char *PlayText=NULL;
 	switch(cmd){
 #if defined(HUASHANG_JIAOYU)		
 		case CMD_MUSIC_MEUN:
@@ -71,6 +77,17 @@ int HandlerPlay_checkTextResult(int cmd,const char *playname,unsigned int playEv
 			break;
 		case CMD_CLOSE:
 			ret =PlaySystemAmrVoices((const char *)END_SYS_VOICES,playEventNums);
+			break;
+		case CMD_ID:
+			list= nvram_bufget(RT2860_NVRAM, "list");
+			PlayText=(char *)calloc(1,strlen(list)+8);
+			if(PlayText==NULL){
+				return ret;
+			}
+			sprintf(PlayText,"我的编号是 %s%s",list," ,");
+			enabledownNetworkVoiceState();
+			ret =PlayQttsText(PlayText,QTTS_UTF8,"vinn",playEventNums,50);
+			free(PlayText);
 			break;
 	}
 	return ret;
