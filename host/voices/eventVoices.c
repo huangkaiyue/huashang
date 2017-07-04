@@ -528,8 +528,9 @@ static int GetDefaultMusicJson_forPlay(char *getUrlBuf,const char *musicType){
 	}
 	int iCount = cJSON_GetArraySize(pArray);
 	//printf("name	 iCount == %d \n",iCount);
-	float randMax=(float)iCount-1;
-	int randNums=(1+(int)(randMax*rand()/(RAND_MAX+1.0)));
+	int randMax=(float)iCount-1;
+	time_t ti = time(NULL);
+	int randNums = ((int)ti)%randMax;
 #if 0
 	int i=0;
 	for (i=0; i < iCount; ++i) {
@@ -728,7 +729,8 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			Link_NetworkOk();			//连接成功关灯，开灯，状态设置
 			enable_gpio();
 			if(!PlaySystemAmrVoices(LINK_SUCCESS,playEventNums)){
-#ifdef HUASHANG_JIAOYU				
+#ifdef HUASHANG_JIAOYU		
+				start_event_play_wav();
 				PlaySystemAmrVoices(PLAY_START_HUASHANG_MUSIC,playEventNums);
 #endif
 			}

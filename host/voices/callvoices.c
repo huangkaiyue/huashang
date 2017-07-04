@@ -136,7 +136,7 @@ void SleepRecoder_Phthread(void){
 	SetRecordeVoices_PthreadState(HUASHANG_SLEEP);
 }
 int SleepSystem(void){
-	if(++RV->WaitSleep==4){
+	if(++RV->WaitSleep>=4){
 		printf("-----------------------\n close system --------------------\n");
 		systemTimeLog("close system");
 		SleepRecoder_Phthread();
@@ -147,6 +147,7 @@ int SleepSystem(void){
 #else
 		SetMucClose_Time(1);	//设置一分钟后关机
 #endif
+		RV->WaitSleep=0;
 		return -1;
 	}
 	return 0;

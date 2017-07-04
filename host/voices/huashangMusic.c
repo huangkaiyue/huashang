@@ -116,12 +116,13 @@ int huashang_CreatePlayDefaultMusic_forPlay(char *getBuf,const char* musicType){
 		printf("cj->valueint= %d\n",cj->valueint);
 		min = cj->valueint;
 	}
-	float randMax=0;
+	int randMax=0;
 	if(max<=min)
 		randMax=1;
 	else
-		randMax=(float)(max-min-1);
-	int randNums=(1+(int)(randMax*rand()/(RAND_MAX+1.0)));
+		randMax=(max-min-1);
+	time_t ti = time(NULL);
+	int randNums = ((int)ti)%randMax;
 	min +=randNums;
 	snprintf(getBuf,128,"%s%s/%d.mp3",TF_SYS_PATH,HUASHANG_GUOXUE_DIR,min);
 	if(access(getBuf, F_OK)){
