@@ -10,6 +10,7 @@
 #include "host/voices/callvoices.h"
 #include "../voices/gpio_7620.h"
 #include "DemoMp3head.h"
+#include "uart/uart.h"
 #include "log.h"
 
 Mp3Stream *st=NULL;
@@ -405,11 +406,13 @@ void keyStreamPlay(void){
 		st->player.playState=MAD_PLAY;
 		DecodeStart();
 		PlayorPause();
+		Show_musicPicture();
 		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	}else if(st->player.playState==MAD_PLAY){
 		st->player.playState=MAD_PAUSE;
 		DecodePause();
 		PlayorPause();
+		showFacePicture(WAIT_CTRL_NUM4);
 		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	}else if(st->player.playState==MAD_EXIT){
 #ifdef LOCAL_MP3

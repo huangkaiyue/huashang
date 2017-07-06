@@ -76,7 +76,9 @@ int HandlerPlay_checkTextResult(int cmd,const char *playname,unsigned int playEv
 			ack_VolCtr("sub",GetVol());
 			break;
 		case CMD_CLOSE:
-			ret =PlaySystemAmrVoices((const char *)END_SYS_VOICES,playEventNums);
+			PlaySystemAmrVoices((const char *)END_SYS_VOICES,playEventNums);
+			closeSystem(0);
+			ret =-1;
 			break;
 		case CMD_ID:
 			list= nvram_bufget(RT2860_NVRAM, "list");

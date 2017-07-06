@@ -137,7 +137,6 @@ static void Create_playContinueMusic(HandlerText_t *hand){
 	Player_t *play =(Player_t *)hand->data;
 	if(hand->EventNums==GetCurrentEventNums()){
 		Create_CleanUrlEvent();
-		showFacePicture(WAIT_CTRL_NUM1);
 		if(play->playListState==AUTO_PLAY_EVENT){	//华上自动推送进入显示等待1状态
 			
 		}

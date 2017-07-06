@@ -6,6 +6,7 @@
 #include "host/voices/resexampleRate.h"
 #include "host/studyvoices/std_worklist.h"
 #include "gpio_7620.h"
+#include "uart/uart.h"
 #include "config.h"
 #include "log.h"
 
@@ -96,6 +97,8 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 #if defined(HUASHANG_JIAOYU)	
 	Show_tlak_Light();	
 	led_lr_oc(closeled);
+	usleep(100000);
+	showFacePicture(WAIT_CTRL_NUM3);
 #endif
 	while(1){
 		if(playMode==PLAY_IS_INTERRUPT&&playEventNums!=GetCurrentEventNums()){
@@ -129,6 +132,8 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 #if defined(HUASHANG_JIAOYU)	
 	Close_tlak_Light();
 	led_lr_oc(openled);
+	usleep(100000);
+	showFacePicture(WAIT_CTRL_NUM4);
 #endif	
 	return ret;
 }

@@ -22,6 +22,7 @@
 #define RECODE_EXIT_FINNISH		12	//录音正常退出
 #define SOUND_MIX_PLAY			13	//混音播放
 #define HUASHANG_SLEEP			14	//华上睡眠状态
+#define HUASHANG_SLEEP_OK		15	//华上睡眠状态成功
 
 //#define DBG_VOICES
 #ifdef DBG_VOICES
@@ -125,6 +126,7 @@ typedef struct{
 #if defined(HUASHANG_JIAOYU)
 	unsigned char freeVoicesNum;
 #endif	
+	unsigned char closeTime;
 	unsigned char WaitSleep;
 	int len_voices;
 	unsigned int CurrentuploadEventNums;

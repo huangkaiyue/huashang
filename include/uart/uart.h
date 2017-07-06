@@ -40,8 +40,8 @@
 
 #define WAIT_CTRL_NUM1				8	//等待操作第1种
 #define WAIT_CTRL_NUM2				9	//等待操作第2种
-#define WAIT_CTRL_NUM3				10	//等待操作第3种
-#define WAIT_CTRL_NUM4				11	//等待操作第4种
+#define WAIT_CTRL_NUM3				10	//等待播放状态
+#define WAIT_CTRL_NUM4				11	//声音停止
 
 #define KEY_CTRL_PICTURE			12	//按键图片
 

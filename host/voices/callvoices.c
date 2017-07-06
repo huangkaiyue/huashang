@@ -8,6 +8,8 @@
 #include "gpio_7620.h"
 #include "../studyvoices/qtts_qisc.h"
 #include "config.h"
+#include "uart/uart.h"
+
 #if defined(HUASHANG_JIAOYU)
 #include "huashangMusic.h"
 #endif
@@ -91,8 +93,10 @@ void StartTuling_RecordeVoices(void){
 *结束语音识别状态
 *****************************************************/
 void StopTuling_RecordeVoices(void){
-	if(GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES)
+	if(GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES){
 		SetRecordeVoices_PthreadState(END_SPEEK_VOICES);
+		showFacePicture(WAIT_CTRL_NUM4);
+	}
 }
 /*****************************************************
 *进入播放wav原始数据状态
@@ -132,22 +136,31 @@ void lock_pause_record_audio(void){
 }
 
 
+void closeSystem(unsigned char eventInterrupt){
+	RV->WaitSleep=0;
+	systemTimeLog("close system");
+	SleepRecoder_Phthread();
+	RV->closeTime =0;
+#if defined(HUASHANG_JIAOYU)	
+	led_lr_oc(openled);
+	Close_tlak_Light();
+	if(eventInterrupt){
+		Create_PlayImportVoices(HUASHANG_SLEEP_VOICES);
+	}else{
+		usleep(100000);
+		showFacePicture(WAIT_CTRL_NUM1);
+	}
+#else
+	SetMucClose_Time(1);	//设置一分钟后关机
+#endif
+}
 void SleepRecoder_Phthread(void){
 	SetRecordeVoices_PthreadState(HUASHANG_SLEEP);
 }
 int SleepSystem(void){
 	if(++RV->WaitSleep>=4){
 		printf("-----------------------\n close system --------------------\n");
-		systemTimeLog("close system");
-		SleepRecoder_Phthread();
-#if defined(HUASHANG_JIAOYU)		
-		led_lr_oc(openled);
-		Close_tlak_Light();
-		Create_PlayImportVoices(HUASHANG_SLEEP_VOICES);
-#else
-		SetMucClose_Time(1);	//设置一分钟后关机
-#endif
-		RV->WaitSleep=0;
+		closeSystem(1);
 		return -1;
 	}
 	return 0;
@@ -336,9 +349,15 @@ static void *PthreadRecordVoices(void *arg){
 				usleep(50000);
 				break;
 			case HUASHANG_SLEEP:		//华上睡眠状态
+				if(++RV->closeTime==60){
+					showFacePicture(CLEAR_SYSTEM_PICTURE);
+					SetRecordeVoices_PthreadState(HUASHANG_SLEEP_OK);
+					RV->closeTime=0;
+				}
 				I2sGetvoicesData();		//默认状态清除音频
 				usleep(50000);
 				break;
+				
 			default:
 				I2sGetvoicesData();		//默认状态清除音频
 				usleep(50000);

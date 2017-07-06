@@ -538,7 +538,6 @@ static void signal_handler(int signum){
 				break;
 			case HUASHANG_WEIXIN_SPEEK_KEY:	//华上教育微信对讲
 				keyDown_AndSetGpioFor_play();
-				Show_KeyDownPicture();
 				Create_WeixinSpeekEvent(VOLKEYDOWN);
 				break;
 			case RESERVE_KEY3:	//长按，删除收藏歌曲

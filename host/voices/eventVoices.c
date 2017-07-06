@@ -355,7 +355,6 @@ void Handler_PlayQttsEvent(HandlerText_t *handText){
 ********************************************************/
 void TulingKeyDownSingal(void){
 	updateCurrentEventNums();	
-	Show_KeyDownPicture();
 	Write_Speekkeylog((const char *)"TulingKeyDownSingal",0);
 	//处于微信对讲状态，直接退出	
 	if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){		
@@ -374,6 +373,7 @@ void TulingKeyDownSingal(void){
 		if(SetWm8960Rate(RECODE_RATE,(const char *)"TulingKeyDownSingal set rate")){	//切换采样率失败，退出(防止多线程当中切换，资源冲突问题)
 			return ;
 		}
+		Show_KeyDownPicture();
 		StartTuling_RecordeVoices();
 		Write_Speekkeylog((const char *)"StartTuling_RecordeVoices",GetRecordeVoices_PthreadState());
 	}
@@ -842,10 +842,10 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;
 #ifdef HUASHANG_JIAOYU				
 		case HUASHANG_SLEEP_VOICES:
-			showFacePicture(WAIT_CTRL_NUM4);
 			if(!PlaySystemAmrVoices(END_SYS_VOICES,playEventNums)){
-				SleepRecoder_Phthread();
-				showFacePicture(CLEAR_SYSTEM_PICTURE);
+				usleep(100000);
+				showFacePicture(WAIT_CTRL_NUM1);
+				SleepRecoder_Phthread();			
 			}		
 			break;
 		case HUASHANG_START_10_VOICES:
@@ -945,8 +945,11 @@ static void StopRecorder_AndSendFile(unsigned int playEventNums){
 		time_t t;
 		t = time(NULL);
 		sprintf(filepath,"%s%d%s",CACHE_WAV_PATH,(unsigned int)t,".amr");
+		showFacePicture(CONNECT_WIFI_OK_PICTURE);
 		if(WavToAmr8kFile(SAVE_WAV_VOICES_DATA,filepath)){
 			DEBUG_EVENT("enc_wav_amr_file failed");
+			usleep(100000);
+			showFacePicture(WAIT_CTRL_NUM4);
 			return;
 		}
 		DEBUG_EVENT("stop save file \n");
