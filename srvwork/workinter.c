@@ -26,12 +26,15 @@ void test_ConnetEvent(int event){
 @
 */
 void pasreInputCmd(const char *com){
+	char *p=NULL;
 	if (!strcmp(com, "1")){
 		test_start_playurl();
 	}else if(!strcmp(com, "2")){
 		test_stop_playurl();
 	}else if(!strcmp(com, "3")){
 		test_single_playurl();
+	}else if(!strcmp(com, "4")){
+		memcpy(p,"123456",6);
 	}
 }
 #endif	//end WORK_INTER

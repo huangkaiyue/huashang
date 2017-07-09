@@ -37,6 +37,7 @@ extern void CleanEventMsgPthread(void);
 #define INTERRUPT_PLAY_VOICES_LIST	2	//打断播放列表声音
 #define CLEAN_PLAY_VOICES_LIST		3	//清除播放列表数据
 #define END_PLAY_VOICES_LIST		4	//播放完
+#define EXIT_PLAY_VOICES_LIST		5	//退出播放队列线程
 
 #define KEEP_RECORD_STATE			1	//保持当前录音状态
 #define UPDATE_RECORD_STATE			0	//更新当前录音状态	

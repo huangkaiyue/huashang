@@ -1181,8 +1181,13 @@ void InitMtkPlatfrom76xx(void){
 */
 void CleanMtkPlatfrom76xx(void){
 	ExitRecord_Voicespthread();
-	DestoryWm8960Voices();
-	CleanMtk76xx_gpio();
+	printf("ExitRecord_Voicespthread ok \n");
 	CleanEventMsgPthread();
+	printf("CleanEventMsgPthread ok \n");
+	DestoryWm8960Voices();
+	printf("DestoryWm8960Voices ok \n");
+	CleanMtk76xx_gpio();
+	printf("CleanMtk76xx_gpio ok \n");
 	cleanStream();
+	printf("cleanStream ok \n");
 }

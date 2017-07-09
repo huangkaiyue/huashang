@@ -97,6 +97,7 @@
 #define PLAY_CONTINUE_MUSIC			"qtts/please_playmusic.amr"	//请继续点播吧
 #define PLAY_START_HUASHANG_MUSIC	"qtts/start_10.amr"			//每晚8点半小培老师都会到你的床边给你讲好听的故事,呵呵,到时叫上妈妈一起吧！
 
+#define REBOOT_SYSTEM		"qtts/reboot_system.amr"			//系统正在优化，重新启动，请稍后
 /*******************************************************************************
 零时音频文件路径
 *******************************************************************************/

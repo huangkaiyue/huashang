@@ -107,6 +107,7 @@ static int playTulingQtts(const char *playUrl,const char *playText,unsigned int 
 		}
 		sprintf(huashangPlayText,"%s%s",playText," ,");
 		enabledownNetworkVoiceState();
+		Write_tulingTextLog("add play ok");
 		PlayQttsText(playText,QTTS_UTF8,playVoicesName,playEventNums,playSpeed);	
 		free(huashangPlayText);
 		if(playLocalVoicesIndex==TULING_TEXT_MUSIC){
@@ -130,6 +131,7 @@ static int playTulingQtts(const char *playUrl,const char *playText,unsigned int 
 		disabledownNetworkVoiceState();
 	}
 #else
+	Write_tulingTextLog("add play ok");
 	ret = AddDownEvent((const char *)handtext,TULING_URL_MAIN);
 #endif
 	return ret;
@@ -510,8 +512,12 @@ static void *PlayVoicesPthread(void *arg){
 					cacheNetWorkPlaySize=0;
 				}
 				break;
+			case EXIT_PLAY_VOICES_LIST:
+				goto exit0;
+				break;
 		}
 	}
+exit0:
 	destoryQueue(PlayList);
 	return NULL;
 }
@@ -530,6 +536,12 @@ void InitEventMsgPthread(void){
 @  清除事件处理消息线程
 */
 void CleanEventMsgPthread(void){
+	playlistVoicesSate=EXIT_PLAY_VOICES_LIST;
+
+	char *data = (char *)calloc(1,4);
+	if(data){
+		putPcmDataToPlay((const void * )data,4);
+	}
 	CleanCondWorkPthread(EventQue,CleanEventMessage);
 	Iat_MSPLogout();
 }

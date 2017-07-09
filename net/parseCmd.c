@@ -535,10 +535,22 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		if(!strncmp(cJSON_GetObjectItem(pJson, "text")->valuestring,"openwifi",8)){
 			OpenWifi();
 		}
+#if defined(HUASHANG_JIAOYU)	
+		Create_PlaySystemEventVoices(KEY_DOWN_PLAY);
+		char *WeiXintxt =cJSON_GetObjectItem(pJson, "text")->valuestring;
+		AddWeiXinMessage_Text((const char *)WeiXintxt,strlen(WeiXintxt));
+#else
 		Create_PlayQttsEvent(cJSON_GetObjectItem(pJson, "text")->valuestring,QTTS_UTF8);
+#endif
 	}
 	else if (!strcmp(pSub->valuestring,"speek")){//Î¢ÐÅ¶Ô½²
+#if defined(HUASHANG_JIAOYU)
+		Create_PlaySystemEventVoices(KEY_DOWN_PLAY);
+		char *WeiXinFile =cJSON_GetObjectItem(pJson, "file")->valuestring;
+		AddWeiXinMessage_Voices((const char *)WeiXinFile,strlen(WeiXinFile));
+#else
 		CreatePlayWeixinVoicesSpeekEvent((const char *)cJSON_GetObjectItem(pJson, "file")->valuestring);
+#endif
 	}
 	else if (!strcmp(pSub->valuestring,"binddev")){
 		pSub = cJSON_GetObjectItem(pJson, "status");

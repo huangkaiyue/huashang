@@ -40,6 +40,7 @@ all +=host/voices/gpio_7620.o
 
 all +=host/voices/huashangMusic.o
 all +=host/voices/huashangPasreUtf8.o
+all +=host/voices/weixinMessage.o
 
 all +=host/sdcard/sdcard.o
 all +=host/sdcard/sqlite.o

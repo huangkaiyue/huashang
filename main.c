@@ -13,12 +13,15 @@
 #include "host/studyvoices/prompt_tone.h"
 #include "uart/uart.h"
 #include "host/studyvoices/std_worklist.h"
+#include "host/studyvoices/qtts_qisc.h"
 #ifdef WORK_INTER
 #include "srvwork/workinter.h"
 #endif
 #include "log.h"
+
 static WorkQueue *DownEvent=NULL;
 static unsigned char mainQueLock=0;
+static unsigned char ExitLock=0;
 
 /*
 @添加播放/下载 歌曲时间
@@ -38,11 +41,21 @@ void SetMainQueueLock(unsigned char lock){
 	mainQueLock=lock;
 }
 //退出清除资源
-void CleanSystemResources(void){
+void CleanSystemResources(void){
+	
+	disable_gpio();
+	int playEventNums =updateCurrentEventNums();
+	sleep(1);
+	PlayImportVoices(REBOOT_SYSTEM,playEventNums);
 	CleanMtkPlatfrom76xx();
+	system("reboot &");
+	//printf("CleanMtkPlatfrom76xx ok \n");
 	clean_videoServer();
+	//printf("clean_videoServer ok \n");
 	pool_destroy();
-	AddDownEvent((const char *)"baibai",QUIT_MAIN);
+	CleanWeixinMeesageList();
+	//printf("pool_destroy ok \n");
+	//AddDownEvent((const char *)"baibai",QUIT_MAIN);
 	printf("clean resources finished \n");
 }
 
@@ -80,6 +93,7 @@ static void loadLocalServer(int argc,char *argv[]){
 	time_t t;
 	sysMes.localplayname=0;			//本地播放目录
 	sysMes.netstate=NETWORK_UNKOWN;	//开机不属于未知网络状态
+	InitWeixinMeesageList();
 	set_pthread_sigblock();
 	pool_init(4);	
 	InitTuling((const char *) user_id,(const char *) token);	//userId需要保存到路由表当中 ，token 也需要保存
@@ -147,7 +161,8 @@ static void Create_playContinueMusic(HandlerText_t *hand){
 			break;
 		}
 		if(GetEvent_lock()==0){
-			Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
+			Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
+
 			break;
 		}
 		if(++timeout>=23){
@@ -225,6 +240,18 @@ static void checkFileLock(void){
 		exit(1);
 	}
 }
+//信号处理函数
+
+void recvErrorSignal(int sig)  {  
+    printf("received signal %d !!!\n",sig);  
+	if(ExitLock){
+		printf("%s: exitlock \n",__func__);
+		return ;
+	}
+	ExitLock=1;
+	CleanSystemResources();
+	exit(0);
+}  
 
 int main(int argc, char **argv){   
 	checkFileLock();
@@ -232,6 +259,7 @@ int main(int argc, char **argv){
 	char *msg=NULL;
 	int event=0;
 	//showFacePicture(CONNECT_WIFI_ING_PICTURE);
+	signal(SIGSEGV, recvErrorSignal); 
 	while(1){
 		getMsgQueue(DownEvent,&msg,&event);
 		if (mainQueLock == MAIN_QUEUE_LOCK){
@@ -267,6 +295,7 @@ int main(int argc, char **argv){
 #endif				
 			case QUIT_MAIN:
 				printf("end main !!!\n");
+				CleanSystemResources();
 				goto exit0;
 		}
 	}

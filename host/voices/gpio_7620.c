@@ -50,6 +50,7 @@ void Led_vigue_open(void){
 #elif defined(DATOU_JIANG)
 	close_sys_led();
 #endif
+	printf("Led_vigue_open exit ok \n");
 }
 
 void Led_System_vigue_close(void){
@@ -215,7 +216,6 @@ typedef struct {
 #define PthreadState_exit 	0
 #define PthreadState_run	1
 
-
 static void *mus_vol_mutiplekey_Thread(void *arg){
 	time_t t;
 	int volendtime=0;
@@ -279,6 +279,56 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 				printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
 				if(Setwm8960Vol(VOL_SUB,0) == -1)
 					break;
+			}
+
+			usleep(300 * 1000);
+		}
+
+	}
+	mutiplekey->PthreadState = PthreadState_exit;
+	return NULL;
+}
+
+static void *weixin_mutiplekey_Thread(void *arg){
+	time_t t;
+	int volendtime=0;
+	unsigned int time_ms = 0;
+	key_mutiple_t *mutiplekey = (key_mutiple_t *)arg;
+	int playDownVoicesFlag=0;;
+	while(1){
+		
+		gettimeofday(&mutiplekey->time_end,0);
+		time_ms = 1000000*(mutiplekey->time_end.tv_sec - mutiplekey->time_start.tv_sec) + mutiplekey->time_end.tv_usec - mutiplekey->time_start.tv_usec;
+		time_ms /= 1000;
+
+		printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
+		
+		if(time_ms < 500){		//before is 500  2017.6.28 22:43
+			if(mutiplekey->key_state == VOLKEYUP)
+			{
+				//短按弹起处理，播放微信语音
+				GpioLog("GetWeiXinMessageForPlay ",WEIXIN_SPEEK_KEY);
+				GetWeiXinMessageForPlay();
+				break;
+
+			}
+			usleep(100 * 1000);
+			continue;
+		}
+		
+
+		if(time_ms >=500){		//before is 500  2017.6.28 22:43
+			if(playDownVoicesFlag==0){
+				//在这里开始录音
+				keyDown_AndSetGpioFor_play();
+				Create_WeixinSpeekEvent(VOLKEYDOWN);
+				playDownVoicesFlag++;
+			}
+			printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
+			if(mutiplekey->key_state == VOLKEYUP){
+				//在这里结束录音
+				Create_WeixinSpeekEvent(VOLKEYUP);
+				break;
 			}
 
 			usleep(300 * 1000);
@@ -422,7 +472,7 @@ static void signal_handler(int signum){
 #ifdef HUASHANG_JIAOYU		//华上教育
 //#define TEST_PLAY_KEY
 static void signal_handler(int signum){
-	static key_mutiple_t mutiple_key_SUB,mutiple_key_ADD,mutiple_key_speek;
+	static key_mutiple_t mutiple_key_SUB,mutiple_key_ADD,mutiple_key_speek,mutiple_key_weixin;
 	//拿到底层按键事件号码
 	if (ioctl(gpio.fd, TANG_GET_NUMBER,&gpio.mount) < 0){
 		perror("ioctl");
@@ -479,8 +529,13 @@ static void signal_handler(int signum){
 				GpioKey_SetStreamPlayState();
 				break;
 			case HUASHANG_WEIXIN_SPEEK_KEY:	//华上教育微信对讲
+#if 1
+				mutiple_key_weixin.key_number = HUASHANG_WEIXIN_SPEEK_KEY;
+				mutiple_key_weixin.key_state  = VOLKEYUP;
+#else			
 				keyUp_AndSetGpioFor_play();
 				Create_WeixinSpeekEvent(VOLKEYUP);
+#endif
 				break;
 			case RIGHTLED_KEY:	//bind键
 				keyDownAck_userBind();
@@ -537,8 +592,22 @@ static void signal_handler(int signum){
 				GpioLog("key down",SUBVOL_KEY);
 				break;
 			case HUASHANG_WEIXIN_SPEEK_KEY:	//华上教育微信对讲
+#if 1
+				mutiple_key_weixin.key_state = VOLKEYDOWN;
+				mutiple_key_weixin.key_number = HUASHANG_WEIXIN_SPEEK_KEY;
+				gettimeofday(&mutiple_key_weixin.time_start,0);
+				if(mutiple_key_weixin.PthreadState == PthreadState_run)
+					break;
+				
+				mutiple_key_SUB.PthreadState = PthreadState_run;
+				pool_add_task(weixin_mutiplekey_Thread,(void *)&mutiple_key_weixin);
+				
+
+#else
 				keyDown_AndSetGpioFor_play();
 				Create_WeixinSpeekEvent(VOLKEYDOWN);
+
+#endif
 				break;
 			case RESERVE_KEY3:	//长按，删除收藏歌曲
 				Delete_LoveMusic();
@@ -921,6 +990,8 @@ void disable_gpio(void){
 }
 //清除GPIO
 void CleanMtk76xx_gpio(void){
+	Led_System_vigue_close();
+	sleep(1);
 	//close_sys_led();
 	disable_gpio();
 	close(gpio.fd);

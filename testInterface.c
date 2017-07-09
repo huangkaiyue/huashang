@@ -5,21 +5,22 @@
 #include "base/cJSON.h"
 #include "host/StreamPlay/StreamFile.h"
 #include "nvram.h"
+#include "host/studyvoices/qtts_qisc.h"
 
 #include "config.h"
 
 #ifdef TEST_MIC
 /*******************************************************
-º¯Êı¹¦ÄÜ: ²âÊÔÂ¼Òô²¢Ö±½Ó²¥·Å³öÀ´
-²ÎÊı:
-·µ»ØÖµ:
+å‡½æ•°åŠŸèƒ½: æµ‹è¯•å½•éŸ³å¹¶ç›´æ¥æ’­æ”¾å‡ºæ¥
+å‚æ•°:
+è¿”å›å€¼:
 ********************************************************/
 void *TestRecordePlay(void){
 	char *pBuf;
 	while(GetRecordeVoices_PthreadState()!=RECODE_STOP)
 	{
 		DEBUG_VOICES("test_recorde_play :recorde now...\n");
-		pBuf = I2sGetvoicesData();			//Õ¼ÓÃµÄÊ±¼äÓĞµã³¤
+		pBuf = I2sGetvoicesData();			//å ç”¨çš„æ—¶é—´æœ‰ç‚¹é•¿
 		memcpy(play_buf,pBuf,I2S_PAGE_SIZE);	
 		write_pcm(play_buf);
 		//usleep(3000*1000);
@@ -222,19 +223,15 @@ static void addplay_urlFile(void){
 	}
 }
 static void *test_play_tulUrl(void){
+	int i=0;
+	char testbuf[1024]={0};
+	sleep(60);
 	while(test_pthread){	
-		switch(play_state){
-			case TEST_START_ADD:
-				addplay_urlFile();
-				break;
-			case TEST_SINGLE_ADD:
-				play_state=TEST_STOP_ADD;
-				addplay_urlFile();
-				break;
-			case TEST_STOP_ADD:
-				break;
-		}
-		sleep(8);
+		i+=1000;
+		snprintf(testbuf,1024,"æµ‹è¯•æ•°æ®è¯´æ´’æ°´æŒ‰æ—¶å¤§åœ°æ–¹%d",i);
+		Create_PlayQttsEvent(testbuf,QTTS_UTF8);
+		printf("i= === %d\n",i);
+		sleep(10);
 	}
 }
 void test_start_playurl(void){
@@ -252,15 +249,24 @@ void test_single_playurl(void){
 	play_state=TEST_SINGLE_ADD;
 }
 
+static void *testExit(void){
+	char *p=NULL;
+	sleep(100);
+	memcpy(p,"123456",6);
+}
+void test_exit(void){
+	pthread_create_attr(testExit,NULL);
+}
+
 #if 0
 #define KB 1024
 #define QTTS_PLAY_SIZE	12*KB
 #define LEN_BUF 1*KB
 #define LEN_TAR 2*KB
 /*******************************************************
-º¯Êı¹¦ÄÜ: µ¥ÉùµÀ×ªË«ÉùµÀ
-²ÎÊı:	dest_files Êä³öÎÄ¼ş src_filesÊäÈëÎÄ¼ş
-·µ»ØÖµ: 0 ×ª»»³É¹¦ -1 ×ª»»Ê§°Ü
+å‡½æ•°åŠŸèƒ½: å•å£°é“è½¬åŒå£°é“
+å‚æ•°:	dest_files è¾“å‡ºæ–‡ä»¶ src_filesè¾“å…¥æ–‡ä»¶
+è¿”å›å€¼: 0 è½¬æ¢æˆåŠŸ -1 è½¬æ¢å¤±è´¥
 ********************************************************/
 int voices_single_to_stereo(char *dest_files,char *src_files){
 	FILE  *fd_q,*fd_w;
