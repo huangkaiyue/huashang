@@ -313,19 +313,20 @@ static void *uart_read_serial(void){
 				break;
 			default: 
 				if (FD_ISSET(serialFd[0], &rdfd)){
-					UartLog("start<---------->",11111111111);
+					UartLog("start<---------->",1);
 					DEBUG_UART("start<---------->\n");
 					for(;r_size>0;){
 						r_size = read(serialFd[0],&buf,1);
 						if(r_size!=0){
 							DEBUG_UART("recv from uart msg buf =0x%x\n",buf);
-							UartLog("reav",buf);
+							UartLog("recv",buf);
 							handle_uartMsg(serialFd[0],buf,r_size);
+							UartLog("handle<---------->",2);
 						}
 					}
 					r_size=1;
 					buf=0x0;
-					UartLog("end<---------->",11111111111);
+					UartLog("end<---------->",3);
 					DEBUG_UART("end<---------->\n");
 				}
 		}
@@ -371,26 +372,6 @@ void get_time(void){
 	time(&timep);
 	printf("%s",asctime(gmtime(&timep)));
 }
-void UartLog(const char *data,unsigned char number){
-#ifdef ENABLE_LOG	
-	FILE *fp = NULL;
-	char buf[128];
-	if(!strcmp(data,"uart_start\n")){
-		fp =fopen("/home/uart.log","w+");
-	}else{
-		fp =fopen("/home/uart.log","a+");
-	}
-	sprintf(buf,"%s%s %x\n",data,"0x:",number);
-	if(NULL == fp ){
-		return ;
-    }
-	int size = strlen(buf);
-    fwrite(buf,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-	return ;
-#endif
-};
 
 void VoicesEvent(int event){
 	printf("VoicesEvent event = %d ..\n",event);

@@ -160,7 +160,6 @@ static void Link_NetworkError(void){
 返回值: 无
 ********************************************************/
 int __AddNetWork_UrlForPaly(Player_t *player){
-	//WritePlayUrl_Log("start"," url add ");
 	if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络
 		goto exit0;
 	}
@@ -1181,13 +1180,13 @@ void InitMtkPlatfrom76xx(void){
 */
 void CleanMtkPlatfrom76xx(void){
 	ExitRecord_Voicespthread();
-	printf("ExitRecord_Voicespthread ok \n");
+	System_StateLog("ExitRecord_Voicespthread ok\n");
 	CleanEventMsgPthread();
-	printf("CleanEventMsgPthread ok \n");
+	System_StateLog("CleanEventMsgPthread ok \n");
 	DestoryWm8960Voices();
-	printf("DestoryWm8960Voices ok \n");
+	System_StateLog("DestoryWm8960Voices ok \n");
 	CleanMtk76xx_gpio();
-	printf("CleanMtk76xx_gpio ok \n");
+	System_StateLog("CleanMtk76xx_gpio ok \n");
 	cleanStream();
-	printf("cleanStream ok \n");
+	System_StateLog("cleanStream ok \n");
 }

@@ -294,7 +294,7 @@ static void NetEndDown(int downLen){
 void NetStreamExitFile(void){
 	if(getDownState()==DOWN_ING){		//退出下载
 		quitDownFile();
-		WriteEventlockLog("eventlock quitDownFile \n",2);
+		WriteEventlockLog("eventlock quitDownFile",2);
 	}
 	printf("%s: rate =%d\n",__func__,st->rate);
 	int error_timeout_check=0;
@@ -306,16 +306,16 @@ void NetStreamExitFile(void){
 		memset(st->player.musicname,0,64);
 		DecodeExit();
 		pthread_mutex_unlock(&st->mutex);
-		WriteEventlockLog("eventlock wait exit mp3 state \n",(int)st->player.playState);
+		WriteEventlockLog("eventlock wait exit mp3 state",(int)st->player.playState);
 		printf("%s: while wait exit ...\n",__func__);
 		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
-			WriteEventlockLog("error exit ,and set  \n",(int)st->player.playState);
+			WriteEventlockLog("error exit ,and set  ",(int)st->player.playState);
 			printf("%s: error RECODE_PAUSE exit ,and set ... st->player.playState=%d\n",__func__,st->player.playState);
 			st->player.playState=MAD_NEXT;
 			break;
 		}
 		if(++error_timeout_check>300000){
-			WriteEventlockLog("error timeout_check ,and set exit \n",(int)st->player.playState);
+			WriteEventlockLog("error timeout_check ,and set exit",(int)st->player.playState);
 			printf("%s: error timeout_check exit ,and set ... st->player.playState=%d\n",__func__,st->player.playState);
 			st->player.playState=MAD_NEXT;
 			break;
@@ -323,7 +323,7 @@ void NetStreamExitFile(void){
 		usleep(100);
 	}
 	printf("%s: paly end ... st->player.playState=%d\n",__func__,st->player.playState);
-	WriteEventlockLog("eventlock exit end\n",st->player.playState);
+	WriteEventlockLog("eventlock exit end",st->player.playState);
 }
 
 //拷贝推送过来的信息
@@ -516,7 +516,7 @@ static void playLocalMp3(const char *mp3file){
 #endif
 	cleanStreamData(st);	//状态切换是否加锁
 	DEBUG_STREAM(" exit play ok \n");
-	WriteEventlockLog("playLocalMp3  exit play ok \n",(int)st->player.playState);
+	WriteEventlockLog("playLocalMp3  exit play ok ",(int)st->player.playState);
 }
 //播放歌曲接口  play: 播放信息结构体
 int Mad_PlayMusic(Player_t *play){

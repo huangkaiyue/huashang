@@ -84,7 +84,7 @@ static int i2s_rxbuffer_munmap(void){
 void CleanI2S_PlayCachedata(void){
 	char *pBuf=NULL;
 	int i = 0;
-	cleanplayLog("cleanplay_start\n");
+	cleanplayLog("start\n");
 	while(1){   //Çå³ýÒôÆµDMAÊý¾Ý
 		ioctl(I2S.i2s_fd, I2S_PUT_AUDIO, &i);
 		pBuf = shtxbuf[i];

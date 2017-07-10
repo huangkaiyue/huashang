@@ -138,7 +138,7 @@ void lock_pause_record_audio(void){
 
 void closeSystem(unsigned char eventInterrupt){
 	RV->WaitSleep=0;
-	systemTimeLog("close system");
+	System_StateLog("close system");
 	SleepRecoder_Phthread();
 	RV->closeTime =0;
 #if defined(HUASHANG_JIAOYU)	
@@ -178,6 +178,7 @@ void start_event_talk_message(void){
 
 static void *uploadPcmPthread(void *arg){
 	HandlerText_t *handText = (HandlerText_t *)arg;
+	SpeekEvent_process_log("request tuling","start",0);
 #if defined(MY_HTTP_REQ)
 	ReqTulingServer(handText,"pcm","0",RECODE_RATE*2);
 #else
@@ -194,6 +195,7 @@ static void *uploadPcmPthread(void *arg){
 static void Start_uploadVoicesData(void){
 	if(RV->uploadState==START_UPLOAD){
 		printf("%s add upload voices failed \n",__func__);
+		SpeekEvent_process_log("add upload voices failed","",0);
 		return ;
 	}
 	RV->uploadState = START_UPLOAD;
@@ -224,7 +226,7 @@ static void Save_VoicesPackt(const char *data,int size){
 	if(data != NULL){
 		if((RV->len_voices+size) > (STD_RECODE_SIZE-WAV_HEAD)){//大于5秒的音频丢掉
 			printf("%s > STD_RECODE_SIZE RV->len_voices=%d\n",__func__,RV->len_voices);
-			test_Save_VoicesPackt_function_log((const char *)"STD_RECODE_SIZE is >5s",RV->len_voices);
+			SpeekEvent_process_log((const char *)"STD_RECODE_SIZE","is >5s",RV->len_voices);
 			goto exit1;
 		}
 #if defined(HUASHANG_JIAOYU)
@@ -248,20 +250,19 @@ static void Save_VoicesPackt(const char *data,int size){
 	}else{
 		if(RV->len_voices > VOICES_MIN)	//大于0.5s 音频，则上传到服务器当中开始识别  13200
 		{
-			test_Save_VoicesPackt_function_log((const char *)"start upload",GetRecordeVoices_PthreadState());
+			SpeekEvent_process_log((const char *)"start","upload",GetRecordeVoices_PthreadState());
 			printf("%s Start_uploadVoicesData RV->len_voices=%d\n",__func__,RV->len_voices);
 			Start_uploadVoicesData();		//开始上传语音
 			goto exit0;
 		}
 		else if(RV->len_voices < VOICES_ERR){			//
 			printf("%s < VOICES_ERR RV->len_voices=%d\n",__func__,RV->len_voices);
-			test_Save_VoicesPackt_function_log((const char *)"< VOICES_ERR",GetRecordeVoices_PthreadState());
+			SpeekEvent_process_log((const char *)"< VOICES_ERR","error voices",GetRecordeVoices_PthreadState());
 			goto exit1;	//误触发
 		}
 		else{	//VOICES_ERR --->VOICES_MIN 区间的音频，认定为无效音频
-			//Create_PlaySystemEventVoices(AI_KEY_TALK_ERROR);
 			printf("%s < VOICES_MIN RV->len_voices=%d\n",__func__,RV->len_voices);
-			test_Save_VoicesPackt_function_log((const char *)"< VOICES_MIN",GetRecordeVoices_PthreadState());
+			SpeekEvent_process_log((const char *)"< VOICES_MIN","error voices",GetRecordeVoices_PthreadState());
 			goto exit1;
 		}
 	}
@@ -339,7 +340,7 @@ static void *PthreadRecordVoices(void *arg){
 				break;
 
 			case TIME_SIGN:				//提示休息很久了
-				systemTimeLog("time out for play music");
+				System_StateLog("time out for play music");
 				if(!SleepSystem())	{
 					Create_PlaySystemEventVoices(MIN_10_NOT_USER_WARN);
 				}
@@ -366,7 +367,6 @@ static void *PthreadRecordVoices(void *arg){
 	}
 	SetRecordeVoices_PthreadState(RECODE_EXIT_FINNISH);
 	DEBUG_VOICES("handle record voices exit\n");
-	test_Save_VoicesPackt_function_log("recorde pthread exit",0);
 	return NULL;
 }
 static void *start_playHuashang(void *arg){

@@ -42,21 +42,19 @@ void SetMainQueueLock(unsigned char lock){
 }
 //退出清除资源
 void CleanSystemResources(void){
-	
 	disable_gpio();
 	int playEventNums =updateCurrentEventNums();
 	sleep(1);
 	PlayImportVoices(REBOOT_SYSTEM,playEventNums);
 	CleanMtkPlatfrom76xx();
 	system("reboot &");
-	//printf("CleanMtkPlatfrom76xx ok \n");
+	System_StateLog("CleanMtkPlatfrom76xx ok");
 	clean_videoServer();
-	//printf("clean_videoServer ok \n");
+	System_StateLog("clean_videoServer ok ");
 	pool_destroy();
+	System_StateLog("pool_destroy ok ");
 	CleanWeixinMeesageList();
-	//printf("pool_destroy ok \n");
-	//AddDownEvent((const char *)"baibai",QUIT_MAIN);
-	printf("clean resources finished \n");
+	System_StateLog("clean resources finished");
 }
 
 /*
@@ -248,6 +246,7 @@ void recvErrorSignal(int sig)  {
 		printf("%s: exitlock \n",__func__);
 		return ;
 	}
+	System_StateLog("received signal");
 	ExitLock=1;
 	CleanSystemResources();
 	exit(0);

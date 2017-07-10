@@ -2,8 +2,6 @@
 #include "config.h"
 
 static void GetDate(char *date){
-    //const char* wday[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
-    //const char* mon[]={"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
     time_t timep;
     struct tm* p;
     time(&timep);
@@ -11,169 +9,45 @@ static void GetDate(char *date){
     snprintf(date,128,"%d-%02d-%02d-%02d:%02d:%02d",(1900+p->tm_year),p->tm_mon+1,p->tm_mday,p->tm_hour, p->tm_min, p->tm_sec);
     printf("%s\n", date);
 }
-
-void WritePlayUrl_Log(const char *data1,const char *data2){
-#ifdef ENABLE_LOG	
+static void __WriteLog_File(const char *file,const char *str1,const char *str2,int val){
+#ifdef ENABLE_LOG
 	FILE *fp = NULL;
-	if(!strcmp(data1,"start")){
-		fp =fopen("/log/playurl.log","w+");
+	if(!strcmp(str1,"start")){
+		fp =fopen(file,"w+");
 	}else{
-		fp =fopen("/log/playurl.log","a+");
+		fp =fopen(file,"a+");
 	}
 	if(NULL == fp ){
 		return ;
     }
-    fprintf(fp,"%s:%s\n",data1,data2);
-  	fflush(fp);
+	char dateBuf[128]={0};
+	GetDate(dateBuf);
+	fprintf(fp,"%s:%s--->%s--->%d\n",dateBuf,str1,str2,val);
+	fflush(fp);
 	fclose(fp);
-#endif	
-}
-
-
-void PlaySystemAmrVoicesLog(const char *data){
-#ifdef ENABLE_LOG	
-	FILE *fp = NULL;
-	if(!strcmp(data,"playsys_start\n")){
-		fp =fopen("/log/PlaySystemAmrVoices.log","w+");
-	}else{
-		fp =fopen("/log/PlaySystemAmrVoices.log","a+");
-	}
-	
-	if(NULL == fp ){
-		return ;
-    }
-	int size = strlen(data);
-    fwrite(data,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-	return ;
 #endif
+}
+void WritePlayUrl_Log(const char *data1,const char *data2){
+	__WriteLog_File("/log/playurl.log",data1,data2,0);
 }
 void cleanplayLog(const char *data){
-#ifdef ENABLE_LOG	
-	FILE *fp = NULL;
-	if(!strcmp(data,"cleanplay_start\n")){
-		fp =fopen("/log/cleanplay.log","w+");
-	}else{
-		fp =fopen("/log/cleanplay.log","a+");
-	}
-	
-	if(NULL == fp ){
-		return ;
-    }
-	int size = strlen(data);
-    fwrite(data,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-#endif
+	__WriteLog_File("/log/cleanplay.log",data,"",0);
 }
 void WriteEventlockLog(const char *data,int lock){
-#ifdef ENABLE_LOG	
-	FILE *fp = NULL;
-	char buf[128];
-	if(!strcmp(data,"eventlock_start\n")){
-		fp =fopen("/log/eventlock.log","w+");
-	}else{
-		fp =fopen("/log/eventlock.log","a+");
-	}
-	sprintf(buf,"%s%d %s","lock:",lock,data);
-	if(NULL == fp ){
-		return ;
-    }
-	int size = strlen(buf);
-    fwrite(buf,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-#endif
-}
-void handleeventLog(const char *data,unsigned char msgSize){
-#ifdef ENABLE_LOG	
-	FILE *fp = NULL;
-	char buf[128];
-	if(!strcmp(data,"handleevent_start\n")){
-		fp =fopen("/log/handleevent.log","w+");
-	}else{
-		fp =fopen("/log/handleevent.log","a+");
-	}
-	sprintf(buf,"%s%d %s","lock:",msgSize,data);
-	if(NULL == fp ){
-		return ;
-    }
-	int size = strlen(buf);
-    fwrite(buf,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-	return ;
-#endif
-}
-void PlayQtts_log(const char *data){
-#ifdef ENABLE_LOG	
-	FILE *fp = NULL;
-	if(!strcmp(data,"tolk_start\n")){
-		fp =fopen("/log/playQtts.log","w+");
-	}else{
-		fp =fopen("/log/playQtts.log","a+");
-	}
-	if(NULL == fp ){
-		return ;
-    }
-	int size = strlen(data);
-    fwrite(data,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-	return ;
-#endif
+	__WriteLog_File("/log/eventlock.log",data,"",lock);
 }
 void udpLog(const char *data){
-#ifdef ENABLE_LOG	
-	FILE *fp = NULL;
-	if(!strcmp(data,"udp_start\n")){
-		fp =fopen("/log/udp_log.log","w+");
-	}else{
-		fp =fopen("/log/udp_log.log","a+");
-	}
-	if(NULL == fp ){
-		return ;
-    }
-	int size = strlen(data);
-    fwrite(data,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-	return ;
-#endif
+	__WriteLog_File("/log/udp_log.log",data,"",0);
 }
 void RecvTcp_dataLog(const char *data){
-#ifdef ENABLE_LOG	
-	FILE *fp = NULL;
-	if(!strcmp(data,"tcp_start\n")){
-		fp =fopen("/log/tcpdata.log","w+");
-	}else{
-		fp =fopen("/log/tcpdata.log","a+");
-	}
-	if(NULL == fp ){
-		return ;
-    }
-	int size = strlen(data);
-    fwrite(data,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-	return ;
-#endif
+	__WriteLog_File("/log/tcpdata.log",data,"",0);
 }
-void systemTimeLog(const char *data){
-#ifdef ENABLE_LOG	
-	FILE *fp = NULL;
-	fp =fopen("/log/time_log.log","a+");
-	if(NULL == fp ){
-		return ;
-    }
-	char date[128]={0};
-	GetDate(date);
-	fprintf(fp,"%s--->%s\n",date,data);
-  	fflush(fp);
-	fclose(fp);
-	return ;
-#endif
+void System_StateLog(const char *data){
+	__WriteLog_File("/log/system_state.log",data,"",0);
+}
+
+void UartLog(const char *data,unsigned char number){
+	__WriteLog_File("/log/uart.log",data,"",number);
 }
 
 void RequestTulingLog(const char *data){
@@ -196,42 +70,8 @@ void RequestTulingLog(const char *data){
 	return ;
 #endif
 }
-void musicdbLog(const char *data,const char *filename){
-#ifdef ENABLE_LOG	
-	FILE *fp = NULL;
-	char buf[128];
-	fp =fopen("/log/musicdb.log","a+");
-	sprintf(buf,"%s%s %s\n","name:",data,filename);
-	if(NULL == fp ){
-		return ;
-    }
-	int size = strlen(buf);
-    fwrite(buf,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-	return ;
-#endif
-}
-void UartLog(const char *data,unsigned char number){
-#ifdef ENABLE_LOG	
-	FILE *fp = NULL;
-	char buf[128];
-	if(!strcmp(data,"uart_start\n")){
-		fp =fopen("/log/uart.log","w+");
-	}else{
-		fp =fopen("/log/uart.log","a+");
-	}
-	sprintf(buf,"%s: 0x%x\n",data,number);
-	if(NULL == fp ){
-		return ;
-    }
-	int size = strlen(buf);
-    fwrite(buf,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
-	return ;
-#endif
-}
+
+
 void GpioLog(const char *data,unsigned char number){
 #ifdef ENABLE_LOG	
 	FILE *fp = NULL;
@@ -282,22 +122,8 @@ void Write_Speekkeylog(const char *data,int num){
 }
 
 
-void test_Save_VoicesPackt_function_log(const char *data,int value){
-	FILE *fp = NULL;
-	char buf[128];
-	if(!strcmp(data,"start")){
-		fp = fopen("/log/Save_VoicesPackt_function.log","w+");
-	}else{
-		fp = fopen("/log/Save_VoicesPackt_function.log","a+");
-	}
-	if(NULL == fp ){
-		return ;
-    }
-	snprintf(buf,128,"%s %d\n",data,value);
-	int size = strlen(buf);
-    fwrite(buf,1,size,fp);
-  	fflush(fp);
-	fclose(fp);
+void SpeekEvent_process_log(const char *str1,const char *str2,int value){
+	__WriteLog_File("/log/SpeekEvent_process_log.log",str1,str2,value);
 }
 
 void Write_tulinglog(const char *logStr){
