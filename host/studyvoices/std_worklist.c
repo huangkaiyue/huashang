@@ -448,13 +448,12 @@ static void *PlayVoicesPthread(void *arg){
 						memset(play_buf+playNetwork_pos,0,I2S_PAGE_SIZE-playNetwork_pos);
 						write_pcm(play_buf);
 					}
-					lock_pause_record_audio();
 #if defined(HUASHANG_JIAOYU)					
 					Close_tlak_Light();
 					led_lr_oc(openled);
 					usleep(100000);
-					showFacePicture(WAIT_CTRL_NUM4);
 #endif
+					lock_pause_record_audio();
 					cacheNetWorkPlaySize=0;
 					playlistVoicesSate =END_PLAY_VOICES_LIST;
 				}
@@ -501,18 +500,15 @@ static void *PlayVoicesPthread(void *arg){
 					free(data);
 				}
 				break;
-			case INTERRUPT_PLAY_VOICES_LIST:
-#if 0		
-				CleanI2S_PlayCachedata();//清理
-				StopplayI2s();			 //最后一片数据丢掉
-#else		
+			case INTERRUPT_PLAY_VOICES_LIST:	
 				if(--CleanendVoicesNums<=0){
 					playlistVoicesSate=CLEAN_PLAY_VOICES_LIST;
 				}
-				memset(play_buf,0,I2S_PAGE_SIZE);
-				write_pcm(play_buf);
+				for(i=0;i<8;i++){	//写入空的音频数据，冲掉之前存留的杂音
+					memset(play_buf,0,I2S_PAGE_SIZE);
+					write_pcm(play_buf);
+				}
 				usleep(1000);
-#endif	
 
 				break;
 			case CLEAN_PLAY_VOICES_LIST:

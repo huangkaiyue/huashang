@@ -130,6 +130,7 @@ void pause_record_audio(void){
 void lock_pause_record_audio(void){
 	if(RV->recorde_live==PLAY_WAV){
 		SetRecordeVoices_PthreadState(RECODE_PAUSE);
+		showFacePicture(WAIT_CTRL_NUM4);
 	}else{
 		printf("%s cannot interrupt state \n",__func__);
 	}

@@ -257,7 +257,6 @@ int main(int argc, char **argv){
 	loadLocalServer(argc,argv);
 	char *msg=NULL;
 	int event=0;
-	//showFacePicture(CONNECT_WIFI_ING_PICTURE);
 	signal(SIGSEGV, recvErrorSignal); 
 	while(1){
 		getMsgQueue(DownEvent,&msg,&event);
