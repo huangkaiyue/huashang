@@ -60,12 +60,13 @@ int AddWeiXinMessage_Text(const char *data,int Size){
 int AddWeiXinMessage_Voices(const char *data,int Size){
 	return __AddWeiXinMessage(data,Size,WEIXIN_VOICES);
 }
-
 int GetWeiXinMessageForPlay(void){
 	WeiXinMsg *msg = NULL;
 	char *Get=NULL;
 	int msgSize=0;
-	char bak_voices[256]={0};
+	time_t t;	
+	char bak_voices[256]={0};
+	static int ti=1;
 	if(getWorkMsgNum(WeixinEvent)>0){
 		getMsgQueue(WeixinEvent,&Get,&msgSize);
 		if(Get==NULL){
@@ -79,16 +80,19 @@ int GetWeiXinMessageForPlay(void){
 		}
 		if(getWorkMsgNum(WeixinEvent)==0){
 			if(Bak_Message!=NULL){
+				if(Bak_Message->type ==WEIXIN_VOICES)
+					remove(Bak_Message->data);
 				free(Bak_Message->data);	//释放上一次缓存的语音
 				free(Bak_Message);
 			}
 			if(msg->type ==WEIXIN_TEXT){
 				Bak_Message = msg;
 			}else if(msg->type ==WEIXIN_VOICES){
-				snprintf(bak_voices,256,"cp %s %s",msg->data,"bak.amr");
+				++ti;
+				snprintf(bak_voices,256,"cp %s /Down/%d.amr",msg->data,ti);
 				system(bak_voices);
-				memset(msg->data,0,strlen(msg->data));
-				sprintf(msg->data,"%s","bak.amr");
+				memset(msg->data,0,strlen(msg->data));	
+				sprintf(msg->data,"/Down/%d.amr",ti);
 				Bak_Message = msg;
 			}
 		}else{
@@ -102,7 +106,12 @@ int GetWeiXinMessageForPlay(void){
 			if(Bak_Message->type ==WEIXIN_TEXT){
 				Create_PlayQttsEvent(Bak_Message->data,QTTS_UTF8);
 			}else if(Bak_Message->type ==WEIXIN_VOICES){
-				CreatePlayWeixinVoicesSpeekEvent((const char *)Bak_Message->data);
+				++ti;
+				snprintf(bak_voices,256,"cp %s /Down/%d.amr",Bak_Message->data,ti);
+				system(bak_voices);
+				CreatePlayWeixinVoicesSpeekEvent((const char *)Bak_Message->data);	
+				memset(Bak_Message->data,0,strlen(Bak_Message->data));	
+				sprintf(Bak_Message->data,"/Down/%d.amr",ti);
 			}
 		}
 	}
