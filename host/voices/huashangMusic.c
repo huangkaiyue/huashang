@@ -217,7 +217,7 @@ void GetPlayVoicesName(char *playVoicesName,int *speek){
 			break;
 		case 1:
 			snprintf(playVoicesName,8,"vinn");
-			*speek =70;
+			*speek =50;
 			break;
 		case 2:
 			snprintf(playVoicesName,8,"aisduck");

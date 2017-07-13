@@ -196,7 +196,12 @@ static int parseJson_string(HandlerText_t *handText){
 		goto exit1;
     }
 	if(pSub->valuestring==NULL){	//当出现 "info":{}  --->这种字段，会遇到空指针
-		goto exit1;
+		pSub = cJSON_GetObjectItem(pJson, "text");
+		if(pSub==NULL||pSub->valuestring==NULL){
+			goto exit1;
+		}else{
+			goto exit2;
+		}
 	}
 	char *infoText = pSub->valuestring;
 	
@@ -504,10 +509,12 @@ static void *PlayVoicesPthread(void *arg){
 				if(--CleanendVoicesNums<=0){
 					playlistVoicesSate=CLEAN_PLAY_VOICES_LIST;
 				}
-				for(i=0;i<8;i++){	//写入空的音频数据，冲掉之前存留的杂音
+#ifdef HUASHANG_JIAOYU
+				for(i=0;i<2;i++){	//写入空的音频数据，冲掉之前存留的杂音
 					memset(play_buf,0,I2S_PAGE_SIZE);
 					write_pcm(play_buf);
 				}
+#endif				
 				usleep(1000);
 
 				break;
