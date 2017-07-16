@@ -393,7 +393,6 @@ void InitRecord_VoicesPthread(void){
 	//i=5;
 	snprintf(playFile,24,"qtts/start_%d.amr",i);
 	PlayStartPcm(playFile,0);
-	//pool_add_task(start_playHuashang,NULL);
 	RV->freeVoicesNum =FREE_VOICE_NUMS;
 #else
 	//PlayImportVoices(START_SYS_VOICES,0);

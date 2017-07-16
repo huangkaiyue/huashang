@@ -9,11 +9,9 @@
 #include "qtts_qisc.h"
 #include "config.h"
 #include "StreamFile.h"
-#include "../sdcard/musicList.h"
 #include "../voices/gpio_7620.h"
-#if defined(HUASHANG_JIAOYU)
 #include "../voices/huashangMusic.h"
-#endif
+
 #include "uart/uart.h"
 #include "log.h"
 
@@ -66,11 +64,6 @@ void ReqTulingServer(HandlerText_t *handText,const char *voices_type,const char*
 	}
 	return ;
 exit1:
-#if defined(TANGTANG_LUO)||defined(QITUTU_SHI)||defined(HUASHANG_JIAOYU)
-	Led_System_vigue_close();
-#elif defined(DATOU_JIANG)
-	led_lr_oc(closeled);
-#endif
 	pause_record_audio();
 	return;
 }
@@ -281,11 +274,6 @@ exit0:
 *******************************************************/
 static void runJsonEvent(HandlerText_t *handText){
 	start_event_play_wav();
-#if defined(TANGTANG_LUO)||defined(QITUTU_SHI)||defined(HUASHANG_JIAOYU)
-	Led_System_vigue_close();
-#elif defined(DATOU_JIANG)
-	led_lr_oc(closeled);
-#endif
 	parseJson_string(handText);
 	free((void *)handText->data);
 	free((void *)handText);
@@ -301,8 +289,6 @@ int AddworkEvent(HandlerText_t *eventMsg,int msgSize){
 		WriteEventlockLog("event_lock add error",event_lock);
 		return -1;
 	}
-	if(eventMsg->event!=LOCAL_MP3_EVENT)	//不为本地播放清理播放上下曲
-		sysMes.localplayname=0;
 	WriteEventlockLog("event_lock add ok",event_lock);
 	return putMsgQueue(EventQue,(const char *)eventMsg,msgSize);
 }
@@ -370,15 +356,13 @@ static void HandleEventMessage(const char *data,int msgSize){
 			sleep(3);
 			break;
 			
-#ifdef 	LOCAL_MP3
 		case LOCAL_MP3_EVENT:		//本地音乐播放事件
 			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
 			NetStreamExitFile();
 			start_event_play_Mp3music();
 			AddDownEvent((const char *)data,LOCAL_MP3_EVENT);
 			DEBUG_STD_MSG("handle_event_msg LOCAL_MP3_EVENT add end\n");
-			break;
-#endif		
+			break;		
 		case QTTS_PLAY_EVENT:		//QTTS事件
 			newEventNums=handText->EventNums;
 			Handler_PlayQttsEvent(handText);

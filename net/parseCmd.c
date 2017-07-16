@@ -219,9 +219,7 @@ void ack_playCtr(int nettype,Player_t *play,unsigned char playState){
 	cJSON_AddStringToObject(pItem, "handler", "mplayer");
 	CreateState(pItem,playState);
 	if(playState==STREAM_EXIT){
-#ifndef CLOSE_VOICE 
 		Mute_voices(MUTE);
-#endif
 		CleanI2S_PlayCachedata();
 	}
 	cJSON_AddStringToObject(pItem, "url",play->playfilename);
@@ -300,7 +298,6 @@ void Ack_CallDev(int recvdata){
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
-#ifdef CLOCKTOALIYUN
 void CloseSystemSignToaliyun(void){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
@@ -328,7 +325,6 @@ void SetClockToaliyun(unsigned char clocknum,unsigned char state,const char *tim
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
-#endif
 //清除微信绑定的用户
 void ResetWeixinBindUserMessage(void){
 	char* szJSON = NULL;
@@ -561,11 +557,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			Create_PlaySystemEventVoices(BIND_SSID_PLAY);
 		}
 	}
-	else if (!strcmp(pSub->valuestring,"call")){		//微信界面发送过来的呼叫请求
-#if defined(QITUTU_SHI)	
-		EnableCallDev();
-		Create_PlaySystemEventVoices(TALK_CONFIRM_PLAY);
-#endif		
+	else if (!strcmp(pSub->valuestring,"call")){		//微信界面发送过来的呼叫请求	
 	}
 	else if (!strcmp(pSub->valuestring,"uploadfile")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
@@ -613,13 +605,11 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		char *status= cJSON_GetObjectItem(pJson, "status")->valuestring;
 		if(!strcmp(status,"ok")){	//已经下载完
 			char *cacheMp3file= cJSON_GetObjectItem(pJson, "mp3file")->valuestring;
-#ifdef PALY_URL_SD			
-			Create_SaveWeixinDownMp3_EventToMainQueue(cacheMp3file);
-#endif
+			remove(cacheMp3file);
 		}else{
 		}
 	}
-#if defined(HUASHANG_JIAOYU)	//华上语音识别接口，识别出来的结果
+#if defined(HUASHANG_JIAOYU)	//华上微信端点击播放
 	else if(!strcmp(pSub->valuestring,"localMp3")){
 		WeiXin_playhuaShangMusic(cJSON_GetObjectItem(pJson, "nums")->valueint);
 	}

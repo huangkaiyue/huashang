@@ -8,7 +8,6 @@
 #include "host/ap_sta.h"
 #include "host/StreamPlay/StreamFile.h"
 #include "host/voices/gpio_7620.h"
-#include "host/sdcard/musicList.h"
 #include "config.h"
 #include "host/studyvoices/prompt_tone.h"
 #include "uart/uart.h"
@@ -49,7 +48,7 @@ void CleanSystemResources(void){
 	CleanMtkPlatfrom76xx();
 	system("reboot &");
 	System_StateLog("CleanMtkPlatfrom76xx ok");
-	clean_videoServer();
+	CleanServer();
 	System_StateLog("clean_videoServer ok ");
 	pool_destroy();
 	System_StateLog("pool_destroy ok ");
@@ -89,7 +88,6 @@ static void loadLocalServer(int argc,char *argv[]){
 	}
 	sleep(sleeptime);	//增加一定睡眠时间，防止加载sdcard和sock冲突，导致udp sock不能通信
 	time_t t;
-	sysMes.localplayname=0;			//本地播放目录
 	sysMes.netstate=NETWORK_UNKOWN;	//开机不属于未知网络状态
 	InitWeixinMeesageList();
 	set_pthread_sigblock();
@@ -102,47 +100,13 @@ static void loadLocalServer(int argc,char *argv[]){
 #ifdef WORK_INTER
 	init_interface(pasreInputCmd);
 #endif	//end WORK_INTER
-	init_videoServer();
+	InitServer();
 	init_Uart(UartEventcallFuntion,ack_batteryCtr);	//初始化串口
 	
-#ifdef	LED_LR
 	led_lr_oc(closeled);
-#endif
+
 	srand((unsigned)time(NULL));	//取随机数基数
 	mkdir(CACHE_WAV_PATH,777);
-}
-//自动播放下一首歌曲 musicType 播放歌曲类型(用来区分目录标识)
-static void autoPlayNextMusic(HandlerText_t *hand,unsigned char musicType){
-	switch(musicType){
-#if defined(DATOU_JIANG)		
-		case mp3:
-			GetSdcardMusicNameforPlay(mp3,TF_MP3_PATH,PLAY_NEXT);
-			break;
-		case story:
-			GetSdcardMusicNameforPlay(story,TF_STORY_PATH,PLAY_NEXT);
-			break;
-		case english:
-			GetSdcardMusicNameforPlay(english,TF_ENGLISH_PATH,PLAY_NEXT);
-			break;
-		case guoxue:
-			GetSdcardMusicNameforPlay(guoxue,TF_GUOXUE_PATH,PLAY_NEXT);
-			break;
-#elif defined(QITUTU_SHI)				
-		case xiai:
-			GetSdcardMusicNameforPlay(xiai,XIMALA_MUSIC_DIRNAME,PLAY_NEXT);
-			break;
-#elif defined(HUASHANG_JIAOYU)			
-		case huashang:
-			GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT,EXTERN_PLAY_EVENT);
-			break;
-#endif			
-		default:
-			if(hand->EventNums==GetCurrentEventNums()){
-				Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
-			}
-			sysMes.localplayname=0;
-			break;
-	}	
 }
 static void Create_playContinueMusic(HandlerText_t *hand){
 	int timeout=0;
@@ -201,7 +165,7 @@ static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_SDCARD);
 	}else{											//自动播放
 		if(getEventNum()==0&&getWorkMsgNum(DownEvent)==0){
-			autoPlayNextMusic(hand,sysMes.localplayname);
+			GetScard_forPlayHuashang_Music(PLAY_NEXT,EXTERN_PLAY_EVENT);
 		}	
 	}
 exit0:	
@@ -239,7 +203,6 @@ static void checkFileLock(void){
 	}
 }
 //信号处理函数
-
 void recvErrorSignal(int sig)  {  
     printf("received signal %d !!!\n",sig);  
 	if(ExitLock){
@@ -283,14 +246,7 @@ int main(int argc, char **argv){
 			case LOCAL_MP3_EVENT:	//本地播放
 				Main_Thread_AddPlayLocalSdcard_Music((HandlerText_t *)msg);
 				printf("%s: Main_Thread_AddPlayLocalSdcard_Music end\n",__func__);
-				break;		
-#ifdef PALY_URL_SD
-			case WEIXIN_DOWN_MP3_EVENT:	//微信端下载歌曲事件	
-				HandlerWeixinDownMp3((const void *)msg);
-				free((void *)msg);
-				printf("%s: HandlerWeixinDownMp3 end\n",__func__);
-				break;
-#endif				
+				break;				
 			case QUIT_MAIN:
 				printf("end main !!!\n");
 				CleanSystemResources();

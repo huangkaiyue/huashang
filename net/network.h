@@ -28,8 +28,8 @@ typedef struct{
 extern void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer);
 extern int send_ctrl_ack(int sockfd,char *data,int size);
 extern int sendAll_Ack(char *data,int size);
-extern void init_videoServer(void);
-extern void clean_videoServer(void);
+extern void InitServer(void);
+extern void CleanServer(void);
 extern void ack_allplayerCtr(void *data,Player_t *player);
 extern void ack_playCtr(int nettype,Player_t *player,unsigned char playState);
 extern void ack_batteryCtr(int recvdata,int power);

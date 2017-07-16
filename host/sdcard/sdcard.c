@@ -1,7 +1,6 @@
 #include "comshead.h"
 #include "config.h"
 #include "systools.h"
-#include "../sdcard/musicList.h"
 
 #define SEC			1
 #define MIN			60*SEC

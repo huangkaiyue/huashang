@@ -2,31 +2,109 @@
 #include "systools.h"
 #include "config.h"
 #include "host/voices/callvoices.h"
-#include "../sdcard/musicList.h"
 #include "base/cJSON.h"
 #include "gpio_7620.h"
 #include "huashangMusic.h"
 
-#ifdef HUASHANG_JIAOYU		//获取华上教育sdcard当中国学的歌曲内容
-
 //------------------------------------------------------------------------------
 typedef struct{
 	unsigned char playVoicesNameNums;
+	unsigned char dirMenu;
 	int PlayHuashang_MusicIndex;	//播放华上教育歌曲下表编号 
 	int Huashang_MusicTotal;
-#ifdef XUN_FEI_OK
-	unsigned char AifiState;
-#endif
 }HuashangUser_t;
-
 static HuashangUser_t *hsUser=NULL;
 
+void SetDirMenu(void){
+	char playBuf[128]={0};
+	char *readBuf = readFileBuf((const char * )DEFALUT_DIR_MENU_JSON);
+	if(readBuf==NULL){
+		return -1;
+	}
+	int ret=-1;
+	int start=0, end=0;
+	cJSON * pJson = cJSON_Parse(readBuf);
+	if(NULL == pJson){
+		printf("pasre json is failed \n");
+		goto exit1;
+	}
+	cJSON * pArray =cJSON_GetObjectItem(pJson, "menu");
+	if(NULL == pArray){
+		printf("cJSON_Parse dirmenu failed \n");
+		goto exit1;
+	}
+	int iCount = cJSON_GetArraySize(pArray);
+	++hsUser->dirMenu;
+	if(hsUser->dirMenu>iCount){
+		hsUser->dirMenu=0;
+	}
+	cJSON* pItem = cJSON_GetArrayItem(pArray, hsUser->dirMenu);
+	if (NULL == pItem){
+		goto exit1;
+	}
+	cJSON *cj =cJSON_GetObjectItem(pItem, "start");
+	if(cj!=NULL){
+			hsUser->PlayHuashang_MusicIndex=cj->valueint;
+			snprintf(playBuf,128,"%s%s/%d.mp3",TF_SYS_PATH,HUASHANG_GUOXUE_DIR,hsUser->PlayHuashang_MusicIndex);
+			Write_huashang_log((const char *)"SetDirMenu",(const char * )playBuf,2);
+			if(access(playBuf, F_OK)==0){
+			ret=__AddLocalMp3ForPaly((const char *)playBuf,EXTERN_PLAY_EVENT);
+		}
+	}
+exit1:
+	cJSON_Delete(pJson);
+exit0:
+	free(readBuf);
+	return ret;
+}
+int Update_DirMenu(int PlayHuashang_MusicIndex){
+	char *readBuf = readFileBuf((const char * )DEFALUT_DIR_MENU_JSON);
+	if(readBuf==NULL){
+		return -1;
+	}
+	int ret=-1;
+	int start=0, end=0;
+	cJSON * pJson = cJSON_Parse(readBuf);
+	if(NULL == pJson){
+		printf("pasre json is failed \n");
+		goto exit1;
+	}
+	cJSON * pArray =cJSON_GetObjectItem(pJson, "menu");
+	if(NULL == pArray){
+		printf("cJSON_Parse aliyun failed \n");
+		goto exit1;
+	}
+	int iCount = cJSON_GetArraySize(pArray);
+	int i=0;
+	for (i=0; i < iCount; ++i) {
+		cJSON* pItem = cJSON_GetArrayItem(pArray, i);
+		if (NULL == pItem){
+			continue;
+		}
+		cJSON *cj =cJSON_GetObjectItem(pItem, "start");
+		if(cj==NULL){
+			continue; 
+		}
+		int start = cj->valueint;
+		if(PlayHuashang_MusicIndex>=start){
+			hsUser->dirMenu=i;
+			break;
+		}
+	}
+exit1:
+	cJSON_Delete(pJson);
+exit0:
+	free(readBuf);
+	return ret;
+
+}
 void InitHuashang(void){
 	hsUser = (HuashangUser_t *)calloc(1,sizeof(HuashangUser_t));
 	if(hsUser==NULL){
 		perror("calloc hsUser failed ");
 		return ;
 	}
+	hsUser->dirMenu=1;
 }
 //开机获取华上教育内容播放记录
 void openSystemload_huashangData(void){
@@ -54,8 +132,9 @@ void openSystemload_huashangData(void){
 	hsUser->Huashang_MusicTotal=pSub->valueint;
 exit0:	
 	free(filebuf);
-}
-int GetScard_forPlayHuashang_Music(const void *playDir,unsigned char playMode,unsigned char EventSource){
+}
+//获取sdcard 歌曲编号进行播放
+int GetScard_forPlayHuashang_Music(unsigned char playMode,unsigned char EventSource){
 	int ret=-1;
 	char playBuf[128]={0};
 	if(hsUser==NULL){
@@ -79,6 +158,7 @@ int GetScard_forPlayHuashang_Music(const void *playDir,unsigned char playMode,un
 	snprintf(playBuf,128,"%s%s/%d.mp3",TF_SYS_PATH,HUASHANG_GUOXUE_DIR,hsUser->PlayHuashang_MusicIndex);
 	if(access(playBuf, F_OK)==0){
 		Write_huashang_log((const char *)"get play file ok",(const char * )playBuf,2);
+		Update_DirMenu(hsUser->PlayHuashang_MusicIndex);
 		ret=__AddLocalMp3ForPaly((const char *)playBuf,EventSource);
 	}else{
 		Write_huashang_log((const char *)"get play file failed",(const char * )playBuf,3);
@@ -170,6 +250,7 @@ void closeSystemSave_huashangData(void){
 void updatePlayindex(int playIndex){
 	if(hsUser){
 		hsUser->PlayHuashang_MusicIndex=playIndex;
+		Update_DirMenu(hsUser->PlayHuashang_MusicIndex);
 	}
 }
 //------------------------------------------------------------------------------
@@ -234,5 +315,4 @@ void GetPlayVoicesName(char *playVoicesName,int *speek){
 	}
 }
 
-#endif
 

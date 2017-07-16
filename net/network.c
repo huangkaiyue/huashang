@@ -16,18 +16,15 @@
 Server *ctrSer=NULL;
 static void  __close_server(Server *ser);
 
-static Server * Server_Alloc(void)
-{
+static Server * Server_Alloc(void){
 	Server *ser = calloc(sizeof(Server),1);
-	if(!ser)
-	{
+	if(!ser){
 		ServerLog("calloc Server failed \n");
 		return NULL;
 	}
 	return ser;
 }
-static void Server_Free(Server *ser)
-{
+static void Server_Free(Server *ser){
 	int timeout=0;
 	if(ser){
 		ser->quit =0;
@@ -44,19 +41,7 @@ static void Server_Free(Server *ser)
 	}
 	ser=NULL;
 }
-#if 0
-void showclient(Server *ser)  
-{  
-    int i;  
-    ServerLog("client amount: %d\n", ser->conn_amount);  
-    for (i = 0; i < BACKLOG; i++) {  
-        ServerLog("[%d]:%d  ", i, ser->fd_A[i]);  
-    }  
-    ServerLog("\n\n");  
-} 
-#endif
-static int initSock(Server *ser,int port)
-{
+static int initSock(Server *ser,int port){
 	int sock =create_server(NULL,port);
 	if(sock==-1)
 	{
@@ -67,13 +52,10 @@ static int initSock(Server *ser,int port)
 	return 0;
 }
 
-static void delete_socket(Server *ser,int sockfd)
-{
+static void delete_socket(Server *ser,int sockfd){
 	int i=0;
-	for (i = 0; i < ser->conn_amount; i++) 
-	{  									
-		if(ser->fd_A[i]==sockfd)
-		{
+	for (i = 0; i < ser->conn_amount; i++) {  									
+		if(ser->fd_A[i]==sockfd){
 			// client close  
 			ServerLog("client[%d] close\n", i);
 			ser->conn_amount--;
@@ -88,8 +70,7 @@ static void delete_socket(Server *ser,int sockfd)
 @  sockfd 回应请求描述符 data 回应数据 size 数据包大小
 @  无
 */
-static int __send_ctrl_ack(Server *ser,int sockfd,char *data,int size)
-{
+static int __send_ctrl_ack(Server *ser,int sockfd,char *data,int size){
 	int ret=0;
 	char *cachedata = (char *)calloc(1,size+16);
 	if(cachedata==NULL){
@@ -102,41 +83,34 @@ static int __send_ctrl_ack(Server *ser,int sockfd,char *data,int size)
 	ret = send(sockfd,cachedata,size+16,0);
 	free(cachedata);
 	ServerLog("--------------------------\n%s\n----------------------------\n",data);
-	if(ret==0)
-	{
+	if(ret==0){
 		perror("sockfd is close ");
 		delete_socket(ser,sockfd);
 		return -1;
-	}else if(ret==-1)
-	{
+	}else if(ret==-1){
 		perror("send ctrl ack failed");
 		return -1;
 	}
 	return 0;
 }
 
-int send_ctrl_ack(int sockfd,char *data,int size)
-{	
+int send_ctrl_ack(int sockfd,char *data,int size){	
 	return __send_ctrl_ack(ctrSer,sockfd,data,size);
 }
 
-static int __sendAll_Ack(Server *ser,char *data,int size)
-{
+static int __sendAll_Ack(Server *ser,char *data,int size){
 	int i;
-	for (i = 0; i < ser->conn_amount; i++) 
-	{
+	for (i = 0; i < ser->conn_amount; i++) {
 		if(ser->fd_A[i]>0)
 			__send_ctrl_ack(ser,ser->fd_A[i],data,size);
 	}
 	return 0;
 }
 
-int sendAll_Ack(char *data,int size)
-{
+int sendAll_Ack(char *data,int size){
 	return __sendAll_Ack(ctrSer,data,size);
 }
-static int SendUdp_Ack(Server *ser,struct sockaddr_in *addr,char *data,int size)
-{
+static int SendUdp_Ack(Server *ser,struct sockaddr_in *addr,char *data,int size){
 	int ret=0;
 	char *cachedata = (char *)calloc(1,size+16);
 	if(cachedata==NULL){
@@ -151,11 +125,9 @@ static int SendUdp_Ack(Server *ser,struct sockaddr_in *addr,char *data,int size)
 	ServerLog("%s\n---------------------------------------------------------\n",data);
 	return ret;
 }
-int UdpAll_Ack(char *data,int size)
-{
+int UdpAll_Ack(char *data,int size){
 	int i;
-	for (i = 0; i < ctrSer->conn_amount; i++) 
-	{
+	for (i = 0; i < ctrSer->conn_amount; i++) {
 		if(ctrSer->fd_A[i]>0)
 			SendUdp_Ack(ctrSer,&(ctrSer->addr[i]),data,size);
 	}
@@ -175,11 +147,8 @@ static int SetTcpNoDelay(int sockfd) {
 @  new_fd 新连接上来的fd client_addr 客户端的地址
 @  无
 ***********************************************************/
-static void add_queue(Server *ser,int new_fd,struct sockaddr_in client_addr)
-{
+static void add_queue(Server *ser,int new_fd,struct sockaddr_in client_addr){
 	int i=0;
-//	int vol;
-//	int Flags;
 	if (ser->conn_amount < BACKLOG){	
 	 	for(i=0;i<BACKLOG;i++){
 			if(ser->fd_A[i]==0)
@@ -208,20 +177,16 @@ static void add_queue(Server *ser,int new_fd,struct sockaddr_in client_addr)
 @
 @ 
 ***********************************************************/
-static void recv_ctrlMsg(Server *ser,char recvbuf[])
-{
+static void recv_ctrlMsg(Server *ser,char recvbuf[]){
 	int  i=0, ret=0;
-#ifdef SELECT_UDP
 	struct sockaddr_in peer;
 	int len = sizeof(struct sockaddr);
 	if (FD_ISSET(ser->broSock, &ser->fdsr)){ 
-		if((ret = recvfrom(ser->broSock, recvbuf,512,0,(struct sockaddr*)&peer,(socklen_t *)&len))>0)
-		{
+		if((ret = recvfrom(ser->broSock, recvbuf,512,0,(struct sockaddr*)&peer,(socklen_t *)&len))>0){
 			udpLog(recvbuf);
 			handler_CtrlMsg(ser->broSock,recvbuf,ret,&peer);
 		}
 	}
-#endif
 	// check every fd in the set  
 	for (i = 0; i < ser->conn_amount; i++){
 		if (FD_ISSET(ser->fd_A[i], &ser->fdsr)){
@@ -244,13 +209,7 @@ static void recv_ctrlMsg(Server *ser,char recvbuf[])
 		}  
 	} 
 }
-/*
-@ 接收控制台消息
-@ 
-@ 无
-*/
-static void *Ctrl_Server(void *arg)
-{
+static void *Ctrl_Server(void *arg){
 	Server *ser = (Server *)arg;
 	struct timeval tv;
 	int i=0;	
@@ -267,11 +226,8 @@ static void *Ctrl_Server(void *arg)
 	ser->maxsock = ser->listenfd;  
 	ServerLog("ser->maxsock = %d\n",ser->maxsock);
 	while(ser->quit){
-		FD_ZERO(&ser->fdsr);
-		
-#ifdef SELECT_UDP
+		FD_ZERO(&ser->fdsr);		
 		FD_SET(ser->broSock, &ser->fdsr);
-#endif
 		FD_SET(ser->listenfd, &ser->fdsr);
 		tv.tv_sec = 2;	
 		tv.tv_usec = 0;  
@@ -312,12 +268,9 @@ static void *Ctrl_Server(void *arg)
 	return NULL;
 }
 
-#ifdef SELECT_UDP
-int SendtoServicesWifi(char *msg,int size)
-{
+int SendtoServicesWifi(char *msg,int size){
 	return sendto(ctrSer->broSock,msg,size,0,(const struct sockaddr *)&ctrSer->wifiAddr,sizeof(struct sockaddr_in));
 }
-#endif
 int SendtoaliyunServices(const void *msg,int size){
 	return sendto(ctrSer->broSock,msg,size,0,(const struct sockaddr *)&ctrSer->speekAddr,sizeof(struct sockaddr_in));
 }
@@ -330,35 +283,25 @@ static void EnableNetworkFile_lock(void){
 		}
 	}
 }
-
-/*
-@ 初始化视频服务器 ,消息控制、视频数据服务
-@ 
-@ 无
-*/
-void init_videoServer(void)
-{
+void InitServer(void){
 	//控制数据端口
 	ctrSer= Server_Alloc();
 	if(!ctrSer){
 		return ;
 	}
-#ifdef SELECT_UDP
 	ctrSer->broSock= create_listen_brocast(NULL,CTRL_PORT);
 	if(ctrSer->broSock<0){
 		return ;
 	}
 	char IP[20]={0};
-	if(GetNetworkcardIp("br0",IP))
-	{
-			writeLog((const char * )"/log/init_videoServer.log",(const char * )"get br0 failed .......");
+	if(GetNetworkcardIp("br0",IP)){
+			writeLog((const char * )"/log/InitServer.log",(const char * )"get br0 failed .......");
 			perror("get br0 ip failed");
 			return ;
 	}
 	init_addr(&ctrSer->wifiAddr, IP,  20003);
 	//GetNetState();
 	EnableNetworkFile_lock();
-#endif
 	init_addr(&ctrSer->speekAddr, IP,  SPEEK_PORT);
 	initSock(ctrSer,BASE_PORT);
 	if(pthread_create_attr(Ctrl_Server,ctrSer)){
@@ -383,15 +326,12 @@ static void  __close_server(Server *ser)
 @ 
 @ 无
 */
-void clean_videoServer(void)
-{
-#ifdef SELECT_UDP
+void CleanServer(void){
 	if(ctrSer->broSock>0){
 		close(ctrSer->broSock);
 	}
-#endif
 	//close(ctrSer->maxsock);
 	Server_Free(ctrSer);
-	ServerLog(" clean_videoServer success\n");
+	ServerLog(" CleanServer success\n");
 }
 

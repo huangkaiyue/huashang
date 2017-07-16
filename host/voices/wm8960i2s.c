@@ -196,9 +196,6 @@ void InitWm8960Voices(void){
 		perror("i2scmd init");
 		return ;
 	}
-#ifdef CLOSE_VOICE
-	mute_recorde_vol(MUTE);
-#endif	
 	close_wm8960_voices();//----------------------
 	SET_RATE(I2S.i2s_fd, I2S.tx_rate);
 	//SET_RX_VOL(I2S.i2s_fd, AUDIO_RX_VOICE);
@@ -266,9 +263,7 @@ int SetWm8960Rate(unsigned short rate,const char *function){
 	I2S.lockSetRate=1;
 	if(rate==I2S.tx_rate){  //播放的采样率等于录音采样率，不需要切换
 		printf("start play rate = %d\n",rate);
-#ifndef CLOSE_VOICE		//保持打开状态
 		Mute_voices(UNMUTE);
-#endif
 		I2S.lockSetRate=0;
 		WriteRateTextLog(function,"equal rate",rate);
 		return 0;

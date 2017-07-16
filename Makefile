@@ -43,8 +43,6 @@ all +=host/voices/huashangPasreUtf8.o
 all +=host/voices/weixinMessage.o
 
 all +=host/sdcard/sdcard.o
-all +=host/sdcard/sqlite.o
-all +=host/sdcard/MusicListDb.o
 all +=host/studyvoices/std_worklist.o
 all +=host/studyvoices/demoSpeech.o
 all +=host/studyvoices/check_text_utf8.o
@@ -53,7 +51,7 @@ all +=host/ap_sta.o
 
 all +=host/StreamPlay/newStreamFile.o
 all +=host/StreamPlay/downMp3.o
-all +=host/StreamPlay/DemoMp3head.o
+
 
 export CC
 $(TAR): $(all)

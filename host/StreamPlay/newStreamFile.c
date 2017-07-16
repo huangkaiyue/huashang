@@ -6,10 +6,8 @@
 #include "mplay.h"
 #include "config.h"
 #include "curldown.h"
-#include "../sdcard/musicList.h"
 #include "host/voices/callvoices.h"
 #include "../voices/gpio_7620.h"
-#include "DemoMp3head.h"
 #include "uart/uart.h"
 #include "log.h"
 
@@ -38,7 +36,6 @@ int __safe_fread(char *data,int input_size){
 	st->rfp=NULL;
 	return 0;
 }
-
 #endif
 void cleanStreamData(Mp3Stream *st){
 	st->channel=0;
@@ -51,19 +48,7 @@ void cleanStreamData(Mp3Stream *st){
 	memset(st->mp3name,0,128);
 	st->player.playState=MAD_EXIT;
 }
-static void ack_progress(void){
-	st->player.progress= (st->playSize*100)/st->streamLen;
-	if(st->player.progress>23&&st->player.proflag==0){
-		st->player.proflag=25;
-		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
-	}else if(st->player.progress>48&&st->player.proflag==25){
-		st->player.proflag=50;
-		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
-	}else if(st->player.progress>73&&st->player.proflag==50){
-		st->player.proflag=75;
-		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
-	}
-}
+
 static void GetMusicMessage(int rate,int channels){
 	st->rate = rate;
 	st->SetI2SRate(rate,"NetplayStreamMusic set rate");
@@ -96,21 +81,7 @@ static void InputNetStream(const void * inputMsg,int inputSize){
 		st->wait=0;
 		st->ack_playCtr(TCP_ACK,&st->player,MAD_PLAY);
 	}
-#ifdef SEEK_TO
-	if(st->streamLen != 0)
-	{
-#ifdef SHOW_progressBar	
-		float getPercent=0;
-		progressBar(st->playSize,st->streamLen,&getPercent);
-#endif		
-		ack_progress();
-	}
-	else{
-		DEBUG_STREAM("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n ");
-		DEBUG_STREAM(" InputNetStream : streamLen == %d \n ",st->streamLen);
-		DEBUG_STREAM(" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n");
-	}
-#endif
+
 	pthread_mutex_lock(&st->mutex);
 #ifdef SAFE_READ_WRITER
 	if(!__safe_fread(inputMsg,inputSize))
@@ -124,12 +95,6 @@ static void InputNetStream(const void * inputMsg,int inputSize){
 #endif
 	pthread_mutex_unlock(&st->mutex);
 }
-#define LOVE_MP3_UNKOWN_EVENT				0		//未知状态
-#define LOVE_MP3_SAVE_LOVE_MP3_EVENT		1		//添加喜爱
-#define LOVE_MP3_DELETE_EVENT				2		//删除喜爱
-#define DEFAULT_SAVE_MP3_EVENT				3		//默认保存mp3文件
-
-static unsigned char like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;
 int GetFileNameForPath(const char *path){
 	int i=0;
 	int size=strlen(path);
@@ -142,59 +107,6 @@ int GetFileNameForPath(const char *path){
 		break;
 	}
 	return (size-strlen(p)+1);
-}
-static void SaveLoveMp3File(const char *filepath){
-#if defined(QITUTU_SHI)		
-	char runCmd[200]={0};
-	switch(like_mp3_sign){
-		case LOVE_MP3_SAVE_LOVE_MP3_EVENT:		//添加喜爱
-#if 0
-			if(CheckSdcardInfo(MP3_SDPATH)){	//内存不足50M删除指定数目的歌曲
-				printf("%s: delete memory ,path %s\n",__func__,MP3_SDPATH);
-				DelSdcardMp3file((char *)MP3_LIKEPATH);
-				break;
-			}	
-#endif
-			if(strcmp(st->mp3name,"")){
-				//插入数据库成功
-				if(InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name)==0){
-					printf("%s: save music ok \n",__func__);
-					snprintf(runCmd,200,"cp %s %s%s",filepath,MP3_LIKEPATH,st->mp3name);
-					system(runCmd);
-				}else{
-					printf("%s: save music failed \n",__func__);
-				}
-				
-			}	
-			like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;	
-			break;
-		case LOVE_MP3_DELETE_EVENT:		//删除喜爱
-			like_mp3_sign=LOVE_MP3_UNKOWN_EVENT;
-			if(!strcmp(st->mp3name,"")){	//等于空
-				int size=GetFileNameForPath(filepath);
-				memcpy(st->mp3name,filepath+size,strlen(filepath));
-			}
-			printf("filepath: %s \t mp3name: %s \n",filepath,st->mp3name);
-			if(DelXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)st->mp3name)==0)
-				remove(filepath);
-			break;
-		case DEFAULT_SAVE_MP3_EVENT:	//默认保存到sdcard 当中
-			//snprintf(buf,200,"cp %s %s%s",URL_SDPATH,MP3_SDPATH,st->mp3name);
-			//system(buf);
-			break;
-		default:	
-			break;
-	}
-#endif	
-}
-
-//喜爱
-void Save_like_music(void){
-	like_mp3_sign=LOVE_MP3_SAVE_LOVE_MP3_EVENT;
-}
-
-void Del_like_music(void){
-	like_mp3_sign=LOVE_MP3_DELETE_EVENT;
 }
 
 //播放网络流音频文件
@@ -210,14 +122,7 @@ static void *NetplayStreamMusic(void *arg){
 			return NULL;
 		}
 	}
-#if 0	
-	Mp3Demo_t mp3;
-	memset(&mp3,0,sizeof(Mp3Demo_t));
-	if(DemoGetMp3head(st->rfp,&mp3)){
-		mp3.rate=44100;
-	}
-	st->rate=mp3.rate;
-#endif	
+	
 #ifdef SAFE_READ_WRITER
 	fclose(st->rfp);
 	st->rfp=NULL;
@@ -232,11 +137,6 @@ static void *NetplayStreamMusic(void *arg){
 	
 	DecodePlayMusic(GetMusicMessage,InputNetStream);
 
-#ifdef PALY_URL_SD
-	if(st->cacheSize==st->streamLen){	//下载结束
-		SaveLoveMp3File((const char *)URL_SDPATH);
-	}
-#endif
 	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//发送结束状态
 	cleanStreamData(st);	//状态切换是否加锁
 	
@@ -415,14 +315,8 @@ void keyStreamPlay(void){
 		showFacePicture(WAIT_CTRL_NUM4);
 		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	}else if(st->player.playState==MAD_EXIT){
-#ifdef LOCAL_MP3
-#if defined(QITUTU_SHI)
-		GetSdcardMusicNameforPlay(xiai,XIMALA_MUSIC_DIRNAME,PLAY_NEXT);//暂停状态，添加喜爱歌曲播放
-#elif defined(HUASHANG_JIAOYU) 
-		GetScard_forPlayHuashang_Music((const void *)HUASHANG_GUOXUE_DIR,PLAY_NEXT,EXTERN_PLAY_EVENT);//暂停状态，添加华上教育歌曲播放
-#endif
+		GetScard_forPlayHuashang_Music(PLAY_NEXT,EXTERN_PLAY_EVENT);//暂停状态，添加华上教育歌曲播放
 		usleep(1000);//防止添加按键太快	
-#endif		
 	}
 }
 //进度条控制播放 
@@ -454,18 +348,6 @@ static void InputlocalStream(const void * inputMsg,int inputSize){
 		DecodeExit();
 		return ;
 	}
-#ifdef SEEK_TO
-	if(st->streamLen != 0){
-#ifdef SHOW_progressBar		
-		float getPercent=0;
-		progressBar(st->playSize,st->streamLen,&getPercent);
-#endif	
-		ack_progress();
-	}
-	else{
-		DEBUG_STREAM(" InputNetStream : streamLen == %d \n ");
-	}
-#endif
 	if(st->GetWm8960Rate==8000){
 		DecodeExit();
 	}
@@ -488,12 +370,7 @@ static void playLocalMp3(const char *mp3file){
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	
 	printf("=============ack_playCtr=============\n"); //---bug,不能删
-	Mp3Demo_t mp3;
-	memset(&mp3,0,sizeof(Mp3Demo_t));
-	if(DemoGetMp3head(st->rfp,&mp3)){
-		mp3.rate=44100;
-	}
-	st->rate= mp3.rate;
+
 	fseek(st->rfp,0,SEEK_END);
 	st->streamLen = ftell(st->rfp);
 	fseek(st->rfp,0,SEEK_SET);
@@ -501,19 +378,11 @@ static void playLocalMp3(const char *mp3file){
 	printf("=============fseek=============\n"); //---bug,不能删
 
 	pthread_mutex_unlock(&st->mutex);
-	if(st->rate==0||st->rate==8000)
-		st->rate=44100;
-	
-	DEBUG_STREAM("music st->rate =%d st->channel=%d \n",st->rate,st->channel);
-	st->SetI2SRate(st->rate,"playLocalMp3 set rate");
+
 	SetDecodeSize(st->streamLen);
 	DecodeStart();
 	DEBUG_STREAM("music start play \n");
 	DecodePlayMusic(GetMusicMessage,InputlocalStream);
-	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//发送结束状态
-#ifdef PALY_URL_SD
-	//SaveLoveMp3File(mp3file);		//删除喜爱歌曲
-#endif
 	cleanStreamData(st);	//状态切换是否加锁
 	DEBUG_STREAM(" exit play ok \n");
 	WriteEventlockLog("playLocalMp3  exit play ok ",(int)st->player.playState);
@@ -522,9 +391,6 @@ static void playLocalMp3(const char *mp3file){
 int Mad_PlayMusic(Player_t *play){
 	int ret =1;
 	start_event_play_Mp3music();
-#if defined(HUASHANG_JIAOYU)
-	//led_lr_oc(closeled);
-#endif
 	char domain[64] = {0};
 	char filename[128]={0};
 	int port = 80;
@@ -543,31 +409,9 @@ int Mad_PlayMusic(Player_t *play){
 	}
 	ret =0;
 exit0:	
-#if defined(HUASHANG_JIAOYU)	
-	//led_lr_oc(openled);
-#endif
 	return ret;
 }
-#ifdef PALY_URL_SD
-//cacheFilename :微信端下载缓存的路径  /Down/xxxxxxxxxx.mp3
-void HandlerWeixinDownMp3(const char *cacheFilename){
-	char rumCmd[200]={0};
-	char *filename= STRSTR(cacheFilename,'/');	//获取后缀文件名
-	if(!strcmp(filename,"")){
-		goto exit1;
-	}
-	WritePlayUrl_Log(cacheFilename,filename);
-	keydown_flashingLED();	
-#if defined(QITUTU_SHI)	
-	if(InsertXimalayaMusic((const char *)XIMALA_MUSIC,(const char *)filename)==0){	//插入数据库成功
-		snprintf(rumCmd,200,"cp %s %s%s",cacheFilename,MP3_LIKEPATH,filename);
-		system(rumCmd);
-	}
-#endif	
-exit1:	
-	remove(cacheFilename);
-}
-#endif
+
 //获取播放流状态
 void getStreamState(void *data,void StreamState(void *data,Player_t *player)){
 	st->player.vol = st->GetVol();

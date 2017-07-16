@@ -20,17 +20,15 @@
 #define	SPEEK_KEY					41	//会话键
 #define	PLAY_PAUSE_KEY				42	//播放/暂停
 
-#define RESERVE_KEY3				20	//收藏歌曲
+#define DIR_MENU_KEY				20	//目录切换按键
 
 #define ADDVOL_KEY					16	//上一曲--音量加
 #define SUBVOL_KEY					17	//下一曲--音量减
 
 
 #define RIGHTLED_KEY				14	//微信发送过来的绑定请求
-
-#define LETFLED_KEY					21	//素质
-#define HUASHANG_WEIXIN_SPEEK_KEY	LETFLED_KEY	//华上教育微信对讲
-#define WEIXIN_SPEEK_KEY			LETFLED_KEY	//微信对讲
+				
+#define WEIXIN_SPEEK_KEY			21	//微信对讲
 
 
 #define GPIO_DEV	"/dev/gpio"
@@ -40,8 +38,8 @@
 #define BIND_DEV_ER	0
 #define BIND_DEV_OK	1
 
-#define VOLKEYDOWN	0	//按下
-#define VOLKEYUP	1	//弹起
+#define KEYDOWN	0	//按下
+#define KEYUP	1	//弹起
 
 
 
@@ -65,20 +63,25 @@ enum{
 typedef struct {
 	int fd;
 	unsigned int mount;//中断gpio口
-	unsigned char sig_lock:2,//锁
-			speek_tolk:2,
-			ledletf:2,
-			ledright:2;
-	unsigned char callbake:2,
-		bindsign:6;
-	unsigned int data;
+	unsigned char sig_lock:4,//锁
+		bindsign:4;
 }Gpio;
+
+//用于按键长短按复用，主要用于音量加减与上下曲按键复用
+typedef struct {
+	unsigned char PthreadState;
+	unsigned int key_number;	//按键号
+	unsigned int key_state;		//按键状态:按下/弹起
+	
+	struct timeval time_start,time_end;
+}key_mutiple_t;
+
+#define PthreadState_exit 	0
+#define PthreadState_run	1
 
 extern void open_wm8960_voices(void);
 extern void close_wm8960_voices(void);
 extern void led_lr_oc(unsigned char type);
-extern void Led_System_vigue_open(void);
-extern void Led_System_vigue_close(void);
 extern void enable_gpio(void);
 extern void InitMtk76xx_gpio(void);
 extern void disable_gpio(void);

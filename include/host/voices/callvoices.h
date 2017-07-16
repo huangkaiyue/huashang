@@ -49,7 +49,6 @@
 #define QUIT_MAIN				10		//退出main函数
 #define TULING_URL_MAIN			11		//图灵URL事件
 #define TULING_URL_VOICES		12		//图灵mp3事件
-#define WEIXIN_DOWN_MP3_EVENT	13		//微信端下载歌曲事件
 
 //----------------------系统音---------------------------------------
 #define END_SYS_VOICES_PLAY			1	//结束音
@@ -66,7 +65,6 @@
 #define NOT_FIND_WIFI_PLAY			13	//没有扫描到wifi
 #define SMART_CONFIG_FAILED_PLAY	14	//没有收到用户发送的wifi
 #define NOT_NETWORK_PLAY			18	//板子没有连接上网络
-#define CONNET_CHECK_PLAY			19	//正在检查网络是否可用
 #define SEND_OK_PLAY				20	//发送成功
 #define SEND_ERROR_PLAY				21	//发送失败
 #define SEND_LINK_PLAY				22	//正在发送
@@ -123,9 +121,7 @@
 typedef struct{
 	unsigned char recorde_live;
 	unsigned char uploadState;
-#if defined(HUASHANG_JIAOYU)
-	unsigned char freeVoicesNum;
-#endif	
+	unsigned char freeVoicesNum;	
 	unsigned char closeTime;
 	unsigned char WaitSleep;
 	int len_voices;
@@ -146,7 +142,6 @@ typedef struct{
 
 typedef struct{
 	unsigned char wifiState;
-	unsigned char localplayname;		//当前播放本地歌曲目录
 	unsigned char netstate;				//板子连接外部网络状态
 	char localVoicesPath[20];			//板子系统音存放路径
 }SysMessage;
@@ -161,11 +156,6 @@ extern SysMessage sysMes;
 
 static enum{
 	networkUrl=1,
-	mp3,
-	story,
-	english,
-	guoxue,
-	xiai,
 	huashang,
 };
 
@@ -201,7 +191,6 @@ extern void LongNetKeyDown_ForConfigWifi(void);
 #define AUTO_PLAY_EVENT		2	//内部自身产生播放事件
 
 extern int __AddLocalMp3ForPaly(const char *localpath,unsigned char EventSource);
-extern int GetSdcardMusicNameforPlay(unsigned char MuiscMenu,const char *MusicDir, unsigned char playMode);	
 extern void Create_CleanUrlEvent(void);
 extern void Create_PlayQttsEvent(const char *txt,int type);
 extern void TulingKeyDownSingal(void);

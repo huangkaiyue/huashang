@@ -170,12 +170,12 @@ static void *RunSmartConfig_Task(void *arg){
 		delInternetLock();	//上半段解文件锁
 	}
 	free(buf);
+exit0:	
 	connetState=UNLOCK_SMART_CONFIG_WIFI;
-exit0:
 	wifi->enableGpio();
 	free(wifi);
 	wifi=NULL;
-	pool_add_task(CheckNetWork_taskRunState, NULL);
+	pthread_create_attr(CheckNetWork_taskRunState, NULL);
 	return NULL;
 }
 int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
@@ -198,41 +198,13 @@ int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
 	wifi->enableGpio = EnableGpio;
 	WiterSmartConifg_Log("startSmartConfig ","pool_add_task ok");
 	createInternetLock();	//上半段上文件锁
-	pool_add_task(RunSmartConfig_Task, wifi);
+	pthread_create_attr(RunSmartConfig_Task, wifi);
 	ret=0;
 	return ret;
 exit1:
 	connetState=UNLOCK_SMART_CONFIG_WIFI;
 	delInternetLock();	//上半段解文件锁
 	return ret;
-}
-//长时间不用，需要重新扫描一下网络  
-void ScanWifi_AgainForConnect(void EnableGpio(void)){
-#if 0
-	char ssid[64]={0},pwd[64]={0};
-	char *curSsid= nvram_bufget(RT2860_NVRAM, "ApCliSsid");
-	if(!strcmp(curSsid,"")){
-		goto exit0;
-	}
-	snprintf(ssid,64,"%s",curSsid);
-	char *passwd= nvram_bufget(RT2860_NVRAM, "ApCliWPAPSK");
-	snprintf(pwd,64,"%s",passwd);
-	//snprintf(pwd,64,"%s","lemeitong168");
-	SendSsidPasswd_toNetServer((const char *)ssid,(const char *)pwd,1);
-	int ret=-1,timeout=0;
-	while(++timeout<40){	//等待配网成功后，使能按键
-		sleep(1);
-		if(checkInternetFile()){
-			sleep(5);
-			break;
-		}
-	}
-	if(timeout>=40){
-		delInternetLock();		//防止联网进程出现问题，需要手动删除  2017-03-05-22:57
-	}
-exit0:
-	EnableGpio();
-#endif	
 }
 
 #ifdef MAIN_TEST
