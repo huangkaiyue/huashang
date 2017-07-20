@@ -228,7 +228,7 @@ void KeydownEventPlayPause(void){
 //按下目录按键切换菜单，并播放歌曲
 void SelectDirMenu(void){
 	updateCurrentEventNums();
-	SetDirMenu();
+	Huahang_SelectDirMenu();
 }
 
 /******************0*************************************
@@ -312,17 +312,19 @@ void TulingKeyDownSingal(void){
 		Write_Speekkeylog((const char *)"START_SPEEK_VOICES",GetRecordeVoices_PthreadState());
 		return;
 	}	
-	else if (GetRecordeVoices_PthreadState() == PLAY_MP3_MUSIC){//处于播放歌曲状态	
-		Create_CleanUrlEvent();
+	//else if (GetRecordeVoices_PthreadState() == PLAY_MP3_MUSIC)//处于播放歌曲状态	
+
+	{
+		Lock_EventQueue();
 		Write_Speekkeylog((const char *)"PLAY_MP3_MUSIC",GetRecordeVoices_PthreadState());
-		Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
-	}else{		
+		NetStreamExitFile();//退出歌曲播放,并切换采样率	
+		if(SetWm8960Rate(RECODE_RATE,(const char *)"TulingKeyDownSingal set rate")){	//切换采样率失败，退出(防止多线程当中切换，资源冲突问题)
+			Unlock_EventQueue();
+			return ;
+		}
+		Unlock_EventQueue();
 		if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
 			return;
-		}
-		NetStreamExitFile();	//在微信端推送歌曲，没有进行播放下一首歌曲的时候，突然按下智能会话按键，需要切换采样率，才能进入智能会话状态
-		if(SetWm8960Rate(RECODE_RATE,(const char *)"TulingKeyDownSingal set rate")){	//切换采样率失败，退出(防止多线程当中切换，资源冲突问题)
-			return ;
 		}
 		Show_KeyDownPicture();
 		StartTuling_RecordeVoices();
@@ -994,7 +996,7 @@ static int checkSdcard_MountState(void){
 //开机加载sdcard 当中数据库信息
 static void *waitLoadMusicList(void *arg){
 	int timeout=0;
-	InitHuashang();
+	Huashang_Init();
 	sleep(20);
 	while(++timeout<20){
 		if(!access(TF_SYS_PATH, F_OK)){		//检查tf卡

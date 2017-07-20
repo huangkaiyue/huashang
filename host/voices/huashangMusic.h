@@ -12,6 +12,14 @@
 #define ALLOW_TULING_PLAY	0
 #define DISABLE_TULING_PLAY	-1
 #define TIMEOUT_AIFI		-2
+
+typedef struct{
+	unsigned char playVoicesNameNums;
+	unsigned char dirMenu;
+	int PlayHuashang_MusicIndex;	//播放华上教育歌曲下表编号 
+	int Huashang_MusicTotal;
+}HuashangUser_t;
+
 //开机加载华上教育内容
 extern void openSystemload_huashangData(void);
 //获取sdard 内容进行播放

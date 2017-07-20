@@ -611,7 +611,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	}
 #if defined(HUASHANG_JIAOYU)	//华上微信端点击播放
 	else if(!strcmp(pSub->valuestring,"localMp3")){
-		WeiXin_playhuaShangMusic(cJSON_GetObjectItem(pJson, "nums")->valueint);
+		HuaShang_WeiXin_playMusic(cJSON_GetObjectItem(pJson, "nums")->valueint);
 	}
 #endif	
 exit:

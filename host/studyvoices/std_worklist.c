@@ -25,6 +25,14 @@ static unsigned char playlistVoicesSate=0;
 static int event_lock=0;
 
 #define TLJSONERNUM 9.0
+
+void Lock_EventQueue(void){
+	event_lock=1;
+}
+void Unlock_EventQueue(void){
+	event_lock=0;
+}
+
 //解析图灵请求错误内容，播放本地已经录制好的音频
 static int playTulingRequestErrorVoices(unsigned int playEventNums){
 	char buf[32]={0};

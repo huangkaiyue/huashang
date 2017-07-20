@@ -7,15 +7,11 @@
 #include "huashangMusic.h"
 
 //------------------------------------------------------------------------------
-typedef struct{
-	unsigned char playVoicesNameNums;
-	unsigned char dirMenu;
-	int PlayHuashang_MusicIndex;	//播放华上教育歌曲下表编号 
-	int Huashang_MusicTotal;
-}HuashangUser_t;
+
 static HuashangUser_t *hsUser=NULL;
 
-void SetDirMenu(void){
+//更新当前目录,并播放
+void Huahang_SelectDirMenu(void){
 	char playBuf[128]={0};
 	char *readBuf = readFileBuf((const char * )DEFALUT_DIR_MENU_JSON);
 	if(readBuf==NULL){
@@ -57,6 +53,7 @@ exit0:
 	free(readBuf);
 	return ret;
 }
+//根据当前播放索引，更新目录
 int Update_DirMenu(int PlayHuashang_MusicIndex){
 	char *readBuf = readFileBuf((const char * )DEFALUT_DIR_MENU_JSON);
 	if(readBuf==NULL){
@@ -98,7 +95,7 @@ exit0:
 	return ret;
 
 }
-void InitHuashang(void){
+void Huashang_Init(void){
 	hsUser = (HuashangUser_t *)calloc(1,sizeof(HuashangUser_t));
 	if(hsUser==NULL){
 		perror("calloc hsUser failed ");
@@ -254,7 +251,6 @@ void updatePlayindex(int playIndex){
 	}
 }
 //------------------------------------------------------------------------------
-
 void Huashang_changePlayVoicesName(void){
 	if(hsUser!=NULL){
 		if(++hsUser->playVoicesNameNums>3){
@@ -263,7 +259,7 @@ void Huashang_changePlayVoicesName(void){
 	}	
 }
 
-int WeiXin_playhuaShangMusic(int playIndex){
+int HuaShang_WeiXin_playMusic(int playIndex){
 	int ret=-1;
 	char playBuf[128]={0};
 	if(access(TF_SYS_PATH, F_OK)){	//检查tf卡
@@ -314,5 +310,3 @@ void GetPlayVoicesName(char *playVoicesName,int *speek){
 			break;
 	}
 }
-
-

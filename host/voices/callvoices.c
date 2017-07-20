@@ -149,8 +149,15 @@ int SleepSystem(void){
 	}
 	return 0;
 }
-void WakeupSleepSystem(void){
-	RV->WaitSleep =SYSTEM_INIT;
+//检查并唤醒当前系统
+int  checkAndWakeupSystem(void){
+	if(RV->recorde_live==HUASHANG_SLEEP){
+		RV->WaitSleep =SYSTEM_INIT;
+		pause_record_audio();
+		//需要播放唤醒声音
+		return -1;
+	}
+	return 0;
 }
 
 /*****************************************************
@@ -181,7 +188,7 @@ static void Start_uploadVoicesData(void){
 	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
 #if defined(HUASHANG_JIAOYU)
 
-#else
+//#else
 	Create_PlayImportVoices(TULING_WAIT_VOICES);
 	usleep(200);
 #endif	
