@@ -32,7 +32,7 @@ struct wave_pcm_hdr pcmwavhdr = {
 	0  
 };
 
-#if defined(MY_HTTP_REQ)	//将录制的8k语音转换成16k语音
+//将录制的8k语音转换成16k语音
 static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen){
 	int pos=0,npos=0;
 	for(pos=0;pos<inputLen;pos+=2){
@@ -42,22 +42,6 @@ static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen)
 		npos+=2;
 	}
 }
-#else					//将8k语音转换成16k语音，并写入到文件当中
-static int PcmVoice8kTo16k_File(const char *inputdata,const char *outfilename,int inputLen){
-	FILE *fp=NULL;
-	fp = fopen(outfilename,"w+");
-	if(fp==NULL){
-		return -1;
-	}
-	int pos=0,npos=0;
-	for(pos=0;pos<inputLen;pos+=2){
-		fwrite(inputdata+pos,1,2,fp);
-		fwrite(inputdata+pos,1,2,fp);
-	}
-	fclose(fp);
-	return 0;
-}	
-#endif
 unsigned int GetCurrentEventNums(void){
 	return RV->CurrentuploadEventNums;
 }
@@ -136,9 +120,8 @@ void lock_pause_record_audio(void){
 	}
 }
 
-
 void closeSystem(unsigned char eventInterrupt){
-	RV->WaitSleep=0;
+	RV->WaitSleep=SYSTEM_INIT;
 	System_StateLog("close system");
 	SleepRecoder_Phthread();
 	RV->closeTime =0;
@@ -159,15 +142,15 @@ void SleepRecoder_Phthread(void){
 	SetRecordeVoices_PthreadState(HUASHANG_SLEEP);
 }
 int SleepSystem(void){
-	if(++RV->WaitSleep>=4){
+	if(++RV->WaitSleep>=SYSTEM_SLEEP){
 		printf("-----------------------\n close system --------------------\n");
 		closeSystem(1);
 		return -1;
 	}
 	return 0;
 }
-void WaitSleepSystem(void){
-	RV->WaitSleep =0;
+void WakeupSleepSystem(void){
+	RV->WaitSleep =SYSTEM_INIT;
 }
 
 /*****************************************************
@@ -180,12 +163,7 @@ void start_event_talk_message(void){
 static void *uploadPcmPthread(void *arg){
 	HandlerText_t *handText = (HandlerText_t *)arg;
 	SpeekEvent_process_log("request tuling","start",0);
-#if defined(MY_HTTP_REQ)
 	ReqTulingServer(handText,"pcm","0",RECODE_RATE*2);
-#else
-	PcmVoice8kTo16k_File(RV->buf_voices,"pcm16k.cache",RV->len_voices);
-	ReqTulingServer((const char *)"pcm16k.cache",RV->len_voices*2,"pcm","0",RECODE_RATE*2);
-#endif
 	RV->uploadState = END_UPLOAD;
 	return NULL;
 }
@@ -278,7 +256,7 @@ exit0:
 #endif	
 	return ;
 }
-//关机，将当前系统时间发送给MCU
+//设置多久之后关机，将当前系统时间发送给MCU
 int SetMucClose_Time(unsigned char closeTime){
 	time_t timep;
 	struct tm *p;

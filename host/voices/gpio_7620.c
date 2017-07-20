@@ -265,7 +265,7 @@ static void signal_handler(int signum){
 		return ;
 	}
 	lock_msgEv();
-	WaitSleepSystem();
+	WakeupSleepSystem();
 	if (signum == GPIO_UP){			//短按按键事件
 		switch(gpio.mount){
 			case NETWORK_KEY:		//播报WiFi名

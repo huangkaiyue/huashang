@@ -678,22 +678,7 @@ int main(int argc,char **argv){
 	int len = fread(fileData,1,file_len,fp);
 #endif	
 
-#ifdef AMR
-		static char amr_data[12*1024];
-		char *buf_voices = (char *)calloc(1,file_len+sizeof(struct wave_pcm_hdr));
-		int len = fread(buf_voices+sizeof(struct wave_pcm_hdr),1,file_len,fp);
-		int amr_size=0;
-		pcmwavhdr.size_8 = (len+36);
-		pcmwavhdr.data_size = len;
-		pcmwavhdr.samples_per_sec=16000;
-		memcpy(buf_voices,&pcmwavhdr,sizeof(struct wave_pcm_hdr));
-		printf("==================================\n");
-		if(WavAmr16k((const char *)buf_voices,amr_data,&amr_size)){
-			printf("enc failed \n");
-			return 0;
-		}
-		printf("==================================\n");
-#endif
+
 	fclose(fp);
 	int rate=atoi(argv[2]);
 
