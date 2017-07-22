@@ -54,9 +54,9 @@ int SendSsidPasswd_toNetServer(const char *ssid,const char *passwd,int random){
 	return ret ;
 }
 /*******************************************************
-º¯Êı¹¦ÄÜ: ¼ì²éÅäÍøÎÄ¼ş
-²ÎÊı: ÎŞ
-·µ»ØÖµ: ÎŞ
+å‡½æ•°åŠŸèƒ½: æ£€æŸ¥é…ç½‘æ–‡ä»¶
+å‚æ•°: æ— 
+è¿”å›å€¼: æ— 
 ********************************************************/
 int checkInternetFile(void){
 	if(access(INTEN_NETWORK_FILE_LOCK,0) < 0){
@@ -90,7 +90,7 @@ static int GetSsidAndPasswd(char *smartData,char *ssid,char *passwd,int *random)
 	}	
 	return -1;
 }
-//¼ì²éÍøÂç¼ì²éÔËĞĞ×´Ì¬,Òì³£×´Ì¬Æô¶¯£¬×Ô¶¯Æô¶¯ÁªÍø½ø³Ì
+//æ£€æŸ¥ç½‘ç»œæ£€æŸ¥è¿è¡ŒçŠ¶æ€,å¼‚å¸¸çŠ¶æ€å¯åŠ¨ï¼Œè‡ªåŠ¨å¯åŠ¨è”ç½‘è¿›ç¨‹
 static void *CheckNetWork_taskRunState(void *arg){
 	int timeOut=0;
 	while(1){
@@ -124,7 +124,7 @@ static void *RunSmartConfig_Task(void *arg){
 	createSmartConfigLock();
 	system("iwpriv apcli0 elian start");
 	while (++timeout<400){	
-		//±ØĞëÊµÊ±´ò¿ª¹ÜµÀ£¬²ÅÄÜ¶ÁÈ¡µ½¸üĞÂµÄÊı¾İ
+		//å¿…é¡»å®æ—¶æ‰“å¼€ç®¡é“ï¼Œæ‰èƒ½è¯»å–åˆ°æ›´æ–°çš„æ•°æ®
 		if((fp = popen("iwpriv apcli0 elian result", "r"))==NULL){
 			fprintf(stderr, "%s: iwpriv apcli0 elian result failed !\n", __func__);
 			break;
@@ -150,11 +150,10 @@ static void *RunSmartConfig_Task(void *arg){
 	if(ret==0){
 		snprintf(wifi->ssid,64,"%s",ssid);
 		snprintf(wifi->passwd,64,"%s",pwd);
-		//wifi->connetEvent(SMART_CONFIG_OK);	//ÒÑ¾­½ÓÊÕµ½ssid ºÍ passwd
-		SendSsidPasswd_toNetServer(ssid,pwd,random);
+		SendSsidPasswd_toNetServer(ssid,pwd,random);//å·²ç»æ¥æ”¶åˆ°ssid å’Œ passwd
 		delSmartConfigLock();
 		sleep(5);
-		while(++timeout<40){	//µÈ´ıÅäÍø³É¹¦ºó£¬Ê¹ÄÜ°´¼ü
+		while(++timeout<40){	//ç­‰å¾…é…ç½‘æˆåŠŸåï¼Œä½¿èƒ½æŒ‰é”®
 			sleep(1);
 			if(checkInternetFile()){
 				sleep(5);
@@ -162,12 +161,12 @@ static void *RunSmartConfig_Task(void *arg){
 			}
 		}
 		if(timeout>=40){
-			delInternetLock();		//·ÀÖ¹ÁªÍø½ø³Ì³öÏÖÎÊÌâ£¬ĞèÒªÊÖ¶¯É¾³ı  2017-03-05-22:57
+			delInternetLock();		//é˜²æ­¢è”ç½‘è¿›ç¨‹å‡ºç°é—®é¢˜ï¼Œéœ€è¦æ‰‹åŠ¨åˆ é™¤  2017-03-05-22:57
 		}
 	}else{
-		wifi->connetEvent(SMART_CONFIG_FAILED); //Ã»ÓĞÊÕµ½app·¢ËÍ¹ıÀ´µÄssidºÍpasswd
+		wifi->connetEvent(SMART_CONFIG_FAILED); //æ²¡æœ‰æ”¶åˆ°appå‘é€è¿‡æ¥çš„ssidå’Œpasswd
 		delSmartConfigLock();
-		delInternetLock();	//ÉÏ°ë¶Î½âÎÄ¼şËø
+		delInternetLock();	//ä¸ŠåŠæ®µè§£æ–‡ä»¶é”
 	}
 	free(buf);
 exit0:	
@@ -185,7 +184,7 @@ int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
 		WiterSmartConifg_Log("startSmartConfig  ","failed");
 		return -1;
 	}
-	ConnetEvent(START_SMARTCONFIG);	//Í¨ÖªÓÃ»§ÊäÈëwifi ÃÜÂë£¬½øĞĞÅäÍø
+	ConnetEvent(START_SMARTCONFIG);	//é€šçŸ¥ç”¨æˆ·è¾“å…¥wifi å¯†ç ï¼Œè¿›è¡Œé…ç½‘
 	
 	connetState = LOCK_SMART_CONFIG_WIFI;
 	ConnetWIFI *wifi =(ConnetWIFI *)calloc(1,sizeof(ConnetWIFI));
@@ -197,14 +196,29 @@ int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
 	wifi->connetEvent = ConnetEvent;
 	wifi->enableGpio = EnableGpio;
 	WiterSmartConifg_Log("startSmartConfig ","pool_add_task ok");
-	createInternetLock();	//ÉÏ°ë¶ÎÉÏÎÄ¼şËø
+	createInternetLock();	//ä¸ŠåŠæ®µä¸Šæ–‡ä»¶é”
 	pthread_create_attr(RunSmartConfig_Task, wifi);
 	ret=0;
 	return ret;
 exit1:
 	connetState=UNLOCK_SMART_CONFIG_WIFI;
-	delInternetLock();	//ÉÏ°ë¶Î½âÎÄ¼şËø
+	delInternetLock();	//ä¸ŠåŠæ®µè§£æ–‡ä»¶é”
 	return ret;
+}
+
+void RecvNetWorkConnetState(int event){
+	switch(event){
+		case NOT_FIND_WIFI:
+			Create_PlaySystemEventVoices(event);
+			break;
+		case NOT_NETWORK:
+			break;
+		case CONNET_ING:
+			Create_PlaySystemEventVoices(CONNET_NETWORK);
+			break;
+			
+	}
+	
 }
 
 #ifdef MAIN_TEST

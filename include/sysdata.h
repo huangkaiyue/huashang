@@ -11,7 +11,7 @@ extern void GetVol_formRouteTable(unsigned char *vol);
 extern void Save_OpenCloseTime_toRouteTable(int type,unsigned char *time);
 extern void Get_OpenCloseTime_formRouteTable(int type, char *time);
 
-//¹Ø»úÊ±ºò±£´æÍ¼ÁéµÄtokenÖµµ½Â·ÓÉ±íµ±ÖĞ
+//å…³æœºæ—¶å€™ä¿å­˜å›¾çµçš„tokenå€¼åˆ°è·¯ç”±è¡¨å½“ä¸­
 extern void Save_TulingToken_toRouteTable(const char *tokenVal);
 
 #endif

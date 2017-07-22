@@ -1,10 +1,10 @@
 #ifndef _MADPLAY_H
 #define _MADPLAY_H
 
-#define MAD_EXIT			0	//Í£Ö¹	
-#define MAD_PLAY 			1	//²¥·Å
-#define MAD_PAUSE			2 	//ÔİÍ£
-#define MAD_NEXT			3	//ÏÂÒ»Çú
+#define MAD_EXIT			0	//åœæ­¢	
+#define MAD_PLAY 			1	//æ’­æ”¾
+#define MAD_PAUSE			2 	//æš‚åœ
+#define MAD_NEXT			3	//ä¸‹ä¸€æ›²
 
 //#define DEBUG_MAD
 #ifdef DEBUG_MAD  

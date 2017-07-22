@@ -1,17 +1,17 @@
 #ifndef _AP_STA_H
 #define _AP_STA_H
 
-#define CONNET_ING			9	//ÕıÔÚÁ¬½Ó
-#define CONNECT_OK			10	//Á¬½Ó³É¹¦
-#define START_SMARTCONFIG	11	//Æô¶¯ÅäÍø
-#define SMART_CONFIG_OK		12	//½ÓÊÜÃÜÂë³É¹¦
-#define NOT_FIND_WIFI		13	//Ã»ÓĞÉ¨Ãèµ½wifi
-#define SMART_CONFIG_FAILED	14	//Ã»ÓĞÊÕµ½ÓÃ»§·¢ËÍµÄwifi
-//#define CONNET_WAIT		16
+#define CONNET_ING         	9						//æ­£åœ¨è¿æ¥
+#define CONNECT_OK			10						//è¿æ¥æˆåŠŸ
+#define START_SMARTCONFIG	11						//å¯åŠ¨é…ç½‘
+#define SMART_CONFIG_OK		12
+#define NOT_FIND_WIFI		13						//æ²¡æœ‰æ‰«æåˆ°wifi
+#define SMART_CONFIG_FAILED	14						//æ²¡æœ‰æ”¶åˆ°ç”¨æˆ·å‘é€çš„wifi
 
-#define START_SERVICES		17	//Æô¶¯ÁªÍø·şÎñ
-#define NOT_NETWORK			18	//°å×ÓÃ»ÓĞÁ¬½ÓÉÏÍøÂç
-#define CONNET_CHECK		19	//ÕıÔÚ¼ì²éÍøÂçÊÇ·ñ¿ÉÓÃ
+
+#define START_SERVICES		17	//å¯åŠ¨è”ç½‘æœåŠ¡
+#define NOT_NETWORK			18	//æ¿å­æ²¡æœ‰è¿æ¥ä¸Šç½‘ç»œ
+#define CONNET_CHECK		19	//æ­£åœ¨æ£€æŸ¥ç½‘ç»œæ˜¯å¦å¯ç”¨
 
 
 //#define DBG_AP_STA
@@ -21,18 +21,13 @@
 #define DEBUG_AP_STA(fmt, args...) { }
 #endif	//end DBG_AP_STA
 
-//#define TEST_WIFI
-#ifdef TEST_WIFI
-#define TEST_WIFI_DATA "apcli0    elian:AM=0, ssid=TP-LINK_2294F4, pwd=369852369, user=, cust_data_len=0, cust_data=,"
-#define TEST_WIFI_1 		"apcli0    elian:AM=0, ssid=TURING ROBOT 2, pwd=turingrobot88888, user=, cust_data_len=0, cust_data=,"
-#endif	//end TEST_WIFI
-
 #define SMART_CONFIG_HEAD	"apcli0    elian:"
 
-#define LOCK_SMART_CONFIG_WIFI		1	//¶ÔÅäÍø½øĞĞÉÏËø
-#define UNLOCK_SMART_CONFIG_WIFI	0	//¶ÔÅäÍø½øĞĞ½âËø
+#define LOCK_SMART_CONFIG_WIFI		1	//å¯¹é…ç½‘è¿›è¡Œä¸Šé”
+#define UNLOCK_SMART_CONFIG_WIFI	0	//å¯¹é…ç½‘è¿›è¡Œè§£é”
 
-extern int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void));//Ò»¼üÅäÍø
 extern int checkInternetFile(void);
+extern int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void));//ä¸€é”®é…ç½‘
+extern void RecvNetWorkConnetState(int event);
 
 #endif

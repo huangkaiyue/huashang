@@ -38,15 +38,13 @@ int CheckinfoText_forContorl(const char *infoText,const char *text,char *getPlay
 	}else if(strstr(infoText,"id")&&strstr(infoText,"我的")){
 		ret = CMD_ID;
 	}
-#if defined(HUASHANG_JIAOYU)	
 	else if(strstr(infoText,"播放")){
 		Write_huashangTextLog(infoText);
 		if(Huashang_Checkutf8(infoText,getPlayMusicName,&playIndex)==0){
-			updatePlayindex(playIndex);
+			Huashang_updatePlayindex(playIndex);
 			ret =CMD_MUSIC_MEUN;
 		}
-	}
-#endif		
+	}	
 	return ret;
 }
 

@@ -9,42 +9,42 @@ extern "C" {
 typedef int SR_DWORD;
 typedef short int SR_WORD ;
 
-struct wave_pcm_hdr{ //ÒôÆµÍ·²¿¸ñÊ½
+struct wave_pcm_hdr{ //éŸ³é¢‘å¤´éƒ¨æ ¼å¼
          char            riff[4];                        // = "RIFF"
          SR_DWORD        size_8;                         // = FileSize - 8
          char            wave[4];                        // = "WAVE"
          char            fmt[4];                         // = "fmt "
-         SR_DWORD        dwFmtSize;                      // = ÏÂÒ»¸ö½á¹¹ÌåµÄ´óĞ¡ : 16
+         SR_DWORD        dwFmtSize;                      // = ä¸‹ä¸€ä¸ªç»“æ„ä½“çš„å¤§å° : 16
  
          SR_WORD         format_tag;              // = PCM : 1
-         SR_WORD         channels;                       // = Í¨µÀÊı : 1
-         SR_DWORD        samples_per_sec;        // = ²ÉÑùÂÊ : 8000 | 6000 | 11025 | 16000
-         SR_DWORD        avg_bytes_per_sec;      // = Ã¿Ãë×Ö½ÚÊı : dwSamplesPerSec * wBitsPerSample / 8
-         SR_WORD         block_align;            // = Ã¿²ÉÑùµã×Ö½ÚÊı : wBitsPerSample / 8
-         SR_WORD         bits_per_sample;         // = Á¿»¯±ÈÌØÊı: 8 | 16
+         SR_WORD         channels;                       // = é€šé“æ•° : 1
+         SR_DWORD        samples_per_sec;        // = é‡‡æ ·ç‡ : 8000 | 6000 | 11025 | 16000
+         SR_DWORD        avg_bytes_per_sec;      // = æ¯ç§’å­—èŠ‚æ•° : dwSamplesPerSec * wBitsPerSample / 8
+         SR_WORD         block_align;            // = æ¯é‡‡æ ·ç‚¹å­—èŠ‚æ•° : wBitsPerSample / 8
+         SR_WORD         bits_per_sample;         // = é‡åŒ–æ¯”ç‰¹æ•°: 8 | 16
  
          char            data[4];                        // = "data";
-         SR_DWORD        data_size;                // = ´¿Êı¾İ³¤¶È : FileSize - 44 
+         SR_DWORD        data_size;                // = çº¯æ•°æ®é•¿åº¦ : FileSize - 44 
 };
 extern struct wave_pcm_hdr pcmwavhdr;
 
 /*******************************************************
-º¯Êı¹¦ÄÜ:½«wav¸ñÊ½ÎÄ¼ş±àÂë³Éamr¸ñÊ½Êı¾İ  8k ²ÉÑùÂÊ,µ¥ÉùµÀ
-²ÎÊı:	wavsrc wav¸ñÊ½Êı¾İÄÚÈİ amrsrc amr¸ñÊ½Êı¾İÄÚÈİ a_sizeÊı¾İ´óĞ¡
-·µ»ØÖµ: -1 ±àÂëÊ§°Ü 0 ±àÂë³É¹¦
+å‡½æ•°åŠŸèƒ½:å°†wavæ ¼å¼æ–‡ä»¶ç¼–ç æˆamræ ¼å¼æ•°æ®  8k é‡‡æ ·ç‡,å•å£°é“
+å‚æ•°:	wavsrc wavæ ¼å¼æ•°æ®å†…å®¹ amrsrc amræ ¼å¼æ•°æ®å†…å®¹ a_sizeæ•°æ®å¤§å°
+è¿”å›å€¼: -1 ç¼–ç å¤±è´¥ 0 ç¼–ç æˆåŠŸ
 ********************************************************/
 extern int WavToAmr8k(const char *wavsrc,char *Outdata,int *OutSize);
 /*******************************************************
-º¯Êı¹¦ÄÜ:½«wav¸ñÊ½ÎÄ¼ş±àÂë³Éamr¸ñÊ½ÎÄ¼ş
-²ÎÊı:	infile ÊäÈëÎÄ¼şÂ·¾¶ outfile Êä³öÎÄ¼şÂ·¾¶
-·µ»ØÖµ: -1 ±àÂëÊ§°Ü 0 ±àÂë³É¹¦
+å‡½æ•°åŠŸèƒ½:å°†wavæ ¼å¼æ–‡ä»¶ç¼–ç æˆamræ ¼å¼æ–‡ä»¶
+å‚æ•°:	infile è¾“å…¥æ–‡ä»¶è·¯å¾„ outfile è¾“å‡ºæ–‡ä»¶è·¯å¾„
+è¿”å›å€¼: -1 ç¼–ç å¤±è´¥ 0 ç¼–ç æˆåŠŸ
 ********************************************************/
 extern int WavToAmr8kFile(const char *infile,const char *outfile);
 
 /*******************************************************
-º¯Êı¹¦ÄÜ:½«Amr¸ñÊ½ÎÄ¼ş±àÂë³ÉWav¸ñÊ½ÎÄ¼ş
-²ÎÊı:	infile ÊäÈëÎÄ¼şÂ·¾¶ outfile Êä³öÎÄ¼şÂ·¾¶
-·µ»ØÖµ: -1 ±àÂëÊ§°Ü 0 ±àÂë³É¹¦
+å‡½æ•°åŠŸèƒ½:å°†Amræ ¼å¼æ–‡ä»¶ç¼–ç æˆWavæ ¼å¼æ–‡ä»¶
+å‚æ•°:	infile è¾“å…¥æ–‡ä»¶è·¯å¾„ outfile è¾“å‡ºæ–‡ä»¶è·¯å¾„
+è¿”å›å€¼: -1 ç¼–ç å¤±è´¥ 0 ç¼–ç æˆåŠŸ
 ********************************************************/
 extern int AmrToWav8k(const char *infile,const char *outfile);
 

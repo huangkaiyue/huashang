@@ -8,21 +8,21 @@
 #define KB	1024
 
 
-//----------------------ÒôÆµÊÂ¼ş---------------------------------------
-#define START_SPEEK_VOICES 		1  	//Â¼Òô¡¢ÓïÒôÊ¶±ğ
-#define START_TAIK_MESSAGE		2	//¶ÌÏûÏ¢,·¢ËÍ¸øÆäËüÉè±¸(app/ÆäËüÖ÷»ú)
-#define RECODE_PAUSE 			3 	//Â¼Òô¹ÒÆğ
-#define PLAY_WAV				4	//²¥·ÅwavÔ­Ê¼Êı¾İÒô
-#define END_SPEEK_VOICES		5	//½áÊøÂ¼Òô
-#define PLAY_MP3_MUSIC			6	//²¥·ÅÒôÀÖÊı¾İ
-#define TIME_SIGN				8	//³¤Ê±¼äÎŞÊÂ¼ş
-#define SPEEK_WAIT				9	//¶Ô½²ÊÂ¼ş
-#define PLAY_DING_VOICES		10	//²¥·Å¹ı¶ÉÒô
-#define RECODE_STOP 			11  //Â¼ÒôÍ£Ö¹,ÍË³öÕû¸öÂ¼ÒôÏß³Ì
-#define RECODE_EXIT_FINNISH		12	//Â¼ÒôÕı³£ÍË³ö
-#define SOUND_MIX_PLAY			13	//»ìÒô²¥·Å
-#define HUASHANG_SLEEP			14	//»ªÉÏË¯Ãß×´Ì¬
-#define HUASHANG_SLEEP_OK		15	//»ªÉÏË¯Ãß×´Ì¬³É¹¦
+//----------------------éŸ³é¢‘äº‹ä»¶---------------------------------------
+#define START_SPEEK_VOICES 		1  	//å½•éŸ³ã€è¯­éŸ³è¯†åˆ«
+#define START_TAIK_MESSAGE		2	//çŸ­æ¶ˆæ¯,å‘é€ç»™å…¶å®ƒè®¾å¤‡(app/å…¶å®ƒä¸»æœº)
+#define RECODE_PAUSE 			3 	//å½•éŸ³æŒ‚èµ·
+#define PLAY_WAV				4	//æ’­æ”¾wavåŸå§‹æ•°æ®éŸ³
+#define END_SPEEK_VOICES		5	//ç»“æŸå½•éŸ³
+#define PLAY_MP3_MUSIC			6	//æ’­æ”¾éŸ³ä¹æ•°æ®
+#define TIME_SIGN				8	//é•¿æ—¶é—´æ— äº‹ä»¶
+#define SPEEK_WAIT				9	//å¯¹è®²äº‹ä»¶
+#define PLAY_DING_VOICES		10	//æ’­æ”¾è¿‡æ¸¡éŸ³
+#define RECODE_STOP 			11  //å½•éŸ³åœæ­¢,é€€å‡ºæ•´ä¸ªå½•éŸ³çº¿ç¨‹
+#define RECODE_EXIT_FINNISH		12	//å½•éŸ³æ­£å¸¸é€€å‡º
+#define SOUND_MIX_PLAY			13	//æ··éŸ³æ’­æ”¾
+#define HUASHANG_SLEEP			14	//åä¸Šç¡çœ çŠ¶æ€
+#define HUASHANG_SLEEP_OK		15	//åä¸Šç¡çœ çŠ¶æ€æˆåŠŸ
 
 //#define DBG_VOICES
 #ifdef DBG_VOICES
@@ -37,88 +37,91 @@
 
 #define STD_RECODE_SIZE	((TIME_RECODE_S*RECODE_RATE*16*1/8)+WAV_HEAD)
 
-//----------------------ÊÂ¼şÀàĞÍ---------------------------------------
-#define STUDY_WAV_EVENT 		1		//Ñ§Ï°Òô
-#define SYS_VOICES_EVENT		2		//ÏµÍ³ÉùÒôÊÂ¼ş
-#define URL_VOICES_EVENT		3		//url²¥·ÅÊÂ¼ş
-#define SET_RATE_EVENT			4		//ĞŞ¸Ä²ÉÑùÂÊÊÂ¼ş
-#define QTTS_PLAY_EVENT			5		//qttsÊÂ¼ş
+//----------------------äº‹ä»¶ç±»å‹---------------------------------------
+#define STUDY_WAV_EVENT 		1		//å­¦ä¹ éŸ³
+#define SYS_VOICES_EVENT		2		//ç³»ç»Ÿå£°éŸ³äº‹ä»¶
+#define URL_VOICES_EVENT		3		//urlæ’­æ”¾äº‹ä»¶
+#define SET_RATE_EVENT			4		//ä¿®æ”¹é‡‡æ ·ç‡äº‹ä»¶
+#define QTTS_PLAY_EVENT			5		//qttsäº‹ä»¶
 #define LOCAL_MP3_EVENT			7
-#define SPEEK_VOICES_EVENT		8		//½ÓÊÕµ½ÓïÒôÏûÏ¢	
-#define TALK_EVENT_EVENT		9		//¶Ô½²ÊÂ¼ş
-#define QUIT_MAIN				10		//ÍË³ömainº¯Êı
-#define TULING_URL_MAIN			11		//Í¼ÁéURLÊÂ¼ş
-#define TULING_URL_VOICES		12		//Í¼Áémp3ÊÂ¼ş
+#define SPEEK_VOICES_EVENT		8		//æ¥æ”¶åˆ°è¯­éŸ³æ¶ˆæ¯	
+#define TALK_EVENT_EVENT		9		//å¯¹è®²äº‹ä»¶
+#define QUIT_MAIN				10		//é€€å‡ºmainå‡½æ•°
+#define TULING_URL_MAIN			11		//å›¾çµURLäº‹ä»¶
+#define TULING_URL_VOICES		12		//å›¾çµmp3äº‹ä»¶
 
-//----------------------ÏµÍ³Òô---------------------------------------
-#define END_SYS_VOICES_PLAY			1	//½áÊøÒô
-#define TULING_WINT_PLAY			2	//ÇëÉÔµÈ
-#define LOW_BATTERY_PLAY			3	//µÍµç¹Ø»ú
-#define RESET_HOST_V_PLAY			4	//»Ö¸´³ö³§ÉèÖÃ
-#define REQUEST_FAILED_PLAY			5	//ÖØÁ¬£¬ÇëÇó·şÎñÆ÷Êı¾İÊ§°Ü
-#define UPDATA_END_PLAY				6	//¸üĞÂ¹Ì¼ş½áÊø
-#define TIMEOUT_PLAY_LOCALFILE		7	//ÇëÇó·şÎñÆ÷³¬Ê±£¬²¥·Å±¾µØÒÑ¾­Â¼ÖÆºÃµÄÒôÆµ
-#define CONNET_ING_PLAY				9	//ÕıÔÚÁ¬½Ó
-#define CONNECT_OK_PLAY				10	//Á¬½Ó³É¹¦
-#define START_SMARTCONFIG_PLAY		11	//Æô¶¯ÅäÍø
-#define SMART_CONFIG_OK_PLAY		12	//½ÓÊÜÃÜÂë³É¹¦
-#define NOT_FIND_WIFI_PLAY			13	//Ã»ÓĞÉ¨Ãèµ½wifi
-#define SMART_CONFIG_FAILED_PLAY	14	//Ã»ÓĞÊÕµ½ÓÃ»§·¢ËÍµÄwifi
-#define NOT_NETWORK_PLAY			18	//°å×ÓÃ»ÓĞÁ¬½ÓÉÏÍøÂç
-#define SEND_OK_PLAY				20	//·¢ËÍ³É¹¦
-#define SEND_ERROR_PLAY				21	//·¢ËÍÊ§°Ü
-#define SEND_LINK_PLAY				22	//ÕıÔÚ·¢ËÍ
-#define KEY_DOWN_PLAY				23	//°´ÏÂ°´¼üÒô
-#define PLAY_ERROT_PLAY				24	//²¥·ÅÊ§°Ü
-#define TF_ERROT_PLAY				25	//TF¼ÓÔØÊ§°Ü
-#define NETWORK_ERROT_PLAY			26	//ÍøÂçÁ¬½ÓÊ§°Ü
+//----------------------ç³»ç»ŸéŸ³---------------------------------------
 
-#define LIKE_ERROT_PLAY				30	//µ±Ç°Ã»ÓĞÏ²°®ÄÚÈİ£¬¿ìÈ¥ÊÕ²ØÏ²°®ÄÚÈİ°É
 
-#define BIND_SSID_PLAY				31	//³É¹¦ÊÕµ½Ğ¡»ï°éµÄ°ó¶¨ÇëÇó¡£
-#define BIND_OK_PLAY				32	//³É¹¦´¦ÀíĞ¡»ï°éµÄ°ó¶¨ÇëÇó¡£
-#define SEND_LINK_ER_PLAY			33	//µ±Ç°ÍøÂç»·¾³²î£¬ÓïÒô·¢ËÍÊ§°Ü£¬Çë¼ì²éÍøÂç¡£
-#define TALK_CONFIRM_PLAY			34	//ÔÚ¼ÒÃ´£¬ÔÚ¼ÒÃ´£¬ÓĞÈËÔÚ¼ÒÃ´£¬ÓĞÖØÒªÏûÏ¢Í¨ÖªÄãÓ´£¬Çë°´°´¼ü»Ø¸´ÎÒ¡£
-#define TALK_CONFIRM_OK_PLAY		35	//È·ÈÏÏûÏ¢»Ø¸´³É¹¦£¬Çë·¢ÉÏ´«ÓïÒô¡£
-#define TALK_CONFIRM_ER_PLAY		36	//µ±Ç°»¹Ã»ÓĞÈËºô½ĞÄã¡£
+#define END_SYS_VOICES_PLAY			1	//ç»“æŸéŸ³
+#define TULING_WINT_PLAY			2	//è¯·ç¨ç­‰
+#define LOW_BATTERY_PLAY			3	//ä½ç”µå…³æœº
+#define RESET_HOST_V_PLAY			4	//æ¢å¤å‡ºå‚è®¾ç½®
+#define REQUEST_FAILED_PLAY			5	//é‡è¿ï¼Œè¯·æ±‚æœåŠ¡å™¨æ•°æ®å¤±è´¥
+#define UPDATA_END_PLAY				6	//æ›´æ–°å›ºä»¶ç»“æŸ
+#define TIMEOUT_PLAY_LOCALFILE		7	//è¯·æ±‚æœåŠ¡å™¨è¶…æ—¶ï¼Œæ’­æ”¾æœ¬åœ°å·²ç»å½•åˆ¶å¥½çš„éŸ³é¢‘
+#define CONNET_ING_PLAY				9	//æ­£åœ¨è¿æ¥
+#define CONNECT_OK_PLAY				10	//è¿æ¥æˆåŠŸ
+#define START_SMARTCONFIG_PLAY		11	//å¯åŠ¨é…ç½‘
+#define SMART_CONFIG_OK_PLAY		12	//æ¥å—å¯†ç æˆåŠŸ
+#define NOT_FIND_WIFI_PLAY			13	//æ²¡æœ‰æ‰«æåˆ°wifi
+#define SMART_CONFIG_FAILED_PLAY	14	//æ²¡æœ‰æ”¶åˆ°ç”¨æˆ·å‘é€çš„wifi
+#define CONNET_NETWORK				16	//æ­£åœ¨è¿æ¥ç½‘ç»œ
+#define NOT_NETWORK_PLAY			18	//æ¿å­æ²¡æœ‰è¿æ¥ä¸Šç½‘ç»œ
+#define SEND_OK_PLAY				20	//å‘é€æˆåŠŸ
+#define SEND_ERROR_PLAY				21	//å‘é€å¤±è´¥
+#define SEND_LINK_PLAY				22	//æ­£åœ¨å‘é€
+#define KEY_DOWN_PLAY				23	//æŒ‰ä¸‹æŒ‰é”®éŸ³
+#define PLAY_ERROT_PLAY				24	//æ’­æ”¾å¤±è´¥
+#define TF_ERROT_PLAY				25	//TFåŠ è½½å¤±è´¥
+#define NETWORK_ERROT_PLAY			12	//ç½‘ç»œè¿æ¥å¤±è´¥
+
+#define LIKE_ERROT_PLAY				30	//å½“å‰æ²¡æœ‰å–œçˆ±å†…å®¹ï¼Œå¿«å»æ”¶è—å–œçˆ±å†…å®¹å§
+
+#define BIND_SSID_PLAY				31	//æˆåŠŸæ”¶åˆ°å°ä¼™ä¼´çš„ç»‘å®šè¯·æ±‚ã€‚
+#define BIND_OK_PLAY				32	//æˆåŠŸå¤„ç†å°ä¼™ä¼´çš„ç»‘å®šè¯·æ±‚ã€‚
+#define SEND_LINK_ER_PLAY			33	//å½“å‰ç½‘ç»œç¯å¢ƒå·®ï¼Œè¯­éŸ³å‘é€å¤±è´¥ï¼Œè¯·æ£€æŸ¥ç½‘ç»œã€‚
+#define TALK_CONFIRM_PLAY			34	//åœ¨å®¶ä¹ˆï¼Œåœ¨å®¶ä¹ˆï¼Œæœ‰äººåœ¨å®¶ä¹ˆï¼Œæœ‰é‡è¦æ¶ˆæ¯é€šçŸ¥ä½ å“Ÿï¼Œè¯·æŒ‰æŒ‰é”®å›å¤æˆ‘ã€‚
+#define TALK_CONFIRM_OK_PLAY		35	//ç¡®è®¤æ¶ˆæ¯å›å¤æˆåŠŸï¼Œè¯·å‘ä¸Šä¼ è¯­éŸ³ã€‚
+#define TALK_CONFIRM_ER_PLAY		36	//å½“å‰è¿˜æ²¡æœ‰äººå‘¼å«ä½ ã€‚
 
 #ifdef DOWN_IMAGE
-#define DOWNLOAD_ING_PLAY			37	//ÕıÔÚÏÂÔØ¹Ì¼ş¡£
-#define DOWNLOAD_ERROE_PLAY			38	//ÏÂÔØ¹Ì¼ş´íÎó¡£
-#define DOWNLOAD_END_PLAY			39	//ÏÂÔØ¹Ì¼ş½áÊø¡£
-#define DOWNLOAD_25_PLAY			40	//ÏÂÔØµ½°Ù·ÖÖ®¶şÊ®Îå¡£
-#define DOWNLOAD_50_PLAY			41	//ÏÂÔØµ½°Ù·ÖÖ®ÎåÊ®¡£
-#define DOWNLOAD_75_PLAY			42	//ÏÂÔØµ½°Ù·ÖÖ®ÆßÊ®Îå¡£
-#define UPDATA_NEW_PLAY				43	//ÓĞĞÂ°æ±¾£¬ĞèÒª¸üĞÂ¡£
-#define UPDATA_START_PLAY			44	//¿ªÊ¼¸üĞÂ¹Ì¼ş¡£
-#define UPDATA_ERROR_PLAY			45	//¸üĞÂ¹Ì¼ş´íÎó¡£
+#define DOWNLOAD_ING_PLAY			37	//æ­£åœ¨ä¸‹è½½å›ºä»¶ã€‚
+#define DOWNLOAD_ERROE_PLAY			38	//ä¸‹è½½å›ºä»¶é”™è¯¯ã€‚
+#define DOWNLOAD_END_PLAY			39	//ä¸‹è½½å›ºä»¶ç»“æŸã€‚
+#define DOWNLOAD_25_PLAY			40	//ä¸‹è½½åˆ°ç™¾åˆ†ä¹‹äºŒåäº”ã€‚
+#define DOWNLOAD_50_PLAY			41	//ä¸‹è½½åˆ°ç™¾åˆ†ä¹‹äº”åã€‚
+#define DOWNLOAD_75_PLAY			42	//ä¸‹è½½åˆ°ç™¾åˆ†ä¹‹ä¸ƒåäº”ã€‚
+#define UPDATA_NEW_PLAY				43	//æœ‰æ–°ç‰ˆæœ¬ï¼Œéœ€è¦æ›´æ–°ã€‚
+#define UPDATA_START_PLAY			44	//å¼€å§‹æ›´æ–°å›ºä»¶ã€‚
+#define UPDATA_ERROR_PLAY			45	//æ›´æ–°å›ºä»¶é”™è¯¯ã€‚
 #endif
 
-#define AI_KEY_TALK_ERROR			46	//ÖÇÄÜ»á»°°´¼üÎó´¥·¢£¬²¥·ÅÏµÍ³Òô
-#define MIN_10_NOT_USER_WARN		47	//10·ÖÖÓ²»ÓÃÌáÊ¾ÓÃ»§
-#define TULING_WAIT_VOICES			48	//²¥·ÅÍ¼ÁéÏµÍ³µÈ´ıÒô
-#define CONTINUE_PLAY_MUSIC_VOICES	49	//Çë¼ÌĞøµã²¥°É
+#define AI_KEY_TALK_ERROR			46	//æ™ºèƒ½ä¼šè¯æŒ‰é”®è¯¯è§¦å‘ï¼Œæ’­æ”¾ç³»ç»ŸéŸ³
+#define MIN_10_NOT_USER_WARN		47	//10åˆ†é’Ÿä¸ç”¨æç¤ºç”¨æˆ·
+#define TULING_WAIT_VOICES			48	//æ’­æ”¾å›¾çµç³»ç»Ÿç­‰å¾…éŸ³
+#define CONTINUE_PLAY_MUSIC_VOICES	49	//è¯·ç»§ç»­ç‚¹æ’­å§
 
-#define HUASHANG_SLEEP_VOICES 		50	//»ªÉÏË¯ÃßÌáÊ¾Òô
-#define HUASHANG_START_10_VOICES 	51	//»ªÉÏ¿ª»úÌáÊ¾ÓïÒô
+#define HUASHANG_SLEEP_VOICES 		50	//åä¸Šç¡çœ æç¤ºéŸ³
+#define HUASHANG_START_10_VOICES 	51	//åä¸Šå¼€æœºæç¤ºè¯­éŸ³
 
 //---------------------------------------------------------
-#define VOICES_MIN	13200	//ÊÇ·ñÊÇ´óÓÚ0.5ÃëµÄÒôÆµ£¬²ÉÑùÂÊ16000¡¢Á¿»¯Î»16Î»
-#define VOICES_ERR	2000	//Îó´¥·¢
+#define VOICES_MIN	13200	//æ˜¯å¦æ˜¯å¤§äº0.5ç§’çš„éŸ³é¢‘ï¼Œé‡‡æ ·ç‡16000ã€é‡åŒ–ä½16ä½
+#define VOICES_ERR	2000	//è¯¯è§¦å‘
 
 #define SEC								1
 #define MIN								60*SEC
 #define SYSTEMOUTSIGN					1*MIN	//60s
-#define TIME_OUT_NOT_USER_FOR_CLOSE		6*MIN	//8·ÖÖÓ²»ÓÃ£¬¾Í×Ô¶¯¹Ø»ú
+#define TIME_OUT_NOT_USER_FOR_CLOSE		6*MIN	//8åˆ†é’Ÿä¸ç”¨ï¼Œå°±è‡ªåŠ¨å…³æœº
 #define ERRORTIME						30*24*60*MIN
 
-#define LONG_TIME_NOT_USER_MUTE_VOICES	15		//15s²»ÓÃ muteÒôÆµ
+#define LONG_TIME_NOT_USER_MUTE_VOICES	15		//15sä¸ç”¨ muteéŸ³é¢‘
 
 #define START_UPLOAD	1
 #define END_UPLOAD		0
 
-#define SYSTEM_INIT		0			//ÏµÍ³´¦ÓÚ³õÊ¼×´Ì¬
-#define SYSTEM_SLEEP	4			//ÏµÍ³½øÈëË¯Ãß×´Ì¬
+#define SYSTEM_INIT		0			//ç³»ç»Ÿå¤„äºåˆå§‹çŠ¶æ€
+#define SYSTEM_SLEEP	4			//ç³»ç»Ÿè¿›å…¥ç¡çœ çŠ¶æ€
 
 
 #define FREE_VOICE_NUMS	3
@@ -133,21 +136,20 @@ typedef struct{
 	char buf_voices[STD_RECODE_SIZE];
 }RecoderVoices_t;
 //--------------------------------------------------------
+#define NETWORK_OK 0					//è¿æ¥å¤–ç½‘æˆåŠŸ
+#define NETWORK_ER 1					//è”ç½‘å¤±è´¥
+#define NETWORK_UNKOWN	2				//æœªçŸ¥ç½‘ç»œçŠ¶æ€
 
-#define NETWORK_OK 0		//Á¬½ÓÍâÍø³É¹¦
-#define NETWORK_ER 1		//ÁªÍøÊ§°Ü
-#define NETWORK_UNKOWN	2	//Î´ÖªÍøÂç×´Ì¬
+#define ENABLE_CHECK_VOICES_PLAY	1	//ä½¿èƒ½æ£€æŸ¥è¿‡ç¨‹å½“ä¸­æ’­æ”¾--->æ–­ç½‘æ·»åŠ æ’­æ”¾ç³»ç»Ÿè¯­éŸ³äº‹ä»¶
+#define DISABLE_CHECK_VOICES_PLAY	0	//å…³é—­æ£€æŸ¥ç½‘ç»œçŠ¶æ€æ’­æ”¾--->æ–­ç½‘æ·»åŠ æ’­æ”¾ç³»ç»Ÿè¯­éŸ³äº‹ä»¶
 
-#define ENABLE_CHECK_VOICES_PLAY	1	//Ê¹ÄÜ¼ì²é¹ı³Ìµ±ÖĞ²¥·Å--->¶ÏÍøÌí¼Ó²¥·ÅÏµÍ³ÓïÒôÊÂ¼ş
-#define DISABLE_CHECK_VOICES_PLAY	0	//¹Ø±Õ¼ì²éÍøÂç×´Ì¬²¥·Å--->¶ÏÍøÌí¼Ó²¥·ÅÏµÍ³ÓïÒôÊÂ¼ş
-
-#define PLAY_MUSIC_NETWORK			1	//²¥·Å¸èÇúÎªÍøÂç²¥·ÅÀàĞÍ	
-#define PLAY_MUSIC_SDCARD			2	//²¥·Å¸èÇúÎªsdcard ´æ´¢¸èÇú
+#define PLAY_MUSIC_NETWORK			1	//æ’­æ”¾æ­Œæ›²ä¸ºç½‘ç»œæ’­æ”¾ç±»å‹	
+#define PLAY_MUSIC_SDCARD			2	//æ’­æ”¾æ­Œæ›²ä¸ºsdcard å­˜å‚¨æ­Œæ›²
 
 typedef struct{
 	unsigned char wifiState;
-	unsigned char netstate;				//°å×ÓÁ¬½ÓÍâ²¿ÍøÂç×´Ì¬
-	char localVoicesPath[20];			//°å×ÓÏµÍ³Òô´æ·ÅÂ·¾¶
+	unsigned char netstate;				//æ¿å­è¿æ¥å¤–éƒ¨ç½‘ç»œçŠ¶æ€
+	char localVoicesPath[20];			//æ¿å­ç³»ç»ŸéŸ³å­˜æ”¾è·¯å¾„
 }SysMessage;
 extern SysMessage sysMes;
 //--------------------eventVoices.c----------------------------------------
@@ -158,14 +160,9 @@ extern SysMessage sysMes;
 #define DEBUG_EVENT(fmt, args...) { }  
 #endif //end DBG_EVENT
 
-static enum{
-	networkUrl=1,
-	huashang,
-};
-
 //--------------------callvoices.c-----------------------------------------
 extern unsigned int GetCurrentEventNums(void);
-extern unsigned int updateCurrentEventNums(void);	//¸üĞÂµ±Ç°ÊÂ¼ş±àºÅ£¬²¢·µ»ØÊÂ¼ş±àºÅÖµ
+extern unsigned int updateCurrentEventNums(void);	//æ›´æ–°å½“å‰äº‹ä»¶ç¼–å·ï¼Œå¹¶è¿”å›äº‹ä»¶ç¼–å·å€¼
 extern void StartTuling_RecordeVoices(void);
 extern void StopTuling_RecordeVoices(void);
 extern void start_event_play_wav(void);
@@ -184,15 +181,15 @@ typedef struct{
 	unsigned char freeVoiceNums;
 	int file_len;
 	FILE *savefilefp;
-	int Starttime;	//Â¼ÖÆÎ¢ĞÅ¶Ô½²ÆğÊ¼Ê±¼ä£¬ÓÃÀ´¼ì²éÎÄ¼şÂ¼ÖÆ³¤¶È£¬·ÀÖ¹Â¼ÖÆÌ«¶ÌµÄÒôÆµ
+	int Starttime;	//å½•åˆ¶å¾®ä¿¡å¯¹è®²èµ·å§‹æ—¶é—´ï¼Œç”¨æ¥æ£€æŸ¥æ–‡ä»¶å½•åˆ¶é•¿åº¦ï¼Œé˜²æ­¢å½•åˆ¶å¤ªçŸ­çš„éŸ³é¢‘
 	pthread_mutex_t mutex;
 }Speek_t;
 
 extern void ShortKeyDown_ForPlayWifiMessage(void);
 extern void LongNetKeyDown_ForConfigWifi(void);
 
-#define	EXTERN_PLAY_EVENT	1	//Íâ²¿²úÉúåå²¥·ÅÊÂ¼ş
-#define AUTO_PLAY_EVENT		2	//ÄÚ²¿×ÔÉí²úÉú²¥·ÅÊÂ¼ş
+#define	EXTERN_PLAY_EVENT	1	//å¤–éƒ¨äº§ç”Ÿé‚‹æ’­æ”¾äº‹ä»¶
+#define AUTO_PLAY_EVENT		2	//å†…éƒ¨è‡ªèº«äº§ç”Ÿæ’­æ”¾äº‹ä»¶
 
 extern int __AddLocalMp3ForPaly(const char *localpath,unsigned char EventSource);
 extern void Create_CleanUrlEvent(void);
@@ -211,8 +208,8 @@ extern void SaveRecorderVoices(const char *voices_data,int size);
 
 //--------------------message_wav.c-----------------------------------------------
 
-#define PLAY_IS_COMPLETE		1		//ÍêÕû²¥·Å   ---->ÊÊÓÃÔÚÖÇÄÜ»á»°¹ı¶ÉÒôµ±ÖĞ£¬²»ÔÊĞí´ò¶Ï
-#define PLAY_IS_INTERRUPT		2		//¿ÉÒÔ´ò¶Ï²¥·Å
+#define PLAY_IS_COMPLETE		1		//å®Œæ•´æ’­æ”¾   ---->é€‚ç”¨åœ¨æ™ºèƒ½ä¼šè¯è¿‡æ¸¡éŸ³å½“ä¸­ï¼Œä¸å…è®¸æ‰“æ–­
+#define PLAY_IS_INTERRUPT		2		//å¯ä»¥æ‰“æ–­æ’­æ”¾
 
 extern int __playResamplePlayPcmFile(const char *pcmFile,unsigned int playEventNums);
 extern int PlayWeixin_SpeekAmrFileVoices(const char *filename,unsigned int playEventNums,unsigned char mixMode);

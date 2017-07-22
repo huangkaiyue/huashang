@@ -3,7 +3,7 @@
 #include "uart/uart.h"
 #include "config.h"
 
-//显示智能会话表情
+//鏄剧ず鏅鸿兘浼氳瘽琛ㄦ儏
 void Show_musicPicture(void){
 #if defined(HUASHANG_JIAOYU)
 	int faceNumS=(1+(int) (2.0*rand()/(RAND_MAX+1.0)));	

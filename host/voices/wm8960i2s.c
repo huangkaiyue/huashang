@@ -10,7 +10,7 @@ static int play_index = 0;
 char play_buf[I2S_PAGE_SIZE+4];
 I2SST I2S;
 
-//Ê¹ÄÜ·¢ËÍ,ÏÈ¼ì²éµ±Ç°×´Ì¬£¬ÔÙ²Ù×÷£¬·ÀÖ¹ÄÚºËÌ¬ËÀËø
+//ä½¿èƒ½å‘é€,å…ˆæ£€æŸ¥å½“å‰çŠ¶æ€ï¼Œå†æ“ä½œï¼Œé˜²æ­¢å†…æ ¸æ€æ­»é”
 static void set_tx_state(int i2s_fd,int enable){
 	if(I2S.tx_enable==0&&enable==1){
 		I2S.tx_enable=1;
@@ -21,7 +21,7 @@ static void set_tx_state(int i2s_fd,int enable){
 		ioctl(i2s_fd, I2S_TX_DISABLE, 0);
 	}
 }
-//Ê¹ÄÜ½ÓÊÕ
+//ä½¿èƒ½æ¥æ”¶
 static void set_rx_state(int i2s_fd,int enable){
 	if(I2S.rx_enable==0&&enable==1){
 		I2S.rx_enable=1;
@@ -79,13 +79,13 @@ static int i2s_rxbuffer_munmap(void){
 	return 0;
 }
 /*
-@ Çå³ıI2S ²¥·ÅµÄ»º´æÊı¾İ
+@ æ¸…é™¤I2S æ’­æ”¾çš„ç¼“å­˜æ•°æ®
 */
 void CleanI2S_PlayCachedata(void){
 	char *pBuf=NULL;
 	int i = 0;
 	cleanplayLog("start\n");
-	while(1){   //Çå³ıÒôÆµDMAÊı¾İ
+	while(1){   //æ¸…é™¤éŸ³é¢‘DMAæ•°æ®
 		ioctl(I2S.i2s_fd, I2S_PUT_AUDIO, &i);
 		pBuf = shtxbuf[i];
 		memset(pBuf, 0, I2S_PAGE_SIZE); 
@@ -95,7 +95,7 @@ void CleanI2S_PlayCachedata(void){
 	}
 	cleanplayLog("cleanplay end\n");
 }
-//appÉèÖÃÒôÁ¿´óĞ¡½Ó¿Ú
+//appè®¾ç½®éŸ³é‡å¤§å°æ¥å£
 int Setwm8960Vol(int dir,int vol){
 	int ret = 0;
 	if(I2S.tx_vol<=VOL_DWON){
@@ -108,7 +108,7 @@ int Setwm8960Vol(int dir,int vol){
 		case VOL_ADD:
 			I2S.tx_vol+=VOL_NUM;
 			break;
-		case VOL_APP_SET:	//ÊÊÅäapp 0-99ÒôÁ¿´óĞ¡¿Ì¶ÈËã·¨
+		case VOL_APP_SET:	//é€‚é…app 0-99éŸ³é‡å¤§å°åˆ»åº¦ç®—æ³•
 			if(vol==0)
 				I2S.tx_vol=VOL_DWON;
 			else
@@ -161,14 +161,14 @@ void mute_recorde_vol(int change){
 }
 
 /********************************************
-Ğ´ÈëpcmÊı¾İ¸øÒôÆµ½Ó¿Ú
+å†™å…¥pcmæ•°æ®ç»™éŸ³é¢‘æ¥å£
 ********************************************/
 void write_pcm(char *buf){
 	char *pBuf;
 	int play_index = 0;
 #if defined(CONFIG_I2S_MMAP)	
 	ioctl(I2S.i2s_fd, I2S_PUT_AUDIO, &play_index);
-	pBuf = shtxbuf[play_index];  //Ö¸ÏòDMA·¢ËÍÇø
+	pBuf = shtxbuf[play_index];  //æŒ‡å‘DMAå‘é€åŒº
 	memcpy(pBuf, buf, I2S_PAGE_SIZE); 
 #else
 	pBuf = txbuffer;
@@ -177,7 +177,7 @@ void write_pcm(char *buf){
 #endif	//end defined(CONFIG_I2S_MMAP)
 }
 /**********************************************
-»ñÈ¡ÒôÆµÊı¾İ
+è·å–éŸ³é¢‘æ•°æ®
 **********************************************/
 char *I2sGetvoicesData(void){
 	static int index_1 = 0;
@@ -185,11 +185,11 @@ char *I2sGetvoicesData(void){
 	return shrxbuf[index_1];
 }
 /********************************************
-³õÊ¼»¯wm8960ÒôÆµ½Ó¿Ú
+åˆå§‹åŒ–wm8960éŸ³é¢‘æ¥å£
 ********************************************/
 void InitWm8960Voices(void){
 	memset(&I2S,0,sizeof(I2SST));
-	GetVol_formRouteTable(&(I2S.tx_vol));//»ñÈ¡Â·ÓÉÒôÁ¿ºÍ²¥ÒôÈË
+	GetVol_formRouteTable(&(I2S.tx_vol));//è·å–è·¯ç”±éŸ³é‡å’Œæ’­éŸ³äºº
 	I2S.tx_rate =RECODE_RATE;
 	I2S.i2s_fd = open(WM8960_NODE_PATH, O_RDWR|O_SYNC); 
 	if(I2S.i2s_fd<0){
@@ -245,13 +245,13 @@ void Mute_voices(unsigned char stat)
 			break;
 	}
 }
-//»ñÈ¡µ±Ç°²¥·Å²ÉÑùÂÊ
+//è·å–å½“å‰æ’­æ”¾é‡‡æ ·ç‡
 int GetWm8960Rate(void){
 	return I2S.tx_rate;
 }
 /*
-@ ÉèÖÃ8960 Éù¿¨²ÉÑùÂÊ 
-@ rate ²ÉÑùÂÊÖµ
+@ è®¾ç½®8960 å£°å¡é‡‡æ ·ç‡ 
+@ rate é‡‡æ ·ç‡å€¼
 @
 */
 int SetWm8960Rate(unsigned short rate,const char *function){
@@ -261,7 +261,7 @@ int SetWm8960Rate(unsigned short rate,const char *function){
 		return -1;
 	}
 	I2S.lockSetRate=1;
-	if(rate==I2S.tx_rate){  //²¥·ÅµÄ²ÉÑùÂÊµÈÓÚÂ¼Òô²ÉÑùÂÊ£¬²»ĞèÒªÇĞ»»
+	if(rate==I2S.tx_rate){  //æ’­æ”¾çš„é‡‡æ ·ç‡ç­‰äºå½•éŸ³é‡‡æ ·ç‡ï¼Œä¸éœ€è¦åˆ‡æ¢
 		printf("start play rate = %d\n",rate);
 		Mute_voices(UNMUTE);
 		I2S.lockSetRate=0;
@@ -270,16 +270,16 @@ int SetWm8960Rate(unsigned short rate,const char *function){
 	}
 	WriteRateTextLog(function,"Set Rate",rate);
 	Mute_voices(MUTE);
-	set_rx_state(I2S.i2s_fd,0);		//ÏÈ¹Ø±Õ·¢ËÍºÍ½ÓÊÕ£¬ÇĞ»»²ÉÑùÂÊ
+	set_rx_state(I2S.i2s_fd,0);		//å…ˆå…³é—­å‘é€å’Œæ¥æ”¶ï¼Œåˆ‡æ¢é‡‡æ ·ç‡
 	set_tx_state(I2S.i2s_fd,0);
-	SET_RATE(I2S.i2s_fd,rate);		//ÉèÖÃ²ÉÑùÂÊ
+	SET_RATE(I2S.i2s_fd,rate);		//è®¾ç½®é‡‡æ ·ç‡
 	I2S.tx_enable=0;
 	set_rx_state(I2S.i2s_fd,1);
 	set_tx_state(I2S.i2s_fd,1);
 	SET_RX_VOL(I2S.i2s_fd, AUDIO_RX_VOICE);
 	I2S.execute_mode = PLAY_MODE;	
 	Mute_voices(UNMUTE);
-	I2S.tx_rate=rate;				//ÉúĞ§²ÉÑùÂÊ
+	I2S.tx_rate=rate;				//ç”Ÿæ•ˆé‡‡æ ·ç‡
 	I2S.lockSetRate=0;
 	return 0;
 }
@@ -287,7 +287,7 @@ void DestoryWm8960Voices(void){
 	char* pBuf;
 	if(I2S.execute_mode == EXTERNAL_LBK2 || I2S.execute_mode == PLAY_MODE){
 		int i = 0;
-		while(1){   //Çå³ıÒôÆµDMAÊı¾İ
+		while(1){   //æ¸…é™¤éŸ³é¢‘DMAæ•°æ®
 			ioctl(I2S.i2s_fd, I2S_PUT_AUDIO, &i);
 			pBuf = shtxbuf[i];
 			if(*pBuf==0&&*(pBuf+1)==0&&*(pBuf+2)==0){

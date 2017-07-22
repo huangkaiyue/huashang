@@ -10,20 +10,20 @@
 #endif	//end DBG_STD_MSG
 
 #define TULING_TEXT			1
-#define TULING_TEXT_MUSIC	2	//²¥·Åtext Ğ¯´øÓĞÒôÀÖ(ÓïÒôµã¸è)
+#define TULING_TEXT_MUSIC	2	//æ’­æ”¾text æºå¸¦æœ‰éŸ³ä¹(è¯­éŸ³ç‚¹æ­Œ)
 
 
 #define NORMAL_PLAY_PCM		0
-#define MIX_PLAY_PCM		1	//¶Ôµ±Ç°ÉùÒô½øĞĞÖØ²ÉÑù
+#define MIX_PLAY_PCM		1	//å¯¹å½“å‰å£°éŸ³è¿›è¡Œé‡é‡‡æ ·
 
 
 typedef struct{
-	unsigned char mixMode;			//»ìÒô²¥·Å´¦Àí
-	unsigned char event;			//µ±Ç°´¦ÀíÊÂ¼ş
-	unsigned short playLocalVoicesIndex;	//²¥·Å±¾µØÂ¼ÖÆºÃµÄÌ¨±¾±àºÅ
-	unsigned int EventNums;			//µ±Ç°ĞèÒª´¦ÀíÊı¾İÊÂ¼ş±àºÅ
-	char *data;		//ĞèÒª´¦ÀíµÄÊı¾İ	(ÉÏ´«ÓïÒôµ½·şÎñÆ÷Êı¾İ¡¢½ÓÊÜµ½·şÎñÆ÷·µ»ØÀ´µÄÎÄ±¾orÁ´½ÓµØÖ· ĞèÒª²¥·Å)
-	int dataSize;	//´¦ÀíµÄÊı¾İ´óĞ¡
+	unsigned char mixMode;			//æ··éŸ³æ’­æ”¾å¤„ç†
+	unsigned char event;			//å½“å‰å¤„ç†äº‹ä»¶
+	unsigned short playLocalVoicesIndex;	//æ’­æ”¾æœ¬åœ°å½•åˆ¶å¥½çš„å°æœ¬ç¼–å·
+	unsigned int EventNums;			//å½“å‰éœ€è¦å¤„ç†æ•°æ®äº‹ä»¶ç¼–å·
+	char *data;		//éœ€è¦å¤„ç†çš„æ•°æ®	(ä¸Šä¼ è¯­éŸ³åˆ°æœåŠ¡å™¨æ•°æ®ã€æ¥å—åˆ°æœåŠ¡å™¨è¿”å›æ¥çš„æ–‡æœ¬oré“¾æ¥åœ°å€ éœ€è¦æ’­æ”¾)
+	int dataSize;	//å¤„ç†çš„æ•°æ®å¤§å°
 }HandlerText_t;
 
 extern void ReqTulingServer(HandlerText_t *handText,const char *voices_type,const char* asr,int rate);
@@ -33,14 +33,14 @@ extern void InitEventMsgPthread(void);
 extern void CleanEventMsgPthread(void);
 
 
-#define START_PLAY_VOICES_LIST		1	//¿ªÊ¼²¥·ÅÁĞ±íÉùÒô
-#define INTERRUPT_PLAY_VOICES_LIST	2	//´ò¶Ï²¥·ÅÁĞ±íÉùÒô
-#define CLEAN_PLAY_VOICES_LIST		3	//Çå³ı²¥·ÅÁĞ±íÊı¾İ
-#define END_PLAY_VOICES_LIST		4	//²¥·ÅÍê
-#define EXIT_PLAY_VOICES_LIST		5	//ÍË³ö²¥·Å¶ÓÁĞÏß³Ì
+#define START_PLAY_VOICES_LIST		1	//å¼€å§‹æ’­æ”¾åˆ—è¡¨å£°éŸ³
+#define INTERRUPT_PLAY_VOICES_LIST	2	//æ‰“æ–­æ’­æ”¾åˆ—è¡¨å£°éŸ³
+#define CLEAN_PLAY_VOICES_LIST		3	//æ¸…é™¤æ’­æ”¾åˆ—è¡¨æ•°æ®
+#define END_PLAY_VOICES_LIST		4	//æ’­æ”¾å®Œ
+#define EXIT_PLAY_VOICES_LIST		5	//é€€å‡ºæ’­æ”¾é˜Ÿåˆ—çº¿ç¨‹
 
-#define KEEP_RECORD_STATE			1	//±£³Öµ±Ç°Â¼Òô×´Ì¬
-#define UPDATE_RECORD_STATE			0	//¸üĞÂµ±Ç°Â¼Òô×´Ì¬	
+#define KEEP_RECORD_STATE			1	//ä¿æŒå½“å‰å½•éŸ³çŠ¶æ€
+#define UPDATE_RECORD_STATE			0	//æ›´æ–°å½“å‰å½•éŸ³çŠ¶æ€	
 
 extern unsigned char getPlaylistVoicesSate(void);
 

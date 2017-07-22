@@ -3,7 +3,6 @@
 #include "host/voices/callvoices.h"
 #include "host/studyvoices/prompt_tone.h"
 #include "host/voices/WavAmrCon.h"
-#include "host/voices/resexampleRate.h"
 #include "host/studyvoices/std_worklist.h"
 #include "gpio_7620.h"
 #include "uart/uart.h"
@@ -19,7 +18,7 @@ void WritePcmData(char *data,int size){
 	memcpy(play_buf+I2S.play_size,data,size);
 	I2S.play_size +=size;
 }
-//²¥·Åµ¥ÉùµÀwav¸ñÊ½ÒôÆµÊı¾İ
+//æ’­æ”¾å•å£°é“wavæ ¼å¼éŸ³é¢‘æ•°æ®
 static int PlayStartWavVoices(const char *playfilename,int eventsNum){
 	int r_size=0,pos=0;
 	char readbuf[2]={0};
@@ -29,7 +28,7 @@ static int PlayStartWavVoices(const char *playfilename,int eventsNum){
 		printf("open sys failed \n");
 		return -1;
 	}
-	fseek(fp,WAV_HEAD,SEEK_SET);		//Ìø¹ıwavÍ·²¿	
+	fseek(fp,WAV_HEAD,SEEK_SET);		//è·³è¿‡wavå¤´éƒ¨	
 	FILE *file = fopen("out2.pcm","w+");
 	if(file==NULL){
 		printf("open sys failed \n");
@@ -50,7 +49,7 @@ static int PlayStartWavVoices(const char *playfilename,int eventsNum){
 		printf("open sys failed \n");
 		return -1;
 	}
-	int playInterruptEvent =1;	//¹ıÂËµÚÒ»´ÎÊÂ¼ş´ò¶Ï,Ö±µ½µÚ¶ş´ÎÊÂ¼ş´ò¶Ï²Å»áÍË³ö
+	int playInterruptEvent =1;	//è¿‡æ»¤ç¬¬ä¸€æ¬¡äº‹ä»¶æ‰“æ–­,ç›´åˆ°ç¬¬äºŒæ¬¡äº‹ä»¶æ‰“æ–­æ‰ä¼šé€€å‡º
 	while(1){
 		if(eventsNum!=0){
 			if(GetCurrentEventNums()!=eventsNum){
@@ -74,7 +73,7 @@ static int PlayStartWavVoices(const char *playfilename,int eventsNum){
 	remove("out2.pcm");
 	return ret;
 }
-//¿ª»ú²¥·ÅµÄÆğÊ¼Òô
+//å¼€æœºæ’­æ”¾çš„èµ·å§‹éŸ³
 void PlayStartPcm(const char *filename,int eventsNum){
 	char *outfile ="speek.wav";
 	char path[128]={0};
@@ -83,7 +82,7 @@ void PlayStartPcm(const char *filename,int eventsNum){
 	PlayStartWavVoices(outfile,eventsNum);
 
 }
-//²¥·Åµ¥ÉùµÀwav¸ñÊ½ÒôÆµÊı¾İ
+//æ’­æ”¾å•å£°é“wavæ ¼å¼éŸ³é¢‘æ•°æ®
 static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,unsigned int playEventNums){
 	int r_size=0,pos=0;
 	char readbuf[2]={0};
@@ -93,7 +92,7 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 		printf("open sys failed \n");
 		return -1;
 	}
-	fseek(fp,WAV_HEAD,SEEK_SET);		//Ìø¹ıwavÍ·²¿	
+	fseek(fp,WAV_HEAD,SEEK_SET);		//è·³è¿‡wavå¤´éƒ¨	
 #if defined(HUASHANG_JIAOYU)	
 	Show_tlak_Light();	
 	led_lr_oc(closeled);
@@ -102,8 +101,8 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 #endif
 	while(1){
 		if(playMode==PLAY_IS_INTERRUPT&&playEventNums!=GetCurrentEventNums()){
-			CleanI2S_PlayCachedata();//ÇåÀí
-			StopplayI2s();			 //×îºóÒ»Æ¬Êı¾İ¶ªµô
+			CleanI2S_PlayCachedata();//æ¸…ç†
+			StopplayI2s();			 //æœ€åä¸€ç‰‡æ•°æ®ä¸¢æ‰
 			ret=-1;
 			Mute_voices(MUTE);
 			break;
@@ -111,7 +110,7 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 		r_size= fread(readbuf,1,2,fp);
 		if(r_size==0){
 			if(pos>0){
-				memset(play_buf+pos,0,I2S_PAGE_SIZE-pos);		//Çå¿ÕÉÏÒ»´ÎÎ²²¿ÔÓÒô,²¢²¥·ÅÎ²Òô
+				memset(play_buf+pos,0,I2S_PAGE_SIZE-pos);		//æ¸…ç©ºä¸Šä¸€æ¬¡å°¾éƒ¨æ‚éŸ³,å¹¶æ’­æ”¾å°¾éŸ³
 				write_pcm(play_buf);
 			}
 			CleanI2S_PlayCachedata();
@@ -142,11 +141,11 @@ int __playResamplePlayPcmFile(const char *pcmFile,unsigned int playEventNums){
 	int currentRate = 0;
 	StreamPause();
 	currentRate = GetWm8960Rate();
-	start_event_play_soundMix();//ÇĞ»»µ½»ìÒô²¥·Å×´Ì¬		
+	start_event_play_soundMix();//åˆ‡æ¢åˆ°æ··éŸ³æ’­æ”¾çŠ¶æ€		
 	SetWm8960Rate(RECODE_RATE,(const char *)"__playResamplePlayPcmFile set rate");
 	int ret =PlaySignleWavVoices((const char *)pcmFile,PLAY_IS_INTERRUPT,playEventNums);	
 	start_event_play_Mp3music();
-	//ĞèÒªÓÅ»¯Ò»ÏÂ£¬¼ì²éµ½»¹ÓĞÒôÆµÎÄ¼ş
+	//éœ€è¦ä¼˜åŒ–ä¸€ä¸‹ï¼Œæ£€æŸ¥åˆ°è¿˜æœ‰éŸ³é¢‘æ–‡ä»¶
 	SetWm8960Rate(currentRate,(const char *)"__playResamplePlayPcmFile set rate");
 	keyStreamPlay();
 	return ret;
@@ -163,13 +162,13 @@ static int playResamplePlayAmrFile(const char *filename,unsigned int playEventNu
 	return ret ; 
 }
 
-//²¥·Åµ¥ÉùµÀamr¸ñÊ½ÒôÆµÊı¾İ
+//æ’­æ”¾å•å£°é“amræ ¼å¼éŸ³é¢‘æ•°æ®
 static int __playAmrVoices(const char *filename,unsigned char playMode,unsigned int playEventNums){
 	char *outfile ="speek.wav";
 	AmrToWav8k(filename,(const char *)outfile);
 	SetWm8960Rate(RECODE_RATE,(const char *)"__playAmrVoices set rate");
 	int ret = PlaySignleWavVoices((const char *)outfile,playMode,playEventNums);
-	if(ret==0){	//Õı³£²¥·ÅÍê£¬°ÑÂ¼ÒôÏß³Ì¹ÒÆğÀ´
+	if(ret==0){	//æ­£å¸¸æ’­æ”¾å®Œï¼ŒæŠŠå½•éŸ³çº¿ç¨‹æŒ‚èµ·æ¥
 		pause_record_audio();
 	}
 	remove(outfile);
@@ -181,8 +180,8 @@ static int __playSystemAmrVoices(const char *filePath,unsigned char playMode,uns
 	return __playAmrVoices(path,playMode,playEventNums);
 }
 /********************************************************
-@ ²¥·Å½ÓÊÕµ½ÊÖ»ú·¢ËÍµÄ¶Ô½²ÏûÏ¢
-@ filename:»º´æµ½±¾µØµÄwavÊı¾İµÄÎÄ¼şÂ·¾¶ (²¥·ÅÍêĞèÒªÉ¾³ı)
+@ æ’­æ”¾æ¥æ”¶åˆ°æ‰‹æœºå‘é€çš„å¯¹è®²æ¶ˆæ¯
+@ filename:ç¼“å­˜åˆ°æœ¬åœ°çš„wavæ•°æ®çš„æ–‡ä»¶è·¯å¾„ (æ’­æ”¾å®Œéœ€è¦åˆ é™¤)
 @
 *********************************************************/
 int PlayWeixin_SpeekAmrFileVoices(const char *filename,unsigned int playEventNums,unsigned char mixMode){
@@ -197,22 +196,22 @@ int PlayWeixin_SpeekAmrFileVoices(const char *filename,unsigned int playEventNum
 	return ret;
 }
 /********************************************************
-@ º¯Êı¹¦ÄÜ:	²¥·ÅÏµÍ³Òô
-@ filePath:	Â·¾¶
-@ ·µ»ØÖµ: ÎŞ
+@ å‡½æ•°åŠŸèƒ½:	æ’­æ”¾ç³»ç»ŸéŸ³
+@ filePath:	è·¯å¾„
+@ è¿”å›å€¼: æ— 
 *********************************************************/
 int PlaySystemAmrVoices(const char *filePath,unsigned int playEventNums){
 	return __playSystemAmrVoices(filePath,PLAY_IS_INTERRUPT,playEventNums);
 }
-//²¥·Å¹ı¶ÉÒô£¬²»ÔÊĞí´ò¶Ï
+//æ’­æ”¾è¿‡æ¸¡éŸ³ï¼Œä¸å…è®¸æ‰“æ–­
 void PlayImportVoices(const char *filePath,unsigned int playEventNums){
 	__playSystemAmrVoices(filePath,PLAY_IS_COMPLETE,playEventNums);
 }
 
 /********************************************************
-@ º¯Êı¹¦ÄÜ:	²¥·ÅQTTSÊı¾İ
-@ text:ÎÄ±¾		type:ÎÄ±¾ÀàĞÍ
-@ ·µ»ØÖµ: ÎŞ
+@ å‡½æ•°åŠŸèƒ½:	æ’­æ”¾QTTSæ•°æ®
+@ text:æ–‡æœ¬		type:æ–‡æœ¬ç±»å‹
+@ è¿”å›å€¼: æ— 
 *********************************************************/
 int PlayQttsText(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed){
 	SetWm8960Rate(RECODE_RATE,(const char *)"PlayQttsText set rate");
@@ -220,9 +219,9 @@ int PlayQttsText(const char *text,unsigned char type,const char *playVoicesName,
 
 }
 /********************************************************
-@ º¯Êı¹¦ÄÜ:	²¥·ÅÍ¼ÁéÊı¾İ
-@ url:Í¼Áé·¢ËÍ
-@ ·µ»ØÖµ: 0 Õı³£ÍË³ö -1·ÇÕı³£ÍË³ö
+@ å‡½æ•°åŠŸèƒ½:	æ’­æ”¾å›¾çµæ•°æ®
+@ url:å›¾çµå‘é€
+@ è¿”å›å€¼: 0 æ­£å¸¸é€€å‡º -1éæ­£å¸¸é€€å‡º
 *********************************************************/
 int PlayTulingText(HandlerText_t *handtext){
 	return downTulingMp3_forPlay(handtext);

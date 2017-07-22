@@ -4,9 +4,9 @@
 extern void init_interface(void pasreInputCmd(const char *inputCmd));
 
 /*
-@ ´ò¿ª´®¿Ú 
-@ serial ´®¿ÚÉè±¸½Úµã  speedÉèÖÃ´®¿Ú²¨ÌØÂÊ
-@  -1:´ò¿ªÊ§°Ü   >0:´ò¿ªµÄÌ×½Ó×ÖÃèÊö·û
+@ æ‰“å¼€ä¸²å£ 
+@ serial ä¸²å£è®¾å¤‡èŠ‚ç‚¹  speedè®¾ç½®ä¸²å£æ³¢ç‰¹ç‡
+@  -1:æ‰“å¼€å¤±è´¥   >0:æ‰“å¼€çš„å¥—æ¥å­—æè¿°ç¬¦
 */
 extern int serial_open(char *serial,int speed);
 

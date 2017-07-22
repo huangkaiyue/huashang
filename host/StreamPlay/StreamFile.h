@@ -7,10 +7,10 @@
 
 //#define TEST_SAVE
 
-#define SAFE_READ_WRITER		//°²È«µÄ¶ÁĞ´ÎÄ¼ş
+#define SAFE_READ_WRITER		//å®‰å…¨çš„è¯»å†™æ–‡ä»¶
 
-#define SEEK_TO					//½ø¶ÈÌõÍÏ¶¯ÊµÏÖ¿ì½ø
-//#define SHOW_progressBar		//ÏÔÊ¾²¥·Å½ø¶È
+#define SEEK_TO					//è¿›åº¦æ¡æ‹–åŠ¨å®ç°å¿«è¿›
+//#define SHOW_progressBar		//æ˜¾ç¤ºæ’­æ”¾è¿›åº¦
 
 #define KB	1024
 #define CACHE_PLAY_SIZE		16*KB
@@ -20,42 +20,42 @@
 #define UDP_ACK		1
 #define TCP_ACK		0
 
-#define MUSIC_PLAY_LIST			0	//ÁĞ±í²¥·Å
-#define	MUSIC_SINGLE_LIST		1 	//µ¥ÇúÑ­»·
+#define MUSIC_PLAY_LIST			0	//åˆ—è¡¨æ’­æ”¾
+#define	MUSIC_SINGLE_LIST		1 	//å•æ›²å¾ªç¯
 
 #define MP3STEAM_SIZE	sizeof(Mp3Stream)
 
 typedef struct{
-	unsigned char playListState;//²¥·ÅÁĞ±í×´Ì¬		0:Ë³Ğò²¥·Å 1:µ¥Çú²¥·Å		
-	unsigned char playState;	//²¥·Å×´Ì¬
-	unsigned char vol;			//ÒôÁ¿´óĞ¡	
-	short progress;				//²¥·Å½ø¶È
-	short proflag;				//²¥·Å½ø¶È±ê¼Ç
-	unsigned short musicTime;	//ÒôÀÖ×ÜÊ±³¤
-	char playfilename[128];		//µ±Ç°²¥·ÅµÄµØÖ·
-	char musicname[48];			//µ±Ç°²¥·ÅµÄ¸èÇúÃû×Ö		
+	unsigned char playListState;//æ’­æ”¾åˆ—è¡¨çŠ¶æ€		0:é¡ºåºæ’­æ”¾ 1:å•æ›²æ’­æ”¾		
+	unsigned char playState;	//æ’­æ”¾çŠ¶æ€
+	unsigned char vol;			//éŸ³é‡å¤§å°	
+	short progress;				//æ’­æ”¾è¿›åº¦
+	short proflag;				//æ’­æ”¾è¿›åº¦æ ‡è®°
+	unsigned short musicTime;	//éŸ³ä¹æ€»æ—¶é•¿
+	char playfilename[128];		//å½“å‰æ’­æ”¾çš„åœ°å€
+	char musicname[48];			//å½“å‰æ’­æ”¾çš„æ­Œæ›²åå­—		
 }Player_t;
 
 typedef struct{
-	char channel;					//²ÉÑùÍ¨µÀ
+	char channel;					//é‡‡æ ·é€šé“
 	unsigned char wait;
-	unsigned short rate;			//²ÉÑùÂÊ	
-	int bitrate;					//²¥·Å±ÈÌØÂÊ
-	int playSize;					//µ±Ç°²¥·Å´óĞ¡
-	int cacheSize;					//µ±Ç°ÏÂÔØÒôÆµÊı¾İ´óĞ¡
-	unsigned int streamLen;			//Êı¾İÁ÷´óĞ¡
+	unsigned short rate;			//é‡‡æ ·ç‡	
+	int bitrate;					//æ’­æ”¾æ¯”ç‰¹ç‡
+	int playSize;					//å½“å‰æ’­æ”¾å¤§å°
+	int cacheSize;					//å½“å‰ä¸‹è½½éŸ³é¢‘æ•°æ®å¤§å°
+	unsigned int streamLen;			//æ•°æ®æµå¤§å°
 	Player_t player; 
-	pthread_mutex_t mutex;			//×ÊÔ´Ëø
-	void (*SetI2SRate)(int rate,const char *function);	//ÇĞ»»ÒôÆµ²ÉÑùÂÊ
-	int (*GetVol)(void);			//»ñÈ¡ÒôÁ¿´óĞ¡	
-	void (*ack_playCtr)(int nettype,Player_t *player,unsigned char playState);//»Ø¸´¸øapp×´Ì¬
+	pthread_mutex_t mutex;			//èµ„æºé”
+	void (*SetI2SRate)(int rate,const char *function);	//åˆ‡æ¢éŸ³é¢‘é‡‡æ ·ç‡
+	int (*GetVol)(void);			//è·å–éŸ³é‡å¤§å°	
+	void (*ack_playCtr)(int nettype,Player_t *player,unsigned char playState);//å›å¤ç»™appçŠ¶æ€
 	int (*GetWm8960Rate)(void);
 	char mp3name[128];
 #ifdef MEM_PLAY	
-	char *streamdata;				//ÒôÆµÊı¾İÁ÷	
+	char *streamdata;				//éŸ³é¢‘æ•°æ®æµ	
 #endif	
-	FILE *wfp;						//»º´æÎÄ¼şÖ¸Õë				
-	FILE *rfp;						//²¥·ÅÎÄ¼şÖ¸Õë
+	FILE *wfp;						//ç¼“å­˜æ–‡ä»¶æŒ‡é’ˆ				
+	FILE *rfp;						//æ’­æ”¾æ–‡ä»¶æŒ‡é’ˆ
 }Mp3Stream;
 extern Mp3Stream *st;
 
@@ -68,16 +68,16 @@ extern Mp3Stream *st;
 #define DEBUG_STREAM(fmt, args...) { }
 #endif
 
-extern void NetStreamExitFile(void);	//ÍË³ö²¥·Å,ºÄÊ±ÍË³ö
-extern int Mad_PlayMusic(Player_t *play);	//²¥·ÅURL½Ó¿Ú£¬±¾µØ´æÔÚ¾Í²»ÏÂÔØÁË
+extern void NetStreamExitFile(void);	//é€€å‡ºæ’­æ”¾,è€—æ—¶é€€å‡º
+extern int Mad_PlayMusic(Player_t *play);	//æ’­æ”¾URLæ¥å£ï¼Œæœ¬åœ°å­˜åœ¨å°±ä¸ä¸‹è½½äº†
 extern void StreamPause(void);
 extern void StreamPlay(void);
 extern void SetStreamPlayState(unsigned char playliststate);
 extern int GetStreamPlayState(void);
 extern void keyStreamPlay(void);
 
-extern void getStreamState(void *data,void StreamState(void *data,Player_t *player));	//»ñÈ¡²¥·ÅÁ÷×´Ì¬
-//³õÊ¼»¯ £¬WritePcmDataĞ´ÈëÒôÆµÊı¾İÁ÷»Øµ÷º¯Êı  SetI2SRate ÉèÖÃ²ÉÑùÂÊ»Øµ÷º¯Êı
+extern void getStreamState(void *data,void StreamState(void *data,Player_t *player));	//è·å–æ’­æ”¾æµçŠ¶æ€
+//åˆå§‹åŒ– ï¼ŒWritePcmDataå†™å…¥éŸ³é¢‘æ•°æ®æµå›è°ƒå‡½æ•°  SetI2SRate è®¾ç½®é‡‡æ ·ç‡å›è°ƒå‡½æ•°
 extern void initStream(void ack_playCtr(int nettype,Player_t *player,unsigned char playState),void WritePcmData(char *data,int size),void SetI2SRate(int rate,const char *function),int GetVol(void),int GetWm8960Rate(void));
-extern void cleanStream(void);//Çå³ı
+extern void cleanStream(void);//æ¸…é™¤
 #endif

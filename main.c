@@ -23,23 +23,23 @@ static unsigned char mainQueLock=0;
 static unsigned char ExitLock=0;
 
 /*
-@Ìí¼Ó²¥·Å/ÏÂÔØ ¸èÇúÊ±¼ä
-@data :Ìí¼ÓÏûÏ¢Êý¾Ý  msgSize:ÏûÏ¢µÄ´óÐ¡
-@ ·µ»Ø:0Ìí¼Ó³É¹¦ -1 Ìí¼ÓÊ§°Ü
+@æ·»åŠ æ’­æ”¾/ä¸‹è½½ æ­Œæ›²æ—¶é—´
+@data :æ·»åŠ æ¶ˆæ¯æ•°æ®  msgSize:æ¶ˆæ¯çš„å¤§å°
+@ è¿”å›ž:0æ·»åŠ æˆåŠŸ -1 æ·»åŠ å¤±è´¥
 */
 int AddDownEvent(const char *data,int msgSize){
 	return putMsgQueue(DownEvent,data, msgSize);
 }
-//»ñÈ¡²¥·Å¸èÇúÊÂ¼þ¶ÓÁÐÊý
+//èŽ·å–æ’­æ”¾æ­Œæ›²äº‹ä»¶é˜Ÿåˆ—æ•°
 int getplayEventNum(void){
 	return getWorkMsgNum(DownEvent);
 }
 
-//ÉèÖÃÖ÷Ïß³Ì¶ÓÁÐ×ÊÔ´Ëø
+//è®¾ç½®ä¸»çº¿ç¨‹é˜Ÿåˆ—èµ„æºé”
 void SetMainQueueLock(unsigned char lock){
 	mainQueLock=lock;
 }
-//ÍË³öÇå³ý×ÊÔ´
+//é€€å‡ºæ¸…é™¤èµ„æº
 void CleanSystemResources(void){
 	disable_gpio();
 	int playEventNums =updateCurrentEventNums();
@@ -57,7 +57,7 @@ void CleanSystemResources(void){
 }
 
 /*
-* ¼ÓÔØ´«½øÀ´µÄ²ÎÊý,ÌáÈ¡qtts ÏµÍ³ÓïÒôÂ·¾¶µÈ
+* åŠ è½½ä¼ è¿›æ¥çš„å‚æ•°,æå–qtts ç³»ç»Ÿè¯­éŸ³è·¯å¾„ç­‰
 */
 static void loadLocalServer(int argc,char *argv[]){
 	int i;
@@ -86,26 +86,22 @@ static void loadLocalServer(int argc,char *argv[]){
 			WriteLocalserver_Version((const char *)argv[i+1]);
 		}
 	}
-	sleep(sleeptime);	//Ôö¼ÓÒ»¶¨Ë¯ÃßÊ±¼ä£¬·ÀÖ¹¼ÓÔØsdcardºÍsock³åÍ»£¬µ¼ÖÂudp sock²»ÄÜÍ¨ÐÅ
+	sleep(sleeptime);	//å¢žåŠ ä¸€å®šç¡çœ æ—¶é—´ï¼Œé˜²æ­¢åŠ è½½sdcardå’Œsockå†²çªï¼Œå¯¼è‡´udp sockä¸èƒ½é€šä¿¡
 	time_t t;
-	sysMes.netstate=NETWORK_UNKOWN;	//¿ª»ú²»ÊôÓÚÎ´ÖªÍøÂç×´Ì¬
+	sysMes.netstate=NETWORK_UNKOWN;	//å¼€æœºå±žäºŽæœªçŸ¥ç½‘ç»œçŠ¶æ€
 	InitWeixinMeesageList();
 	set_pthread_sigblock();
 	pool_init(4);	
-	InitTuling((const char *) user_id,(const char *) token);	//userIdÐèÒª±£´æµ½Â·ÓÉ±íµ±ÖÐ £¬token Ò²ÐèÒª±£´æ
+	InitTuling((const char *) user_id,(const char *) token);	//userIdéœ€è¦ä¿å­˜åˆ°è·¯ç”±è¡¨å½“ä¸­ ï¼Œtoken ä¹Ÿéœ€è¦ä¿å­˜
 	InitMtkPlatfrom76xx();
 	
 	DownEvent = initQueue();
-	
 #ifdef WORK_INTER
 	init_interface(pasreInputCmd);
 #endif	//end WORK_INTER
 	InitServer();
-	init_Uart(UartEventcallFuntion,ack_batteryCtr);	//³õÊ¼»¯´®¿Ú
-	
+	init_Uart(UartEventcallFuntion,ack_batteryCtr);	//åˆå§‹åŒ–ä¸²å£
 	led_lr_oc(closeled);
-
-	srand((unsigned)time(NULL));	//È¡Ëæ»úÊý»ùÊý
 	mkdir(CACHE_WAV_PATH,777);
 }
 static void Create_playContinueMusic(HandlerText_t *hand){
@@ -113,7 +109,7 @@ static void Create_playContinueMusic(HandlerText_t *hand){
 	Player_t *play =(Player_t *)hand->data;
 	if(hand->EventNums==GetCurrentEventNums()){
 		Create_CleanUrlEvent();
-		if(play->playListState==AUTO_PLAY_EVENT){	//»ªÉÏ×Ô¶¯ÍÆËÍ½øÈëÏÔÊ¾µÈ´ý1×´Ì¬
+		if(play->playListState==AUTO_PLAY_EVENT){	//åŽä¸Šè‡ªåŠ¨æŽ¨é€è¿›å…¥æ˜¾ç¤ºç­‰å¾…1çŠ¶æ€
 			
 		}
 	}
@@ -122,7 +118,7 @@ static void Create_playContinueMusic(HandlerText_t *hand){
 		if(hand->EventNums!=GetCurrentEventNums()){ 	
 			break;
 		}
-		if(GetEvent_lock()==0){
+		if(getLock_EventQueue()==0){
 			Create_PlaySystemEventVoices(CONTINUE_PLAY_MUSIC_VOICES);
 
 			break;
@@ -132,7 +128,7 @@ static void Create_playContinueMusic(HandlerText_t *hand){
 		}
 	}
 }
-//Ö÷Ïß³ÌÌí¼ÓÍøÂç¸èÇúµ½¶ÓÁÐµ±ÖÐ²¥·Å
+//ä¸»çº¿ç¨‹æ·»åŠ ç½‘ç»œæ­Œæ›²åˆ°é˜Ÿåˆ—å½“ä¸­æ’­æ”¾
 static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 	Player_t *play =(Player_t *)hand->data;
 	Show_musicPicture();
@@ -142,8 +138,8 @@ static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 #else
 	Create_playContinueMusic(hand);
 #if 0
-	if(play->playListState==AUTO_PLAY_EVENT){			//ÄÚ²¿×ÔÉí²úÉú²¥·ÅÊÂ¼þ
-		CreatePlayDefaultMusic_forPlay(play->musicname);//musicname ÔÝÊ±¶¨Òå²ÉÓÃÕâ¸ö½á¹¹³ÉÓï±äÁ¿´æ·Å²¥·ÅÀàÐÍ
+	if(play->playListState==AUTO_PLAY_EVENT){			//å†…éƒ¨è‡ªèº«äº§ç”Ÿæ’­æ”¾äº‹ä»¶
+		CreatePlayDefaultMusic_forPlay(play->musicname);//musicname æš‚æ—¶å®šä¹‰é‡‡ç”¨è¿™ä¸ªç»“æž„æˆè¯­å˜é‡å­˜æ”¾æ’­æ”¾ç±»åž‹
 		goto exit1;
 	}
 #endif	
@@ -153,7 +149,7 @@ exit1:
 exit0:
 	free((void *)hand);
 }
-//Ö÷Ïß³ÌÌí¼Ó±¾µØµ½¶ÓÁÐµ±ÖÐ²¥·Å
+//ä¸»çº¿ç¨‹æ·»åŠ æœ¬åœ°åˆ°é˜Ÿåˆ—å½“ä¸­æ’­æ”¾
 static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 	Player_t * player =hand->data;
 	Show_musicPicture();
@@ -161,11 +157,11 @@ static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 		goto exit0;
 	}
 	Write_huashangTextLog("Main_Thread_AddPlayLocalSdcard_Music");
-	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//µ¥ÇúÑ­»·
+	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//å•æ›²å¾ªçŽ¯
 		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_SDCARD);
-	}else{											//×Ô¶¯²¥·Å
+	}else{											//è‡ªåŠ¨æ’­æ”¾
 		if(getEventNum()==0&&getWorkMsgNum(DownEvent)==0){
-			GetScard_forPlayHuashang_Music(PLAY_NEXT,EXTERN_PLAY_EVENT);
+			Huashang_GetScard_forPlayMusic(PLAY_NEXT,EXTERN_PLAY_EVENT);
 		}	
 	}
 exit0:	
@@ -173,6 +169,7 @@ exit0:
 	free((void *)hand);
 	usleep(1000);
 }
+//ä¸»çº¿ç¨‹æ’­æ”¾å›¾çµæ­Œæ›²
 static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
 	usleep(800*1000);
 	if(hand->EventNums!=GetCurrentEventNums()){
@@ -189,7 +186,7 @@ exit0:
 	free((void *)hand->data);
 	free((void *)hand);
 }
-//¼ì²éÎÄ¼þËø£¬·ÀÖ¹ÅäÍø¡¢Æô¶¯ÁªÍø½Å±¾µ¼ÖÂ¶à´ÎÆô¶¯½ø³Ì
+//æ£€æŸ¥æ–‡ä»¶é”ï¼Œé˜²æ­¢é…ç½‘ã€å¯åŠ¨è”ç½‘è„šæœ¬å¯¼è‡´å¤šæ¬¡å¯åŠ¨è¿›ç¨‹
 static void checkFileLock(void){
 	if (access(LOCAL_SERVER_FILE_LOCK, 0) < 0){
 		FILE *fp =fopen(LOCAL_SERVER_FILE_LOCK, "w+");
@@ -202,7 +199,7 @@ static void checkFileLock(void){
 		exit(1);
 	}
 }
-//ÐÅºÅ´¦Àíº¯Êý
+//ä¿¡å·å¤„ç†å‡½æ•°
 void recvErrorSignal(int sig)  {  
     printf("received signal %d !!!\n",sig);  
 	if(ExitLock){
@@ -229,21 +226,21 @@ int main(int argc, char **argv){
 			continue;
 		}
 		switch(event){
-			case URL_VOICES_EVENT:	//url²¥·Å
+			case URL_VOICES_EVENT:	//urlæ’­æ”¾
 				Main_Thread_AddplayUrlMusic((HandlerText_t *)msg);
 				printf("%s: Main_Thread_AddplayUrlMusic end\n",__func__);
 				break;
-			case TULING_URL_VOICES:	//²¥·ÅÍ¼Áé ÓïÒôµã¸è¡¢¹ÊÊÂ urlÎÄ¼þ
+			case TULING_URL_VOICES:	//æ’­æ”¾å›¾çµ è¯­éŸ³ç‚¹æ­Œã€æ•…äº‹ urlæ–‡ä»¶
 				Main_Thread_playTuLingMusic((HandlerText_t *)msg);
 				printf("%s: Main_Thread_playTuLingMusic end\n",__func__);
 				break;
-			case TULING_URL_MAIN:	//²¥·ÅÍ¼Áé ttsÎÄ¼þ
-				if(PlayTulingText((HandlerText_t *)msg)){	//Òì³£ÍË³ö£¬ÐèÒªÇåÀíºóÃæµÄurl²¥·ÅÊÂ¼þ
-					SetMainQueueLock(MAIN_QUEUE_LOCK);		//ÇåÀíºóÃæmp3²¥·Å
+			case TULING_URL_MAIN:	//æ’­æ”¾å›¾çµ ttsæ–‡ä»¶
+				if(PlayTulingText((HandlerText_t *)msg)){	//å¼‚å¸¸é€€å‡ºï¼Œéœ€è¦æ¸…ç†åŽé¢çš„urlæ’­æ”¾äº‹ä»¶
+					SetMainQueueLock(MAIN_QUEUE_LOCK);		//æ¸…ç†åŽé¢mp3æ’­æ”¾
 				}
 				printf("%s: PlayTulingText end\n",__func__);
 				break;
-			case LOCAL_MP3_EVENT:	//±¾µØ²¥·Å
+			case LOCAL_MP3_EVENT:	//æœ¬åœ°æ’­æ”¾
 				Main_Thread_AddPlayLocalSdcard_Music((HandlerText_t *)msg);
 				printf("%s: Main_Thread_AddPlayLocalSdcard_Music end\n",__func__);
 				break;				

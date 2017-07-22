@@ -34,7 +34,7 @@ void OpenWifi(void){
 	}
 }
 /*
-@ ÉèÖÃÍøÂç×´Ì¬
+@ è®¾ç½®ç½‘ç»œçŠ¶æ€
 @ 
 @
 */
@@ -45,17 +45,17 @@ static int getNetWorkLive(void){
 	return sysMes.netstate;
 }
 /*
-@ ¼ì²éÍøÂç×´Ì¬ 
-@ enablePlayVoices :ÓÃÓÚ¿ØÖÆ²¥·Åwifi ¶ÏÍø×´Ì¬ÓïÒô
-@ 0: Á¬½ÓÍøÂçÕı³£  -1: Á¬½ÓÍøÂçÊ§°Ü
+@ æ£€æŸ¥ç½‘ç»œçŠ¶æ€ 
+@ enablePlayVoices :ç”¨äºæ§åˆ¶æ’­æ”¾wifi æ–­ç½‘çŠ¶æ€è¯­éŸ³
+@ 0: è¿æ¥ç½‘ç»œæ­£å¸¸  -1: è¿æ¥ç½‘ç»œå¤±è´¥
 */
 int checkNetWorkLive(unsigned char enablePlayVoices){
 	if(getNetWorkLive()==NETWORK_ER||getNetWorkLive()==NETWORK_UNKOWN){
-		//²¥±¨Ì¨±¾
-		if(getEventNum()>0){	//¼ì²éÊÇ·ñÌí¼Ó¹ıÊÂ¼ş
+		//æ’­æŠ¥å°æœ¬
+		if(getEventNum()>0){	//æ£€æŸ¥æ˜¯å¦æ·»åŠ è¿‡äº‹ä»¶
 			return -1;
 		}
-		//Ìí¼ÓÏµÍ³Òô½øÈ¥²¥·Å£¬ÌáÊ¾ÓÃ»§½øĞĞÁªÍø
+		//æ·»åŠ ç³»ç»ŸéŸ³è¿›å»æ’­æ”¾ï¼Œæç¤ºç”¨æˆ·è¿›è¡Œè”ç½‘
 		if(enablePlayVoices==ENABLE_CHECK_VOICES_PLAY)
 			Create_PlaySystemEventVoices(NETWORK_ERROT_PLAY);
 		return -1;
@@ -65,9 +65,9 @@ int checkNetWorkLive(unsigned char enablePlayVoices){
 	return -1;
 }
 /*******************************************************
-º¯Êı¹¦ÄÜ: ²é¿´NetManger½ø³ÌÊÇ·ñ´æÔÚpidºÅ
-²ÎÊı: pid_name	½ø³ÌÃû×Ö
-·µ»ØÖµ: ÎŞ
+å‡½æ•°åŠŸèƒ½: æŸ¥çœ‹NetMangerè¿›ç¨‹æ˜¯å¦å­˜åœ¨pidå·
+å‚æ•°: pid_name	è¿›ç¨‹åå­—
+è¿”å›å€¼: æ— 
 ********************************************************/
 static int Compare_PIDName(char *pid_name){
 	if(!strcmp(pid_name,"NetManger")){
@@ -75,12 +75,12 @@ static int Compare_PIDName(char *pid_name){
 	}
 	return -1;
 }
-//ÖØĞÂÔËĞĞNetManger Õâ¸ö½ø³Ì
+//é‡æ–°è¿è¡ŒNetManger è¿™ä¸ªè¿›ç¨‹
 static void Restart_RunNetManger(void){
 	system("NetManger -t 2 -wifi on &");
 	sleep(1);
 }
-//¼ì²éºóÌ¨ÁªÍø½ø³Ì(NetManger)ÔËĞĞ×´Ì¬
+//æ£€æŸ¥åå°è”ç½‘è¿›ç¨‹(NetManger)è¿è¡ŒçŠ¶æ€
 void CheckNetManger_PidRunState(void){
 	if(judge_pid_exist(Compare_PIDName)){
 		remove(NET_SERVER_FILE_LOCK);
@@ -88,10 +88,10 @@ void CheckNetManger_PidRunState(void){
 		Restart_RunNetManger();
 	}
 }
-//¶Ì°´¼ü°´ÏÂ»ñÈ¡wifi Ãû×Ö²¢²¥·Å
+//çŸ­æŒ‰é”®æŒ‰ä¸‹è·å–wifi åå­—å¹¶æ’­æ”¾
 void ShortKeyDown_ForPlayWifiMessage(void){
 	if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
-		if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//¼ì²éÍøÂç
+		if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//æ£€æŸ¥ç½‘ç»œ
 			return;
 		}
 		char wifiMessage[128]={0};
@@ -103,18 +103,18 @@ void ShortKeyDown_ForPlayWifiMessage(void){
 #ifdef DEBUG_PLAY_SYSTEM_IP
 		char IP[20]={0};
 		GetNetworkcardIp((char * )"apcli0",IP);
-		snprintf(wifiMessage,128,"ÒÑÁ¬½Ó wifi %s  IPµØÖ·ÊÇ %s",wifi,IP);
+		snprintf(wifiMessage,128,"å·²è¿æ¥ wifi %s  IPåœ°å€æ˜¯ %s",wifi,IP);
 #else
-		snprintf(wifiMessage,128,"ÒÑÁ¬½Ó wifi %s ",wifi);
+		snprintf(wifiMessage,128,"å·²è¿æ¥ wifi %s ",wifi);
 #endif	
 		Create_PlayQttsEvent(wifiMessage,QTTS_GBK);
 	}
 }
 
 /*******************************************************
-º¯Êı¹¦ÄÜ: ³¤°´¼ü´¥·¢ÅäÍøÊÂ¼ş
-²ÎÊı: ÎŞ
-·µ»ØÖµ: ÎŞ
+å‡½æ•°åŠŸèƒ½: é•¿æŒ‰é”®è§¦å‘é…ç½‘äº‹ä»¶
+å‚æ•°: æ— 
+è¿”å›å€¼: æ— 
 ********************************************************/
 void LongNetKeyDown_ForConfigWifi(void){
 	CheckNetManger_PidRunState();
@@ -123,22 +123,22 @@ void LongNetKeyDown_ForConfigWifi(void){
 		WiterSmartConifg_Log("startSmartConfig checkInternetFile","failed");
 		return;
 	}
-	if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){//´¦ÓÚ²¥·ÅÊÂ¼şµ±ÖĞ£¬²»ÓèĞíÅäÍø
+	if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){//å¤„äºæ’­æ”¾äº‹ä»¶å½“ä¸­ï¼Œä¸äºˆè®¸é…ç½‘
 		disable_gpio();
 		startSmartConfig(Create_PlaySystemEventVoices,enable_gpio);	
 	}else{		
 		WiterSmartConifg_Log("startSmartConfig  failed ","is not RECODE_PAUSE");
 	}
 }
-//Á¬½Ó³É¹¦ÉèÖÃ¹¤×÷Ö¸Ê¾µÆ,¸üĞÂmucÊ±¼ä
+//è¿æ¥æˆåŠŸè®¾ç½®å·¥ä½œæŒ‡ç¤ºç¯,æ›´æ–°mucæ—¶é—´
 static void Link_NetworkOk(void){
 	Led_vigue_close();
 	led_lr_oc(openled);
-	SocSendMenu(3,0);			//·¢ËÍ±¾µØÊ±¼ä¸ømcu
+	SocSendMenu(3,0);			//å‘é€æœ¬åœ°æ—¶é—´ç»™mcu
 	usleep(100*1000);
-	setNetWorkLive(NETWORK_OK);		//ÉèÖÃÁªÍø×´Ì¬
+	setNetWorkLive(NETWORK_OK);		//è®¾ç½®è”ç½‘çŠ¶æ€
 }
-//ÁªÍøÊ§°Ü,ÉÁË¸Ö¸Ê¾µÆ
+//è”ç½‘å¤±è´¥,é—ªçƒæŒ‡ç¤ºç¯
 static void Link_NetworkError(void){
 	pool_add_task(Led_vigue_open,NULL);
 	led_lr_oc(closeled);
@@ -147,15 +147,15 @@ static void Link_NetworkError(void){
 
 //--------------end config network and set system network state---------------------------------------------------------
 /*******************************************************
-º¯Êı¹¦ÄÜ: Ìí¼ÓÍøÂçURLµØÖ·µ½¶ÓÁĞµ±ÖĞ½øĞĞ²¥·Å
-²ÎÊı: data ²¥·Å¸èÇúĞÅÏ¢£¬ÒÑ¾­mallocÉêÇëÄÚ´æÁË	
-·µ»ØÖµ: ÎŞ
+å‡½æ•°åŠŸèƒ½: æ·»åŠ ç½‘ç»œURLåœ°å€åˆ°é˜Ÿåˆ—å½“ä¸­è¿›è¡Œæ’­æ”¾
+å‚æ•°: data æ’­æ”¾æ­Œæ›²ä¿¡æ¯ï¼Œå·²ç»mallocç”³è¯·å†…å­˜äº†	
+è¿”å›å€¼: æ— 
 ********************************************************/
 int __AddNetWork_UrlForPaly(Player_t *player){
-	if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//¼ì²éÍøÂç
+	if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//æ£€æŸ¥ç½‘ç»œ
 		goto exit0;
 	}
-	//·ÀÖ¹Ìí¼Ó¹ı¿ì
+	//é˜²æ­¢æ·»åŠ è¿‡å¿«
 	if(getEventNum()>0||getplayEventNum()>0){
 		DEBUG_EVENT("num =%d getplayEventNum() =%d\n",getEventNum(),getplayEventNum());
 		WritePlayUrl_Log("__AddNetWork_UrlForPaly"," getEventNum ");
@@ -182,13 +182,13 @@ exit0:
 	return -1;
 }
 /*******************************************************
-º¯Êı¹¦ÄÜ: Ìí¼Ó±¾µØÒôÀÖµ½¶ÓÁĞ½øĞĞ²¥·Å
-²ÎÊı: localpath ±¾µØMP3²¥·ÅÂ·¾¶
-EventSource:ÊÂ¼şÀ´Ô´ (Íâ²¿ÊÂ¼ş´¥·¢/×ÔÉí´¥·¢)
-·µ»ØÖµ: 0Ìí¼Ó³É¹¦ -1Ìí¼ÓÊ§°Ü
+å‡½æ•°åŠŸèƒ½: æ·»åŠ æœ¬åœ°éŸ³ä¹åˆ°é˜Ÿåˆ—è¿›è¡Œæ’­æ”¾
+å‚æ•°: localpath æœ¬åœ°MP3æ’­æ”¾è·¯å¾„
+EventSource:äº‹ä»¶æ¥æº (å¤–éƒ¨äº‹ä»¶è§¦å‘/è‡ªèº«è§¦å‘)
+è¿”å›å€¼: 0æ·»åŠ æˆåŠŸ -1æ·»åŠ å¤±è´¥
 ********************************************************/
 int __AddLocalMp3ForPaly(const char *localpath,unsigned char EventSource){
-	if(getEventNum()>0){	//ÊÂ¼şÈÎÎñ¹ı¶à£¬Ö±½Ó¶ªµô£¬·ÀÖ¹Ìí¼Ó¹ı¿ì£¬µ¼ÖÂºóÃæÇåÀíÊ±¼ä¹ı³¤
+	if(getEventNum()>0){	//äº‹ä»¶ä»»åŠ¡è¿‡å¤šï¼Œç›´æ¥ä¸¢æ‰ï¼Œé˜²æ­¢æ·»åŠ è¿‡å¿«ï¼Œå¯¼è‡´åé¢æ¸…ç†æ—¶é—´è¿‡é•¿
 		DEBUG_EVENT("num =%d \n",getEventNum());
 		return -1;
 	}
@@ -216,7 +216,7 @@ exit0:
 	return -1;
 }
 /**
-´¦Àí°´ÏÂ²¥·ÅÔİÍ£¼ü
+å¤„ç†æŒ‰ä¸‹æ’­æ”¾æš‚åœé”®
 **/
 void KeydownEventPlayPause(void){
 	keydown_flashingLED();	
@@ -225,16 +225,16 @@ void KeydownEventPlayPause(void){
 		keyStreamPlay();
 	}
 }
-//°´ÏÂÄ¿Â¼°´¼üÇĞ»»²Ëµ¥£¬²¢²¥·Å¸èÇú
+//æŒ‰ä¸‹ç›®å½•æŒ‰é”®åˆ‡æ¢èœå•ï¼Œå¹¶æ’­æ”¾æ­Œæ›²
 void SelectDirMenu(void){
 	updateCurrentEventNums();
 	Huahang_SelectDirMenu();
 }
 
 /******************0*************************************
-º¯Êı¹¦ÄÜ: ÇåÀíURLÊÂ¼ş
-²ÎÊı: ÎŞ
-·µ»ØÖµ: ÎŞ
+å‡½æ•°åŠŸèƒ½: æ¸…ç†URLäº‹ä»¶
+å‚æ•°: æ— 
+è¿”å›å€¼: æ— 
 ********************************************************/
 void Create_CleanUrlEvent(void){
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
@@ -244,18 +244,18 @@ void Create_CleanUrlEvent(void){
 	}
 }
 /*******************************************************
-º¯Êı¹¦ÄÜ: ´´½¨²¥·ÅQTTSÓïÒôÊÂ¼ş --->ÎÄ±¾×ªÓïÒô²¢²¥·Å
-²ÎÊı: txt QTTSÎÄ±¾ type :0---GBK ¸ñÊ½ 1----UTF8 ¸ñÊ½
-·µ»ØÖµ: ÎŞ
+å‡½æ•°åŠŸèƒ½: åˆ›å»ºæ’­æ”¾QTTSè¯­éŸ³äº‹ä»¶ --->æ–‡æœ¬è½¬è¯­éŸ³å¹¶æ’­æ”¾
+å‚æ•°: txt QTTSæ–‡æœ¬ type :0---GBK æ ¼å¼ 1----UTF8 æ ¼å¼
+è¿”å›å€¼: æ— 
 ********************************************************/
 void Create_PlayQttsEvent(const char *txt,int type){
 	unsigned char mixMode =NORMAL_PLAY_PCM;
-	if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//¼ì²éÍøÂç
+	if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//æ£€æŸ¥ç½‘ç»œ
 		return;
 	}	
 	if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES){
 		return;
-	}else if (GetRecordeVoices_PthreadState() == PLAY_MP3_MUSIC||GetRecordeVoices_PthreadState() ==SOUND_MIX_PLAY){	//µ±Ç°²¥·Å¸èÇú
+	}else if (GetRecordeVoices_PthreadState() == PLAY_MP3_MUSIC||GetRecordeVoices_PthreadState() ==SOUND_MIX_PLAY){	//å½“å‰æ’­æ”¾æ­Œæ›²
 		mixMode =MIX_PLAY_PCM;
 		//return;
 	}
@@ -265,7 +265,7 @@ void Create_PlayQttsEvent(const char *txt,int type){
 		handtext->mixMode=mixMode;
 		handtext->data= (char *)calloc(1,strlen(txt)+4);
 		if (handtext->data){
-			sprintf(handtext->data,"%s%s",txt,",");	//ÎÄ±¾Î²²¿Ìí¼Ó",",±£Ö¤ÎÄ±¾²¥±¨³öÀ´
+			sprintf(handtext->data,"%s%s",txt,",");	//æ–‡æœ¬å°¾éƒ¨æ·»åŠ ",",ä¿è¯æ–‡æœ¬æ’­æŠ¥å‡ºæ¥
 			handtext->event =QTTS_PLAY_EVENT;
 			handtext->playLocalVoicesIndex=type;
 			AddworkEvent((const char *)handtext,sizeof(HandlerText_t));
@@ -274,9 +274,9 @@ void Create_PlayQttsEvent(const char *txt,int type){
 }
 void Handler_PlayQttsEvent(HandlerText_t *handText){
 	char xunPlayname[24]={0};
-	int playSpeed=50;	//Ä¬ÈÏ²¥·ÅËÙ¶ÈÎª5
+	int playSpeed=50;	//é»˜è®¤æ’­æ”¾é€Ÿåº¦ä¸º5
 #if defined(HUASHANG_JIAOYU)
-	GetPlayVoicesName(xunPlayname,&playSpeed);	
+	Huashang_GetPlayVoicesName(xunPlayname,&playSpeed);	
 	if(!strncmp(xunPlayname,"tuling",6)){
 		memset(xunPlayname,0,24);
 		snprintf(xunPlayname,24,"%s","vinn");
@@ -290,7 +290,7 @@ void Handler_PlayQttsEvent(HandlerText_t *handText){
 			pause_record_audio();
 		}
 	}else{
-		char outFile[]="qtts.pcm";//»ìÒô´¦Àí
+		char outFile[]="qtts.pcm";//æ··éŸ³å¤„ç†
 		if(!QttsTextVoicesFile(handText->data,handText->playLocalVoicesIndex,(const char *)xunPlayname,handText->EventNums,playSpeed,outFile)){
 			__playResamplePlayPcmFile((const char *)outFile,handText->EventNums);
 			remove(outFile);
@@ -300,50 +300,45 @@ void Handler_PlayQttsEvent(HandlerText_t *handText){
 	free((void *)handText);
 }
 /*******************************************************
-º¯Êı¹¦ÄÜ: »á»°°´¼ü°´ÏÂĞÅºÅ,Æô¶¯Â¼Òô 
-²ÎÊı: ÎŞ
-·µ»ØÖµ: ÎŞ
+å‡½æ•°åŠŸèƒ½: ä¼šè¯æŒ‰é”®æŒ‰ä¸‹ä¿¡å·,å¯åŠ¨å½•éŸ³ 
+å‚æ•°: æ— 
+è¿”å›å€¼: æ— 
 ********************************************************/
 void TulingKeyDownSingal(void){
 	updateCurrentEventNums();	
 	Write_Speekkeylog((const char *)"TulingKeyDownSingal",0);
-	//´¦ÓÚÎ¢ĞÅ¶Ô½²×´Ì¬£¬Ö±½ÓÍË³ö	
+	//å¤„äºå¾®ä¿¡å¯¹è®²çŠ¶æ€ï¼Œç›´æ¥é€€å‡º	
 	if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){		
 		Write_Speekkeylog((const char *)"START_SPEEK_VOICES",GetRecordeVoices_PthreadState());
 		return;
 	}	
-	//else if (GetRecordeVoices_PthreadState() == PLAY_MP3_MUSIC)//´¦ÓÚ²¥·Å¸èÇú×´Ì¬	
-
-	{
-		Lock_EventQueue();
-		Write_Speekkeylog((const char *)"PLAY_MP3_MUSIC",GetRecordeVoices_PthreadState());
-		NetStreamExitFile();//ÍË³ö¸èÇú²¥·Å,²¢ÇĞ»»²ÉÑùÂÊ	
-		if(SetWm8960Rate(RECODE_RATE,(const char *)"TulingKeyDownSingal set rate")){	//ÇĞ»»²ÉÑùÂÊÊ§°Ü£¬ÍË³ö(·ÀÖ¹¶àÏß³Ìµ±ÖĞÇĞ»»£¬×ÊÔ´³åÍ»ÎÊÌâ)
-			Unlock_EventQueue();
-			return ;
-		}
+	Lock_EventQueue();
+	Write_Speekkeylog((const char *)"PLAY_MP3_MUSIC",GetRecordeVoices_PthreadState());
+	NetStreamExitFile();//é€€å‡ºæ­Œæ›²æ’­æ”¾,å¹¶åˆ‡æ¢é‡‡æ ·ç‡	
+	if(SetWm8960Rate(RECODE_RATE,(const char *)"TulingKeyDownSingal set rate")){	//åˆ‡æ¢é‡‡æ ·ç‡å¤±è´¥ï¼Œé€€å‡º(é˜²æ­¢å¤šçº¿ç¨‹å½“ä¸­åˆ‡æ¢ï¼Œèµ„æºå†²çªé—®é¢˜)
 		Unlock_EventQueue();
-		if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//¼ì²éÍøÂç,Ã»ÓĞÍøÂçÖ±½ÓÍË³ö²¥·Å
-			return;
-		}
-		Show_KeyDownPicture();
-		StartTuling_RecordeVoices();
-		Write_Speekkeylog((const char *)"StartTuling_RecordeVoices",GetRecordeVoices_PthreadState());
+		return ;
 	}
+	Unlock_EventQueue();
+	if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//æ£€æŸ¥ç½‘ç»œ,æ²¡æœ‰ç½‘ç»œç›´æ¥é€€å‡ºæ’­æ”¾
+		return;
+	}
+	Show_KeyDownPicture();
+	StartTuling_RecordeVoices();
+	Write_Speekkeylog((const char *)"StartTuling_RecordeVoices",GetRecordeVoices_PthreadState());
 }
-//¹Ø»ú±£´æÎÄ¼şºÍÇåÀí¹¤×÷
-void *Close_Mtk76xxSystem(void *arg){
+//å…³æœºä¿å­˜æ–‡ä»¶å’Œæ¸…ç†å·¥ä½œ
+void Close_Mtk76xxSystem(void){
 	char token[64]={0};
 	GetTokenValue(token);
 	Save_TulingToken_toRouteTable((const char *)token);
-	SaveVol_toRouteTable(GetVol());		//ÉèÖÃÉùÒôµ½Â·ÓÉ±í
-	CloseSystemSignToaliyun();			//·¢ËÍ¹Ø»úĞÅºÅ¸øÄÖÖÓ
-	closeSystemSave_huashangData();
-	system("sync");	//Í¬²½Êı¾İµ½sdcard µ±ÖĞ
-	return NULL;
+	SaveVol_toRouteTable(GetVol());		//è®¾ç½®å£°éŸ³åˆ°è·¯ç”±è¡¨
+	CloseSystemSignToaliyun();			//å‘é€å…³æœºä¿¡å·ç»™é—¹é’Ÿ
+	Huashang_closeSystemSavedata();
+	system("sync");	//åŒæ­¥æ•°æ®åˆ°sdcard å½“ä¸­
 }
-//----------------------²¥·ÅÏµÍ³ÉùÒôÓĞ¹ØµÄ¡¢ÊÂ¼şµÄ²úÉú¡¢Ïû·Ñ´¦Àí-----------------------------------------------------
-//²¥·ÅÖÇÄÜ»á»°°´¼üÎó´¥·¢²úÉúµÄÉùÒô
+//----------------------æ’­æ”¾ç³»ç»Ÿå£°éŸ³æœ‰å…³çš„ã€äº‹ä»¶çš„äº§ç”Ÿã€æ¶ˆè´¹å¤„ç†-----------------------------------------------------
+//æ’­æ”¾æ™ºèƒ½ä¼šè¯æŒ‰é”®è¯¯è§¦å‘äº§ç”Ÿçš„å£°éŸ³
 static void TaiBenToTulingNOVoices(unsigned int playEventNums){
 	int i=(1+(int) (10.0*rand()/(RAND_MAX+1.0)));	
 	switch(i){
@@ -387,13 +382,13 @@ static void TaiwanToTulingError(unsigned int playEventNums){
 	PlaySystemAmrVoices(buf,playEventNums);
 }
 /*
-@ Ã»ÓĞÍøÂçµÄÊ±ºò£¬²¥·Å±¾µØÏµÍ³¹Ì¶¨Â¼ºÃÌ¨±¾
+@ æ²¡æœ‰ç½‘ç»œçš„æ—¶å€™ï¼Œæ’­æ”¾æœ¬åœ°ç³»ç»Ÿå›ºå®šå½•å¥½å°æœ¬
 @
 */
 static void Handle_PlayTaiBenToNONetWork(unsigned int playEventNums){
 	char file[64]={0};
-	int i=(1+(int)(5.0*rand()/(RAND_MAX+1.0)));
-	snprintf(file,64,"qtts/network_error_8K_%d.amr",i);
+	int i=(12+(int)(3.0*rand()/(RAND_MAX+1.0)));
+	snprintf(file,64,"qtts/%d.amr",i);
 	PlaySystemAmrVoices(file,playEventNums);
 }
 static void CreateCloseSystemLockFile(void){
@@ -403,9 +398,9 @@ static void CreateCloseSystemLockFile(void){
 	}
 }
 /*******************************************************
-º¯Êı¹¦ÄÜ: ´´½¨Ò»¸ö²¥·ÅÏµÍ³ÉùÒôÊÂ¼ş£¬
-²ÎÊı: sys_voices ÏµÍ³Òô±êºÅ	
-·µ»ØÖµ: ÎŞ
+å‡½æ•°åŠŸèƒ½: åˆ›å»ºä¸€ä¸ªæ’­æ”¾ç³»ç»Ÿå£°éŸ³äº‹ä»¶ï¼Œ
+å‚æ•°: sys_voices ç³»ç»ŸéŸ³æ ‡å·	
+è¿”å›å€¼: æ— 
 ********************************************************/
 void Create_PlaySystemEventVoices(int sys_voices){
 	if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){
@@ -426,7 +421,7 @@ void Create_PlaySystemEventVoices(int sys_voices){
 		AddworkEvent(handtext,sizeof(HandlerText_t));
 	}	
 }
-//Ìí¼Ó²¥·Å¹ı¶ÉÒô¡¢¹Ø»úÒôµÈÖØÒªÉùÒô
+//æ·»åŠ æ’­æ”¾è¿‡æ¸¡éŸ³ã€å…³æœºéŸ³ç­‰é‡è¦å£°éŸ³
 void Create_PlayImportVoices(int sys_voices){
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext){
@@ -436,26 +431,37 @@ void Create_PlayImportVoices(int sys_voices){
 		AddworkEvent(handtext,sizeof(HandlerText_t));
 	}
 }
-//´®¿ÚÊÂ¼ş»Øµ÷º¯Êı
+//ä¸²å£äº‹ä»¶å›è°ƒå‡½æ•°
 void UartEventcallFuntion(int event){
 	updateCurrentEventNums();
-	if(event==UART_EVENT_CLOSE_SYSTEM){	//½áÊøÒôÍË³öÊÂ¼ş
-		disable_gpio();					//¹Ø±ÕgpioÖĞ¶Ï¹¦ÄÜ,·ÀÖ¹¹Ø»ú¹ı³ÌÔÙ²úÉú°´¼üÊÂ¼ş
-		cleanQuequeEvent();				//ÇåÀíÊÂ¼ş¶ÓÁĞ£¬±£Ö¤ÄÜ¹»²¥·ÅÓïÒô
-		if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){
-			printf("Create Clean url event \n");
-			Create_CleanUrlEvent();
-		}
-		showFacePicture(CLOSE_SYSTEM_PICTURE);	
-		CreateCloseSystemLockFile();
-		pool_add_task(Close_Mtk76xxSystem,NULL);//¹Ø»ú´¦ÀíºÍ±£´æºóÌ¨Êı¾İ
-		Create_PlayImportVoices(END_SYS_VOICES_PLAY);//´´½¨Ò»¸ö²¥·ÅÏµÍ³½áÊøÒô
-	}else if(event==UART_EVENT_LOW_BASTERRY){
-		Create_PlaySystemEventVoices(LOW_BATTERY_PLAY);
-	}	
+	switch(event){
+		case UART_EVENT_CLOSE_SYSTEM:		//ä¸²å£å‘é€å…³æœºäº‹ä»¶
+			Mute_voices(MUTE);				//å…³é—­åŠŸæ”¾
+			Close_Mtk76xxSystem();			//å…³æœºå¤„ç†å’Œä¿å­˜åå°æ•°æ®
+			disable_gpio();					//å…³é—­gpioä¸­æ–­åŠŸèƒ½,é˜²æ­¢å…³æœºè¿‡ç¨‹å†äº§ç”ŸæŒ‰é”®äº‹ä»¶
+			cleanQuequeEvent();				//æ¸…ç†äº‹ä»¶é˜Ÿåˆ—ï¼Œä¿è¯èƒ½å¤Ÿæ’­æ”¾è¯­éŸ³
+			if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){
+				printf("Create Clean url event \n");
+				Create_CleanUrlEvent();
+			}
+			Lock_EventQueue();
+			showFacePicture(CLOSE_SYSTEM_PICTURE);	
+			CreateCloseSystemLockFile();
+			Led_vigue_close();
+			close_sys_led();
+			led_lr_oc(closeled);
+			break;
+		case UART_EVENT_LOW_BASTERRY:		//ç”µé‡ä½æé†’
+			Create_PlaySystemEventVoices(LOW_BATTERY_PLAY);
+			break;
+		case  AC_BATTERRY:	//æ­£åœ¨å……ç”µ
+			break;
+		case BATTERRY:		//ç”µæ± ä¾›ç”µ
+			break;
+	}
 } 
 //--------------------------------------------------------------------------------------------------------
-//»ñÈ¡±¾µØÄ¬ÈÏjson ¸èÇúurlµØÖ·
+//è·å–æœ¬åœ°é»˜è®¤json æ­Œæ›²urlåœ°å€
 static int GetDefaultMusicJson_forPlay(char *getUrlBuf,const char *musicType){
 	int ret =-1;
 	char *readBuf = readFileBuf((const char * )DEFALUT_URL_JSON);
@@ -501,7 +507,7 @@ exit0:
 	free(readBuf);
 	return ret;
 }
-//´´½¨²¥·ÅÄ¬ÈÏurl¸èÇú
+//åˆ›å»ºæ’­æ”¾é»˜è®¤urlæ­Œæ›²
 void CreatePlayDefaultMusic_forPlay(const char* musicType){
 	Player_t *player = (Player_t *)calloc(1,sizeof(Player_t));
 	if(player==NULL){
@@ -510,9 +516,9 @@ void CreatePlayDefaultMusic_forPlay(const char* musicType){
 	}	
 	player->musicTime=100;
 	player->playListState=AUTO_PLAY_EVENT;
-	snprintf(player->musicname,64,"%s",musicType);//musicname ÔİÊ±¶¨Òå²ÉÓÃÕâ¸ö½á¹¹³ÉÓï±äÁ¿´æ·Å²¥·ÅÀàĞÍ
+	snprintf(player->musicname,64,"%s",musicType);//musicname æš‚æ—¶å®šä¹‰é‡‡ç”¨è¿™ä¸ªç»“æ„æˆè¯­å˜é‡å­˜æ”¾æ’­æ”¾ç±»å‹
 #if defined(HUASHANG_JIAOYU)		
-	if(huashang_CreatePlayDefaultMusic_forPlay(player->playfilename,musicType)){
+	if(Huashang_CreatePlayDefaultMusic_forPlay(player->playfilename,musicType)){
 		return ;
 	}
 #else
@@ -523,7 +529,7 @@ void CreatePlayDefaultMusic_forPlay(const char* musicType){
 #endif
 	__AddNetWork_UrlForPaly(player);
 }
-//¿Í»§ºóÌ¨¶¨ÖÆÍÆËÍµÄÄÚÈİ
+//å®¢æˆ·åå°å®šåˆ¶æ¨é€çš„å†…å®¹
 void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 	int ret =-1;
 	char musictype[12]={0};
@@ -537,30 +543,30 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 	showFacePicture(WAIT_CTRL_NUM3);
 	if(p->tm_hour+8>=21){
 		ret =PlaySystemAmrVoices(TIMEOUT_sleep,playEventNums);
-		snprintf(musictype,12,"%s","sleep");	//²¥·ÅÒôÀÖÄÚÈİ
+		snprintf(musictype,12,"%s","sleep");	//æ’­æ”¾éŸ³ä¹å†…å®¹
 		goto exit1;
 	}
 	if(PlaySystemAmrVoices(SPEEK_WARNING,playEventNums)){
-		goto exit0;	//Òì³£´ò¶ÏÍË³ö
+		goto exit0;	//å¼‚å¸¸æ‰“æ–­é€€å‡º
 	}
 	int randNums=(1+(int)(3.0*rand()/(RAND_MAX+1.0)));
 	start_event_play_wav();
 	switch(randNums){
 		case 1:
 			ret =PlaySystemAmrVoices(TIMEOUT_music,playEventNums);
-			snprintf(musictype,12,"%s","music");	//²¥·ÅÒôÀÖÄÚÈİ
+			snprintf(musictype,12,"%s","music");	//æ’­æ”¾éŸ³ä¹å†…å®¹
 			break;
 		case 2:
 			ret =PlaySystemAmrVoices(TIMEOUT_guoxue,playEventNums);
-			snprintf(musictype,12,"%s","guoxue");	//²¥·Å¹úÑ§ÄÚÈİ
+			snprintf(musictype,12,"%s","guoxue");	//æ’­æ”¾å›½å­¦å†…å®¹
 			break;
 		case 3:
 			ret =PlaySystemAmrVoices(TIMEOUT_chengyu,playEventNums);
-			snprintf(musictype,12,"%s","chengyu");	//²¥·Å³ÉÓï¹ÊÊÂ
+			snprintf(musictype,12,"%s","chengyu");	//æ’­æ”¾æˆè¯­æ•…äº‹
 			break;
 		case 4:
 			ret =PlaySystemAmrVoices(TIMEOUT_baike,playEventNums);
-			snprintf(musictype,12,"%s","baike");	//²¥·Å°Ù¿ÆÖªÊ¶
+			snprintf(musictype,12,"%s","baike");	//æ’­æ”¾ç™¾ç§‘çŸ¥è¯†
 			break;
 		default:
 			ret =PlaySystemAmrVoices(TIMEOUT_music,playEventNums);
@@ -575,10 +581,9 @@ exit0:
 }
 
 /***
-²¥·ÅÁĞ±í¸èÇú£¬°´¼ü¿ØÖÆµ¥Çú»¹ÊÇÁĞ±í²¥·Å 
-data:²¥·ÅµÄÊı¾İ
-musicType:ÒôÀÖÀàĞÍ  ÍøÂç¸èÇú/±¾µØ¸èÇú
-
+æ’­æ”¾åˆ—è¡¨æ­Œæ›²ï¼ŒæŒ‰é”®æ§åˆ¶å•æ›²è¿˜æ˜¯åˆ—è¡¨æ’­æ”¾ 
+data:æ’­æ”¾çš„æ•°æ®
+musicType:éŸ³ä¹ç±»å‹  ç½‘ç»œæ­Œæ›²/æœ¬åœ°æ­Œæ›²
 ***/
 void CreatePlayListMuisc(const void *data,int musicType){
 	Player_t * player =NULL;
@@ -589,9 +594,7 @@ void CreatePlayListMuisc(const void *data,int musicType){
 		__AddLocalMp3ForPaly((const char *)player->playfilename,player->playListState);
 	}
 }
-
 //--------------------------------------------------------------------------------------------------------
-
 static void *updateHuashangFacePthread(void *arg){
 	int eventNums = *(int *)arg;
 	int i=0;
@@ -607,96 +610,82 @@ static void *updateHuashangFacePthread(void *arg){
 	}
 }
 /*******************************************************
-º¯Êı¹¦ÄÜ: ÏµÍ³ÒôÊÂ¼ş´¦Àíº¯Êı
-²ÎÊı: sys_voices ÏµÍ³Òô±êºÅ
-·µ»ØÖµ: ÎŞ
+å‡½æ•°åŠŸèƒ½: ç³»ç»ŸéŸ³äº‹ä»¶å¤„ç†å‡½æ•°
+å‚æ•°: sys_voices ç³»ç»ŸéŸ³æ ‡å·
+è¿”å›å€¼: æ— 
 ********************************************************/
 void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 	int vol=0;
 	switch(sys_voices){
-		case END_SYS_VOICES_PLAY:					//½áÊøÒô
-			//PlaySystemAmrVoices(END_SYS_VOICES,playEventNums);
-			Led_vigue_close();
-			close_sys_led();
-			led_lr_oc(closeled);
-			usleep(800*1000);
-			Mute_voices(MUTE);						//¹Ø±Õ¹¦·Å
-			enable_gpio();
-			break;
-		case LOW_BATTERY_PLAY:						//µÍµç¹Ø»ú
-			pool_add_task(Close_Mtk76xxSystem,NULL);//¹Ø»úÉ¾³ı£¬³¤Ê±¼ä²»ÓÃµÄÎÄ¼ş
+		case LOW_BATTERY_PLAY:						//ä½ç”µå…³æœº
+			Close_Mtk76xxSystem();
 			PlaySystemAmrVoices(LOW_BATTERY,playEventNums);			
 			break;
-		case RESET_HOST_V_PLAY:						//»Ö¸´³ö³§ÉèÖÃ
+		case RESET_HOST_V_PLAY:						//æ¢å¤å‡ºå‚è®¾ç½®
 			PlaySystemAmrVoices(RESET_HOST_V,playEventNums);
 			break;
-//----------------------ÖØÁ¬ÓĞ¹Ø-----------------------------------------------------
-		case REQUEST_FAILED_PLAY:					//ÖØÁ¬£¬ÇëÇó·şÎñÆ÷Êı¾İÊ§°Ü
+//----------------------é‡è¿æœ‰å…³-----------------------------------------------------
+		case REQUEST_FAILED_PLAY:					//é‡è¿ï¼Œè¯·æ±‚æœåŠ¡å™¨æ•°æ®å¤±è´¥
 			PlaySystemAmrVoices(REQUEST_FAILED,playEventNums);
 			break;
-		case UPDATA_END_PLAY:						//¸üĞÂ¹Ì¼ş½áÊø
+		case UPDATA_END_PLAY:						//æ›´æ–°å›ºä»¶ç»“æŸ
 			PlaySystemAmrVoices(UPDATA_END,playEventNums);
 			break;
-		case TIMEOUT_PLAY_LOCALFILE:				//ÇëÇó·şÎñÆ÷³¬Ê±£¬²¥·Å±¾µØÒÑ¾­Â¼ÖÆºÃµÄÒôÆµ
+		case TIMEOUT_PLAY_LOCALFILE:				//è¯·æ±‚æœåŠ¡å™¨è¶…æ—¶ï¼Œæ’­æ”¾æœ¬åœ°å·²ç»å½•åˆ¶å¥½çš„éŸ³é¢‘
 			TaiwanToTulingError(playEventNums);
 			break;
-//----------------------ÍøÂçÓĞ¹Ø-----------------------------------------------------
-		case CONNET_ING_PLAY:						//ÕıÔÚÁ¬½Ó£¬ÇëÉÔµÈ	
-			PlaySystemAmrVoices(CHANGE_NETWORK,playEventNums);
-			start_event_play_wav();
-			PlaySystemAmrVoices(CONNET_TIME,playEventNums);
+//----------------------ç½‘ç»œæœ‰å…³-----------------------------------------------------
+		case CONNET_NETWORK:						//æ­£åœ¨è¿æ¥ï¼Œè¯·ç¨ç­‰	
+			PlaySystemAmrVoices(AMR_16_CONNET_ING,playEventNums);
 			break;
-		case START_SMARTCONFIG_PLAY:		//Æô¶¯ÅäÍø
+		case START_SMARTCONFIG_PLAY:				//å¯åŠ¨é…ç½‘
 			pool_add_task(Led_vigue_open,NULL);
 			led_lr_oc(closeled);
 			setNetWorkLive(NETWORK_ER);
 			PlaySystemAmrVoices(START_INTERNET,playEventNums);
 			break;
-		case SMART_CONFIG_OK_PLAY:		//½ÓÊÜÃÜÂë³É¹¦
-			PlaySystemAmrVoices(YES_REAVWIFI,playEventNums);
-			break;
-		case CONNECT_OK_PLAY:			//Á¬½Ó³É¹¦	
+		case CONNECT_OK_PLAY:						//è¿æ¥æˆåŠŸ	
 			showFacePicture(CONNECT_WIFI_OK_PICTURE);	
 			pool_add_task(updateHuashangFacePthread,&playEventNums);		
-			Link_NetworkOk();			//Á¬½Ó³É¹¦¹ØµÆ£¬¿ªµÆ£¬×´Ì¬ÉèÖÃ
+			Link_NetworkOk();						//è¿æ¥æˆåŠŸå…³ç¯ï¼Œå¼€ç¯ï¼ŒçŠ¶æ€è®¾ç½®
 			enable_gpio();
 			if(!PlaySystemAmrVoices(LINK_SUCCESS,playEventNums)){
 				start_event_play_wav();
 				PlaySystemAmrVoices(PLAY_START_HUASHANG_MUSIC,playEventNums);
 			}
 			break;
-		case NOT_FIND_WIFI_PLAY:		//Ã»ÓĞÉ¨Ãèµ½wifi
+		case NOT_FIND_WIFI_PLAY:		//æ²¡æœ‰æ‰«æåˆ°wifi
 			PlaySystemAmrVoices(NO_WIFI,playEventNums);
 			enable_gpio();
 			break;
-		case SMART_CONFIG_FAILED_PLAY:	//Ã»ÓĞÊÕµ½ÓÃ»§·¢ËÍµÄwifi
+		case SMART_CONFIG_FAILED_PLAY:	//æ²¡æœ‰æ”¶åˆ°ç”¨æˆ·å‘é€çš„wifi
 			PlaySystemAmrVoices(NOT_REAVWIFI,playEventNums);
 			break;
-		case NOT_NETWORK_PLAY:			//Ã»ÓĞÁ¬½Ó³É¹¦
+		case NOT_NETWORK_PLAY:			//æ²¡æœ‰è¿æ¥æˆåŠŸ
 			PlaySystemAmrVoices(NO_NETWORK_VOICES,playEventNums);
 			Link_NetworkError();
 			enable_gpio();
 			break;	
-//----------------------¶Ô½²ÓĞ¹Ø-----------------------------------------------------
-		case SEND_OK_PLAY:				//·¢ËÍ³É¹¦
+//----------------------å¯¹è®²æœ‰å…³-----------------------------------------------------
+		case SEND_OK_PLAY:				//å‘é€æˆåŠŸ
 			PlaySystemAmrVoices(SEND_OK,playEventNums);
 			break;
-		case SEND_ERROR_PLAY:			//·¢ËÍÊ§°Ü
+		case SEND_ERROR_PLAY:			//å‘é€å¤±è´¥
 			PlaySystemAmrVoices(SEND_ERROR,playEventNums);
 			break;
-		case SEND_LINK_PLAY:			//ÕıÔÚ·¢ËÍ
+		case SEND_LINK_PLAY:			//æ­£åœ¨å‘é€
 			PlaySystemAmrVoices(SEND_LINK,playEventNums);
 			break;
-		case KEY_DOWN_PLAY:				//°´¼ü°´ÏÂ	=---ÕıÔÚ·¢ËÍ
+		case KEY_DOWN_PLAY:				//æŒ‰é”®æŒ‰ä¸‹	=---æ­£åœ¨å‘é€
 			PlaySystemAmrVoices(KEY_VOICE_DOWN,playEventNums);
 			break;
-		case PLAY_ERROT_PLAY:			//²¥·ÅÊ§°Ü
+		case PLAY_ERROT_PLAY:			//æ’­æ”¾å¤±è´¥
 			PlaySystemAmrVoices(PLAY_ERROR,playEventNums);
 			break;
 		case LIKE_ERROT_PLAY:			//
 			PlaySystemAmrVoices(LIKE_ERROR,playEventNums);
 			break;
-		case TF_ERROT_PLAY:				//TF¼ÓÔØÊ§°Ü
+		case TF_ERROT_PLAY:				//TFåŠ è½½å¤±è´¥
 			PlaySystemAmrVoices(TF_ERROR,playEventNums);
 			break;
 //=====================================================================
@@ -718,37 +707,8 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 		case TALK_CONFIRM_ER_PLAY:			//
 			PlaySystemAmrVoices(TALK_CONFIRM_ER,playEventNums);
 			break;
-#ifdef DOWN_IMAGE			
-		case DOWNLOAD_ING_PLAY:			//
-			PlaySystemAmrVoices(DOWNLOAD_ING,playEventNums);
-			break;
-		case DOWNLOAD_ERROE_PLAY:			//
-			PlaySystemAmrVoices(DOWNLOAD_ERROE,playEventNums);
-			break;
-		case DOWNLOAD_END_PLAY:			//
-			PlaySystemAmrVoices(DOWNLOAD_END,playEventNums);
-			break;
-		case DOWNLOAD_25_PLAY:			//
-			PlaySystemAmrVoices(DOWNLOAD_25,playEventNums);
-			break;
-		case DOWNLOAD_50_PLAY:			//
-			PlaySystemAmrVoices(DOWNLOAD_50,playEventNums);
-			break;
-		case DOWNLOAD_75_PLAY:			//
-			PlaySystemAmrVoices(DOWNLOAD_75,playEventNums);
-			break;
-		case UPDATA_NEW_PLAY:			//
-			PlaySystemAmrVoices(UPDATA_NEW,playEventNums);
-			break;
-		case UPDATA_START_PLAY:			//
-			PlaySystemAmrVoices(UPDATA_START,playEventNums);
-			break;
-		case UPDATA_ERROR_PLAY:			//
-			PlaySystemAmrVoices(UPDATA_ERROR,playEventNums);
-			break;
-#endif
 //==========================================================================
-		case NETWORK_ERROT_PLAY:				//ÍøÂçÁ¬½ÓÊ§°Ü
+		case NETWORK_ERROT_PLAY:				//ç½‘ç»œè¿æ¥å¤±è´¥
 			Handle_PlayTaiBenToNONetWork(playEventNums);
 			break;
 		case AI_KEY_TALK_ERROR: 
@@ -781,8 +741,8 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;
 	}
 }
-//-------end--------²¥·ÅÏµÍ³ÉùÒôÓĞ¹ØµÄ¡¢ÊÂ¼şµÄ²úÉú¡¢Ïû·Ñ´¦Àí-----------------------------------------------------
-//²¥·ÅÎ¢ĞÅ·¢ËÍ¹ıÀ´ÓïÒôÎÄ¼ş  filename ·¢ËÍ¹ıÀ´µÄÎ¢ĞÅÓïÒôÎÄ¼ş
+//-------end--------æ’­æ”¾ç³»ç»Ÿå£°éŸ³æœ‰å…³çš„ã€äº‹ä»¶çš„äº§ç”Ÿã€æ¶ˆè´¹å¤„ç†-----------------------------------------------------
+//æ’­æ”¾å¾®ä¿¡å‘é€è¿‡æ¥è¯­éŸ³æ–‡ä»¶  filename å‘é€è¿‡æ¥çš„å¾®ä¿¡è¯­éŸ³æ–‡ä»¶
 void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
 	unsigned char mixMode =NORMAL_PLAY_PCM;
 	if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==SOUND_MIX_PLAY){
@@ -814,9 +774,7 @@ exit1:
 exit0:
 	remove(filename);
 }
-
-
-//ÏÈ¹ÒÔØÂ¼ÒôÔÙÍË³ö
+//å…ˆæŒ‚è½½å½•éŸ³å†é€€å‡º
 static void shortVoicesClean(void){
 	pthread_mutex_lock(&speek->mutex);
 	if(speek->savefilefp!=NULL){
@@ -826,9 +784,9 @@ static void shortVoicesClean(void){
 	pthread_mutex_unlock(&speek->mutex);
 }
 /*******************************************************
-º¯Êı¹¦ÄÜ: ´´½¨´ı·¢ËÍµÄÎÄ¼ş£¬²¢±£³Öµ½±¾µØµ±ÖĞ,Ğ´ÈëwavÍ·
-²ÎÊı:	ÎŞ
-·µ»ØÖµ: 0 ´´½¨³É¹û -1 ´´½¨Ê§°Ü
+å‡½æ•°åŠŸèƒ½: åˆ›å»ºå¾…å‘é€çš„æ–‡ä»¶ï¼Œå¹¶ä¿æŒåˆ°æœ¬åœ°å½“ä¸­,å†™å…¥wavå¤´
+å‚æ•°:	æ— 
+è¿”å›å€¼: 0 åˆ›å»ºæˆæœ -1 åˆ›å»ºå¤±è´¥
 ********************************************************/
 static int CreateRecorderFile(void){
 	pthread_mutex_lock(&speek->mutex);
@@ -848,9 +806,9 @@ static int CreateRecorderFile(void){
 	return 0;
 }
 /*******************************************************
-º¯Êı¹¦ÄÜ: Í£Ö¹Â¼Òô£¬²¢½«Êı¾İ·¢ËÍ¸øappÓÃ»§
-²ÎÊı:
-·µ»ØÖµ:
+å‡½æ•°åŠŸèƒ½: åœæ­¢å½•éŸ³ï¼Œå¹¶å°†æ•°æ®å‘é€ç»™appç”¨æˆ·
+å‚æ•°:
+è¿”å›å€¼:
 ********************************************************/
 static void StopRecorder_AndSendFile(unsigned int playEventNums){
 	char filepath[64]={0};
@@ -877,21 +835,21 @@ static void StopRecorder_AndSendFile(unsigned int playEventNums){
 		}
 		DEBUG_EVENT("stop save file \n");
 		uploadVoicesToaliyun(filepath,pcmwavhdr.data_size/10+6);
-		PlaySystemAmrVoices(KEY_VOICE_DOWN,playEventNums);	//²¥·ÅÎ¢ĞÅÌáÊ¾Òô£¬±íÊ¾ÒôÆµÕıÔÚ·¢ËÍ	
+		PlaySystemAmrVoices(KEY_VOICE_DOWN,playEventNums);	//æ’­æ”¾å¾®ä¿¡æç¤ºéŸ³ï¼Œè¡¨ç¤ºéŸ³é¢‘æ­£åœ¨å‘é€	
 	}else{
 		pthread_mutex_unlock(&speek->mutex);
 	}
 	//remove(SAVE_WAV_VOICES_DATA);
 }
 /*******************************************************
-º¯Êı¹¦ÄÜ:Î¢ĞÅÓïÒô¶Ô½²°´¼ü°´ÏÂºÍµ¯ÆğÊÂ¼ş
-²ÎÊı:gpioState 0 °´ÏÂ  1 µ¯Æğ
+å‡½æ•°åŠŸèƒ½:å¾®ä¿¡è¯­éŸ³å¯¹è®²æŒ‰é”®æŒ‰ä¸‹å’Œå¼¹èµ·äº‹ä»¶
+å‚æ•°:gpioState 0 æŒ‰ä¸‹  1 å¼¹èµ·
 ********************************************************/
 void Create_WeixinSpeekEvent(unsigned int gpioState){	
-	if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//¼ì²éÍøÂç
+	if(checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//æ£€æŸ¥ç½‘ç»œ
 		return;
 	}
-	if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){		//´ò¶Ï²¥·ÅÒôÀÖ
+	if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){		//æ‰“æ–­æ’­æ”¾éŸ³ä¹
 		Create_CleanUrlEvent();
 		return;
 	}else if(GetRecordeVoices_PthreadState() ==PLAY_DING_VOICES){
@@ -910,16 +868,16 @@ void Create_WeixinSpeekEvent(unsigned int gpioState){
 	}
 }
 /*******************************************************
-º¯Êı¹¦ÄÜ:´¦ÀíÎ¢ĞÅÓïÒô°´¼üÊÂ¼ş 
-²ÎÊı: gpioState 0 °´ÏÂ  1 µ¯Æğ
+å‡½æ•°åŠŸèƒ½:å¤„ç†å¾®ä¿¡è¯­éŸ³æŒ‰é”®äº‹ä»¶ 
+å‚æ•°: gpioState 0 æŒ‰ä¸‹  1 å¼¹èµ·
 ********************************************************/
 void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 	int endtime,voicesTime=0;
 	time_t t;
-	if(gpioState==KEYDOWN&&GetRecordeVoices_PthreadState()==RECODE_PAUSE){	//°´ÏÂ
+	if(gpioState==KEYDOWN&&GetRecordeVoices_PthreadState()==RECODE_PAUSE){	//æŒ‰ä¸‹
 		DEBUG_EVENT("gpioState(%d)...\n",gpioState);
 		start_speek_wait();
-		if(CreateRecorderFile()){		//´´½¨ÒôÆµÎÄ¼ş½Úµã£¬½«²åÈëµ½Á´±íµ±ÖĞ
+		if(CreateRecorderFile()){		//åˆ›å»ºéŸ³é¢‘æ–‡ä»¶èŠ‚ç‚¹ï¼Œå°†æ’å…¥åˆ°é“¾è¡¨å½“ä¸­
 			pause_record_audio();
 		}else{
 			speek->Starttime=time(&t);
@@ -927,13 +885,13 @@ void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 			speek->freeVoiceNums=5;
 		}	
 		showFacePicture(WAIT_CTRL_NUM2);
-	}else if(gpioState==KEYUP){			//µ¯Æğ
+	}else if(gpioState==KEYUP){			//å¼¹èµ·
 		DEBUG_EVENT("state(%d)\n",gpioState);
 		start_speek_wait();
 		endtime=time(&t);
 		voicesTime = endtime - speek->Starttime;
 		start_event_play_wav();
-		if(voicesTime<1||voicesTime>10){//Ê±¼äÌ«¶Ì»òÌ«³¤
+		if(voicesTime<1||voicesTime>10){//æ—¶é—´å¤ªçŸ­æˆ–å¤ªé•¿
 			shortVoicesClean();
 			PlaySystemAmrVoices(SEND_ERROR,playEventNums);
 			return ;
@@ -944,9 +902,9 @@ void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 	}
 }
 /*******************************************************
-º¯Êı¹¦ÄÜ:±£´æÓïÒôÊı¾İ (ĞèÒª½«ÒôÆµÊı¾İÑ¹Ëõ±£´æ)
-²ÎÊı:  voices_data Ô­Ê¼ÒôÆµÊı¾İ  size Ô­Ê¼ÒôÆµÊı¾İ´óĞ¡
-·µ»ØÖµ:
+å‡½æ•°åŠŸèƒ½:ä¿å­˜è¯­éŸ³æ•°æ® (éœ€è¦å°†éŸ³é¢‘æ•°æ®å‹ç¼©ä¿å­˜)
+å‚æ•°:  voices_data åŸå§‹éŸ³é¢‘æ•°æ®  size åŸå§‹éŸ³é¢‘æ•°æ®å¤§å°
+è¿”å›å€¼:
 ********************************************************/
 void SaveRecorderVoices(const char *voices_data,int size){
 	int i=0;
@@ -962,12 +920,12 @@ void SaveRecorderVoices(const char *voices_data,int size){
 		if((endtime - speek->Starttime)>60){
 			pause_record_audio();
 		}
-#if 0	//ÓÒÉùµÀ
-		for(i=2; i<size; i+=4)		//Ë«ÉùµÀÊı¾İ×ª³Éµ¥ÉùµÀÊı¾İ
+#if 0	//å³å£°é“
+		for(i=2; i<size; i+=4)		//åŒå£°é“æ•°æ®è½¬æˆå•å£°é“æ•°æ®
 		{
 			fwrite(voices_data+i,2,1,speek->savefilefp);
 		}
-#else	//×óÉùµÀ
+#else	//å·¦å£°é“
 		for(i=0; i<size; i+=4){
 			fwrite(voices_data+i,2,1,speek->savefilefp);
 		}
@@ -979,30 +937,28 @@ void SaveRecorderVoices(const char *voices_data,int size){
 	}
 	pthread_mutex_unlock(&speek->mutex);
 }
-//--------------------------------------sdcard ÊÕ²ØÏ²°®¸èÇú---------------------------------------------------
-//¼ì²ésdcard ÊÇ·ñ¹ÒÔØ£¬Ã»ÓĞ¹ÒÔØ£¬Ìí¼ÓÏµÍ³Òô²¥·ÅÌáÊ¾
+//--------------------------------------sdcard æ”¶è—å–œçˆ±æ­Œæ›²---------------------------------------------------
+//æ£€æŸ¥sdcard æ˜¯å¦æŒ‚è½½ï¼Œæ²¡æœ‰æŒ‚è½½ï¼Œæ·»åŠ ç³»ç»ŸéŸ³æ’­æ”¾æç¤º
 static int checkSdcard_MountState(void){
-	if(access(TF_SYS_PATH, F_OK)){	//¼ì²étf¿¨
+	if(access(TF_SYS_PATH, F_OK)){	//æ£€æŸ¥tfå¡
 		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){	
-			Create_PlaySystemEventVoices(TF_ERROT_PLAY);	//ÌáÊ¾ÓÃ»§£¬Ã»ÓĞ¼ì²éµ½sdcard
+			Create_PlaySystemEventVoices(TF_ERROT_PLAY);	//æç¤ºç”¨æˆ·ï¼Œæ²¡æœ‰æ£€æŸ¥åˆ°sdcard
 		}
 		return -1;
 	}	
 	return 0;
 }
 
-//----------------------end sdcard ÊÕ²ØÏ²°®¸èÇú--------------------------------------------------------------
-
-//¿ª»ú¼ÓÔØsdcard µ±ÖĞÊı¾İ¿âĞÅÏ¢
+//----------------------end sdcard æ”¶è—å–œçˆ±æ­Œæ›²--------------------------------------------------------------
+//å¼€æœºåŠ è½½sdcard å½“ä¸­æ•°æ®åº“ä¿¡æ¯
 static void *waitLoadMusicList(void *arg){
 	int timeout=0;
-	Huashang_Init();
 	sleep(20);
 	while(++timeout<20){
-		if(!access(TF_SYS_PATH, F_OK)){		//¼ì²étf¿¨
+		if(!access(TF_SYS_PATH, F_OK)){		//æ£€æŸ¥tfå¡
 			break;
 		}
-		//¼ì²âµ½¹Ø¼üÎÄ¼şËø£¬Ö±½ÓÍË³ö£¬²»Ö´ĞĞÏÂÃæ²Ù×÷£¬·ÀÖ¹ÔÚ¹Ø»ú¹ı³Ì¶ÁĞ´sdcard
+		//æ£€æµ‹åˆ°å…³é”®æ–‡ä»¶é”ï¼Œç›´æ¥é€€å‡ºï¼Œä¸æ‰§è¡Œä¸‹é¢æ“ä½œï¼Œé˜²æ­¢åœ¨å…³æœºè¿‡ç¨‹è¯»å†™sdcard
 		if(access(CLOSE_SYSTEM_LOCK_FILE, F_OK)==F_OK){
 			return NULL;
 		}
@@ -1010,7 +966,7 @@ static void *waitLoadMusicList(void *arg){
 	}
 	timeout=0;
 	while(++timeout<35){
-		CheckNetManger_PidRunState();	//¼ì²éÍøÂç·şÎñ
+		CheckNetManger_PidRunState();	//æ£€æŸ¥ç½‘ç»œæœåŠ¡
 		sleep(1);
 		if(sysMes.netstate==NETWORK_OK){
 			break;
@@ -1018,16 +974,16 @@ static void *waitLoadMusicList(void *arg){
 			break;
 		}
 	}
-	if(sysMes.netstate==NETWORK_UNKOWN){	//Ä¬ÈÏÊÇÎ´Öª×´Ì¬£¬³¤Ê±¼äÎ´ÊÕµ½ÁªÍø½ø³Ì·¢ËÍ¹ıÀ´µÄ×´Ì¬£¬Ö±½ÓÊ¹ÄÜgpio
+	if(sysMes.netstate==NETWORK_UNKOWN){	//é»˜è®¤æ˜¯æœªçŸ¥çŠ¶æ€ï¼Œé•¿æ—¶é—´æœªæ”¶åˆ°è”ç½‘è¿›ç¨‹å‘é€è¿‡æ¥çš„çŠ¶æ€ï¼Œç›´æ¥ä½¿èƒ½gpio
 		sysMes.netstate=NETWORK_ER;
 		enable_gpio();
 	}
-	openSystemload_huashangData();
+	Huashang_loadSystemdata();
 	return NULL;
 } 
 
 /******************************************************************
-³õÊ¼»¯8960ÒôÆµĞ¾Æ¬£¬¿ªÆô8KÂ¼ÒôºÍ²¥·ÅË«¹¤Ä£Ê½,³õÊ¼»¯gpio£¬²¥·Å¿ª»úÆô¶¯Òô
+åˆå§‹åŒ–8960éŸ³é¢‘èŠ¯ç‰‡ï¼Œå¼€å¯8Kå½•éŸ³å’Œæ’­æ”¾åŒå·¥æ¨¡å¼,åˆå§‹åŒ–gpioï¼Œæ’­æ”¾å¼€æœºå¯åŠ¨éŸ³
 *******************************************************************/
 void InitMtkPlatfrom76xx(void){
 	speek = (Speek_t *)calloc(1,sizeof(Speek_t));
@@ -1043,12 +999,12 @@ void InitMtkPlatfrom76xx(void){
 	InitRecord_VoicesPthread();
 	initStream(ack_playCtr,WritePcmData,SetWm8960Rate,GetVol,GetWm8960Rate);
 	InitEventMsgPthread();
-	
-	pool_add_task(waitLoadMusicList, NULL);	//·ÀÖ¹T¿¨¼ÓÔØÂı
+	Huashang_Init();
+	pool_add_task(waitLoadMusicList, NULL);	//é˜²æ­¢Tå¡åŠ è½½æ…¢
 }
 /*
 @ 
-@ Ïú»ÙÆ½Ì¨Ïà¹ØÉêÇëµÄ×ÊÔ´
+@ é”€æ¯å¹³å°ç›¸å…³ç”³è¯·çš„èµ„æº
 */
 void CleanMtkPlatfrom76xx(void){
 	ExitRecord_Voicespthread();

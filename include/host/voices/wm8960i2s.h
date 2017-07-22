@@ -7,49 +7,40 @@
 
 #define WM8960_NODE_PATH	"/dev/i2s0"
 
-#define RECODE_RATE 			8000 
-#define AUDIO_RX_VOICE 			108  	//Â¼Òô´óĞ¡
-#ifdef TEST_SDK
-#define AUDIO_TX_VOICE 			100
-#else
-#define AUDIO_TX_VOICE 			115		//ÒôÀÖ²¥·ÅÒôÁ¿´óĞ¡
-#endif
-#define PLAY_MODE				0 		//²¥·ÅÄ£Ê½
-#define RECORD_MODE				1  		//Â¼ÒôÄ£Ê½
-#define NONE_MODE				9		//ÆÕÍ¨Ä£Ê½
-#define	EXTERNAL_LBK2			14		//Ë«¹¤Ä£Ê½
+#define RECODE_RATE 			8000 			//å½•éŸ³é‡‡æ ·ç‡
+#define AUDIO_RX_VOICE 			108  			//å½•éŸ³å¤§å°
 
-#define THRESHOLD 				600		//ÒôÆµĞÅºÅãĞÖµ
-#define RSIZE    				8    	//
+#define AUDIO_TX_VOICE 			115				//éŸ³ä¹æ’­æ”¾éŸ³é‡å¤§å°
+#define PLAY_MODE				0 				//æ’­æ”¾æ¨¡å¼
+#define RECORD_MODE				1  				//å½•éŸ³æ¨¡å¼
+#define NONE_MODE				9				//æ™®é€šæ¨¡å¼
+#define	EXTERNAL_LBK2			14				//åŒå·¥æ¨¡å¼
 
+#define VOL_UP					125				//éŸ³é‡ä¸Šé™
+#define VOL_DWON				100				//éŸ³é‡ä¸‹é™
+#define VOL_NUM					3				//æ¯æ¬¡å¢åŠ 
+#define VOL_SET_DATA(x) 		(x/5)+VOL_DWON	//APPè®¾ç½®å€¼ç®—æ³•
 
+#define	SYSTEM_DEFALUT_VOL		110				//è®¾ç½®å¼€æœºé»˜è®¤åˆå§‹å€¼
+#define PLAY_PASUSE_VOICES_VOL	40				//æ’­æ”¾æ™ºèƒ½ä¼šè¯è¿‡æ¸¡éŸ³å¤§å°		
 
-#define VOL_UP			125				//ÒôÁ¿ÉÏÏŞ
-#define VOL_DWON		100				//ÒôÁ¿ÏÂÏŞ
-#define VOL_NUM			3				//Ã¿´ÎÔö¼Ó
-#define VOL_SET_DATA(x) (x/5)+VOL_DWON	//APPÉèÖÃÖµËã·¨
-
-#define	SYSTEM_DEFALUT_VOL		110		//ÉèÖÃ¿ª»úÄ¬ÈÏ³õÊ¼Öµ
-#define PLAY_PASUSE_VOICES_VOL	40		//²¥·ÅÖÇÄÜ»á»°¹ı¶ÉÒô´óĞ¡		
-
-#define VOL_SUB 		0
-#define VOL_ADD 		1
-#define VOL_APP_SET 	2
-#define VOL_SET_VAULE	3
+#define VOL_SUB 				0
+#define VOL_ADD 				1
+#define VOL_APP_SET 			2
+#define VOL_SET_VAULE			3
 
 extern char play_buf[I2S_PAGE_SIZE+4];
 
 
 typedef struct {
-	unsigned char lockSetRate;
-	unsigned char rx_enable:1,		//½ÓÊÕÊ¹ÄÜ
-	tx_enable:1,					//·¢ËÍÊ¹ÄÜ
-	execute_mode:6;					//²¥·ÅÄ£Ê½
-	unsigned char tx_vol;			//²¥·ÅÒôÁ¿´óĞ¡
-	short i2s_fd;					//´ò¿ªÒôÆµÉè±¸½ÚµãÃèÊö·û
-	unsigned short tx_rate;			//µ±Ç°²¥·Å²ÉÑùÂÊ
-	unsigned short play_size;		//Ô­Ê¼Êı¾İ²¥·Å´óĞ¡£¬µ±´ïµ½I2S_PAGE_SIZE ,²ÅÄÜÍùÄÚºËÀïÃæĞ´
-	unsigned char old_vol:7,cache_vol:1;//tang : change 2015-12-2 for save vol
+	unsigned char lockSetRate;		//å¯¹åˆ‡æ¢é‡‡æ ·ç‡è¿›è¡Œä¸Šé”
+	unsigned char rx_enable:1,		//æ¥æ”¶ä½¿èƒ½
+	tx_enable:1,					//å‘é€ä½¿èƒ½
+	execute_mode:6;					//æ’­æ”¾æ¨¡å¼
+	unsigned char tx_vol;			//æ’­æ”¾éŸ³é‡å¤§å°
+	short i2s_fd;					//æ‰“å¼€éŸ³é¢‘è®¾å¤‡èŠ‚ç‚¹æè¿°ç¬¦
+	unsigned short tx_rate;			//å½“å‰æ’­æ”¾é‡‡æ ·ç‡
+	unsigned short play_size;		//åŸå§‹æ•°æ®æ’­æ”¾å¤§å°ï¼Œå½“è¾¾åˆ°I2S_PAGE_SIZE ,æ‰èƒ½å¾€å†…æ ¸é‡Œé¢å†™
 }I2SST;
 
 extern I2SST I2S;
@@ -57,13 +48,13 @@ extern I2SST I2S;
 #define MUTE 	0
 #define UNMUTE 	1
 
-#define SET_RATE(i2s_fd,rate) 	ioctl(i2s_fd, I2S_SRATE, rate)//²ÉÑùÂÊÉèÖÃ
-#define SET_RX_VOL(i2s_fd,vol) 	ioctl(i2s_fd, I2S_RX_VOL, vol)//Â¼ÒôÒôÁ¿
-#define SET_TX_VOL(i2s_fd,vol) 	ioctl(i2s_fd, I2S_TX_VOL, vol)//²¥·ÅÒôÁ¿
-#define SET_TX_ENABLE(i2s_fd) 	ioctl(i2s_fd, I2S_TX_ENABLE, 0)
-#define SET_TX_DISABLE(i2s_fd) 	ioctl(i2s_fd, I2S_TX_DISABLE, 0)
-#define SET_RX_ENABLE(i2s_fd) 	ioctl(i2s_fd, I2S_RX_ENABLE, 0)
-#define SET_RX_DISABLE(i2s_fd) 	ioctl(i2s_fd, I2S_RX_DISABLE, 0)
+#define SET_RATE(i2s_fd,rate) 	ioctl(i2s_fd, I2S_SRATE, rate)	//é‡‡æ ·ç‡è®¾ç½®
+#define SET_RX_VOL(i2s_fd,vol) 	ioctl(i2s_fd, I2S_RX_VOL, vol)	//å½•éŸ³éŸ³é‡
+#define SET_TX_VOL(i2s_fd,vol) 	ioctl(i2s_fd, I2S_TX_VOL, vol)	//æ’­æ”¾éŸ³é‡
+#define SET_TX_ENABLE(i2s_fd) 	ioctl(i2s_fd, I2S_TX_ENABLE, 0)	//ä½¿èƒ½å‘é€éŸ³é¢‘æ•°æ®
+#define SET_TX_DISABLE(i2s_fd) 	ioctl(i2s_fd, I2S_TX_DISABLE, 0)//å…³é—­ä½¿èƒ½
+#define SET_RX_ENABLE(i2s_fd) 	ioctl(i2s_fd, I2S_RX_ENABLE, 0) //ä½¿èƒ½æ¥æ”¶
+#define SET_RX_DISABLE(i2s_fd) 	ioctl(i2s_fd, I2S_RX_DISABLE, 0)//å…³é—­ä½¿èƒ½
 
 extern void write_pcm(char *buf);
 extern void WritePcmData(char *data,int size);

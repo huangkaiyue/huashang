@@ -12,9 +12,9 @@ static uart_t *uartCtr=NULL;
 
 #if 0
 /*************************************************
-* º¯Êı¹¦ÄÜ:µ¹Ğò°ËÎ»¶ş½øÖÆ
-* ²Î  Êı  :ĞèÒªµ¹ĞòµÄÊı
-* ·µ»ØÖµ  :³É¹¦µ¹ĞòµÄÖµ
+* å‡½æ•°åŠŸèƒ½:å€’åºå…«ä½äºŒè¿›åˆ¶
+* å‚  æ•°  :éœ€è¦å€’åºçš„æ•°
+* è¿”å›å€¼  :æˆåŠŸå€’åºçš„å€¼
 **************************************************/
 static unsigned char bin8_rev(unsigned char data) 
 { 
@@ -25,9 +25,9 @@ static unsigned char bin8_rev(unsigned char data)
 }
 #endif
 /*************************************************
-* º¯Êı¹¦ÄÜ:»ñÈ¡µç³ØµçÁ¿
-* ²Î  Êı  :ÎŞ
-* ·µ»ØÖµ  :µç³ØµçÁ¿
+* å‡½æ•°åŠŸèƒ½:è·å–ç”µæ± ç”µé‡
+* å‚  æ•°  :æ— 
+* è¿”å›å€¼  :ç”µæ± ç”µé‡
 **************************************************/
 int Get_batteryVaule(void){
 	switch(uartCtr->battery){
@@ -47,9 +47,9 @@ int Get_batteryVaule(void){
 	}
 }
 /*************************************************
-* º¯Êı¹¦ÄÜ:»ñÈ¡³äµç×´Ì¬
-* ²Î  Êı  :ÎŞ
-* ·µ»ØÖµ  :0 Î´³äµç 1³äµç
+* å‡½æ•°åŠŸèƒ½:è·å–å……ç”µçŠ¶æ€
+* å‚  æ•°  :æ— 
+* è¿”å›å€¼  :0 æœªå……ç”µ 1å……ç”µ
 **************************************************/
 int get_dc_state(void){
 	if(uartCtr->charge!=1){
@@ -58,9 +58,9 @@ int get_dc_state(void){
 	return uartCtr->charge;
 }
 /*************************************************
-* º¯Êı¹¦ÄÜ:·¢ËÍ´®¿ÚÏûÏ¢²Ëµ¥
-* ²Î  Êı  :size ÏûÏ¢´óĞ¡ senddata ·¢ËÍÏûÏ¢
-* ·µ»ØÖµ  :ÎŞ
+* å‡½æ•°åŠŸèƒ½:å‘é€ä¸²å£æ¶ˆæ¯èœå•
+* å‚  æ•°  :size æ¶ˆæ¯å¤§å° senddata å‘é€æ¶ˆæ¯
+* è¿”å›å€¼  :æ— 
 **************************************************/
 static int uart_send_soc(unsigned char senddata[],int size){
 	if(serialFd[0]>0){
@@ -74,15 +74,15 @@ static int uart_send_soc(unsigned char senddata[],int size){
 	return 0;
 }
 /*************************************************
-* º¯Êı¹¦ÄÜ:»ñÈ¡±¾µØÊ±¼ä
-* ²Î  Êı  :timedata »ñÈ¡´¢´æµÄµØÖ·
-* ·µ»ØÖµ  :ÎŞ
+* å‡½æ•°åŠŸèƒ½:è·å–æœ¬åœ°æ—¶é—´
+* å‚  æ•°  :timedata è·å–å‚¨å­˜çš„åœ°å€
+* è¿”å›å€¼  :æ— 
 **************************************************/
 static int GetLocalTime(AckTimeData *timedata){
 	time_t timep;
 	struct tm *p;
 	time(&timep);
-	p=localtime(&timep); /*È¡µÃµ±µØÊ±¼ä*/
+	p=localtime(&timep); /*å–å¾—å½“åœ°æ—¶é—´*/
 	timedata->timehead=MSTIME;
 	if((p->tm_year)<100)
 		return -1;
@@ -101,9 +101,9 @@ static int GetLocalTime(AckTimeData *timedata){
 	return 0;
 }
 /*************************************************
-* º¯Êı¹¦ÄÜ:·¢ËÍ´®¿ÚÏûÏ¢²Ëµ¥
-* ²Î  Êı  :str ÃüÁî senddata ·¢ËÍÏûÏ¢
-* ·µ»ØÖµ  :ÎŞ
+* å‡½æ•°åŠŸèƒ½:å‘é€ä¸²å£æ¶ˆæ¯èœå•
+* å‚  æ•°  :str å‘½ä»¤ senddata å‘é€æ¶ˆæ¯
+* è¿”å›å€¼  :æ— 
 **************************************************/
 void SocSendMenu(unsigned char str,char *senddata){
 	char *p;
@@ -115,7 +115,7 @@ void SocSendMenu(unsigned char str,char *senddata){
 	unsigned char facebuf[3];
 	char checksum;
 	switch(str){
-		case OPEN://¶¨Ê±¿ª»ú
+		case OPEN://å®šæ—¶å¼€æœº
 			data.ochead=MSOPEN;
 			pt=strtok_r(senddata,":",&p);
 			data.hour=atoi(pt);
@@ -141,7 +141,7 @@ void SocSendMenu(unsigned char str,char *senddata){
 			DEBUG_UART("system open time is %d:%d\n",data.hour,data.min);
 			uart_send_soc((unsigned char *)&data,sizeof(AckOCData));
 			break;
-		case MUC_CLOSE_SYSTEM://¶¨Ê±¹Ø»ú
+		case MUC_CLOSE_SYSTEM://å®šæ—¶å…³æœº
 			data.ochead=MSCLOSE;
 			pt=strtok_r(senddata,":",&p);
 			data.hour=atoi(pt);
@@ -150,23 +150,23 @@ void SocSendMenu(unsigned char str,char *senddata){
 			DEBUG_UART("syetem close time is %d:%d\n",data.hour,data.min);
 			uart_send_soc((unsigned char *)&data,sizeof(AckOCData));
 			break;
-		case TIME://µ±Ç°Ê±¼ä
+		case TIME://å½“å‰æ—¶é—´
 			if(GetLocalTime(&timedata)==0){
 				uart_send_soc((unsigned char *)&timedata,sizeof(AckTimeData));
 			}
 			break;
-		case BATTYPE://µçÁ¿»ñÈ¡
+		case BATTYPE://ç”µé‡è·å–
 			bat.ochead=MSBATTERY;
 			bat.chack=MSBATTERY;
 			uart_send_soc((unsigned char *)&bat,sizeof(AckOCBat));
 			break;
-		case SMOKER_OK://ÎÕÊÖĞÅºÅ
+		case SMOKER_OK://æ¡æ‰‹ä¿¡å·
 			smok.ochead=SMOK;
 			smok.type=0x55;
 			smok.chack=SMOK+0x55;
 			uart_send_soc((unsigned char *)&smok,sizeof(AckSmok));
 			break;
-		case SMOKER_ER://ÎÕÊÖĞÅºÅ
+		case SMOKER_ER://æ¡æ‰‹ä¿¡å·
 			smok.ochead=SMOK;
 			smok.type=0xaa;
 			smok.chack=SMOK+0xaa;
@@ -189,11 +189,11 @@ void showFacePicture(unsigned char faceNums){
 #endif	
 }
 /*************************************************
-* º¯Êı¹¦ÄÜ:´®¿ÚÏûÏ¢´¦Àíº¯Êı
-* ²Î  Êı  :ÎŞ
-* ·µ»ØÖµ  :ÎŞ
+* å‡½æ•°åŠŸèƒ½:ä¸²å£æ¶ˆæ¯å¤„ç†å‡½æ•°
+* å‚  æ•°  :æ— 
+* è¿”å›å€¼  :æ— 
 **************************************************/
-static unsigned char batterylow=0;	//²¥±¨µÍµç±êÖ¾
+static unsigned char batterylow=0;	//æ’­æŠ¥ä½ç”µæ ‡å¿—
 static int CacheUarl(void){
 	//printf("===%x+%x=%x===================\n",data.head,data.data,data.cache);
 	if(((data.head+data.data)&0x0ff)==data.cache){
@@ -208,11 +208,11 @@ static void handle_uartMsg(int fd ,unsigned char buf,int size){
 		data.head=buf;
 		DEBUG_UART("\n===head ===%x==\n",data.head);
 		switch(data.head){
-			case SMCLOSETIME://MCU¶¨Ê±¶¨Ê±µ½¹Ø»úĞÅºÅ·¢ËÍ
-			case SMBATTERY://µç³ØµçÁ¿ 100£¬75£¬50£¬25£¬10
-			case SMCLOSE://¿ª¹Ø»ú
-			case SMBATTYPE://³äµç×´Ì¬
-			case SMOK://ÎÕÊÖĞÅºÅ
+			case SMCLOSETIME://MCUå®šæ—¶å®šæ—¶åˆ°å…³æœºä¿¡å·å‘é€
+			case SMBATTERY://ç”µæ± ç”µé‡ 100ï¼Œ75ï¼Œ50ï¼Œ25ï¼Œ10
+			case SMCLOSE://å¼€å…³æœº
+			case SMBATTYPE://å……ç”µçŠ¶æ€
+			case SMOK://æ¡æ‰‹ä¿¡å·
 				break;
 			default:
 				data.head=0x0;
@@ -223,11 +223,11 @@ static void handle_uartMsg(int fd ,unsigned char buf,int size){
 		data.data=buf;
 		DEBUG_UART("===data ===%x==\n",data.data);
 		switch(data.head){
-			case SMCLOSE://¿ª¹Ø»ú
-			case SMCLOSETIME://MCU¶¨Ê±¶¨Ê±µ½¹Ø»úĞÅºÅ·¢ËÍ
-			case SMBATTERY://µç³ØµçÁ¿ 100£¬75£¬50£¬25£¬10
-			case SMBATTYPE://³äµç×´Ì¬
-			case SMOK://ÎÕÊÖĞÅºÅ
+			case SMCLOSE://å¼€å…³æœº
+			case SMCLOSETIME://MCUå®šæ—¶å®šæ—¶åˆ°å…³æœºä¿¡å·å‘é€
+			case SMBATTERY://ç”µæ± ç”µé‡ 100ï¼Œ75ï¼Œ50ï¼Œ25ï¼Œ10
+			case SMBATTYPE://å……ç”µçŠ¶æ€
+			case SMOK://æ¡æ‰‹ä¿¡å·
 				break;
 			default:
 				data.head=0x0;
@@ -238,8 +238,8 @@ static void handle_uartMsg(int fd ,unsigned char buf,int size){
 		data.cache=buf;
 		DEBUG_UART("===cache ===%x==\n",data.cache);
 		switch(data.head){
-			case SMCLOSE://¿ª¹Ø»ú
-			case SMCLOSETIME://MCU¶¨Ê±¶¨Ê±µ½¹Ø»úĞÅºÅ·¢ËÍ
+			case SMCLOSE://å¼€å…³æœº
+			case SMCLOSETIME://MCUå®šæ—¶å®šæ—¶åˆ°å…³æœºä¿¡å·å‘é€
 				DEBUG_UART("handle_uartMsg SMCLOSETIME \n");
 				if(CacheUarl()==0){
 					uartCtr->voicesEvent(UART_EVENT_CLOSE_SYSTEM);
@@ -249,16 +249,18 @@ static void handle_uartMsg(int fd ,unsigned char buf,int size){
 				}
 				break;
 				
-			case SMBATTERY://µç³ØµçÁ¿ 100£¬75£¬50£¬25£¬10
-			case SMBATTYPE://³äµç×´Ì¬
-				if((data.data&0x80)==0x80){//³äµç
+			case SMBATTERY://ç”µæ± ç”µé‡ 100ï¼Œ75ï¼Œ50ï¼Œ25ï¼Œ10
+			case SMBATTYPE://å……ç”µçŠ¶æ€
+				if((data.data&0x80)==0x80){//å……ç”µ
 					DEBUG_UART("handle_uartMsg	SMBATTYPE OK \n");
+					uartCtr->voicesEvent(AC_BATTERRY);
 					uartCtr->charge=1;
 					batterylow=1;
 				}
-				else if((data.data&0x80)==0x00){//Î´³äµç
+				else if((data.data&0x80)==0x00){//æœªå……ç”µ
 					DEBUG_UART("handle_uartMsg	SMBATTYPE ERROR \n");
 					uartCtr->charge=0;
+				uartCtr->voicesEvent(BATTERRY);
 				}
 				DEBUG_UART("SMBATTYPE bat=%d\n",data.data);
 				if(CacheUarl()==0){
@@ -266,7 +268,7 @@ static void handle_uartMsg(int fd ,unsigned char buf,int size){
 					SocSendMenu(SMOKER_OK,0);
 					uartCtr->battery=data.data;
 					uartCtr->Ack_batteryCtr(Get_batteryVaule(),uartCtr->charge);
-					if(uartCtr->battery<=1&&batterylow==0){		//µçÁ¿µÍÓÚ25£¬±¨ÓïÒô
+					if(uartCtr->battery<=1&&batterylow==0){		//ç”µé‡ä½äº25ï¼ŒæŠ¥è¯­éŸ³
 						uartCtr->voicesEvent(UART_EVENT_LOW_BASTERRY);
 						batterylow=1;
 					}
@@ -275,11 +277,11 @@ static void handle_uartMsg(int fd ,unsigned char buf,int size){
 				}
 				break;
 				
-			case SMOK://ÎÕÊÖĞÅºÅ
-				if(data.data==0x55){//ÕıÈ·
+			case SMOK://æ¡æ‰‹ä¿¡å·
+				if(data.data==0x55){//æ­£ç¡®
 					DEBUG_UART("handle_uartMsg OK \n");
 				}
-				else if(data.data==0xaa){//´íÎó
+				else if(data.data==0xaa){//é”™è¯¯
 					DEBUG_UART("handle_uartMsg error \n");
 				}
 				break;
@@ -291,9 +293,9 @@ static void handle_uartMsg(int fd ,unsigned char buf,int size){
 	}
 }
 /*************************************************
-* º¯Êı¹¦ÄÜ:¶ÁÈ¡´®¿ÚÏûÏ¢
-* ²Î  Êı  :ÎŞ
-* ·µ»ØÖµ  :ÎŞ
+* å‡½æ•°åŠŸèƒ½:è¯»å–ä¸²å£æ¶ˆæ¯
+* å‚  æ•°  :æ— 
+* è¿”å›å€¼  :æ— 
 **************************************************/
 static void *uart_read_serial(void){	
 	struct timeval timeout = {2, 0};
@@ -335,10 +337,10 @@ static void *uart_read_serial(void){
 	return NULL;
 }
 /*************************************************
-* º¯Êı¹¦ÄÜ:´®¿Ú³õÊ¼»¯
-* ²Î  Êı  :VoicesEvent ÏµÍ³Òô »Øµ÷º¯Êı
-			ack_batteryCtr µçÁ¿·¢ËÍ »Øµ÷º¯Êı
-* ·µ»ØÖµ  :0 ³É¹¦ -1Ê§°Ü
+* å‡½æ•°åŠŸèƒ½:ä¸²å£åˆå§‹åŒ–
+* å‚  æ•°  :VoicesEvent ç³»ç»ŸéŸ³ å›è°ƒå‡½æ•°
+			ack_batteryCtr ç”µé‡å‘é€ å›è°ƒå‡½æ•°
+* è¿”å›å€¼  :0 æˆåŠŸ -1å¤±è´¥
 **************************************************/
 int init_Uart(void VoicesEvent(int event),void ack_batteryCtr(int recvdata,int power)){
 	quit=1;
@@ -363,9 +365,9 @@ int init_Uart(void VoicesEvent(int event),void ack_batteryCtr(int recvdata,int p
 //#define TEST
 #ifdef TEST
 /*************************************************
-* º¯Êı¹¦ÄÜ:´òÓ¡»ñÈ¡µ±Ç°Ê±¼ä
-* ²Î  Êı  :ÎŞ
-* ·µ»ØÖµ  :ÎŞ
+* å‡½æ•°åŠŸèƒ½:æ‰“å°è·å–å½“å‰æ—¶é—´
+* å‚  æ•°  :æ— 
+* è¿”å›å€¼  :æ— 
 **************************************************/
 void get_time(void){
 	time_t timep;

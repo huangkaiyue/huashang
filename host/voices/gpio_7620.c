@@ -15,16 +15,16 @@ static int led_type;
 #define GVOL_ADD 	VOL_ADD
 #define GVOL_SUB 	VOL_SUB
 
-//¿ª¹ØÒôÆµÇı¶¯º¯Êı
+//å¼€å…³éŸ³é¢‘é©±åŠ¨å‡½æ•°
 void open_wm8960_voices(void){
 	ioctl(gpio.fd, TANG_GPIO3924_OPEN);
 }
 void close_wm8960_voices(void){
 	ioctl(gpio.fd, TANG_GPIO3924_CLOSE);
 }
-//ÏµÍ³µÆ¿ª¹Ø
+//ç³»ç»Ÿç¯å¼€å…³
 void open_sys_led(void){
-	ioctl(gpio.fd, TANG_LED_CLOSE);	//close Èı¼«¹Ü Îª¹Ø±Õ
+	ioctl(gpio.fd, TANG_LED_CLOSE);	//close ä¸‰æç®¡ ä¸ºå…³é—­
 }
 void close_sys_led(void){
 	ioctl(gpio.fd, TANG_LED_OPEN);
@@ -64,7 +64,7 @@ static void led_left_right(unsigned char type,unsigned char io){
 			break;
 	}
 }
-//°´ÏÂ°´¼ü£¬ÉÁË¸LED 
+//æŒ‰ä¸‹æŒ‰é”®ï¼Œé—ªçƒLED 
 void keydown_flashingLED(void){
 	led_left_right(left,closeled);
 	led_left_right(right,closeled);
@@ -74,7 +74,7 @@ void keydown_flashingLED(void){
 }
 void led_lr_oc(unsigned char type){
 	switch(type){
-		case openled:	//¿ª
+		case openled:	//å¼€
 			led_left_right(left,openled);
 			led_left_right(right,openled);
 			break;
@@ -84,41 +84,41 @@ void led_lr_oc(unsigned char type){
 			break;
 	}
 }
-//Éè±¸»Ö¸´³ö³§ÉèÖÃ
+//è®¾å¤‡æ¢å¤å‡ºå‚è®¾ç½®
 void ResetHostDevicesFactory(void){
 	ResetWeixinBindUserMessage();
 	Create_PlaySystemEventVoices(RESET_HOST_V_PLAY);
 	system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
 }
-//½ÓÊÕµ½Î¢ĞÅ·¢ËÍ¹ıÀ´µÄ°ó¶¨ÇëÇó
+//æ¥æ”¶åˆ°å¾®ä¿¡å‘é€è¿‡æ¥çš„ç»‘å®šè¯·æ±‚
 void EnableBindDev(void){	
 	gpio.bindsign=BIND_DEV_OK;
 }
 
-//°´¼ü°´ÏÂ°ó¶¨ÓÃ»§ÇëÇó
+//æŒ‰é”®æŒ‰ä¸‹ç»‘å®šç”¨æˆ·è¯·æ±‚
 static void keyDownAck_userBind(void){
 	if(gpio.bindsign==BIND_DEV_OK){
 		BindDevToaliyun();
 		Create_PlaySystemEventVoices(BIND_OK_PLAY);
 		gpio.bindsign=BIND_DEV_ER;
-	}else{//Ã»ÓĞ½ÓÊÕµ½°ó¶¨ÇëÇó
-		Create_PlayQttsEvent("Ğ¡ÅóÓÑÇëÈÃ°Ö°ÖÂèÂèÔÚÎ¢ĞÅ½çÃæµ±ÖĞÑûÇëĞ¡»ï°éÒ»ÆğÀ´ÁÄÌì°É¡£",QTTS_GBK);
+	}else{//æ²¡æœ‰æ¥æ”¶åˆ°ç»‘å®šè¯·æ±‚
+		Create_PlayQttsEvent("å°æœ‹å‹è¯·è®©çˆ¸çˆ¸å¦ˆå¦ˆåœ¨å¾®ä¿¡ç•Œé¢å½“ä¸­é‚€è¯·å°ä¼™ä¼´ä¸€èµ·æ¥èŠå¤©å§ã€‚",QTTS_GBK);
 	}
 }
-//°´ÏÂÒô
+//æŒ‰ä¸‹éŸ³
 static void keyDown_AndSetGpioFor_play(void){
 	if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){
-		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x01);//°´ÏÂ
+		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x01);//æŒ‰ä¸‹
 	}
 }
-//Ì§ÆğÒô
+//æŠ¬èµ·éŸ³
 static void keyUp_AndSetGpioFor_play(void){
 	if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){
-		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x20);//µ¯Æğ
+		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x20);//å¼¹èµ·
 	}
 }	
 
-//´®¿Ú¿ª¹Ø
+//ä¸²å£å¼€å…³
 static void enableUart(void){
 	if (ioctl(gpio.fd, TANG_UART_OPEN) < 0) {
 		perror("ioctl uart");
@@ -126,14 +126,15 @@ static void enableUart(void){
 	}
 	DEBUG_GPIO("enableUart..\n");
 }
-//Ëøº¯Êı
+//é”gpioäº‹ä»¶å‡½æ•°ï¼Œé˜²æ­¢åº•å±‚è§¦å‘æŒ‰é”®å¤ªé¢‘ç¹
 static void lock_msgEv(void){
-	gpio.sig_lock=1;
-	
+	gpio.sig_lock=1;	
 }
+//è§£é”å‡½æ•°
 static void unlock_msgEv(void){
 	gpio.sig_lock=0;
 }
+//æ£€æŸ¥å½“å‰é”
 static int check_lock_msgEv(void){
 	if(gpio.sig_lock==1){
 		return -1;
@@ -159,11 +160,11 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 			{
 				if(mutiplekey->key_number == ADDVOL_KEY){
 					printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);		
-					GetScard_forPlayHuashang_Music(PLAY_NEXT,EXTERN_PLAY_EVENT);
+					Huashang_GetScard_forPlayMusic(PLAY_NEXT,EXTERN_PLAY_EVENT);
 				}
 				else{
 					printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
-					GetScard_forPlayHuashang_Music(PLAY_PREV,EXTERN_PLAY_EVENT);
+					Huashang_GetScard_forPlayMusic(PLAY_PREV,EXTERN_PLAY_EVENT);
 				}
 				break;
 
@@ -218,7 +219,7 @@ static void *weixin_mutiplekey_Thread(void *arg){
 		if(time_ms < 500){		//before is 500  2017.6.28 22:43
 			if(mutiplekey->key_state == KEYUP)
 			{
-				//¶Ì°´µ¯Æğ´¦Àí£¬²¥·ÅÎ¢ĞÅÓïÒô
+				//çŸ­æŒ‰å¼¹èµ·å¤„ç†ï¼Œæ’­æ”¾å¾®ä¿¡è¯­éŸ³
 				GpioLog("GetWeiXinMessageForPlay ",WEIXIN_SPEEK_KEY);
 				GetWeiXinMessageForPlay();
 				break;
@@ -231,14 +232,14 @@ static void *weixin_mutiplekey_Thread(void *arg){
 
 		if(time_ms >=500){		//before is 500  2017.6.28 22:43
 			if(playDownVoicesFlag==0){
-				//ÔÚÕâÀï¿ªÊ¼Â¼Òô
+				//åœ¨è¿™é‡Œå¼€å§‹å½•éŸ³
 				keyDown_AndSetGpioFor_play();
 				Create_WeixinSpeekEvent(KEYDOWN);
 				playDownVoicesFlag++;
 			}
 			printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
 			if(mutiplekey->key_state == KEYUP){
-				//ÔÚÕâÀï½áÊøÂ¼Òô
+				//åœ¨è¿™é‡Œç»“æŸå½•éŸ³
 				Create_WeixinSpeekEvent(KEYUP);
 				break;
 			}
@@ -253,7 +254,7 @@ static void *weixin_mutiplekey_Thread(void *arg){
 
 static void signal_handler(int signum){
 	static key_mutiple_t mutiple_key_SUB,mutiple_key_ADD,mutiple_key_speek,mutiple_key_weixin;
-	//ÄÃµ½µ×²ã°´¼üÊÂ¼şºÅÂë
+	//æ‹¿åˆ°åº•å±‚æŒ‰é”®äº‹ä»¶å·ç 
 	if (ioctl(gpio.fd, TANG_GET_NUMBER,&gpio.mount) < 0){
 		perror("ioctl");
 		close(gpio.fd);
@@ -268,64 +269,64 @@ static void signal_handler(int signum){
 	if(checkAndWakeupSystem()){
 		goto exit0;
 	}
-	if (signum == GPIO_UP){			//¶Ì°´°´¼üÊÂ¼ş
+	if (signum == GPIO_UP){			//çŸ­æŒ‰æŒ‰é”®äº‹ä»¶
 		switch(gpio.mount){
-			case NETWORK_KEY:		//²¥±¨WiFiÃû
+			case NETWORK_KEY:		//æ’­æŠ¥WiFiå
 				ShortKeyDown_ForPlayWifiMessage();
 				break;
 				
 
-			case SPEEK_KEY:			//ÖÇÄÜ»á»°°´¼üÊÂ¼ş
+			case SPEEK_KEY:			//æ™ºèƒ½ä¼šè¯æŒ‰é”®äº‹ä»¶
 				keyUp_AndSetGpioFor_play();
 				StopTuling_RecordeVoices();
 				break;
-			case ADDVOL_KEY:	//¶Ì°´²¥·ÅÏ²°®ÄÚÈİ,ÏÂÒ»Çú
+			case ADDVOL_KEY:	//çŸ­æŒ‰æ’­æ”¾å–œçˆ±å†…å®¹,ä¸‹ä¸€æ›²
 				keydown_flashingLED();
 				mutiple_key_ADD.key_number = ADDVOL_KEY;
 				mutiple_key_ADD.key_state  = KEYUP;
 				GpioLog("key up",ADDVOL_KEY);
 				break;
-			case SUBVOL_KEY:	//¶Ì°´²¥·ÅÏ²°®ÄÚÈİ,ÉÏÒ»Çú
+			case SUBVOL_KEY:	//çŸ­æŒ‰æ’­æ”¾å–œçˆ±å†…å®¹,ä¸Šä¸€æ›²
 				keydown_flashingLED();
 				mutiple_key_SUB.key_number = SUBVOL_KEY;
 				mutiple_key_SUB.key_state  = KEYUP;
 				GpioLog("key up",SUBVOL_KEY);
 				break;
-			case PLAY_PAUSE_KEY:	//²¥·Å¡¢ÔİÍ£
+			case PLAY_PAUSE_KEY:	//æ’­æ”¾ã€æš‚åœ
 				KeydownEventPlayPause();
 				break;
-			case DIR_MENU_KEY:	//»ªÉÏ½ÌÓı£¬ÉèÖÃµ¥ÇúÑ­»·ºÍÁĞ±í
+			case DIR_MENU_KEY:	//åä¸Šæ•™è‚²ï¼Œè®¾ç½®å•æ›²å¾ªç¯å’Œåˆ—è¡¨
 				SelectDirMenu();
 				break;
-			case WEIXIN_SPEEK_KEY:	//»ªÉÏ½ÌÓıÎ¢ĞÅ¶Ô½²
+			case WEIXIN_SPEEK_KEY:	//åä¸Šæ•™è‚²å¾®ä¿¡å¯¹è®²
 				mutiple_key_weixin.key_number = WEIXIN_SPEEK_KEY;
 				mutiple_key_weixin.key_state  = KEYUP;
 				break;
-			case RIGHTLED_KEY:	//bind¼ü
+			case RIGHTLED_KEY:	//bindé”®
 				keyDownAck_userBind();
 				break;
 		}
 		DEBUG_GPIO("signal up (%d) !!!\n",gpio.mount);
 	}// end gpio_up
-	else if (signum == GPIO_DOWN){	//³¤°´°´¼üÊÂ¼ş
+	else if (signum == GPIO_DOWN){	//é•¿æŒ‰æŒ‰é”®äº‹ä»¶
 		switch(gpio.mount){
-			case RESET_KEY://»Ö¸´³ö³§ÉèÖÃ
+			case RESET_KEY://æ¢å¤å‡ºå‚è®¾ç½®
 				ResetHostDevicesFactory();
 				break;
 									
-			case NETWORK_KEY://ÅäÍø¼ü
+			case NETWORK_KEY://é…ç½‘é”®
 				LongNetKeyDown_ForConfigWifi();
 				break;
 				
-			case SPEEK_KEY://»á»°¼ü
+			case SPEEK_KEY://ä¼šè¯é”®
 				keyDown_AndSetGpioFor_play();
 				TulingKeyDownSingal();
 				break;
 			
-			case PLAY_PAUSE_KEY://³¤°´²¥·Å/ÔİÍ£  ÇĞ»»ÖÇÄÜ»á»°²¥ÒôÈË
+			case PLAY_PAUSE_KEY://é•¿æŒ‰æ’­æ”¾/æš‚åœ  åˆ‡æ¢æ™ºèƒ½ä¼šè¯æ’­éŸ³äºº
 				keyDown_AndSetGpioFor_play();
 				break;
-			case ADDVOL_KEY:	//³¤°´ÒôÁ¿¼Ó
+			case ADDVOL_KEY:	//é•¿æŒ‰éŸ³é‡åŠ 
 				keydown_flashingLED();
 				mutiple_key_ADD.key_state  = KEYDOWN;
 				mutiple_key_ADD.key_number = ADDVOL_KEY;
@@ -334,10 +335,10 @@ static void signal_handler(int signum){
 				mutiple_key_ADD.PthreadState = PthreadState_run;
 				gettimeofday(&mutiple_key_ADD.time_start,0);
 				pool_add_task(mus_vol_mutiplekey_Thread,(void *)&mutiple_key_ADD);
-				ack_VolCtr("add",GetVol());		//----------->ÒôÁ¿¼õ
+				ack_VolCtr("add",GetVol());		//----------->éŸ³é‡å‡
 				GpioLog("key down",ADDVOL_KEY);
 				break;
-			case SUBVOL_KEY:					//³¤°´ÒôÁ¿¼õ
+			case SUBVOL_KEY:					//é•¿æŒ‰éŸ³é‡å‡
 				keydown_flashingLED();
 				mutiple_key_SUB.key_state  = KEYDOWN;
 				mutiple_key_SUB.key_number = SUBVOL_KEY;
@@ -347,10 +348,10 @@ static void signal_handler(int signum){
 				
 				mutiple_key_SUB.PthreadState = PthreadState_run;
 				pool_add_task(mus_vol_mutiplekey_Thread,(void *)&mutiple_key_SUB);
-				ack_VolCtr("sub",GetVol());		//----------->ÒôÁ¿¼õ
+				ack_VolCtr("sub",GetVol());		//----------->éŸ³é‡å‡
 				GpioLog("key down",SUBVOL_KEY);
 				break;
-			case WEIXIN_SPEEK_KEY:	//»ªÉÏ½ÌÓıÎ¢ĞÅ¶Ô½²
+			case WEIXIN_SPEEK_KEY:	//åä¸Šæ•™è‚²å¾®ä¿¡å¯¹è®²
 				mutiple_key_weixin.key_state = KEYDOWN;
 				mutiple_key_weixin.key_number = WEIXIN_SPEEK_KEY;
 				gettimeofday(&mutiple_key_weixin.time_start,0);
@@ -361,7 +362,7 @@ static void signal_handler(int signum){
 				pool_add_task(weixin_mutiplekey_Thread,(void *)&mutiple_key_weixin);
 				
 				break;
-			case DIR_MENU_KEY:	//³¤°´ÇĞ»»µ¥ÇúºÍÁĞ±í
+			case DIR_MENU_KEY:	//é•¿æŒ‰åˆ‡æ¢å•æ›²å’Œåˆ—è¡¨
 				keyDown_AndSetGpioFor_play();
 				GpioKey_SetStreamPlayState();
 				break;
@@ -374,7 +375,7 @@ static void signal_handler(int signum){
 exit0:	
 	unlock_msgEv();
 }
-//Êı¾İ·½Ïò
+//æ•°æ®æ–¹å‘
 static void gpio_set_dir(int r){
 	int req;
 	if (r == gpio6332){
@@ -394,7 +395,7 @@ static void gpio_set_dir(int r){
 		}
 	}
 }
-//Ê¹ÄÜ°´¼üº¯Êı
+//ä½¿èƒ½æŒ‰é”®å‡½æ•°
 void enable_gpio(void){
 	ralink_gpio_reg_info info;
 	gpio_set_dir(gpio6332);
@@ -479,7 +480,7 @@ void enable_gpio(void){
 	signal(SIGUSR1, signal_handler);
 	signal(SIGUSR2, signal_handler);
 }
-//³õÊ¼»¯GPIO
+//åˆå§‹åŒ–GPIO
 static void enableResetgpio(void){
 	if (ioctl(gpio.fd, RALINK_GPIO6332_SET_DIR_IN, (0x1<<6)) < 0) {
 		perror("ioctl");
@@ -491,7 +492,7 @@ static void enableResetgpio(void){
 		close(gpio.fd);
 		return ;
 	}
-#if 1	//Ê¹ÄÜ»Ö¸´³ö³§ÉèÖÃ°´¼ü
+#if 1	//ä½¿èƒ½æ¢å¤å‡ºå‚è®¾ç½®æŒ‰é”®
 	ralink_gpio_reg_info info;
 	info.pid = getpid();
 	info.irq = RESET_KEY;
@@ -506,7 +507,7 @@ static void enableResetgpio(void){
 }
 /*
 @ 
-@ ³õÊ¼»¯mtk76xx ÏµÁĞgpio£¬×¢²ágpio£¬²¢Ê¹ÄÜ²¿·Ö°´¼üÖĞ¶Ï
+@ åˆå§‹åŒ–mtk76xx ç³»åˆ—gpioï¼Œæ³¨å†Œgpioï¼Œå¹¶ä½¿èƒ½éƒ¨åˆ†æŒ‰é”®ä¸­æ–­
 @
 */
 void InitMtk76xx_gpio(void){
@@ -518,18 +519,18 @@ void InitMtk76xx_gpio(void){
 	}
 	enableUart();
 	pool_add_task(Led_vigue_open,NULL);
-	enableResetgpio();	//Ê¹ÄÜ»Ö¸´³ö³§ÉèÖÃ°´¼ü (·ÀÖ¹¿ª»ú³öÏÖËÀ»úÏÖÏó£¬ÎŞ·¨²Ù×÷)
+	enableResetgpio();	//ä½¿èƒ½æ¢å¤å‡ºå‚è®¾ç½®æŒ‰é”® (é˜²æ­¢å¼€æœºå‡ºç°æ­»æœºç°è±¡ï¼Œæ— æ³•æ“ä½œ)
 }
-//È¥Ê¹ÄÜ°´¼ü
+//å»ä½¿èƒ½æŒ‰é”®
 void disable_gpio(void){
 	if (ioctl(gpio.fd, RALINK_GPIO_DISABLE_INTP) < 0) {
 		perror("disable ioctl");
 		close(gpio.fd);
 		return ;
 	}
-	enableResetgpio();	//Ê¹ÄÜ»Ö¸´³ö³§ÉèÖÃ°´¼ü
+	enableResetgpio();	//ä½¿èƒ½æ¢å¤å‡ºå‚è®¾ç½®æŒ‰é”®
 }
-//Çå³ıGPIO
+//æ¸…é™¤GPIO
 void CleanMtk76xx_gpio(void){
 	sleep(1);
 	disable_gpio();

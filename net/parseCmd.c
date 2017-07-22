@@ -13,12 +13,12 @@
 #include "uart/uart.h"
 #include "config.h"
 
-#define STREAM_EXIT				MAD_EXIT	//Í£Ö¹	
-#define STREAM_PLAY 			MAD_PLAY	//²¥·Å
-#define STREAM_PAUSE			MAD_PAUSE	//ÔÝÍ£
+#define STREAM_EXIT				MAD_EXIT	//åœæ­¢	
+#define STREAM_PLAY 			MAD_PLAY	//æ’­æ”¾
+#define STREAM_PAUSE			MAD_PAUSE	//æš‚åœ
 #define STREAM_NEXT				MAD_NEXT
 
-#define 	GET_NET_STATE	29	//»ñÈ¡ÍøÂç×´Ì¬
+#define 	GET_NET_STATE	29	//èŽ·å–ç½‘ç»œçŠ¶æ€
 
 //#define DBG_TCP
 #ifdef DBG_TCP
@@ -92,10 +92,10 @@ static void test_brocastCtr(int sockfd,struct sockaddr_in *peer,char *recvdata){
 }
 
 /*
-@º¯Êý¹¦ÄÜ:	ÒôÁ¿¼Ó¼õ´¦ÀíÒÔ¼°·µ»Øº¯Êý
-@²ÎÊý:	size ÒôÁ¿¼Ó¼õ±êÖ¾Î»
-@		0	ÒôÁ¿¼õ
-@		1	ÒôÁ¿¼Ó
+@å‡½æ•°åŠŸèƒ½:	éŸ³é‡åŠ å‡å¤„ç†ä»¥åŠè¿”å›žå‡½æ•°
+@å‚æ•°:	size éŸ³é‡åŠ å‡æ ‡å¿—ä½
+@		0	éŸ³é‡å‡
+@		1	éŸ³é‡åŠ 
 */
 void ack_VolCtr(char *dir,int data){
 	char* szJSON = NULL;
@@ -112,11 +112,11 @@ void ack_VolCtr(char *dir,int data){
 	free(szJSON);
 }
 /*
-@º¯Êý¹¦ÄÜ:	¿ª¹Ø»ú·µ»Øº¯Êý
-@²ÎÊý:	size ÄÐÅ®Òô±êÖ¾Î»
-@		0	¿ª
-@		1	¹Ø
-@		recvdata ¿ª¹Ø»úÊ±¼ä
+@å‡½æ•°åŠŸèƒ½:	å¼€å…³æœºè¿”å›žå‡½æ•°
+@å‚æ•°:	size ç”·å¥³éŸ³æ ‡å¿—ä½
+@		0	å¼€
+@		1	å…³
+@		recvdata å¼€å…³æœºæ—¶é—´
 */
 void ack_hostCtr(int sockfd,char *recvdata,char *type){
 	char* szJSON = NULL;
@@ -135,8 +135,8 @@ void ack_hostCtr(int sockfd,char *recvdata,char *type){
 	free(szJSON);
 }
 /*
-@º¯Êý¹¦ÄÜ:	µç³ØµçÁ¿·µ»Øº¯Êý
-@²ÎÊý:	recvdata µç³ØµçÁ¿
+@å‡½æ•°åŠŸèƒ½:	ç”µæ± ç”µé‡è¿”å›žå‡½æ•°
+@å‚æ•°:	recvdata ç”µæ± ç”µé‡
 */
 void ack_batteryCtr(int recvdata,int power){
 	char* szJSON = NULL;
@@ -154,8 +154,8 @@ void ack_batteryCtr(int recvdata,int power){
 }
 
 /*
-@º¯Êý¹¦ÄÜ:	ËùÓÐÐÅÏ¢·µ»Øº¯Êý
-@²ÎÊý:	recvdata µç³ØµçÁ¿
+@å‡½æ•°åŠŸèƒ½:	æ‰€æœ‰ä¿¡æ¯è¿”å›žå‡½æ•°
+@å‚æ•°:	recvdata ç”µæ± ç”µé‡
 */
 void ack_alluserCtr(const int sockfd,int state,int power){
 	char stropenTime[10]={0};
@@ -174,7 +174,7 @@ void ack_alluserCtr(const int sockfd,int state,int power){
 	szJSON = cJSON_Print(pItem);
 	DEBUG_TCP("ack_alluserCtr: %s\n",szJSON);
 	send_ctrl_ack(sockfd,szJSON,strlen(szJSON));
-	SendtoaliyunServices(szJSON,strlen(szJSON));	//·¢ËÍ¸øÎ¢ÐÅ
+	SendtoaliyunServices(szJSON,strlen(szJSON));	//å‘é€ç»™å¾®ä¿¡
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
@@ -294,7 +294,7 @@ void Ack_CallDev(int recvdata){
 	cJSON_AddStringToObject(pItem, "status","cancel");
 	szJSON = cJSON_Print(pItem);
 	DEBUG_TCP("ack_gpioCtr: %s\n",szJSON);
-	SendtoaliyunServices(szJSON,strlen(szJSON));	//·¢ËÍ¸øÎ¢ÐÅ
+	SendtoaliyunServices(szJSON,strlen(szJSON));	//å‘é€ç»™å¾®ä¿¡
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
@@ -325,7 +325,7 @@ void SetClockToaliyun(unsigned char clocknum,unsigned char state,const char *tim
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
-//Çå³ýÎ¢ÐÅ°ó¶¨µÄÓÃ»§
+//æ¸…é™¤å¾®ä¿¡ç»‘å®šçš„ç”¨æˆ·
 void ResetWeixinBindUserMessage(void){
 	char* szJSON = NULL;
 	cJSON* pItem = NULL;
@@ -358,15 +358,15 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		DEBUG_TCP("dir = %s\n", pSub->valuestring);
 		if(!strcmp(pSub->valuestring,"add")){
 			Setwm8960Vol(VOL_ADD,0);
-			ack_VolCtr("add",GetVol());//----------->ÒôÁ¿¼Ó
+			ack_VolCtr("add",GetVol());//----------->éŸ³é‡åŠ 
 		}else if (!strcmp(pSub->valuestring,"sub")){
 			Setwm8960Vol(VOL_SUB,0);
-			ack_VolCtr("sub",GetVol());//----------->ÒôÁ¿¼õ
+			ack_VolCtr("sub",GetVol());//----------->éŸ³é‡å‡
 		}else if (!strcmp(pSub->valuestring,"no")){
 			Setwm8960Vol(VOL_APP_SET,cJSON_GetObjectItem(pJson, "data")->valueint);
-			ack_VolCtr("no",GetVol());//----------->ÉèÖÃ¹Ì¶¨ÒôÁ¿
+			ack_VolCtr("no",GetVol());//----------->è®¾ç½®å›ºå®šéŸ³é‡
 		}
-	}//end vol ÒôÁ¿´óÐ¡
+	}//end vol éŸ³é‡å¤§å°
 	else if(!strcmp(pSub->valuestring,"lock")){
 		pSub = cJSON_GetObjectItem(pJson, "state");
 		if(NULL == pSub){
@@ -375,14 +375,14 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}
 		if(pSub->valueint==0){
 			gpio_look=0;
-			enable_gpio();//----------->½âËø
+			enable_gpio();//----------->è§£é”
 			ack_gpioCtr(0);
 		}else if (pSub->valueint==1){
-			disable_gpio();//----------->ÉÏËø
+			disable_gpio();//----------->ä¸Šé”
 			gpio_look=1;
 			ack_gpioCtr(1);
 		}
-	}//end lock °´¼üËø
+	}//end lock æŒ‰é”®é”
 	else if(!strcmp(pSub->valuestring,"mplayer")){
 		pSub = cJSON_GetObjectItem(pJson, "state");
 		if(NULL == pSub){
@@ -390,7 +390,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			goto exit;
 		}
 		if(!strcmp(pSub->valuestring,"get")){
-			getStreamState(&sockfd,ack_allplayerCtr);//----------->appµÇÂ½»ñÈ¡²¥·ÅÆ÷ÐÅÏ¢
+			getStreamState(&sockfd,ack_allplayerCtr);//----------->appç™»é™†èŽ·å–æ’­æ”¾å™¨ä¿¡æ¯
 		}else if(!strcmp(pSub->valuestring,"switch")){
 			//mute_recorde_vol(UNMUTE);
 			Player_t *player = (Player_t *)calloc(1,sizeof(Player_t));
@@ -402,7 +402,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			if(cJSON_GetObjectItem(pJson, "name")!=NULL){
 				musicname=cJSON_GetObjectItem(pJson, "name")->valuestring;
 			}
-			if(player){					//ÐÂÔö¼ÓjsonÐ­Òé£¬ÓÃÓÚÍ¬²½½çÃæ 2016-10-11 14:00
+			if(player){					//æ–°å¢žåŠ jsonåè®®ï¼Œç”¨äºŽåŒæ­¥ç•Œé¢ 2016-10-11 14:00
 				snprintf(player->playfilename,128,"%s",cJSON_GetObjectItem(pJson, "url")->valuestring);
 				if(musicname!=NULL){
 					snprintf(player->musicname,48,"%s",musicname);
@@ -423,7 +423,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}else if (!strcmp(pSub->valuestring,"seekto")){
 			seekToStream(cJSON_GetObjectItem(pJson, "progress")->valueint);
 		}
-	}//end mplayer ²¥·ÅÆ÷ÐÅÏ¢
+	}//end mplayer æ’­æ”¾å™¨ä¿¡æ¯
 	else if(!strcmp(pSub->valuestring,"host")){
 		pSub = cJSON_GetObjectItem(pJson, "type");
 		if(NULL == pSub){
@@ -431,7 +431,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			goto exit;
 		}
 		if(!strcmp(pSub->valuestring,"open")){
-			//¶¨Ê±¿ª»ú
+			//å®šæ—¶å¼€æœº
 			char *stropenTime = cJSON_GetObjectItem(pJson, "time")->valuestring;
 			DEBUG_TCP("stropenTime = %s\n",stropenTime);
 			Save_OpenCloseTime_toRouteTable(OPEN_TIME,stropenTime);
@@ -439,10 +439,10 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			
 			SocSendMenu(3,0);
 			usleep(100*1000);
-			SocSendMenu(1,stropenTime);//----------->¶¨Ê±¿ª»ú
+			SocSendMenu(1,stropenTime);//----------->å®šæ—¶å¼€æœº
 			usleep(100*1000);
 		}else if (!strcmp(pSub->valuestring,"close")){
-			//¶¨Ê±¹Ø»ú
+			//å®šæ—¶å…³æœº
 			char *strcloseTime = cJSON_GetObjectItem(pJson, "time")->valuestring;
 			DEBUG_TCP("strcloseTime = %s\n",strcloseTime);
 			Save_OpenCloseTime_toRouteTable(CLOSE_TIME,strcloseTime);
@@ -450,10 +450,10 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			
 			SocSendMenu(3,0);
 			usleep(100*1000);
-			SocSendMenu(MUC_CLOSE_SYSTEM,strcloseTime);//----------->¶¨Ê±¹Ø»ú
+			SocSendMenu(MUC_CLOSE_SYSTEM,strcloseTime);//----------->å®šæ—¶å…³æœº
 			usleep(100*1000);
 		}
-	}//end host ¶¨Ê±¿ª¹Ø»ú
+	}//end host å®šæ—¶å¼€å…³æœº
 	
 	//----------------------------------> udp msg	
 	else if(!strcmp(pSub->valuestring,"brocast")){
@@ -470,17 +470,17 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}
 	}//  end brocast	
 #ifdef DOWN_IMAGE
-	else if(!strcmp(pSub->valuestring,"updateHost")){	//----------->ÓÉ°æ±¾¼à²â½ø³Ì·¢ËÍ¹ýÀ´	
+	else if(!strcmp(pSub->valuestring,"updateHost")){	//----------->ç”±ç‰ˆæœ¬ç›‘æµ‹è¿›ç¨‹å‘é€è¿‡æ¥	
 		pSub = cJSON_GetObjectItem(pJson, "status");
-		if(!strcmp(pSub->valuestring,"newversion")){	//ÓÐÐÂ°æ±¾£¬ÐèÒª¸üÐÂ
+		if(!strcmp(pSub->valuestring,"newversion")){	//æœ‰æ–°ç‰ˆæœ¬ï¼Œéœ€è¦æ›´æ–°
 			Create_PlaySystemEventVoices(UPDATA_NEW_PLAY);
-		}else if(!strcmp(pSub->valuestring,"start")){	//ÕýÔÚÏÂÔØ¹Ì¼þ
+		}else if(!strcmp(pSub->valuestring,"start")){	//æ­£åœ¨ä¸‹è½½å›ºä»¶
 			Create_PlaySystemEventVoices(DOWNLOAD_ING_PLAY);
-		}else if(!strcmp(pSub->valuestring,"error")){	//ÏÂÔØ¹Ì¼þ´íÎó
+		}else if(!strcmp(pSub->valuestring,"error")){	//ä¸‹è½½å›ºä»¶é”™è¯¯
 			Create_PlaySystemEventVoices(DOWNLOAD_ERROE_PLAY);
-		}else if(!strcmp(pSub->valuestring,"end")){ 	//ÏÂÔØ¹Ì¼þ½áÊø
+		}else if(!strcmp(pSub->valuestring,"end")){ 	//ä¸‹è½½å›ºä»¶ç»“æŸ
 			Create_PlaySystemEventVoices(DOWNLOAD_END_PLAY);
-		}else if(!strcmp(pSub->valuestring,"progress")){		//ÏÂÔØ½ø¶È
+		}else if(!strcmp(pSub->valuestring,"progress")){		//ä¸‹è½½è¿›åº¦
 			pSub = cJSON_GetObjectItem(pJson, "value");
 			if(pSub->valueint==25){
 				Create_PlaySystemEventVoices(DOWNLOAD_25_PLAY);			
@@ -495,31 +495,25 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	//  end updateHost
 	else if(!strcmp(pSub->valuestring,"updateImage")){		
 		pSub = cJSON_GetObjectItem(pJson, "status");
-		if(!strcmp(pSub->valuestring,"start")){ 		//¿ªÊ¼¸üÐÂ¹Ì¼þ
+		if(!strcmp(pSub->valuestring,"start")){ 		//å¼€å§‹æ›´æ–°å›ºä»¶
 #ifdef DOWN_IMAGE		
 			Create_PlaySystemEventVoices(UPDATA_START_PLAY);
-		}else if(!strcmp(pSub->valuestring,"error")){	//¸üÐÂ¹Ì¼þ´íÎó
+		}else if(!strcmp(pSub->valuestring,"error")){	//æ›´æ–°å›ºä»¶é”™è¯¯
 			Create_PlaySystemEventVoices(UPDATA_ERROR_PLAY);
 #endif			
-		}else if(!strcmp(pSub->valuestring,"end")){ 	//¸üÐÂ¹Ì¼þ½áÊø
+		}else if(!strcmp(pSub->valuestring,"end")){ 	//æ›´æ–°å›ºä»¶ç»“æŸ
 			Create_PlaySystemEventVoices(UPDATA_END_PLAY);
 		}
-	}//  end updateImage                // end----------->ÓÉ°æ±¾¼à²â½ø³Ì·¢ËÍ¹ýÀ´
-	else if(!strcmp(pSub->valuestring,"newImage")){	// app¶ËÈ·ÈÏ»¹ÊÇÈ¡Ïû¸üÐÂ²Ù×÷
+	}//  end updateImage                // end----------->ç”±ç‰ˆæœ¬ç›‘æµ‹è¿›ç¨‹å‘é€è¿‡æ¥
+	else if(!strcmp(pSub->valuestring,"newImage")){	// appç«¯ç¡®è®¤è¿˜æ˜¯å–æ¶ˆæ›´æ–°æ“ä½œ
 		pSub = cJSON_GetObjectItem(pJson, "status");
-		if(!strcmp(pSub->valuestring,"ok")){		//app È·ÈÏ¸üÐÂ
+		if(!strcmp(pSub->valuestring,"ok")){		//app ç¡®è®¤æ›´æ–°
 			
-		}else if(!strcmp(pSub->valuestring,"miss")){//app È¡Ïû¸üÐÂ
+		}else if(!strcmp(pSub->valuestring,"miss")){//app å–æ¶ˆæ›´æ–°
 
 		}
 	}else if(!strcmp(pSub->valuestring,"ServerWifi")){
-		int event = cJSON_GetObjectItem(pJson, "event")->valueint;
-		Create_PlaySystemEventVoices(event);
-		if(CONNECT_OK==event){
-			//Link_NetworkOk();
-		}else if(NOT_NETWORK==event){
-			//Link_NetworkError();
-		}
+		RecvNetWorkConnetState(cJSON_GetObjectItem(pJson, "event")->valueint);
 	}else if(!strcmp(pSub->valuestring,"TestNet")){
 		test_brocastCtr(sockfd,peer,recvdata);
 	}else if(!strcmp(pSub->valuestring,"qtts")){
@@ -539,7 +533,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		Create_PlayQttsEvent(cJSON_GetObjectItem(pJson, "text")->valuestring,QTTS_UTF8);
 #endif
 	}
-	else if (!strcmp(pSub->valuestring,"speek")){//Î¢ÐÅ¶Ô½²
+	else if (!strcmp(pSub->valuestring,"speek")){//å¾®ä¿¡å¯¹è®²
 #if defined(HUASHANG_JIAOYU)
 		Create_PlaySystemEventVoices(KEY_DOWN_PLAY);
 		char *WeiXinFile =cJSON_GetObjectItem(pJson, "file")->valuestring;
@@ -557,26 +551,26 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			Create_PlaySystemEventVoices(BIND_SSID_PLAY);
 		}
 	}
-	else if (!strcmp(pSub->valuestring,"call")){		//Î¢ÐÅ½çÃæ·¢ËÍ¹ýÀ´µÄºô½ÐÇëÇó	
+	else if (!strcmp(pSub->valuestring,"call")){		//å¾®ä¿¡ç•Œé¢å‘é€è¿‡æ¥çš„å‘¼å«è¯·æ±‚	
 	}
 	else if (!strcmp(pSub->valuestring,"uploadfile")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
-		if(!strcmp(pSub->valuestring,"ok")){			//·¢ËÍ³É¹¦
-		}else if(!strcmp(pSub->valuestring,"failed")){	//·¢ËÍÊ§°Ü
-		}else if(!strcmp(pSub->valuestring,"timeout")){	//·¢ËÍÊ§°Ü
-			Create_PlaySystemEventVoices(SEND_LINK_ER_PLAY);//"µ±Ç°ÍøÂç»·¾³²î£¬ÓïÒô·¢ËÍÊ§°Ü£¬Çë¼ì²éÍøÂç¡£"
+		if(!strcmp(pSub->valuestring,"ok")){			//å‘é€æˆåŠŸ
+		}else if(!strcmp(pSub->valuestring,"failed")){	//å‘é€å¤±è´¥
+		}else if(!strcmp(pSub->valuestring,"timeout")){	//å‘é€å¤±è´¥
+			Create_PlaySystemEventVoices(SEND_LINK_ER_PLAY);//"å½“å‰ç½‘ç»œçŽ¯å¢ƒå·®ï¼Œè¯­éŸ³å‘é€å¤±è´¥ï¼Œè¯·æ£€æŸ¥ç½‘ç»œã€‚"
 		}
 	}
 	else if (!strcmp(pSub->valuestring,"clock")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
-		if(!strcmp(pSub->valuestring,"ok")){			//µ½µã±¨ÓïÒô
-			//±¨ÓïÒô
+		if(!strcmp(pSub->valuestring,"ok")){			//åˆ°ç‚¹æŠ¥è¯­éŸ³
+			//æŠ¥è¯­éŸ³
 			char *path=NULL;
 			if(cJSON_GetObjectItem(pJson, "path")!=NULL){
 				path=cJSON_GetObjectItem(pJson, "path")->valuestring;
 			}
 			CreatePlayWeixinVoicesSpeekEvent(path);
-		}else if(!strcmp(pSub->valuestring,"close")){	//¹Ø±ÕÉèÖÃ¿ª»úÊ±¼ä
+		}else if(!strcmp(pSub->valuestring,"close")){	//å…³é—­è®¾ç½®å¼€æœºæ—¶é—´
 			//
 			char *time_open=NULL;
 			if(cJSON_GetObjectItem(pJson, "time")!=NULL){
@@ -587,10 +581,10 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			SocSendMenu(3,0);
 			usleep(100*1000);
 			test_Clock_saveLoute((const char *)time_open);
-			SocSendMenu(7,time_open);	//ÉèÖÃÄÖÖÓ¿ª»úÊ±¼ä
+			SocSendMenu(7,time_open);	//è®¾ç½®é—¹é’Ÿå¼€æœºæ—¶é—´
 	
 		}
-	}else if(!strcmp(pSub->valuestring,"getdev")){	//Î¢ÐÅ»ñÈ¡Éè±¸ÐÅÏ¢
+	}else if(!strcmp(pSub->valuestring,"getdev")){	//å¾®ä¿¡èŽ·å–è®¾å¤‡ä¿¡æ¯
 		ack_alluserCtr(sockfd,Get_batteryVaule(),get_dc_state());
 	}
 	else if (!strcmp(pSub->valuestring,"tuling")){
@@ -601,17 +595,17 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			char *token= cJSON_GetObjectItem(pJson, "token")->valuestring;
 			Load_useridAndToken((const char *) userId,(const char *) token);
 		}
-	}else if(!strcmp(pSub->valuestring,"downmp3")){	//Î¢ÐÅ¶ËÏÂÔØ¸èÇúÊÂ¼þ£¬ÒÑ¾­ÏÂÔØµ½ /Down/ Ä¿Â¼ÏÂ
+	}else if(!strcmp(pSub->valuestring,"downmp3")){	//å¾®ä¿¡ç«¯ä¸‹è½½æ­Œæ›²äº‹ä»¶ï¼Œå·²ç»ä¸‹è½½åˆ° /Down/ ç›®å½•ä¸‹
 		char *status= cJSON_GetObjectItem(pJson, "status")->valuestring;
-		if(!strcmp(status,"ok")){	//ÒÑ¾­ÏÂÔØÍê
+		if(!strcmp(status,"ok")){	//å·²ç»ä¸‹è½½å®Œ
 			char *cacheMp3file= cJSON_GetObjectItem(pJson, "mp3file")->valuestring;
 			remove(cacheMp3file);
 		}else{
 		}
 	}
-#if defined(HUASHANG_JIAOYU)	//»ªÉÏÎ¢ÐÅ¶Ëµã»÷²¥·Å
+#if defined(HUASHANG_JIAOYU)	//åŽä¸Šå¾®ä¿¡ç«¯ç‚¹å‡»æ’­æ”¾
 	else if(!strcmp(pSub->valuestring,"localMp3")){
-		HuaShang_WeiXin_playMusic(cJSON_GetObjectItem(pJson, "nums")->valueint);
+		Huashang_WeiXinplayMusic(cJSON_GetObjectItem(pJson, "nums")->valueint);
 	}
 #endif	
 exit:

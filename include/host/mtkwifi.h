@@ -1,12 +1,12 @@
 #ifndef _MTKWIFI_H
 #define _MTKWIFI_H
 
-//É¨Ãèµ±Ç°»·¾³µÄwifiĞÅÏ¢
+//æ‰«æå½“å‰ç¯å¢ƒçš„wifiä¿¡æ¯
 typedef struct{
 	char ssid[64];
 	char bssid[20];
 	char security[23];	//WPA1PSK/WPA2PSK/AES/NONE/TKIP/OPEN
-						//ÉÏÒ»¼¶Â·ÓÉÎªOPEN£¬Õâ¸ö¼ÓÃÜÄ£Ê½»ñÈ¡µ½µÄÖµÎª:NONE
+						//ä¸Šä¸€çº§è·¯ç”±ä¸ºOPENï¼Œè¿™ä¸ªåŠ å¯†æ¨¡å¼è·å–åˆ°çš„å€¼ä¸º:NONE
 	char signal[9];	
 	char mode[12];		//11b/g/n
 	char ext_ch[7];
@@ -36,47 +36,47 @@ typedef struct {
 extern void debugWifiResult(WifiResult *wifiresult);
 
 /*
-@Ê¹ÄÜÖĞ¼ÌÁ¬½Ó
+@ä½¿èƒ½ä¸­ç»§è¿æ¥
 */
 extern void ApcliEnable(char *ssid,char *bssid,char *mode,char *enc,char *passwd,char *channel);
 /*
-@ mtkÏµÁĞĞ¾Æ¬É¨Ãèµ±Ç°»·¾³ÏÂssid
-@²ÎÊı:	data´«ÈëµÄ²ÎÊı *size 
-		getWifiResult»ñÈ¡µ½µ±Ç°Ö®ºó»Øµ÷º¯Êı,·µ»Ø·Ç0 µÄÖµÍË³öÉ¨Ãè
-@·µ»ØÖµ: 
+@ mtkç³»åˆ—èŠ¯ç‰‡æ‰«æå½“å‰ç¯å¢ƒä¸‹ssid
+@å‚æ•°:	dataä¼ å…¥çš„å‚æ•° *size 
+		getWifiResultè·å–åˆ°å½“å‰ä¹‹åå›è°ƒå‡½æ•°,è¿”å›é0 çš„å€¼é€€å‡ºæ‰«æ
+@è¿”å›å€¼: 
 */
 extern int __mtkScanWifi(void *data,int *size,int getWifiResult(void *data,int *size,WifiResult *wifiresult));
 /*
-@ mtkÏµÁĞĞ¾Æ¬É¨Ãèµ±Ç°»·¾³ÏÂssid
-@²ÎÊı:	wifi»ñÈ¡µ½µ±Ç°ÍøÂç»·¾³µÄssidĞÅÏ¢
-		len ×ÜµÄ³¤¶È
-	Êı¾İ¸ñÊ½:
+@ mtkç³»åˆ—èŠ¯ç‰‡æ‰«æå½“å‰ç¯å¢ƒä¸‹ssid
+@å‚æ•°:	wifiè·å–åˆ°å½“å‰ç½‘ç»œç¯å¢ƒçš„ssidä¿¡æ¯
+		len æ€»çš„é•¿åº¦
+	æ•°æ®æ ¼å¼:
 	ssid&+security&+signal&-
-@·µ»ØÖµ: 
+@è¿”å›å€¼: 
 */
 extern void mtk76xxScanWifi(char *wifi,int *len);
 /*
-@»Ö¸´³ö³§ÉèÖÃ
+@æ¢å¤å‡ºå‚è®¾ç½®
 */
 extern void ResetDefaultRouter(void);
 /*
-@ÉèÖÃ°å×ÓµÄ·¢³öµÄwifiÃûºÍÃÜÂë
+@è®¾ç½®æ¿å­çš„å‘å‡ºçš„wifiåå’Œå¯†ç 
 */
 extern void setBasicWifi(char *ssid,char *passwd);
 /*
-@¶ÁÈ¡°å×ÓµÄwifi
+@è¯»å–æ¿å­çš„wifi
 */
 extern void ReadWifi(viod);
 /*
-@»º´æssidºÍÃÜÂë
+@ç¼“å­˜ssidå’Œå¯†ç 
 */
 extern void SaveCacheSsid(char *saveSsid,char *savePasswd);
 /*
-@»ñÈ¡»º´æwifiÊı¾İ
+@è·å–ç¼“å­˜wifiæ•°æ®
 */
 extern int getCacheWifi(WIFI **wifi,int *cacheSize);
 /*
-@ÊÍ·Å»ñÈ¡»º´æÊı¾İ
+@é‡Šæ”¾è·å–ç¼“å­˜æ•°æ®
 */
 extern void freeCacheWifi(WIFI **wifi,int cacheSize);
 

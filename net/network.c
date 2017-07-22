@@ -66,9 +66,9 @@ static void delete_socket(Server *ser,int sockfd){
 	} 
 }
 /*
-@  »ØÓ¦¿ØÖÆÏûÏ¢
-@  sockfd »ØÓ¦ÇëÇóÃèÊö·û data »ØÓ¦Êı¾İ size Êı¾İ°ü´óĞ¡
-@  ÎŞ
+@  å›åº”æ§åˆ¶æ¶ˆæ¯
+@  sockfd å›åº”è¯·æ±‚æè¿°ç¬¦ data å›åº”æ•°æ® size æ•°æ®åŒ…å¤§å°
+@  æ— 
 */
 static int __send_ctrl_ack(Server *ser,int sockfd,char *data,int size){
 	int ret=0;
@@ -133,7 +133,7 @@ int UdpAll_Ack(char *data,int size){
 	}
 	return 0;
 }
-//ÉèÖÃ·ÇÑÓÊ±·¢°ü
+//è®¾ç½®éå»¶æ—¶å‘åŒ…
 static int SetTcpNoDelay(int sockfd) {
     int yes = 1;
     if (setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &yes, sizeof(yes)) == -1) {
@@ -143,9 +143,9 @@ static int SetTcpNoDelay(int sockfd) {
     return 0;
 }
 /***********************************************************
-@  ½«Á¬½ÓÉÏÀ´µÄ¿Í»§¶ËÌí¼Óµ½¶ÓÁĞµ±ÖĞ
-@  new_fd ĞÂÁ¬½ÓÉÏÀ´µÄfd client_addr ¿Í»§¶ËµÄµØÖ·
-@  ÎŞ
+@  å°†è¿æ¥ä¸Šæ¥çš„å®¢æˆ·ç«¯æ·»åŠ åˆ°é˜Ÿåˆ—å½“ä¸­
+@  new_fd æ–°è¿æ¥ä¸Šæ¥çš„fd client_addr å®¢æˆ·ç«¯çš„åœ°å€
+@  æ— 
 ***********************************************************/
 static void add_queue(Server *ser,int new_fd,struct sockaddr_in client_addr){
 	int i=0;
@@ -173,7 +173,7 @@ static void add_queue(Server *ser,int new_fd,struct sockaddr_in client_addr){
 	 }	
 }
 /***********************************************************
-@º¯Êı¹¦ÄÜ: ´¦Àí½ÓÊÕµ½µÄUDPºÍTCPÊı¾İ
+@å‡½æ•°åŠŸèƒ½: å¤„ç†æ¥æ”¶åˆ°çš„UDPå’ŒTCPæ•°æ®
 @
 @ 
 ***********************************************************/
@@ -274,7 +274,7 @@ int SendtoServicesWifi(char *msg,int size){
 int SendtoaliyunServices(const void *msg,int size){
 	return sendto(ctrSer->broSock,msg,size,0,(const struct sockaddr *)&ctrSer->speekAddr,sizeof(struct sockaddr_in));
 }
-//Ê¹ÄÜÁªÍøÎÄ¼şËø
+//ä½¿èƒ½è”ç½‘æ–‡ä»¶é”
 static void EnableNetworkFile_lock(void){
 	if(access(ENABLE_RECV_NETWORK_FILE_LOCK,0) < 0){
 		FILE *fp = fopen(ENABLE_RECV_NETWORK_FILE_LOCK,"w+");
@@ -284,7 +284,7 @@ static void EnableNetworkFile_lock(void){
 	}
 }
 void InitServer(void){
-	//¿ØÖÆÊı¾İ¶Ë¿Ú
+	//æ§åˆ¶æ•°æ®ç«¯å£
 	ctrSer= Server_Alloc();
 	if(!ctrSer){
 		return ;
@@ -322,9 +322,9 @@ static void  __close_server(Server *ser)
     } 
 }
 /*
-@ ½ÓÊÕ¿ØÖÆÌ¨ÏûÏ¢
+@ æ¥æ”¶æ§åˆ¶å°æ¶ˆæ¯
 @ 
-@ ÎŞ
+@ æ— 
 */
 void CleanServer(void){
 	if(ctrSer->broSock>0){

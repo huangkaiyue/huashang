@@ -10,36 +10,36 @@
 #define DEBUG_GPIO(fmt, args...) { }
 #endif	//end DBG_AP_STA
 
-#define GPIO_UP		SIGUSR1	//µ¯ÆğÊÂ¼ş--¶Ë°´ÊÂ¼ş
-#define GPIO_DOWN	SIGUSR2	//°´ÏÂÊÂ¼ş--³¤°´ÊÂ¼ş
+#define GPIO_UP		SIGUSR1	//å¼¹èµ·äº‹ä»¶--ç«¯æŒ‰äº‹ä»¶
+#define GPIO_DOWN	SIGUSR2	//æŒ‰ä¸‹äº‹ä»¶--é•¿æŒ‰äº‹ä»¶
 
-#define	RESET_KEY					38	//»Ö¸´³ö³§ÉèÖÃ¼ü
-#define RESERVE_KEY2				39	//»á»°¶Ô½²¿ª¹Ø¼ü
+#define	RESET_KEY					38	//æ¢å¤å‡ºå‚è®¾ç½®é”®
+#define RESERVE_KEY2				39	//ä¼šè¯å¯¹è®²å¼€å…³é”®
 
-#define	NETWORK_KEY					40	//ÅäÍø¼ü
-#define	SPEEK_KEY					41	//»á»°¼ü
-#define	PLAY_PAUSE_KEY				42	//²¥·Å/ÔİÍ£
+#define	NETWORK_KEY					40	//é…ç½‘é”®
+#define	SPEEK_KEY					41	//ä¼šè¯é”®
+#define	PLAY_PAUSE_KEY				42	//æ’­æ”¾/æš‚åœ
 
-#define DIR_MENU_KEY				20	//Ä¿Â¼ÇĞ»»°´¼ü
+#define DIR_MENU_KEY				20	//ç›®å½•åˆ‡æ¢æŒ‰é”®
 
-#define ADDVOL_KEY					16	//ÉÏÒ»Çú--ÒôÁ¿¼Ó
-#define SUBVOL_KEY					17	//ÏÂÒ»Çú--ÒôÁ¿¼õ
+#define ADDVOL_KEY					16	//ä¸Šä¸€æ›²--éŸ³é‡åŠ 
+#define SUBVOL_KEY					17	//ä¸‹ä¸€æ›²--éŸ³é‡å‡
 
 
-#define RIGHTLED_KEY				14	//Î¢ĞÅ·¢ËÍ¹ıÀ´µÄ°ó¶¨ÇëÇó
+#define RIGHTLED_KEY				14	//å¾®ä¿¡å‘é€è¿‡æ¥çš„ç»‘å®šè¯·æ±‚
 				
-#define WEIXIN_SPEEK_KEY			21	//Î¢ĞÅ¶Ô½²
+#define WEIXIN_SPEEK_KEY			21	//å¾®ä¿¡å¯¹è®²
 
 
 #define GPIO_DEV	"/dev/gpio"
-#define SPEEK		0		//Î¢ĞÅ¶Ô½²×´Ì¬
-#define TOLK		1		//ÖÇÄÜ»á»°×´Ì¬
+#define SPEEK		0		//å¾®ä¿¡å¯¹è®²çŠ¶æ€
+#define TOLK		1		//æ™ºèƒ½ä¼šè¯çŠ¶æ€
 
 #define BIND_DEV_ER	0
 #define BIND_DEV_OK	1
 
-#define KEYDOWN	0	//°´ÏÂ
-#define KEYUP	1	//µ¯Æğ
+#define KEYDOWN	0	//æŒ‰ä¸‹
+#define KEYUP	1	//å¼¹èµ·
 
 
 
@@ -62,16 +62,16 @@ enum{
 };
 typedef struct {
 	int fd;
-	unsigned int mount;//ÖĞ¶Ïgpio¿Ú
-	unsigned char sig_lock:4,//Ëø
+	unsigned int mount;//ä¸­æ–­gpioå£
+	unsigned char sig_lock:4,//é”
 		bindsign:4;
 }Gpio;
 
-//ÓÃÓÚ°´¼ü³¤¶Ì°´¸´ÓÃ£¬Ö÷ÒªÓÃÓÚÒôÁ¿¼Ó¼õÓëÉÏÏÂÇú°´¼ü¸´ÓÃ
+//ç”¨äºæŒ‰é”®é•¿çŸ­æŒ‰å¤ç”¨ï¼Œä¸»è¦ç”¨äºéŸ³é‡åŠ å‡ä¸ä¸Šä¸‹æ›²æŒ‰é”®å¤ç”¨
 typedef struct {
 	unsigned char PthreadState;
-	unsigned int key_number;	//°´¼üºÅ
-	unsigned int key_state;		//°´¼ü×´Ì¬:°´ÏÂ/µ¯Æğ
+	unsigned int key_number;	//æŒ‰é”®å·
+	unsigned int key_state;		//æŒ‰é”®çŠ¶æ€:æŒ‰ä¸‹/å¼¹èµ·
 	
 	struct timeval time_start,time_end;
 }key_mutiple_t;

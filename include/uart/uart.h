@@ -2,18 +2,18 @@
 #define UART_H_
 
 
-#define MSTIME		0x16	//µ±Ç°Ê±¼ä 0001 0110 ->0b01101000
-#define MSOPEN		0x23	//¶¨Ê±¿ª 0010 0011 ->0b01000100
-#define MSCLOSE		0x33	//¶¨Ê±¹Ø 0011 0011 ->0b01001100
-#define MSBATTERY	0x81	//ÇëÇóµçÁ¿
-#define MSCLOCK		0xa3	//ÄÖÖÓ¿ª»ú 1010 0011
+#define MSTIME		0x16	//å½“å‰æ—¶é—´ 0001 0110 ->0b01101000
+#define MSOPEN		0x23	//å®šæ—¶å¼€ 0010 0011 ->0b01000100
+#define MSCLOSE		0x33	//å®šæ—¶å…³ 0011 0011 ->0b01001100
+#define MSBATTERY	0x81	//è¯·æ±‚ç”µé‡
+#define MSCLOCK		0xa3	//é—¹é’Ÿå¼€æœº 1010 0011
 
-#define SMCLOSETIME	0x42	//MCU¶¨Ê±¶¨Ê±µ½¹Ø»úĞÅºÅ·¢ËÍ 0100 0010 ->0b01000010
-#define SMBATTERY	0x52	//µç³ØµçÁ¿ 0101 0010 ->0b01001010
-#define SMCLOSE		0x62	//¿ª¹Ø»úÌáÊ¾ 0110 0010 ->0b01000110
-#define SMBATTYPE	0x72	//³äµç×´Ì¬ 0111 0010 ->0b01001110
-#define SMOK		0xf2	//ÎÕÊÖĞÅºÅ 1111 0010 ->0b01001111
-#define SMLOW		0x91	//µÍµçÌáĞÑ
+#define SMCLOSETIME	0x42	//MCUå®šæ—¶å®šæ—¶åˆ°å…³æœºä¿¡å·å‘é€ 0100 0010 ->0b01000010
+#define SMBATTERY	0x52	//ç”µæ± ç”µé‡ 0101 0010 ->0b01001010
+#define SMCLOSE		0x62	//å¼€å…³æœºæç¤º 0110 0010 ->0b01000110
+#define SMBATTYPE	0x72	//å……ç”µçŠ¶æ€ 0111 0010 ->0b01001110
+#define SMOK		0xf2	//æ¡æ‰‹ä¿¡å· 1111 0010 ->0b01001111
+#define SMLOW		0x91	//ä½ç”µæé†’
 
 #define FACECMD		0x02
 
@@ -26,33 +26,36 @@
 #define CLOCK				7
 #define FACE				8
 
-#define UART_EVENT_CLOSE_SYSTEM	1	//mcu¹Ø»úÊÂ¼ş
-#define UART_EVENT_LOW_BASTERRY 3	//µçÁ¿µÍ
+#define UART_EVENT_CLOSE_SYSTEM	1	//mcuå…³æœºäº‹ä»¶
+#define UART_EVENT_LOW_BASTERRY 3	//ç”µé‡ä½
 
-#define CLEAR_SYSTEM_PICTURE		0	//ÇåÆÁÄ¿
-#define OPEN_SYSTEM_PICTURE			1	//¿ª»ú¶¯»­
-#define CLOSE_SYSTEM_PICTURE		2	//¹Ø»ú¶¯»­
-#define CONNECT_WIFI_OK_PICTURE		3	//wifi-³É¹¦Á¬½Ó
-#define PLAY_MUSIC_NUM1				4	//²¥·ÅÒôÀÖµÚ1ÖÖ
-#define PLAY_MUSIC_NUM2				5	//²¥·ÅÒôÀÖµÚ2ÖÖ
-#define PLAY_MUSIC_NUM3				6	//²¥·ÅÒôÀÖµÚ3ÖÖ
-#define PLAY_MUSIC_NUM4				7	//²¥·ÅÒôÀÖµÚ4ÖÖ
+#define AC_BATTERRY				5	//æ­£åœ¨å……ç”µ
+#define BATTERRY				6	//ç”µæ± ä¾›ç”µ
 
-#define WAIT_CTRL_NUM1				8	//µÈ´ı²Ù×÷µÚ1ÖÖ
-#define WAIT_CTRL_NUM2				9	//µÈ´ı²Ù×÷µÚ2ÖÖ
-#define WAIT_CTRL_NUM3				10	//µÈ´ı²¥·Å×´Ì¬
-#define WAIT_CTRL_NUM4				11	//ÉùÒôÍ£Ö¹
+#define CLEAR_SYSTEM_PICTURE		0	//æ¸…å±ç›®
+#define OPEN_SYSTEM_PICTURE			1	//å¼€æœºåŠ¨ç”»
+#define CLOSE_SYSTEM_PICTURE		2	//å…³æœºåŠ¨ç”»
+#define CONNECT_WIFI_OK_PICTURE		3	//wifi-æˆåŠŸè¿æ¥
+#define PLAY_MUSIC_NUM1				4	//æ’­æ”¾éŸ³ä¹ç¬¬1ç§
+#define PLAY_MUSIC_NUM2				5	//æ’­æ”¾éŸ³ä¹ç¬¬2ç§
+#define PLAY_MUSIC_NUM3				6	//æ’­æ”¾éŸ³ä¹ç¬¬3ç§
+#define PLAY_MUSIC_NUM4				7	//æ’­æ”¾éŸ³ä¹ç¬¬4ç§
 
-#define KEY_CTRL_PICTURE			12	//°´¼üÍ¼Æ¬
+#define WAIT_CTRL_NUM1				8	//ç­‰å¾…æ“ä½œç¬¬1ç§
+#define WAIT_CTRL_NUM2				9	//ç­‰å¾…æ“ä½œç¬¬2ç§
+#define WAIT_CTRL_NUM3				10	//ç­‰å¾…æ’­æ”¾çŠ¶æ€
+#define WAIT_CTRL_NUM4				11	//å£°éŸ³åœæ­¢
 
-#define SHOW_TLAK_LIGHT				13	//ÏÔÊ¾×ìµÆ
-#define CLOSE_TLAK_LIGHT			14	//¹Ø±Õ×ìµÆ
+#define KEY_CTRL_PICTURE			12	//æŒ‰é”®å›¾ç‰‡
+
+#define SHOW_TLAK_LIGHT				13	//æ˜¾ç¤ºå˜´ç¯
+#define CLOSE_TLAK_LIGHT			14	//å…³é—­å˜´ç¯
 
 
 
 #define SERIAL_SOC_PATH		"/dev/ttyS0"
 #define SPEED_SOC			9600
-#define CLOCK_TIME			3			//ÄÖÖÓÌáÇ°¿ª»úÊ±¼ä
+#define CLOCK_TIME			3			//é—¹é’Ÿæå‰å¼€æœºæ—¶é—´
 
 //#define DBG_UART
 #ifdef DBG_UART 
@@ -67,7 +70,7 @@ typedef struct {
 	unsigned char cache;
 }ReacData;
 
-typedef struct {//µ±Ç°Ê±¼ä
+typedef struct {//å½“å‰æ—¶é—´
 	unsigned char timehead;
 	unsigned char year;
 	unsigned char month;
@@ -77,19 +80,19 @@ typedef struct {//µ±Ç°Ê±¼ä
 	unsigned char chack;
 }AckTimeData;
 
-typedef struct {//¿ª¹Ø»úÊ±¼ä
+typedef struct {//å¼€å…³æœºæ—¶é—´
 	unsigned char ochead;
 	unsigned char hour;
 	unsigned char min;
 	unsigned char chack;
 }AckOCData;
 
-typedef struct {//¿ª¹Ø»úÊ±¼ä
+typedef struct {//å¼€å…³æœºæ—¶é—´
 	unsigned char ochead;
 	unsigned char chack;
 }AckOCBat;
 
-typedef struct {//¿ª¹Ø»úÊ±¼ä
+typedef struct {//å¼€å…³æœºæ—¶é—´
 	unsigned char ochead;
 	unsigned char type;
 	unsigned char chack;
@@ -104,13 +107,13 @@ typedef struct{
 
 
 /*
-@ º¯Êı¹¦ÄÜ:	³õÊ¼»¯´®¿Ú
-@ ·µ»ØÖµ: >0	³õÊ¼»¯³É¹¦¿ªÊ¼¶Á´®¿Ú
-@			-1	³õÊ¼»¯Ê§°Ü
+@ å‡½æ•°åŠŸèƒ½:	åˆå§‹åŒ–ä¸²å£
+@ è¿”å›å€¼: >0	åˆå§‹åŒ–æˆåŠŸå¼€å§‹è¯»ä¸²å£
+@			-1	åˆå§‹åŒ–å¤±è´¥
 */
 extern int init_Uart(void VoicesEvent(int event),void ack_batteryCtr(int recvdata,int power););
 extern void SocSendMenu(unsigned char str,char *senddata);
-//´®¿Ú´¦Àíº¯Êı
+//ä¸²å£å¤„ç†å‡½æ•°
 extern int Get_batteryVaule(void);
 extern int get_dc_state(void);
 

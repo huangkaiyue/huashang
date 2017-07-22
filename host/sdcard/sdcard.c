@@ -21,7 +21,7 @@ int CheckDirexistFiletype(const char * dir,const char *type){
 		return ret;	
 	}
 	while (entry = readdir(dirptr)){  
-		//È¥³ýµ±Ç°Ä¿Â¼ºÍÉÏÒ»¼¶Ä¿Â¼
+		//åŽ»é™¤å½“å‰ç›®å½•å’Œä¸Šä¸€çº§ç›®å½•
 		if( !strcmp(entry->d_name,".")||!strcmp(entry->d_name,"..") ){
 			continue;
 		}
@@ -34,7 +34,7 @@ int CheckDirexistFiletype(const char * dir,const char *type){
 	return ret;
 }
 
-//ÊÇ·ñÐ¡ÓÚSDÊ£Óà¿Õ¼äÏÂÏÞ´óÐ¡
+//æ˜¯å¦å°äºŽSDå‰©ä½™ç©ºé—´ä¸‹é™å¤§å°
 int CheckSdcardInfo(char * sdpath){
 	int Capacity =0;
 	GetStorageInfo(sdpath,&Capacity,FREE);
@@ -43,7 +43,7 @@ int CheckSdcardInfo(char * sdpath){
 	else
 		return 0;
 }
-//É¾³ý³¤Ê±¼ä²»ÓÃµÄÎÄ¼þ
+//åˆ é™¤é•¿æ—¶é—´ä¸ç”¨çš„æ–‡ä»¶
 void DelSdcardMp3file(char * sdpath){
 	char filepath[128]={0};
 	int delmp3Num=0;
@@ -58,7 +58,7 @@ void DelSdcardMp3file(char * sdpath){
 		return ;	
 	}
 	while (entry = readdir(dirptr)){  
-		//È¥³ýµ±Ç°Ä¿Â¼ºÍÉÏÒ»¼¶Ä¿Â¼
+		//åŽ»é™¤å½“å‰ç›®å½•å’Œä¸Šä¸€çº§ç›®å½•
 		if( !strcmp(entry->d_name,".")||!strcmp(entry->d_name,"..") ){
 			continue;
 		}
@@ -72,7 +72,7 @@ void DelSdcardMp3file(char * sdpath){
 		}
 		if((timep-Mp3info.st_ctime)<FILETIME){
 			continue;
-		}else{			//É¾³ý³¤Ê±¼ä²»ÓÃµÄÎÄ¼þ
+		}else{			//åˆ é™¤é•¿æ—¶é—´ä¸ç”¨çš„æ–‡ä»¶
 #if defined(QITUTU_SHI)		
 			if(remove(filepath) == 0){
 				printf("Removed %s.\n", filepath);

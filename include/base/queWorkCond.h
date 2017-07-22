@@ -24,7 +24,7 @@ extern int putMsgQueue(WorkQueue *queList,const char *msg,int msgSize);
 extern int getMsgQueue(WorkQueue *queList,char **msg,int *msgSize);
 extern void destoryQueue(WorkQueue *queList);
 
-//Ê¹ÓÃºóÌ¨Ïß³Ì£¬³õÊ¼»¯µÄº¯Êı(²»ĞèÒªÖ´ĞĞqueue_init)
+//ä½¿ç”¨åå°çº¿ç¨‹ï¼Œåˆå§‹åŒ–çš„å‡½æ•°(ä¸éœ€è¦æ‰§è¡Œqueue_init)
 extern WorkQueue *InitCondWorkPthread(void handleMsg(const char *msg,int msgSize));
 
 extern void CleanCondWorkPthread(WorkQueue *queList,void cleanMsg(const char *msg,int msgSize));

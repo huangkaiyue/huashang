@@ -3,9 +3,9 @@
 #include "../studyvoices/qtts_qisc.h"
 
 typedef struct {
-	void *data;
-	int size;
-	int type;
+	void *data;	//添加到队列的消息数据(音频or文字)
+	int size;	//添加到对接的数据大小(音频文件 对应--->文件长度  )
+	int type;	//添加到队列当中消息类型
 }WeiXinMsg;
 
 static WorkQueue *WeixinEvent=NULL;
@@ -13,8 +13,7 @@ static WeiXinMsg *Bak_Message=NULL;
 #define WEIXIN_TEXT 	1
 #define WEIXIN_VOICES	2
 
-#define WEIXIN_PLAY_LIST_MAX	20
-
+#define WEIXIN_PLAY_LIST_MAX	20	//允许当前存最大的队列数据
 
 static int __AddWeiXinMessage(const char *data,int Size,int type){
 	WeiXinMsg *msg = NULL;
@@ -54,12 +53,15 @@ static int __AddWeiXinMessage(const char *data,int Size,int type){
 
 	return putMsgQueue(WeixinEvent,msg, sizeof(WeiXinMsg));
 }
+//添加文本消息到队列当中
 int AddWeiXinMessage_Text(const char *data,int Size){
 	return __AddWeiXinMessage(data,Size,WEIXIN_TEXT);
 }
+//添加语音消息消息到队列当中
 int AddWeiXinMessage_Voices(const char *data,int Size){
 	return __AddWeiXinMessage(data,Size,WEIXIN_VOICES);
 }
+//获取微信消息队列进行播放
 int GetWeiXinMessageForPlay(void){
 	WeiXinMsg *msg = NULL;
 	char *Get=NULL;
@@ -82,7 +84,7 @@ int GetWeiXinMessageForPlay(void){
 			if(Bak_Message!=NULL){
 				if(Bak_Message->type ==WEIXIN_VOICES)
 					remove(Bak_Message->data);
-				free(Bak_Message->data);	//�ͷ���һ�λ��������
+				free(Bak_Message->data);	
 				free(Bak_Message);
 			}
 			if(msg->type ==WEIXIN_TEXT){
@@ -117,17 +119,17 @@ int GetWeiXinMessageForPlay(void){
 	}
 	return 0;
 }
-
+//初始化微信消息队列
 void InitWeixinMeesageList(void){
 	WeixinEvent = initQueue();
 	if(WeixinEvent==NULL){
 		printf("init WeixinEvent list failed \n");
 	}
 }
+//清除微信消息队列
 void CleanWeixinMeesageList(void){
 	if(WeixinEvent){
 		free(WeixinEvent);
 		WeixinEvent=NULL;
 	}
 }
-

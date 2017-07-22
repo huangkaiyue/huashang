@@ -10,14 +10,14 @@ static int playRet=-1;
 #define PLAY_FINNISH	0
 #define INTERRUPT_PLAY	-1
 
-//¿ªÊ¼ÏÂÔØ, ½Ó¿Ú¼æÈİ£¬ĞèÒªÈ¥µôstreamLen
+//å¼€å§‹ä¸‹è½½, æ¥å£å…¼å®¹ï¼Œéœ€è¦å»æ‰streamLen
 static void tulingStartDown(const char *filename,int streamLen){
 	initputPcmdata();
 	printf("filename =%s streamLen=%d\n",filename,streamLen);
 	setPlayAudioSize(streamLen);
 }
 
-//»ñÈ¡µ½Á÷Êı¾İ
+//è·å–åˆ°æµæ•°æ®
 static void  tulingGetStreamData(const char *data,int size){
 	if(playTulingEventNums!=GetCurrentEventNums()){
 		quitDownFile();
@@ -27,7 +27,7 @@ static void  tulingGetStreamData(const char *data,int size){
 	putPcmStreamToQueue((const void *)data,size);
 }
 
-//½áÊøÏÂÔØ
+//ç»“æŸä¸‹è½½
 static void  tulingEndDown(int downLen){
 	printf("tulingEndDown mp3 \n");
 }
@@ -40,10 +40,10 @@ int downTulingMp3_forPlay(HandlerText_t *handtext){
 	playTulingEventNums = handtext->EventNums;
 	enabledownNetworkVoiceState();
 	demoDownFile(handtext->data,10,tulingStartDown,tulingGetStreamData,tulingEndDown);
-	if(handtext->playLocalVoicesIndex==TULING_TEXT_MUSIC){	//±íÊ¾²¥·ÅÍ¼ÁéÇëÇóµÄ¹ÊÊÂºÍ¸èÇú
+	if(handtext->playLocalVoicesIndex==TULING_TEXT_MUSIC){	//è¡¨ç¤ºæ’­æ”¾å›¾çµè¯·æ±‚çš„æ•…äº‹å’Œæ­Œæ›²
 		RequestTulingLog((const char *)"downTulingMp3_forPlay wait play");
 		while(getPlayVoicesQueueNums()>0&&playTulingEventNums==GetCurrentEventNums()){	
-			usleep(1000);//µÈ´ıÍ¼ÁéÇ°×ºÉùÒô²¥·ÅÍê
+			usleep(1000);//ç­‰å¾…å›¾çµå‰ç¼€å£°éŸ³æ’­æ”¾å®Œ
 			printf("wait play tuling exit : state =%d getPlayVoicesQueueNums=%d\n",GetRecordeVoices_PthreadState(),getPlayVoicesQueueNums());
 		}		
 	}

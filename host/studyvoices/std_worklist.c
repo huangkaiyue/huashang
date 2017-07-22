@@ -24,42 +24,56 @@ static unsigned int cacheNetWorkPlaySize=0;
 static unsigned char playlistVoicesSate=0;
 static int event_lock=0;
 
-#define TLJSONERNUM 9.0
-
 void Lock_EventQueue(void){
 	event_lock=1;
 }
 void Unlock_EventQueue(void){
 	event_lock=0;
 }
-
-//½âÎöÍ¼ÁéÇëÇó´íÎóÄÚÈİ£¬²¥·Å±¾µØÒÑ¾­Â¼ÖÆºÃµÄÒôÆµ
-static int playTulingRequestErrorVoices(unsigned int playEventNums){
-	char buf[32]={0};
-	int i=(1+(int) (TLJSONERNUM*rand()/(RAND_MAX+1.0)));
-	snprintf(buf,32,"qtts/TulingJsonEr%d_8k.amr",i);
-	return PlaySystemAmrVoices(buf,playEventNums);
+int getLock_EventQueue(void){
+	return event_lock;
 }
 /*
-@ ½«Â¼ÖÆµÄÓïÒôÉÏ´«µ½Í¼Áé·şÎñÆ÷
-@ voicesdata ÉùÒôÊı¾İ lenÉùÒô³¤¶È voices_type ÒôÆµ¸ñÊ½(amr/pcm) 
-  asr ÇëÇó¸ñÊ½(0:pcm 3:amr) rate:ÉùÒô²ÉÑùÂÊ
-@ ÎŞ
+@ 
+@ è·å–é˜Ÿåˆ—å½“ä¸­äº‹ä»¶æ•°
+*/
+int getEventNum(void){
+	return getWorkMsgNum(EventQue);
+}
+
+/*******************************************************
+@å‡½æ•°åŠŸèƒ½:	æ·»åŠ äº‹ä»¶åˆ°é“¾è¡¨
+@å‚æ•°:	eventMsg æ•°æ®	
+@è¿”å›å€¼:	-1 æ·»åŠ å¤±è´¥ å…¶å®ƒæ·»åŠ æˆåŠŸ
+********************************************************/
+int AddworkEvent(HandlerText_t *eventMsg,int msgSize){
+	if(event_lock){
+		WriteEventlockLog("event_lock add error",event_lock);
+		return -1;
+	}
+	WriteEventlockLog("event_lock add ok",event_lock);
+	return putMsgQueue(EventQue,(const char *)eventMsg,msgSize);
+}
+/*
+@ å°†å½•åˆ¶çš„è¯­éŸ³ä¸Šä¼ åˆ°å›¾çµæœåŠ¡å™¨
+@ voicesdata å£°éŸ³æ•°æ® lenå£°éŸ³é•¿åº¦ voices_type éŸ³é¢‘æ ¼å¼(amr/pcm) 
+  asr è¯·æ±‚æ ¼å¼(0:pcm 3:amr) rate:å£°éŸ³é‡‡æ ·ç‡
+@ æ— 
 */
 void ReqTulingServer(HandlerText_t *handText,const char *voices_type,const char* asr,int rate){
 	int textSize = 0, err = 0;
 	char *text = NULL;
-	err = reqTlVoices(8,key,(const void *)handText->data, handText->dataSize, rate, voices_type,asr,&text,&textSize);//ºÄÊ±²Ù×÷
+	err = reqTlVoices(8,key,(const void *)handText->data, handText->dataSize, rate, voices_type,asr,&text,&textSize);//è€—æ—¶æ“ä½œ
 	SpeekEvent_process_log("request tuling","end",0);
-	if(GetCurrentEventNums()!=handText->EventNums){	//Èç¹ûµ±Ç°»¹ÊÇ´¦ÓÚ²¥·ÅµÈ´ıÍ¼Áé×´Ì¬£¬±íÃ÷Ã»ÓĞÆäËûÍâ²¿ÊÂ¼ş´ò¶Ï£¬Ìí¼Ó½øÈ¥²¥·ÅÇëÇóÍ¼Áé·şÎñÆ÷Ê§°Ü
+	if(GetCurrentEventNums()!=handText->EventNums){	//å¦‚æœå½“å‰è¿˜æ˜¯å¤„äºæ’­æ”¾ç­‰å¾…å›¾çµçŠ¶æ€ï¼Œè¡¨æ˜æ²¡æœ‰å…¶ä»–å¤–éƒ¨äº‹ä»¶æ‰“æ–­ï¼Œæ·»åŠ è¿›å»æ’­æ”¾è¯·æ±‚å›¾çµæœåŠ¡å™¨å¤±è´¥
 		return;
 	}
-	if (err == -1){	//ÇëÇó·şÎñÆ÷Ê§°Ü
-		Create_PlaySystemEventVoices(REQUEST_FAILED_PLAY);//²¥·ÅÇëÇó·şÎñÆ÷Êı¾İÊ§°Ü
+	if (err == -1){	//è¯·æ±‚æœåŠ¡å™¨å¤±è´¥
+		Create_PlaySystemEventVoices(REQUEST_FAILED_PLAY);//æ’­æ”¾è¯·æ±‚æœåŠ¡å™¨æ•°æ®å¤±è´¥
 		goto exit1;
 	}
 	else if (err == 1){
-		Create_PlaySystemEventVoices(TIMEOUT_PLAY_LOCALFILE);//²¥·Å±¾µØÒÑ¾­Â¼ÖÆºÃµÄÎÄ¼ş		
+		Create_PlaySystemEventVoices(TIMEOUT_PLAY_LOCALFILE);//æ’­æ”¾æœ¬åœ°å·²ç»å½•åˆ¶å¥½çš„æ–‡ä»¶		
 		goto exit1;
 	}
 	if (text){
@@ -76,9 +90,9 @@ exit1:
 	return;
 }
 /*
-²¥·ÅÍ¼ÁéÔÆ¶Ë·µ»ØµÄttsÎÄ±¾
-playUrl:ÔÆ¶ËÓïÒå½á¹û²¥·ÅÁ´½ÓµØÖ·
-playText: ÔÆ¶ËÓïÒå½âÎöÄÚÈİ
+æ’­æ”¾å›¾çµäº‘ç«¯è¿”å›çš„ttsæ–‡æœ¬
+playUrl:äº‘ç«¯è¯­ä¹‰ç»“æœæ’­æ”¾é“¾æ¥åœ°å€
+playText: äº‘ç«¯è¯­ä¹‰è§£æå†…å®¹
 */
 static int playTulingQtts(const char *playUrl,const char *playText,unsigned int playEventNums,unsigned short playLocalVoicesIndex){
 	int ret =-1;
@@ -101,8 +115,8 @@ static int playTulingQtts(const char *playUrl,const char *playText,unsigned int 
 #if defined(HUASHANG_JIAOYU)	
 	char playVoicesName[12]={0};
 	int playSpeed=0;
-	GetPlayVoicesName(playVoicesName,&playSpeed);
-	if(!strcmp(playVoicesName,"tuling")){	//µ±Ç°²¥ÒôÈË²ÉÓÃÍ¼ÁéµÄ
+	Huashang_GetPlayVoicesName(playVoicesName,&playSpeed);
+	if(!strcmp(playVoicesName,"tuling")){	//å½“å‰æ’­éŸ³äººé‡‡ç”¨å›¾çµçš„
 		ret =AddDownEvent((const char *)handtext,TULING_URL_MAIN);
 	}else{
 		char *huashangPlayText=(char *)calloc(1,strlen(playText)+8);
@@ -115,7 +129,7 @@ static int playTulingQtts(const char *playUrl,const char *playText,unsigned int 
 		PlayQttsText(playText,QTTS_UTF8,playVoicesName,playEventNums,playSpeed);	
 		free(huashangPlayText);
 		if(playLocalVoicesIndex==TULING_TEXT_MUSIC){
-			//ÉèÖÃ²¥·ÅÏß³Ì²»ÒªÇĞ»»Â¼ÒôÏß³Ì×´Ì¬£¬²»È»»áµ¼ÖÂ£¬Ìí¼Ó¸èÇúµÄÊ±ºò£¬ºóÃæµÄ¸èÇú²»ÄÜ²¥·Å
+			//è®¾ç½®æ’­æ”¾çº¿ç¨‹ä¸è¦åˆ‡æ¢å½•éŸ³çº¿ç¨‹çŠ¶æ€ï¼Œä¸ç„¶ä¼šå¯¼è‡´ï¼Œæ·»åŠ æ­Œæ›²çš„æ—¶å€™ï¼Œåé¢çš„æ­Œæ›²ä¸èƒ½æ’­æ”¾
 			while(1){
 				if(getPlaylistVoicesSate()==END_PLAY_VOICES_LIST){
 					ret=0;
@@ -142,10 +156,10 @@ static int playTulingQtts(const char *playUrl,const char *playText,unsigned int 
 	return ret;
 }
 /*******************************************
-@º¯Êı¹¦ÄÜ:	json½âÎö·şÎñÆ÷Êı¾İ
-@²ÎÊı:	pMsg	·şÎñÆ÷Êı¾İ
-@		textString	½âÎöºóµÄÊı¾İ
-@·µ»ØÖµ:	0	³É¹¦	ÆäËûÕûÊı¶¼ÊÇ´íÎóÂë
+@å‡½æ•°åŠŸèƒ½:	jsonè§£ææœåŠ¡å™¨æ•°æ®
+@å‚æ•°:	pMsg	æœåŠ¡å™¨æ•°æ®
+@		textString	è§£æåçš„æ•°æ®
+@è¿”å›å€¼:	0	æˆåŠŸ	å…¶ä»–æ•´æ•°éƒ½æ˜¯é”™è¯¯ç 
 ***********************************************/
 static int parseJson_string(HandlerText_t *handText){
 	int err=-1;
@@ -157,10 +171,9 @@ static int parseJson_string(HandlerText_t *handText){
 	if(NULL == pJson){
     		goto exit1;
     }
-	cJSON *pSub = cJSON_GetObjectItem(pJson, "token");//»ñÈ¡tokenµÄÖµ£¬ÓÃÓÚÏÂÒ»´ÎÇëÇóÊ±ÉÏ´«µÄĞ£ÑéÖµ
+	cJSON *pSub = cJSON_GetObjectItem(pJson, "token");//è·å–tokençš„å€¼ï¼Œç”¨äºä¸‹ä¸€æ¬¡è¯·æ±‚æ—¶ä¸Šä¼ çš„æ ¡éªŒå€¼
 	if(pSub!=NULL){
-		//ÔİÊ±¶¨Òå£¬ÓÃÓÚÁÙÊ±´æ·ÅĞ£ÑéÖµ£¬Ã¿ÇëÇóÒ»´Î·şÎñÆ÷¶¼·µ»Øtoken
-		updateTokenValue((const char *) pSub->valuestring);
+		updateTokenValue((const char *) pSub->valuestring);//æš‚æ—¶å®šä¹‰ï¼Œç”¨äºä¸´æ—¶å­˜æ”¾æ ¡éªŒå€¼ï¼Œæ¯è¯·æ±‚ä¸€æ¬¡æœåŠ¡å™¨éƒ½è¿”å›token
 	}
 #ifndef HUASHANG_JIAOYU
     pSub = cJSON_GetObjectItem(pJson, "code");
@@ -170,33 +183,28 @@ static int parseJson_string(HandlerText_t *handText){
 	}
 	DEBUG_STD_MSG("code : %d\n", pSub->valueint);
 	switch(pSub->valueint){
-		case 40001:	//²ÎÊıÎª¿Õ
-		case 40002:	//ÒôÆµÎª¿Õ
-		case 40003:	//²ÎÊıÈ±Ê§
-		case 40004: 	//²ÎÊı²»ÊÇ±ê×¼µÄ json ÎÄ±¾
-		case 40005:	//ÎŞ·¨½âÎö¸ÃÒôÆµÎÄ¼ş	
-		case 40006:	//²ÎÊı´íÎó
-		case 40007: 	//ÎŞĞ§µÄ Key
+		case 40001:		//å‚æ•°ä¸ºç©º
+		case 40002:		//éŸ³é¢‘ä¸ºç©º
+		case 40003:		//å‚æ•°ç¼ºå¤±
+		case 40004:	 	//å‚æ•°ä¸æ˜¯æ ‡å‡†çš„ json æ–‡æœ¬
+		case 40005:		//æ— æ³•è§£æè¯¥éŸ³é¢‘æ–‡ä»¶	
+		case 40006:		//å‚æ•°é”™è¯¯
+		case 40007: 	//æ— æ•ˆçš„ Key
 		case 40008:
-		case 40009:	//·ÃÎÊÊÜÏŞ
-		case 40010:	//Token ´íÎó ,²¥·ÅÍ¼Áé´íÎóÄÚÈİ
+		case 40009:		//è®¿é—®å—é™
+		case 40010:		//Token é”™è¯¯ ,æ’­æ”¾å›¾çµé”™è¯¯å†…å®¹
 			goto exit2;
-		case 40011: 	//·Ç·¨ÇëÇó
-		case 40012:	//·şÎñÊÜÏŞ
-		case 40013: 	//È±ÉÙ Token
-			if(playTulingRequestErrorVoices(handText->EventNums)){	//Íâ²¿ÊÂ¼ş´ò¶Ï£¬²»ÄÜÇĞ»»Â¼ÒôÏß³Ì×´Ì¬
-				goto exit0;
-			}else{
-				goto exit1;
-			}
+		case 40011: 	//éæ³•è¯·æ±‚
+		case 40012:		//æœåŠ¡å—é™
+		case 40013: 	//ç¼ºå°‘ Token
 	}
 #endif	
-	pSub = cJSON_GetObjectItem(pJson, "info");		//·µ»ØÊ¶±ğµÄºº×Ö½á¹û 
+	pSub = cJSON_GetObjectItem(pJson, "info");		//è¿”å›è¯†åˆ«çš„æ±‰å­—ç»“æœ 
     if(NULL == pSub){
 		DEBUG_STD_MSG("get info failed\n");
 		goto exit1;
     }
-	if(pSub->valuestring==NULL){	//µ±³öÏÖ "info":{}  --->ÕâÖÖ×Ö¶Î£¬»áÓöµ½¿ÕÖ¸Õë
+	if(pSub->valuestring==NULL){	//å½“å‡ºç° "info":{}  --->è¿™ç§å­—æ®µï¼Œä¼šé‡åˆ°ç©ºæŒ‡é’ˆ
 		pSub = cJSON_GetObjectItem(pJson, "text");
 		if(pSub==NULL||pSub->valuestring==NULL){
 			goto exit1;
@@ -206,10 +214,10 @@ static int parseJson_string(HandlerText_t *handText){
 	}
 	char *infoText = pSub->valuestring;
 	
-	DEBUG_STD_MSG("info: %s\n",pSub->valuestring);			//ÓïÒôÊ¶±ğ³öÀ´µÄºº×Ö	
+	DEBUG_STD_MSG("info: %s\n",pSub->valuestring);			//è¯­éŸ³è¯†åˆ«å‡ºæ¥çš„æ±‰å­—	
 	SpeekEvent_process_log("get tuling text",pSub->valuestring,0);
 	char getPlayMusicName[128]={0};
-	pSub = cJSON_GetObjectItem(pJson, "text");				//½âÎöµ½ÓïÒô½á¹û
+	pSub = cJSON_GetObjectItem(pJson, "text");				//è§£æåˆ°è¯­éŸ³ç»“æœ
 	if(NULL == pSub){
 		DEBUG_STD_MSG("get text failed\n");
 		goto exit1;
@@ -217,7 +225,7 @@ static int parseJson_string(HandlerText_t *handText){
 	int cmd = CheckinfoText_forContorl(infoText,(const char *)pSub->valuestring,getPlayMusicName);
 	SpeekEvent_process_log("CheckinfoText_forContorl ","check cmd",cmd);
 	if(cmd<0){
-	}else{//ÕıÈ·¼ÓÔØÀïÃæµÄÎÄ×ÖÄÚÈİ£¬²¥·ÅÏµÍ³Òô
+	}else{//æ­£ç¡®åŠ è½½é‡Œé¢çš„æ–‡å­—å†…å®¹ï¼Œæ’­æ”¾ç³»ç»ŸéŸ³
 		if(HandlerPlay_checkTextResult(cmd,(const char *)getPlayMusicName,handText->EventNums)){
 			SpeekEvent_process_log("HandlerPlay_checkTextResult","exit0",cmd);
 			goto exit0;
@@ -228,20 +236,20 @@ static int parseJson_string(HandlerText_t *handText){
 	}
 exit2:	
 	DEBUG_STD_MSG("text: %s\n",pSub->valuestring);
-	pSub = cJSON_GetObjectItem(pJson, "ttsUrl");		//½âÎöµ½Ëµ»°µÄÄÚÈİµÄÁ´½ÓµØÖ·£¬ĞèÒªÏÂÔØ²¥·Å
-    if(NULL == pSub||pSub->valuestring==NULL||(!strcmp(pSub->valuestring,""))){	//Èç¹û³öÏÖ¿ÕµÄÁ´½ÓµØÖ·£¬Ö±½ÓÌø³ö
+	pSub = cJSON_GetObjectItem(pJson, "ttsUrl");		//è§£æåˆ°è¯´è¯çš„å†…å®¹çš„é“¾æ¥åœ°å€ï¼Œéœ€è¦ä¸‹è½½æ’­æ”¾
+    if(NULL == pSub||pSub->valuestring==NULL||(!strcmp(pSub->valuestring,""))){	//å¦‚æœå‡ºç°ç©ºçš„é“¾æ¥åœ°å€ï¼Œç›´æ¥è·³å‡º
 		DEBUG_STD_MSG("get fileUrl failed\n");
 		goto exit1;
     }
 	DEBUG_STD_MSG("ttsUrl: %s \n",pSub->valuestring);
 	char *ttsURL= pSub->valuestring;
 	
-	pSub = cJSON_GetObjectItem(pJson, "fileUrl"); 	//¼ì²éÊÇ·ñÓĞmp3¸èÇú·µ»Ø£¬Èç¹ûÓĞ
-	if(NULL == pSub){	//Ö±½Ó²¥·ÅÓïÒåÖ®ºóµÄ½á¹û
+	pSub = cJSON_GetObjectItem(pJson, "fileUrl"); 	//æ£€æŸ¥æ˜¯å¦æœ‰mp3æ­Œæ›²è¿”å›ï¼Œå¦‚æœæœ‰
+	if(NULL == pSub){	//ç›´æ¥æ’­æ”¾è¯­ä¹‰ä¹‹åçš„ç»“æœ
 		SpeekEvent_process_log("playTulingQtts ","start play text",0);
 		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums,TULING_TEXT);
-	}else{				//Ê¶±ğ³öÓĞÓïÒå½á¹ûºÍmp3Á´½ÓµØÖ·½á¹û£¬ÏÈ²¥·ÅÇ°ÃæµÄÓïÒåÄÚÈİ£¬ÔÙ²¥·Åmp3Á´½ÓµØÖ·ÄÚÈİ
-		if(!strcmp(pSub->valuestring,"")){//Èç¹û³öÏÖ¿ÕµÄÁ´½ÓµØÖ·£¬Ö±½ÓÌø³ö
+	}else{				//è¯†åˆ«å‡ºæœ‰è¯­ä¹‰ç»“æœå’Œmp3é“¾æ¥åœ°å€ç»“æœï¼Œå…ˆæ’­æ”¾å‰é¢çš„è¯­ä¹‰å†…å®¹ï¼Œå†æ’­æ”¾mp3é“¾æ¥åœ°å€å†…å®¹
+		if(!strcmp(pSub->valuestring,"")){//å¦‚æœå‡ºç°ç©ºçš„é“¾æ¥åœ°å€ï¼Œç›´æ¥è·³å‡º
 			goto exit1;
 		}
 		Player_t *player=(Player_t *)calloc(1,sizeof(Player_t));
@@ -250,7 +258,6 @@ exit2:
 			goto exit1;
 		}
 		snprintf(player->playfilename,128,"%s",pSub->valuestring);
-		//snprintf(player->playfilename,128,"%s","");
 		snprintf(player->musicname,64,"%s","speek");
 		player->musicTime = 0;
 		SpeekEvent_process_log((const char *)"play tuling music url:",pSub->valuestring,0);
@@ -263,8 +270,7 @@ exit2:
 			free((void *)player);
 			goto exit0;	
 		}
-		//Ìí¼Ó¸èÇúÒ²Òª±ê¼Çµ±Ç°ÊÂ¼ş±àºÅ
-		handMainMusic->EventNums =handText->EventNums;
+		handMainMusic->EventNums =handText->EventNums;//æ·»åŠ æ­Œæ›²ä¹Ÿè¦æ ‡è®°å½“å‰äº‹ä»¶ç¼–å·
 		handMainMusic->data=(char *)player;
 		AddDownEvent((const char *)handMainMusic,TULING_URL_VOICES);
 	}
@@ -277,8 +283,8 @@ exit0:
 	return err;
 }
 /******************************************************
-@º¯Êı¹¦ÄÜ:	Ñ§Ï°ÒôÊÂ¼ş´¦Àíº¯Êı
-@²ÎÊı:	data Êı¾İ len Êı¾İ´óĞ¡
+@å‡½æ•°åŠŸèƒ½:	å­¦ä¹ éŸ³äº‹ä»¶å¤„ç†å‡½æ•°
+@å‚æ•°:	data æ•°æ® len æ•°æ®å¤§å°
 *******************************************************/
 static void runJsonEvent(HandlerText_t *handText){
 	start_event_play_wav();
@@ -287,37 +293,14 @@ static void runJsonEvent(HandlerText_t *handText){
 	free((void *)handText);
 }
 
-/*******************************************************
-@º¯Êı¹¦ÄÜ:	Ìí¼ÓÊÂ¼şµ½Á´±í
-@²ÎÊı:	eventMsg Êı¾İ	
-@·µ»ØÖµ:	-1 Ìí¼ÓÊ§°Ü ÆäËüÌí¼Ó³É¹¦
-********************************************************/
-int AddworkEvent(HandlerText_t *eventMsg,int msgSize){
-	if(event_lock){
-		WriteEventlockLog("event_lock add error",event_lock);
-		return -1;
-	}
-	WriteEventlockLog("event_lock add ok",event_lock);
-	return putMsgQueue(EventQue,(const char *)eventMsg,msgSize);
-}
-int GetEvent_lock(void){
-	return event_lock;
-}
 /*
 @ 
-@ »ñÈ¡¶ÓÁĞµ±ÖĞÊÂ¼şÊı
-*/
-int getEventNum(void){
-	return getWorkMsgNum(EventQue);
-}
-/*
-@ 
-@ Çå³ı¶ÓÁĞÀïÃæ¶àÓàµÄÊÂ¼ş
+@ æ¸…é™¤é˜Ÿåˆ—é‡Œé¢å¤šä½™çš„äº‹ä»¶
 */
 void cleanQuequeEvent(void){
 	char *msg;
 	int msgSize;
-	event_lock=1;	//ÊÜ±£»¤×´Ì¬ÊÂ¼ş
+	event_lock=1;	//å—ä¿æŠ¤çŠ¶æ€äº‹ä»¶
 	while(getWorkMsgNum(EventQue)){
 		getMsgQueue(EventQue,&msg,&msgSize);
 		if(msg!=NULL){
@@ -328,34 +311,34 @@ void cleanQuequeEvent(void){
 	event_lock=0;
 }
 /*******************************************************
-@º¯Êı¹¦ÄÜ:	ÊÂ¼ş´¦Àíº¯Êı
-@²ÎÊı:	data Êı¾İ	msgSizeÊÂ¼şÀàĞÍÒÔ¼°Êı¾İ´óĞ¡½á¹¹Ìå
+@å‡½æ•°åŠŸèƒ½:	äº‹ä»¶å¤„ç†å‡½æ•°
+@å‚æ•°:	data æ•°æ®	msgSizeäº‹ä»¶ç±»å‹ä»¥åŠæ•°æ®å¤§å°ç»“æ„ä½“
 ********************************************************/
 static void HandleEventMessage(const char *data,int msgSize){
 	HandlerText_t *handText = (HandlerText_t *)data;
 	switch(handText->event){
-		case STUDY_WAV_EVENT:		//»á»°ÊÂ¼ş
+		case STUDY_WAV_EVENT:		//ä¼šè¯äº‹ä»¶
 			newEventNums=handText->EventNums;
 			runJsonEvent((HandlerText_t *)data);
 			break;
 			
-		case SYS_VOICES_EVENT:		//ÏµÍ³ÒôÊÂ¼ş
-			start_event_play_wav();	//ÇĞ»»³ÉwavÄ£Ê½£¬²¥·ÅÏµÍ³ÒôÕı³£ÍË³ö£¬Ôò×Ô¶¯ÇĞ»»µ½¹ÒÆğ×´Ì¬£¬·ñÔò±£Áô×îĞÂ´ò¶Ï×´Ì¬
+		case SYS_VOICES_EVENT:		//ç³»ç»ŸéŸ³äº‹ä»¶
+			start_event_play_wav();	//åˆ‡æ¢æˆwavæ¨¡å¼ï¼Œæ’­æ”¾ç³»ç»ŸéŸ³æ­£å¸¸é€€å‡ºï¼Œåˆ™è‡ªåŠ¨åˆ‡æ¢åˆ°æŒ‚èµ·çŠ¶æ€ï¼Œå¦åˆ™ä¿ç•™æœ€æ–°æ‰“æ–­çŠ¶æ€
 			Handle_PlaySystemEventVoices(handText->playLocalVoicesIndex,handText->EventNums);
 			break;
 			
-		case SET_RATE_EVENT:		//URLÇåÀíÊÂ¼ş
-			event_lock=1;			//ÊÜ±£»¤×´Ì¬ÊÂ¼ş
-			WriteEventlockLog("start",event_lock);
+		case SET_RATE_EVENT:		//URLæ¸…ç†äº‹ä»¶
+			Lock_EventQueue();			//å—ä¿æŠ¤çŠ¶æ€äº‹ä»¶
+			WriteEventlockLog("start",getLock_EventQueue());
 			SetMainQueueLock(MAIN_QUEUE_LOCK);
 			NetStreamExitFile();
 			SetWm8960Rate(RECODE_RATE,(const char *)"HandleEventMessage SET_RATE_EVENT");
-			event_lock=0;
+			Unlock_EventQueue();
 			pause_record_audio();
-			WriteEventlockLog("SET_RATE_EVENT end",event_lock);
+			WriteEventlockLog("SET_RATE_EVENT end",getLock_EventQueue());
 			break;
 			
-		case URL_VOICES_EVENT:		//URLÍøÂç²¥·ÅÊÂ¼ş
+		case URL_VOICES_EVENT:		//URLç½‘ç»œæ’­æ”¾äº‹ä»¶
 			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		
 			NetStreamExitFile();
 			start_event_play_Mp3music();
@@ -364,19 +347,19 @@ static void HandleEventMessage(const char *data,int msgSize){
 			sleep(3);
 			break;
 			
-		case LOCAL_MP3_EVENT:		//±¾µØÒôÀÖ²¥·ÅÊÂ¼ş
-			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//È¥³ıÇåÀíËø
+		case LOCAL_MP3_EVENT:		//æœ¬åœ°éŸ³ä¹æ’­æ”¾äº‹ä»¶
+			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//å»é™¤æ¸…ç†é”
 			NetStreamExitFile();
 			start_event_play_Mp3music();
 			AddDownEvent((const char *)data,LOCAL_MP3_EVENT);
 			DEBUG_STD_MSG("handle_event_msg LOCAL_MP3_EVENT add end\n");
 			break;		
-		case QTTS_PLAY_EVENT:		//QTTSÊÂ¼ş
+		case QTTS_PLAY_EVENT:		//QTTSäº‹ä»¶
 			newEventNums=handText->EventNums;
 			Handler_PlayQttsEvent(handText);
 			break;
 
-		case SPEEK_VOICES_EVENT:	//½ÓÊÕµ½ÓïÒôÏûÏ¢	
+		case SPEEK_VOICES_EVENT:	//æ¥æ”¶åˆ°è¯­éŸ³æ¶ˆæ¯	
 			//showFacePicture(WEIXIN_PICTURE);
 			PlayWeixin_SpeekAmrFileVoices(handText->data,handText->EventNums,handText->mixMode);
 			usleep(1000);
@@ -384,7 +367,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			free((void *)handText);
 			break;
 			
-		case TALK_EVENT_EVENT:		//¶Ô½²ÊÂ¼ş
+		case TALK_EVENT_EVENT:		//å¯¹è®²äº‹ä»¶
 			Handle_WeixinSpeekEvent(handText->playLocalVoicesIndex,handText->EventNums);
 			break;		
 		default:
@@ -393,7 +376,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 	}
 }
 /*
-@  Çå³ı¶ÓÁĞÏûÏ¢
+@  æ¸…é™¤é˜Ÿåˆ—æ¶ˆæ¯
 */
 static void CleanEventMessage(const char *data,int msgSize){
 #if 0
@@ -411,14 +394,14 @@ static void CleanEventMessage(const char *data,int msgSize){
 
 void putPcmDataToPlay(const void * data,int size){
 	cacheNetWorkPlaySize+=size;
-	putMsgQueue(PlayList,data,size); //Ìí¼Óµ½²¥·Å¶ÓÁĞ	
+	putMsgQueue(PlayList,data,size); //æ·»åŠ åˆ°æ’­æ”¾é˜Ÿåˆ—	
 }
 int getPlayVoicesQueueNums(void){
 	return getWorkMsgNum(PlayList);
 }
 #if 1
-//²¥·ÅÍêÖ®ºó±£³Öµ±Ç°Â¼Òô×´Ì¬,Ö÷ÒªÓÃÓÚµ±Óöµ½ÓïÒôµã²¥Í¼Áé¸èÇúÊ±ºò£¬²¥·ÅÍêÇ°×ºÒô£¬
-//¼ÌĞø²¥·ÅÍ¼Áé¸èÇú,ÇĞ»»²ÉÑùÂÊ£¬²»ĞèÒª²¥·Å°´¼üÒô
+//æ’­æ”¾å®Œä¹‹åä¿æŒå½“å‰å½•éŸ³çŠ¶æ€,ä¸»è¦ç”¨äºå½“é‡åˆ°è¯­éŸ³ç‚¹æ’­å›¾çµæ­Œæ›²æ—¶å€™ï¼Œæ’­æ”¾å®Œå‰ç¼€éŸ³ï¼Œ
+//ç»§ç»­æ’­æ”¾å›¾çµæ­Œæ›²,åˆ‡æ¢é‡‡æ ·ç‡ï¼Œä¸éœ€è¦æ’­æ”¾æŒ‰é”®éŸ³
 void enabledownNetworkVoiceState(void){
 	downState=1;
 }
@@ -433,15 +416,15 @@ static void *PlayVoicesPthread(void *arg){
 	unsigned short playNetwork_pos=0;
 	playlistVoicesSate=START_PLAY_VOICES_LIST;
 	int i=0,pcmSize=0,CleanendVoicesNums=0;
-	int CacheNums=0;//±£´æ´ò¶ÏÕâ´Î²¥·ÅÖ®ºó»º´æ¶ÓÁĞnums Êı
+	int CacheNums=0;//ä¿å­˜æ‰“æ–­è¿™æ¬¡æ’­æ”¾ä¹‹åç¼“å­˜é˜Ÿåˆ—nums æ•°
 	PlayList = initQueue();
 	char *data=NULL; 
 	while(1){
 		switch(playlistVoicesSate){
 			case START_PLAY_VOICES_LIST:
 				//printf("getPlayVoicesQueueNums=%d\n",getWorkMsgNum(PlayList));
-				if(getWorkMsgNum(PlayList)==0){	//µ±Ç°¶ÓÁĞÎª¿Õ£¬¹ÒÆğ²¥·Å	
-					if(playNetwork_pos!=0){		//²¥·ÅÎ²Òô
+				if(getWorkMsgNum(PlayList)==0){	//å½“å‰é˜Ÿåˆ—ä¸ºç©ºï¼ŒæŒ‚èµ·æ’­æ”¾	
+					if(playNetwork_pos!=0){		//æ’­æ”¾å°¾éŸ³
 						memset(play_buf+playNetwork_pos,0,I2S_PAGE_SIZE-playNetwork_pos);
 						write_pcm(play_buf);
 					}
@@ -486,9 +469,9 @@ static void *PlayVoicesPthread(void *arg){
 							write_pcm(play_buf);
 							playNetwork_pos=0;
 						}
-						if(newEventNums!=GetCurrentEventNums()){	//µ±Ç°²¥·ÅÊÂ¼ş±àºÅºÍ×îĞÂÊÂ¼ş±àºÅ
+						if(newEventNums!=GetCurrentEventNums()){	//å½“å‰æ’­æ”¾äº‹ä»¶ç¼–å·å’Œæœ€æ–°äº‹ä»¶ç¼–å·
 							Mute_voices(MUTE);
-							CleanendVoicesNums=4;	//Çå³ıÎ²²¿Êı¾İÆ¬
+							CleanendVoicesNums=4;	//æ¸…é™¤å°¾éƒ¨æ•°æ®ç‰‡
 							playlistVoicesSate=INTERRUPT_PLAY_VOICES_LIST;
 							CacheNums =getWorkMsgNum(PlayList);
 							break;
@@ -502,7 +485,7 @@ static void *PlayVoicesPthread(void *arg){
 					playlistVoicesSate=CLEAN_PLAY_VOICES_LIST;
 				}
 #ifdef HUASHANG_JIAOYU
-				for(i=0;i<2;i++){	//Ğ´Èë¿ÕµÄÒôÆµÊı¾İ£¬³åµôÖ®Ç°´æÁôµÄÔÓÒô
+				for(i=0;i<2;i++){	//å†™å…¥ç©ºçš„éŸ³é¢‘æ•°æ®ï¼Œå†²æ‰ä¹‹å‰å­˜ç•™çš„æ‚éŸ³
 					memset(play_buf,0,I2S_PAGE_SIZE);
 					write_pcm(play_buf);
 				}
@@ -530,7 +513,7 @@ exit0:
 }
 
 /*
-@  ³õÊ¼»¯ÊÂ¼ş´¦ÀíÏûÏ¢Ïß³Ì ,´´½¨Ò»¼ş¶ÓÁĞ ,¶ÓÁĞÃûÎªEventQue
+@  åˆå§‹åŒ–äº‹ä»¶å¤„ç†æ¶ˆæ¯çº¿ç¨‹ ,åˆ›å»ºä¸€ä»¶é˜Ÿåˆ— ,é˜Ÿåˆ—åä¸ºEventQue
 */
 void InitEventMsgPthread(void){
 	EventQue = InitCondWorkPthread(HandleEventMessage);
@@ -540,7 +523,7 @@ void InitEventMsgPthread(void){
 	}
 }
 /*
-@  Çå³ıÊÂ¼ş´¦ÀíÏûÏ¢Ïß³Ì
+@  æ¸…é™¤äº‹ä»¶å¤„ç†æ¶ˆæ¯çº¿ç¨‹
 */
 void CleanEventMsgPthread(void){
 	playlistVoicesSate=EXIT_PLAY_VOICES_LIST;

@@ -3,11 +3,11 @@
 
 #define	HUASHANG_MUSIC_TOTAL_NUM 	3838
 
-#define UNKOWN_AIFI_STATE	0	//³õÊ¼×´Ì¬
-#define	TULING_AIFI_OK		1	//Í¼ÁéÇëÇó³É¹¦×´Ì¬
-#define	XUNFEI_AIFI_OK		2	//Ñ¶·ÉÇëÇó³É¹¦×´Ì¬
-#define XUNFEI_AIFI_FAILED	3	//Ñ¶·ÉÊ¶±ğÊ§°Ü×´Ì¬
-#define XUNFEI_AIFI_ING		4	//Ñ¶·ÉÕıÔÚÊ¶±ğ×´Ì¬
+#define UNKOWN_AIFI_STATE	0	//åˆå§‹çŠ¶æ€
+#define	TULING_AIFI_OK		1	//å›¾çµè¯·æ±‚æˆåŠŸçŠ¶æ€
+#define	XUNFEI_AIFI_OK		2	//è®¯é£è¯·æ±‚æˆåŠŸçŠ¶æ€
+#define XUNFEI_AIFI_FAILED	3	//è®¯é£è¯†åˆ«å¤±è´¥çŠ¶æ€
+#define XUNFEI_AIFI_ING		4	//è®¯é£æ­£åœ¨è¯†åˆ«çŠ¶æ€
 
 #define ALLOW_TULING_PLAY	0
 #define DISABLE_TULING_PLAY	-1
@@ -16,20 +16,27 @@
 typedef struct{
 	unsigned char playVoicesNameNums;
 	unsigned char dirMenu;
-	int PlayHuashang_MusicIndex;	//²¥·Å»ªÉÏ½ÌÓı¸èÇúÏÂ±í±àºÅ 
+	int PlayHuashang_MusicIndex;	//æ’­æ”¾åä¸Šæ•™è‚²æ­Œæ›²ä¸‹è¡¨ç¼–å· 
 	int Huashang_MusicTotal;
 }HuashangUser_t;
 
-//¿ª»ú¼ÓÔØ»ªÉÏ½ÌÓıÄÚÈİ
-extern void openSystemload_huashangData(void);
-//»ñÈ¡sdard ÄÚÈİ½øĞĞ²¥·Å
-extern int GetScard_forPlayHuashang_Music(unsigned char playMode,unsigned char EventSource);
-//¹Ø»ú±£´æ»ªÉÏÊı¾İ
-extern void closeSystemSave_huashangData(void);
-//´´½¨²¥·ÅÒôÀÖÁĞ±í
-extern void CreatePlayListMuisc(const void *data,int musicType);
-
+//------------------------------------------------------------------------------
+//æ›´æ–°å½“å‰ç›®å½•,å¹¶æ’­æ”¾
+extern void Huahang_SelectDirMenu(void);
+//æ ¹æ®å½“å‰æ’­æ”¾ç´¢å¼•ï¼Œæ›´æ–°ç›®å½•
+extern int Huashang_Update_DirMenu(int PlayHuashang_MusicIndex);
+//è·å–sdcard æ­Œæ›²ç¼–å·è¿›è¡Œæ’­æ”¾
+extern int Huashang_GetScard_forPlayMusic(unsigned char playMode,unsigned char EventSource);
+extern void Huashang_updatePlayindex(int playIndex);
 extern void Huashang_changePlayVoicesName(void);
+extern int Huashang_WeiXinplayMusic(int playIndex);
+/**è·å–æ’­éŸ³äºº**/
+extern void Huashang_GetPlayVoicesName(char *playVoicesName,int *speek);
+//å¼€æœºè·å–åä¸Šæ•™è‚²å†…å®¹æ’­æ”¾è®°å½•
+extern void Huashang_loadSystemdata(void);
+extern void Huashang_Init(void);
+//å…³æœºä¿å­˜åä¸Šæ•™è‚²å†…å®¹æ’­æ”¾è®°å½•æ•°æ®
+extern void Huashang_closeSystemSavedata(void);
 
 
 #endif

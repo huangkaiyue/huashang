@@ -96,7 +96,7 @@ void WriteLocalserver_Version(const char *versionMessage){
 #ifdef ENABLE_LOG	
 	FILE *fp = fopen("/log/localerverVersion.log","w+");
 	if(fp){
-		fwrite(versionMessage,1,strlen(versionMessage),fp);//写入当前版本
+		fwrite(versionMessage,1,strlen(versionMessage),fp);//鍐欏叆褰撳墠鐗堟湰
 		fclose(fp);
 	}	
 #endif

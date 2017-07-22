@@ -4,113 +4,133 @@
 #include "config.h"
 
 /*******************************************************************************
-¹Ì¶¨ºÏ³ÉµÄÒôÆµÎÄ¼ş
+å›ºå®šåˆæˆçš„éŸ³é¢‘æ–‡ä»¶
 *******************************************************************************/
-#define NO_NETWORK_VOICES 	"qtts/no_network_8k.amr"		//Çë°ïÎÒÁ¬½ÓÍøÂç
-#define START_SYS_VOICES	"qtts/start_haha_talk_8k.amr"	//Æô¶¯Òô
-#define END_SYS_VOICES		"qtts/end_haha_talk_8k.amr"		//½áÊøÒô
+#define NO_NETWORK_VOICES 	"qtts/no_network_8k.amr"		//è¯·å¸®æˆ‘è¿æ¥ç½‘ç»œ
+#define START_SYS_VOICES	"qtts/start_haha_talk_8k.amr"	//å¯åŠ¨éŸ³
+#define END_SYS_VOICES		"qtts/end_haha_talk_8k.amr"		//ç»“æŸéŸ³
 
-#define RESET_HOST_V		"qtts/reset_host_8k.amr"		//Ç×£¬»Ö¸´³ö³§ÉèÖÃµ±ÖĞ£¬ÇëÎğ¶Ïµç
-#define REQUEST_FAILED		"qtts/request_failed_8k.amr"	//ÇëÇó·şÎñÆ÷Êı¾İÊ§°Ü
+#define RESET_HOST_V		"qtts/reset_host_8k.amr"		//äº²ï¼Œæ¢å¤å‡ºå‚è®¾ç½®å½“ä¸­ï¼Œè¯·å‹¿æ–­ç”µ
+#define REQUEST_FAILED		"qtts/request_failed_8k.amr"	//è¯·æ±‚æœåŠ¡å™¨æ•°æ®å¤±è´¥
 
-#define CHANGE_NETWORK		"qtts/change_network_8k.amr"	//ÕıÔÚÁ¬½Ó£¬ÇëÉÔµÈ
-#define CONNET_TIME			"qtts/waittime_network_8k.amr"	//ÁªÍø¹ı¶ÉÒô
-#define START_INTERNET		"qtts/start_internet_8K.amr"	//¿ªÊ¼ÅäÍø£¬Çë·¢ËÍwifiÃûÒÔ¼°ÃÜÂë
-#define CHECK_INTERNET		"qtts/check_internet_8K.amr"	//ÕıÔÚ¼ì²éÍøÂçÊÇ·ñ¿ÉÓÃ£¬¿ÉµÈ´ı£¬»òÖØĞÂÅäÍø
+#define CHANGE_NETWORK		"qtts/change_network_8k.amr"	//æ­£åœ¨è¿æ¥ï¼Œè¯·ç¨ç­‰
+#define CONNET_TIME			"qtts/waittime_network_8k.amr"	//è”ç½‘è¿‡æ¸¡éŸ³
+#define START_INTERNET		"qtts/start_internet_8K.amr"	//å¼€å§‹é…ç½‘ï¼Œè¯·å‘é€wifiåä»¥åŠå¯†ç 
+#define CHECK_INTERNET		"qtts/check_internet_8K.amr"	//æ­£åœ¨æ£€æŸ¥ç½‘ç»œæ˜¯å¦å¯ç”¨ï¼Œå¯ç­‰å¾…ï¼Œæˆ–é‡æ–°é…ç½‘
 
-#define CHECK_WIFI			"qtts/check_wifi_8K.amr"		//¼ì²éWiFi
-#define CHECK_WIFI_WAIT		"qtts/check_wifi_wait_8K.amr"	//¼ì²éWiFi¹ı¶ÉÒô
-#define CHECK_WIFI_NO		"qtts/check_wifi_no_8K.amr"		//¼ì²éWiFi
-#define CHECK_WIFI_YES		"qtts/check_wifi_yes_8K.amr"	//¼ì²éWiFi
+#define CHECK_WIFI			"qtts/check_wifi_8K.amr"		//æ£€æŸ¥WiFi
+#define CHECK_WIFI_WAIT		"qtts/check_wifi_wait_8K.amr"	//æ£€æŸ¥WiFiè¿‡æ¸¡éŸ³
+#define CHECK_WIFI_NO		"qtts/check_wifi_no_8K.amr"		//æ£€æŸ¥WiFi
+#define CHECK_WIFI_YES		"qtts/check_wifi_yes_8K.amr"	//æ£€æŸ¥WiFi
 
-#define LINK_SUCCESS		"qtts/link_conect_8k.amr"		//Á¬½Ó³É¹¦,ÎÒÃÇÀ´ÁÄÌì°É!!
-#define ERROR_INTER			"qtts/error_internet_8k.amr"	//ÄúµÄÍøÂçÓĞÎó£¬Çë¼ì²éÍøÂç²¢ÖØĞÂÁ¬½Ó
-#define ERROR_PASSWORD		"qtts/error_password_8k.amr"	//ÄúÊäÈëµÄÃÜÂëÓĞÎó£¬ÇëÖØĞÂÊäÈë
-#define NO_WIFI		        "qtts/NO_WIFI_8k.amr"			//ÎŞ·¨É¨Ãèµ½ÄúµÄwifi,Çë¼ì²éÄúµÄÍøÂç
-#define NOT_REAVWIFI		"qtts/not_reavwifi_8K.amr"		//Ã»ÓĞÊÕµ½Äã·¢ËÍµÄwifi£¬ÇëÖØĞÂ·¢ËÍÒ»±é
-#define YES_REAVWIFI		"qtts/yes_reavwifi_8K.amr"		//³É¹¦ÊÕµ½Äã·¢ËÍµÄwifi
+#define LINK_SUCCESS		"qtts/link_conect_8k.amr"		//è¿æ¥æˆåŠŸ,æˆ‘ä»¬æ¥èŠå¤©å§!!
+#define ERROR_INTER			"qtts/error_internet_8k.amr"	//æ‚¨çš„ç½‘ç»œæœ‰è¯¯ï¼Œè¯·æ£€æŸ¥ç½‘ç»œå¹¶é‡æ–°è¿æ¥
+#define ERROR_PASSWORD		"qtts/error_password_8k.amr"	//æ‚¨è¾“å…¥çš„å¯†ç æœ‰è¯¯ï¼Œè¯·é‡æ–°è¾“å…¥
+#define NO_WIFI		        "qtts/NO_WIFI_8k.amr"			//æ— æ³•æ‰«æåˆ°æ‚¨çš„wifi,è¯·æ£€æŸ¥æ‚¨çš„ç½‘ç»œ
+#define NOT_REAVWIFI		"qtts/not_reavwifi_8K.amr"		//æ²¡æœ‰æ”¶åˆ°ä½ å‘é€çš„wifiï¼Œè¯·é‡æ–°å‘é€ä¸€é
+#define YES_REAVWIFI		"qtts/yes_reavwifi_8K.amr"		//æˆåŠŸæ”¶åˆ°ä½ å‘é€çš„wifi
 
-#define TULING_DIDI			"qtts/TuLin_Di_8K.amr"			//¶£
-#define TULING_WINT			"qtts/TuLin_Wint_8K.amr"		//ÇëÉÔµÈ  
-#define TULING_WINTXUNFEI	"qtts/TuLin_WintXunfei_8K.amr"	//Õâ¸öÎÊÌâÓĞµãÄÑ£¬ÎÒÔÚÎÊÎÒµÄÖÇ»ÛÒ¯Ò¯
-#define TULING_HAHAXIONG	"qtts/TuLin_Hahaxiong_8K.amr"	//ÎÒ½Ğ¹ş¹şĞÜ£¬´ÏÃ÷ÓÖ¿É°®µÄ¹ş¹şĞÜ
+#define TULING_DIDI			"qtts/TuLin_Di_8K.amr"			//å®
+#define TULING_WINT			"qtts/TuLin_Wint_8K.amr"		//è¯·ç¨ç­‰  
+#define TULING_WINTXUNFEI	"qtts/TuLin_WintXunfei_8K.amr"	//è¿™ä¸ªé—®é¢˜æœ‰ç‚¹éš¾ï¼Œæˆ‘åœ¨é—®æˆ‘çš„æ™ºæ…§çˆ·çˆ·
+#define TULING_HAHAXIONG	"qtts/TuLin_Hahaxiong_8K.amr"	//æˆ‘å«å“ˆå“ˆç†Šï¼Œèªæ˜åˆå¯çˆ±çš„å“ˆå“ˆç†Š
 #define LOW_BATTERY			"qtts/low_battery_8K.amr"
 
-#define NO_VOICES			"qtts/no_voices_8K.amr"			//ÉÏ´«Êı¾İĞ¡ÓÚ0.5Ãë
-#define NO_VOICES_1			"qtts/no_voices_8K_1.amr"		//ÉÏ´«Êı¾İĞ¡ÓÚ0.5Ãë
-#define NO_VOICES_2			"qtts/no_voices_8K_2.amr"		//ÉÏ´«Êı¾İĞ¡ÓÚ0.5Ãë
-#define NO_VOICES_3			"qtts/no_voices_8K_3.amr"		//ÉÏ´«Êı¾İĞ¡ÓÚ0.5Ãë
-#define NO_VOICES_4			"qtts/no_voices_8K_4.amr"		//ÉÏ´«Êı¾İĞ¡ÓÚ0.5Ãë
-#define NO_VOICES_5			"qtts/no_voices_8K_5.amr"		//ÉÏ´«Êı¾İĞ¡ÓÚ0.5Ãë
-#define NO_VOICES_6			"qtts/no_voices_8K_6.amr"		//ÉÏ´«Êı¾İĞ¡ÓÚ0.5Ãë
-#define NO_VOICES_7			"qtts/no_voices_8K_7.amr"		//ÉÏ´«Êı¾İĞ¡ÓÚ0.5Ãë
-#define NO_VOICES_8			"qtts/no_voices_8K_8.amr"		//ÉÏ´«Êı¾İĞ¡ÓÚ0.5Ãë
-#define NO_VOICES_9			"qtts/no_voices_8K_9.amr"		//ÉÏ´«Êı¾İĞ¡ÓÚ0.5Ãë
+#define NO_VOICES			"qtts/no_voices_8K.amr"			//ä¸Šä¼ æ•°æ®å°äº0.5ç§’
+#define NO_VOICES_1			"qtts/no_voices_8K_1.amr"		//ä¸Šä¼ æ•°æ®å°äº0.5ç§’
+#define NO_VOICES_2			"qtts/no_voices_8K_2.amr"		//ä¸Šä¼ æ•°æ®å°äº0.5ç§’
+#define NO_VOICES_3			"qtts/no_voices_8K_3.amr"		//ä¸Šä¼ æ•°æ®å°äº0.5ç§’
+#define NO_VOICES_4			"qtts/no_voices_8K_4.amr"		//ä¸Šä¼ æ•°æ®å°äº0.5ç§’
+#define NO_VOICES_5			"qtts/no_voices_8K_5.amr"		//ä¸Šä¼ æ•°æ®å°äº0.5ç§’
+#define NO_VOICES_6			"qtts/no_voices_8K_6.amr"		//ä¸Šä¼ æ•°æ®å°äº0.5ç§’
+#define NO_VOICES_7			"qtts/no_voices_8K_7.amr"		//ä¸Šä¼ æ•°æ®å°äº0.5ç§’
+#define NO_VOICES_8			"qtts/no_voices_8K_8.amr"		//ä¸Šä¼ æ•°æ®å°äº0.5ç§’
+#define NO_VOICES_9			"qtts/no_voices_8K_9.amr"		//ä¸Šä¼ æ•°æ®å°äº0.5ç§’
 
-#define UPDATA_END			"qtts/end_updata_8K.amr"		//¸üĞÂ¹Ì¼ş½áÊø
+#define UPDATA_END			"qtts/end_updata_8K.amr"		//æ›´æ–°å›ºä»¶ç»“æŸ
 
-#define SEND_OK				"qtts/send_ok_8K.amr"			//·¢ËÍ³É¹¦
-#define SEND_ERROR			"qtts/send_error_8K.amr"		//·¢ËÍÊ§°Ü
-#define SEND_LINK			"qtts/send_link_8K.amr"			//ÕıÔÚ·¢ËÍ
+#define SEND_OK				"qtts/send_ok_8K.amr"			//å‘é€æˆåŠŸ
+#define SEND_ERROR			"qtts/send_error_8K.amr"		//å‘é€å¤±è´¥
+#define SEND_LINK			"qtts/send_link_8K.amr"			//æ­£åœ¨å‘é€
 
 #define KEY_VOICE_DOWN		"qtts/key_down_8K.amr"			//
 #define KEY_VOICE_UP		"qtts/key_up_8K.amr"			//
 
-#define PLAY_ERROR			"qtts/play_error_8K.amr"		//²¥·ÅÊ§°Ü
-#define LIKE_ERROR			"qtts/like_error_8K.amr"		//µ±Ç°Ã»ÓĞÏ²°®ÄÚÈİ£¬¿ìÈ¥ÊÕ²ØÏ²°®ÄÚÈİ°É
-#define TF_ERROR			"qtts/tf_error_8K.amr"			//tf¿¨¼ÓÔØÊ§°Ü
+#define PLAY_ERROR			"qtts/play_error_8K.amr"		//æ’­æ”¾å¤±è´¥
+#define LIKE_ERROR			"qtts/like_error_8K.amr"		//å½“å‰æ²¡æœ‰å–œçˆ±å†…å®¹ï¼Œå¿«å»æ”¶è—å–œçˆ±å†…å®¹å§
+#define TF_ERROR			"qtts/tf_error_8K.amr"			//tfå¡åŠ è½½å¤±è´¥
 
-#define NETWORK_ERROR_1		"qtts/network_error_8K_1.amr"		//ÍøÂçÁ¬½ÓÊ§°Ü
-#define NETWORK_ERROR_2		"qtts/network_error_8K_2.amr"		//ÍøÂçÁ¬½ÓÊ§°Ü
-#define NETWORK_ERROR_3		"qtts/network_error_8K_3.amr"		//ÍøÂçÁ¬½ÓÊ§°Ü
-#define NETWORK_ERROR_4		"qtts/network_error_8K_4.amr"		//ÍøÂçÁ¬½ÓÊ§°Ü
-#define NETWORK_ERROR_5		"qtts/network_error_8K_5.amr"		//ÍøÂçÁ¬½ÓÊ§°Ü
+#define NETWORK_ERROR_1		"qtts/network_error_8K_1.amr"		//ç½‘ç»œè¿æ¥å¤±è´¥
+#define NETWORK_ERROR_2		"qtts/network_error_8K_2.amr"		//ç½‘ç»œè¿æ¥å¤±è´¥
+#define NETWORK_ERROR_3		"qtts/network_error_8K_3.amr"		//ç½‘ç»œè¿æ¥å¤±è´¥
+#define NETWORK_ERROR_4		"qtts/network_error_8K_4.amr"		//ç½‘ç»œè¿æ¥å¤±è´¥
+#define NETWORK_ERROR_5		"qtts/network_error_8K_5.amr"		//ç½‘ç»œè¿æ¥å¤±è´¥
 //=============================================================================
-#define VOICE_ADD			"qtts/voice_add_8K.amr"				//ÒôÁ¿¼ÓÉèÖÃ³É¹¦¡£
-#define VOICE_SUB			"qtts/voice_sub_8K.amr"				//ÒôÁ¿¼õÉèÖÃ³É¹¦¡£
-#define SPEEK_WARNING		"qtts/speek_warning_8K.amr"			//Ğ¡ÅóÓÑ£¬ÄãÈ¥ÄÄÀïÁË£¬ºÍÎÒÒ»ÆğÀ´Íæ°É!!
-#define WELCOME_PLAY		"qtts/welcome_play_8K.amr"			//À´×Ô¿ªÆÕÀÕĞÇÇòµÄĞ¡ÅàÀÏÊ¦ÕıÔÚ¼ì²éÍøÂç
-#define TIMEOUT_music		"qtts/timeOut_music.amr"			//Òª²»ÎÒÃÇ½ñÌìÌıÒ»ÏÂ¸èÇú
-#define TIMEOUT_guoxue		"qtts/timeOut_guoxue.amr"			//Òª²»ÎÒÃÇ½ñÌìÑ§Ï°Ò»ÏÂ¹úÑ§ÄÚÈİ°É£¬ÎÒµÄ¹úÑ§ÖªÊ¶ºÜ·á¸»µÄ!
-#define TIMEOUT_chengyu		"qtts/timeOut_chengyu.amr"			//Òª²»ÎÒÃÇ½ñÌìÑ§Ï°Ò»ÏÂ³ÉÓï
-#define TIMEOUT_baike		"qtts/timeOut_baike.amr"			//ÉÏÖªÌìÎÄ£¬ÏÂÖªµØÀí£¬ÎÒ¸øÄã½²°Ù¿ÆÖªÊ¶°É!
-#define TIMEOUT_sleep		"qtts/timeOut_sleep.amr"			//Ğ¡ÅóÓÑ½ñÌìÒÑ¾­ºÜÍíÁË£¬ÔçË¯ÔçÆğ×öÒ»¸ö¹Ô±¦±¦£¬ÎÒ¸øÄã·ÅË¯ÃßÇú°É!
+#define VOICE_ADD			"qtts/voice_add_8K.amr"				//éŸ³é‡åŠ è®¾ç½®æˆåŠŸã€‚
+#define VOICE_SUB			"qtts/voice_sub_8K.amr"				//éŸ³é‡å‡è®¾ç½®æˆåŠŸã€‚
+#define SPEEK_WARNING		"qtts/speek_warning_8K.amr"			//å°æœ‹å‹ï¼Œä½ å»å“ªé‡Œäº†ï¼Œå’Œæˆ‘ä¸€èµ·æ¥ç©å§!!
+#define WELCOME_PLAY		"qtts/welcome_play_8K.amr"			//æ¥è‡ªå¼€æ™®å‹’æ˜Ÿçƒçš„å°åŸ¹è€å¸ˆæ­£åœ¨æ£€æŸ¥ç½‘ç»œ
+#define TIMEOUT_music		"qtts/timeOut_music.amr"			//è¦ä¸æˆ‘ä»¬ä»Šå¤©å¬ä¸€ä¸‹æ­Œæ›²
+#define TIMEOUT_guoxue		"qtts/timeOut_guoxue.amr"			//è¦ä¸æˆ‘ä»¬ä»Šå¤©å­¦ä¹ ä¸€ä¸‹å›½å­¦å†…å®¹å§ï¼Œæˆ‘çš„å›½å­¦çŸ¥è¯†å¾ˆä¸°å¯Œçš„!
+#define TIMEOUT_chengyu		"qtts/timeOut_chengyu.amr"			//è¦ä¸æˆ‘ä»¬ä»Šå¤©å­¦ä¹ ä¸€ä¸‹æˆè¯­
+#define TIMEOUT_baike		"qtts/timeOut_baike.amr"			//ä¸ŠçŸ¥å¤©æ–‡ï¼Œä¸‹çŸ¥åœ°ç†ï¼Œæˆ‘ç»™ä½ è®²ç™¾ç§‘çŸ¥è¯†å§!
+#define TIMEOUT_sleep		"qtts/timeOut_sleep.amr"			//å°æœ‹å‹ä»Šå¤©å·²ç»å¾ˆæ™šäº†ï¼Œæ—©ç¡æ—©èµ·åšä¸€ä¸ªä¹–å®å®ï¼Œæˆ‘ç»™ä½ æ”¾ç¡çœ æ›²å§!
 
-#define BIND_SSID			"qtts/bind_ssid_8K.amr"				//³É¹¦ÊÕµ½Ğ¡»ï°éµÄ°ó¶¨ÇëÇó¡£
-#define BIND_OK				"qtts/bind_ok_8K.amr"				//³É¹¦´¦ÀíĞ¡»ï°éµÄ°ó¶¨ÇëÇó¡£
-#define SEND_LINK_ER		"qtts/send_linkerror_8K.amr"		//µ±Ç°ÍøÂç»·¾³²î£¬ÓïÒô·¢ËÍÊ§°Ü£¬Çë¼ì²éÍøÂç¡£
-#define TALK_CONFIRM		"qtts/talk_confirm_8K.amr"			//ÔÚ¼ÒÃ´£¬ÔÚ¼ÒÃ´£¬ÓĞÈËÔÚ¼ÒÃ´£¬ÓĞÖØÒªÏûÏ¢Í¨ÖªÄãÓ´£¬Çë°´°´¼ü»Ø¸´ÎÒ¡£
-#define TALK_CONFIRM_OK		"qtts/talk_confirm_ok_8K.amr"		//È·ÈÏÏûÏ¢»Ø¸´³É¹¦£¬Çë·¢ÉÏ´«ÓïÒô¡£
-#define TALK_CONFIRM_ER		"qtts/talk_confirm_er_8K.amr"		//µ±Ç°»¹Ã»ÓĞÈËºô½ĞÄã¡£
+#define BIND_SSID			"qtts/bind_ssid_8K.amr"				//æˆåŠŸæ”¶åˆ°å°ä¼™ä¼´çš„ç»‘å®šè¯·æ±‚ã€‚
+#define BIND_OK				"qtts/bind_ok_8K.amr"				//æˆåŠŸå¤„ç†å°ä¼™ä¼´çš„ç»‘å®šè¯·æ±‚ã€‚
+#define SEND_LINK_ER		"qtts/send_linkerror_8K.amr"		//å½“å‰ç½‘ç»œç¯å¢ƒå·®ï¼Œè¯­éŸ³å‘é€å¤±è´¥ï¼Œè¯·æ£€æŸ¥ç½‘ç»œã€‚
+#define TALK_CONFIRM		"qtts/talk_confirm_8K.amr"			//åœ¨å®¶ä¹ˆï¼Œåœ¨å®¶ä¹ˆï¼Œæœ‰äººåœ¨å®¶ä¹ˆï¼Œæœ‰é‡è¦æ¶ˆæ¯é€šçŸ¥ä½ å“Ÿï¼Œè¯·æŒ‰æŒ‰é”®å›å¤æˆ‘ã€‚
+#define TALK_CONFIRM_OK		"qtts/talk_confirm_ok_8K.amr"		//ç¡®è®¤æ¶ˆæ¯å›å¤æˆåŠŸï¼Œè¯·å‘ä¸Šä¼ è¯­éŸ³ã€‚
+#define TALK_CONFIRM_ER		"qtts/talk_confirm_er_8K.amr"		//å½“å‰è¿˜æ²¡æœ‰äººå‘¼å«ä½ ã€‚
 
 #ifdef DOWN_IMAGE
-#define DOWNLOAD_ING		"qtts/download_ing_8K.amr"			//ÕıÔÚÏÂÔØ¹Ì¼ş¡£
-#define DOWNLOAD_ERROE		"qtts/download_error_8K.amr"		//ÏÂÔØ¹Ì¼ş´íÎó¡£
-#define DOWNLOAD_END		"qtts/download_end_8K.amr"			//ÏÂÔØ¹Ì¼ş½áÊø¡£
-#define DOWNLOAD_25			"qtts/download_25_8K.amr"			//ÏÂÔØµ½°Ù·ÖÖ®¶şÊ®Îå¡£
-#define DOWNLOAD_50			"qtts/download_50_8K.amr"			//ÏÂÔØµ½°Ù·ÖÖ®ÎåÊ®¡£
-#define DOWNLOAD_75			"qtts/download_75_8K.amr"			//ÏÂÔØµ½°Ù·ÖÖ®ÆßÊ®Îå¡£
-#define UPDATA_NEW			"qtts/updata_new_8K.amr"			//ÓĞĞÂ°æ±¾£¬ĞèÒª¸üĞÂ¡£
-#define UPDATA_START		"qtts/updata_start_8K.amr"			//¿ªÊ¼¸üĞÂ¹Ì¼ş¡£
-#define UPDATA_ERROR		"qtts/updata_error_8K.amr"			//¸üĞÂ¹Ì¼ş´íÎó¡£
+#define DOWNLOAD_ING		"qtts/download_ing_8K.amr"			//æ­£åœ¨ä¸‹è½½å›ºä»¶ã€‚
+#define DOWNLOAD_ERROE		"qtts/download_error_8K.amr"		//ä¸‹è½½å›ºä»¶é”™è¯¯ã€‚
+#define DOWNLOAD_END		"qtts/download_end_8K.amr"			//ä¸‹è½½å›ºä»¶ç»“æŸã€‚
+#define DOWNLOAD_25			"qtts/download_25_8K.amr"			//ä¸‹è½½åˆ°ç™¾åˆ†ä¹‹äºŒåäº”ã€‚
+#define DOWNLOAD_50			"qtts/download_50_8K.amr"			//ä¸‹è½½åˆ°ç™¾åˆ†ä¹‹äº”åã€‚
+#define DOWNLOAD_75			"qtts/download_75_8K.amr"			//ä¸‹è½½åˆ°ç™¾åˆ†ä¹‹ä¸ƒåäº”ã€‚
+#define UPDATA_NEW			"qtts/updata_new_8K.amr"			//æœ‰æ–°ç‰ˆæœ¬ï¼Œéœ€è¦æ›´æ–°ã€‚
+#define UPDATA_START		"qtts/updata_start_8K.amr"			//å¼€å§‹æ›´æ–°å›ºä»¶ã€‚
+#define UPDATA_ERROR		"qtts/updata_error_8K.amr"			//æ›´æ–°å›ºä»¶é”™è¯¯ã€‚
 #endif
-#define PLAY_CONTINUE_MUSIC			"qtts/please_playmusic.amr"	//Çë¼ÌĞøµã²¥°É
-#define PLAY_START_HUASHANG_MUSIC	"qtts/start_10.amr"			//Ã¿Íí8µã°ëĞ¡ÅàÀÏÊ¦¶¼»áµ½ÄãµÄ´²±ß¸øÄã½²ºÃÌıµÄ¹ÊÊÂ,ºÇºÇ,µ½Ê±½ĞÉÏÂèÂèÒ»Æğ°É£¡
+#define PLAY_CONTINUE_MUSIC			"qtts/please_playmusic.amr"	//è¯·ç»§ç»­ç‚¹æ’­å§
+#define PLAY_START_HUASHANG_MUSIC	"qtts/start_10.amr"			//æ¯æ™š8ç‚¹åŠå°åŸ¹è€å¸ˆéƒ½ä¼šåˆ°ä½ çš„åºŠè¾¹ç»™ä½ è®²å¥½å¬çš„æ•…äº‹,å‘µå‘µ,åˆ°æ—¶å«ä¸Šå¦ˆå¦ˆä¸€èµ·å§ï¼
 
-#define REBOOT_SYSTEM		"qtts/reboot_system.amr"			//ÏµÍ³ÕıÔÚÓÅ»¯£¬ÖØĞÂÆô¶¯£¬ÇëÉÔºó
+#define REBOOT_SYSTEM		"qtts/reboot_system.amr"			//ç³»ç»Ÿæ­£åœ¨ä¼˜åŒ–ï¼Œé‡æ–°å¯åŠ¨ï¼Œè¯·ç¨å
+
+#define AMR_9_START_PLAY			"qtts/9.amr"		//9ã€æˆ‘çš„å¤§è„‘ç¨‹åºæ­£åœ¨å¯åŠ¨ä¸­ï¼Œè¯·è€å¿ƒç­‰å¾…ä¸€ä¸‹å§ï¼
+#define AMR_10_START_PLAY			"qtts/10.amr"		//10ã€æˆ‘çš„å¤§è„‘ç¨‹åºæ­£åœ¨å¼€æœºä¸­ï¼Œè¯·è€å¿ƒç­‰å¾…ä¸€ä¸‹å§ï¼
+#define AMR_11_START_SYSTEM_OK		"qtts/11.amr"		//11ã€å¯åŠ¨æˆåŠŸ	
+
+#define AMR_12_NOT_NETWORK			"qtts/12.amr"		//12ã€å°æœ‹å‹ä½ å¯ä»¥è®©çˆ¸çˆ¸å¦ˆå¦ˆå¸®æˆ‘è¿æ¥ç½‘ç»œï¼Œæˆ‘æ‰ä¼šæ›´èªæ˜å“¦ï¼
+#define AMR_13_NOT_NETWORK			"qtts/13.amr"		//13ã€å°åŸ¹è€å¸ˆä¸åä¸Šæ€»éƒ¨è¯¾å ‚å¤±å»è”ç³»ï¼Œæƒ…å†µåä¸‡ç«æ€¥ï¼Œè¯·æŒ‰wifié…ç½‘é”®å¸®åŠ©å°åŸ¹è€å¸ˆä¸åä¸Šæ€»éƒ¨è¯¾å ‚å–å¾—è”ç³»å§ï¼
+#define AMR_14_NOT_NETWORK			"qtts/14.amr"		//14ã€å½“å‰æ²¡æœ‰ç½‘ç»œï¼Œè¯·å¸®æˆ‘è¿æ¥ç½‘ç»œå§ï¼
+#define AMR_15_START_CONFIG			"qtts/15.amr"		//15ã€å¼€å§‹é…ç½‘ï¼Œè¯·å‘é€wifiåä»¥åŠå¯†ç ï¼
+#define AMR_16_CONNET_ING			"qtts/16.amr"		//16ã€æ­£åœ¨å°è¯•è¿æ¥ç½‘ç»œï¼Œè¯·ç¨ç­‰ï¼
+#define AMR_17_NETWORK_1			"qtts/17.amr"		//17ã€è¢«å¼ºå¤§çš„ç½‘ç»œåŒ…å›´
+#define AMR_18_CONNET_ING			"qtts/18.amr"		//18ã€å°åŸ¹è€å¸ˆæ­£åœ¨åŠªåŠ›ä¸æ€»éƒ¨è¯¾å ‚è¿æ¥ä¸­ï¼Œè¯·ç¨ç­‰ï¼
+#define AMR_19_CONNET_ING			"qtts/19.amr"		//19ã€ç½‘ç»œæ­£åœ¨è¿æ¥ä¸­ï¼Œè¯·è€å¿ƒç­‰ä¸€ä¼šå„¿å§ï¼
+#define AMR_20_CONNET_OK			"qtts/20.amr"		//20ã€å°åŸ¹è€å¸ˆä¸æ€»éƒ¨è¯¾å ‚è¿æ¥æˆåŠŸï¼Œæˆ‘ä»¬æ¥èŠå¤©å§ï¼
+
+
+#define AMR_20_NOT_SCAN_WIFI		"qtts/21.amr"		//21ã€æ— æ³•æ‰«æåˆ°æ‚¨çš„wifi,è¯·æ£€æŸ¥æ‚¨çš„ç½‘ç»œ
+#define AMR_20_NOT_RECV_WIFI		"qtts/22.amr"		//22ã€æ²¡æœ‰æ”¶åˆ°ä½ å‘é€çš„wifi,è¯·é‡æ–°å‘é€ä¸€é
+#define AMR_20_CHECK_NETWORk		"qtts/23.amr"		//23ã€æ­£åœ¨æ£€æŸ¥ç½‘ç»œæ˜¯å¦å¯ç”¨ï¼Œè¯·ç­‰å¾…ï¼Œæˆ–é‡æ–°é…ç½‘ã€‚ï¼ˆæ³¨ï¼šå¼€æœºè¿‡ç¨‹ç¦»wifiè¿œã€æˆ–è€…åˆ°æ–°çš„ç¯å¢ƒï¼Œå‡ºç°è¿æ¥ä¸ä¸Šï¼‰
+
 /*******************************************************************************
-ÁãÊ±ÒôÆµÎÄ¼şÂ·¾¶
+é›¶æ—¶éŸ³é¢‘æ–‡ä»¶è·¯å¾„
 *******************************************************************************/
-#define CACHE_CHAR_TO_VOICES		"/home/char.wav"				//app¶Ë·¢ËÍ¹ıÀ´ĞèÒªÁãÊ±×ª»»Êä³öºº×ÖÂ·¾¶
-#define VOICES_QTTS_PATH_SINGLE		"/home/tts_voices_single.pcm"  	//»ñÈ¡qttsµ¥ÉùµÀÊı¾İ
-#define QTTS_TULING_TEXT_PATH		"/home/qtts.wav"				//qtts ºº×Ö×ªÓïÒôÁãÊ±Êä³öÎÄ¼ş				
-#define QTTS_LONG_TEXT_PATH			"/home/qlist"					//qtts ºº×Ö×ªÓïÒôÁãÊ±Êä³öÎÄ¼ş				
+#define CACHE_CHAR_TO_VOICES		"/home/char.wav"				//appç«¯å‘é€è¿‡æ¥éœ€è¦é›¶æ—¶è½¬æ¢è¾“å‡ºæ±‰å­—è·¯å¾„
+#define VOICES_QTTS_PATH_SINGLE		"/home/tts_voices_single.pcm"  	//è·å–qttså•å£°é“æ•°æ®
+#define QTTS_TULING_TEXT_PATH		"/home/qtts.wav"				//qtts æ±‰å­—è½¬è¯­éŸ³é›¶æ—¶è¾“å‡ºæ–‡ä»¶				
+#define QTTS_LONG_TEXT_PATH			"/home/qlist"					//qtts æ±‰å­—è½¬è¯­éŸ³é›¶æ—¶è¾“å‡ºæ–‡ä»¶				
 #define SAVE_WAV_VOICES_DATA		"/home/send_file.wav"
 #define AMR_WAV_FILE				"/home/amr_to_wav.wav"
 #define SINGLE_TO_DOUBLE			"/home/double.wav"
 
 /*******************************************************************************
-±£´æapp¶Ë·¢ËÍ¹ıÀ´µÄÒôÆµÎÄ¼ş Â·¾¶
+ä¿å­˜appç«¯å‘é€è¿‡æ¥çš„éŸ³é¢‘æ–‡ä»¶ è·¯å¾„
 *******************************************************************************/
 #define CACHE_WAV_PATH		"/upload/"
 

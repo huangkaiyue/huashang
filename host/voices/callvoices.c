@@ -9,14 +9,10 @@
 #include "../studyvoices/qtts_qisc.h"
 #include "config.h"
 #include "uart/uart.h"
-
-#if defined(HUASHANG_JIAOYU)
 #include "huashangMusic.h"
-#endif
-static RecoderVoices_t *RV=NULL;
 
-//Ä¬ÈÏÒôÆµÍ·²¿Êı¾İ
-struct wave_pcm_hdr pcmwavhdr = {
+static RecoderVoices_t *RV=NULL;
+struct wave_pcm_hdr pcmwavhdr = {//é»˜è®¤éŸ³é¢‘wavå¤´éƒ¨æ•°æ®
 	{ 'R', 'I', 'F', 'F' },
 	0,
 	{'W', 'A', 'V', 'E'},
@@ -32,7 +28,7 @@ struct wave_pcm_hdr pcmwavhdr = {
 	0  
 };
 
-//½«Â¼ÖÆµÄ8kÓïÒô×ª»»³É16kÓïÒô
+//å°†å½•åˆ¶çš„8kè¯­éŸ³è½¬æ¢æˆ16kè¯­éŸ³
 static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen){
 	int pos=0,npos=0;
 	for(pos=0;pos<inputLen;pos+=2){
@@ -53,14 +49,14 @@ unsigned int updateCurrentEventNums(void){
 }
 
 /*****************************************************
-*»ñÈ¡×´Ì¬
+*è·å–çŠ¶æ€
 *****************************************************/
 int GetRecordeVoices_PthreadState(void){
 	return RV->recorde_live;
 }
 
 /*****************************************************
-*ÉèÖÃ×´Ì¬
+*è®¾ç½®çŠ¶æ€
 *****************************************************/
 static void SetRecordeVoices_PthreadState(unsigned char state){
 	printf("%s: recorde_live %d  %d \n",__func__,RV->recorde_live,state);
@@ -68,13 +64,13 @@ static void SetRecordeVoices_PthreadState(unsigned char state){
 }
 
 /*****************************************************
-*¿ªÆôÓïÒôÊ¶±ğ×´Ì¬
+*å¼€å¯è¯­éŸ³è¯†åˆ«çŠ¶æ€
 *****************************************************/
 void StartTuling_RecordeVoices(void){	
 	SetRecordeVoices_PthreadState(START_SPEEK_VOICES);
 }
 /*****************************************************
-*½áÊøÓïÒôÊ¶±ğ×´Ì¬
+*ç»“æŸè¯­éŸ³è¯†åˆ«çŠ¶æ€
 *****************************************************/
 void StopTuling_RecordeVoices(void){
 	if(GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES){
@@ -83,7 +79,7 @@ void StopTuling_RecordeVoices(void){
 	}
 }
 /*****************************************************
-*½øÈë²¥·ÅwavÔ­Ê¼Êı¾İ×´Ì¬
+*è¿›å…¥æ’­æ”¾wavåŸå§‹æ•°æ®çŠ¶æ€
 *****************************************************/
 void start_event_play_wav(void){
 	SetRecordeVoices_PthreadState(PLAY_WAV);
@@ -95,18 +91,18 @@ void start_play_tuling(void){
 	SetRecordeVoices_PthreadState(PLAY_DING_VOICES);
 }
 /*****************************************************
-*½øÈë²¥·ÅMp3music×´Ì¬
+*è¿›å…¥æ’­æ”¾Mp3musicçŠ¶æ€
 *****************************************************/
 void start_event_play_Mp3music(void){
 	SetRecordeVoices_PthreadState(PLAY_MP3_MUSIC);
 }
-//»ìÒô²¥·Å
+//æ··éŸ³æ’­æ”¾
 void start_event_play_soundMix(void){
 	SetRecordeVoices_PthreadState(SOUND_MIX_PLAY);
 }
 
 /*****************************************************
-*ÔİÍ£Â¼Òô×´Ì¬
+*æš‚åœå½•éŸ³çŠ¶æ€
 *****************************************************/
 void pause_record_audio(void){
 	SetRecordeVoices_PthreadState(RECODE_PAUSE);
@@ -135,7 +131,7 @@ void closeSystem(unsigned char eventInterrupt){
 		showFacePicture(WAIT_CTRL_NUM1);
 	}
 #else
-	SetMucClose_Time(1);	//ÉèÖÃÒ»·ÖÖÓºó¹Ø»ú
+	SetMucClose_Time(1);	//è®¾ç½®ä¸€åˆ†é’Ÿåå…³æœº
 #endif
 }
 void SleepRecoder_Phthread(void){
@@ -149,19 +145,20 @@ int SleepSystem(void){
 	}
 	return 0;
 }
-//¼ì²é²¢»½ĞÑµ±Ç°ÏµÍ³
+//æ£€æŸ¥å¹¶å”¤é†’å½“å‰ç³»ç»Ÿ
 int  checkAndWakeupSystem(void){
 	if(RV->recorde_live==HUASHANG_SLEEP){
 		RV->WaitSleep =SYSTEM_INIT;
 		pause_record_audio();
-		//ĞèÒª²¥·Å»½ĞÑÉùÒô
+		//éœ€è¦æ’­æ”¾å”¤é†’å£°éŸ³
+		Create_PlayImportVoices(1000);
 		return -1;
 	}
 	return 0;
 }
 
 /*****************************************************
-*Â¼ÖÆ¶ÌÏûÏ¢×´Ì¬
+*å½•åˆ¶çŸ­æ¶ˆæ¯çŠ¶æ€
 ******************************************************/
 void start_event_talk_message(void){
 	SetRecordeVoices_PthreadState(START_TAIK_MESSAGE);
@@ -175,8 +172,8 @@ static void *uploadPcmPthread(void *arg){
 	return NULL;
 }
 /****************************************
-@º¯Êı¹¦ÄÜ:	¿ªÊ¼ÉÏ´«ÓïÒôµ½·şÎñÆ÷
-@²ÎÊı:	ÎŞ
+@å‡½æ•°åŠŸèƒ½:	å¼€å§‹ä¸Šä¼ è¯­éŸ³åˆ°æœåŠ¡å™¨
+@å‚æ•°:	æ— 
 *****************************************/
 static void Start_uploadVoicesData(void){
 	if(RV->uploadState==START_UPLOAD){
@@ -185,7 +182,7 @@ static void Start_uploadVoicesData(void){
 		return ;
 	}
 	RV->uploadState = START_UPLOAD;
-	start_play_tuling();	//ÉèÖÃµ±Ç°²¥·Å×´Ì¬Îª : ²¥·ÅÉÏ´«ÇëÇó
+	start_play_tuling();	//è®¾ç½®å½“å‰æ’­æ”¾çŠ¶æ€ä¸º : æ’­æ”¾ä¸Šä¼ è¯·æ±‚
 #if defined(HUASHANG_JIAOYU)
 
 //#else
@@ -204,13 +201,13 @@ static void Start_uploadVoicesData(void){
 	}
 }
 /****************************************
-@º¯Êı¹¦ÄÜ:	´¦Àí²É¼¯Êı¾İº¯Êı
-@²ÎÊı:	data ²É¼¯µ½µÄÊı¾İ  size Êı¾İ´óĞ¡
+@å‡½æ•°åŠŸèƒ½:	å¤„ç†é‡‡é›†æ•°æ®å‡½æ•°
+@å‚æ•°:	data é‡‡é›†åˆ°çš„æ•°æ®  size æ•°æ®å¤§å°
 *****************************************/
 static void Save_VoicesPackt(const char *data,int size){
 	int i;
 	if(data != NULL){
-		if((RV->len_voices+size) > (STD_RECODE_SIZE-WAV_HEAD)){//´óÓÚ5ÃëµÄÒôÆµ¶ªµô
+		if((RV->len_voices+size) > (STD_RECODE_SIZE-WAV_HEAD)){//å¤§äº5ç§’çš„éŸ³é¢‘ä¸¢æ‰
 			printf("%s > STD_RECODE_SIZE RV->len_voices=%d\n",__func__,RV->len_voices);
 			SpeekEvent_process_log((const char *)"STD_RECODE_SIZE","is >5s",RV->len_voices);
 			goto exit1;
@@ -221,9 +218,9 @@ static void Save_VoicesPackt(const char *data,int size){
 		//}
 #endif
 #if 0		
-		//Ö»ÓĞÓĞÉùµÀÓĞÊı¾İ£¬×óÉùµÀÃ»ÓĞ£¬ĞèÒª¿½±´2¡¢3Á½¸öÊı¾İ
+		//åªæœ‰æœ‰å£°é“æœ‰æ•°æ®ï¼Œå·¦å£°é“æ²¡æœ‰ï¼Œéœ€è¦æ‹·è´2ã€3ä¸¤ä¸ªæ•°æ®
 		for(i=2; i<size; i+=4){
-			//Ë«ÉùµÀÊı¾İ×ª³Éµ¥ÉùµÀÊı¾İ
+			//åŒå£°é“æ•°æ®è½¬æˆå•å£°é“æ•°æ®
 			memcpy(RV->buf_voices+WAV_HEAD+RV->len_voices,data+i,2);
 			RV->len_voices += 2;
 		}
@@ -234,19 +231,19 @@ static void Save_VoicesPackt(const char *data,int size){
 		}
 #endif	//end 0
 	}else{
-		if(RV->len_voices > VOICES_MIN)	//´óÓÚ0.5s ÒôÆµ£¬ÔòÉÏ´«µ½·şÎñÆ÷µ±ÖĞ¿ªÊ¼Ê¶±ğ  13200
+		if(RV->len_voices > VOICES_MIN)	//å¤§äº0.5s éŸ³é¢‘ï¼Œåˆ™ä¸Šä¼ åˆ°æœåŠ¡å™¨å½“ä¸­å¼€å§‹è¯†åˆ«  13200
 		{
 			SpeekEvent_process_log((const char *)"start","upload",GetRecordeVoices_PthreadState());
 			printf("%s Start_uploadVoicesData RV->len_voices=%d\n",__func__,RV->len_voices);
-			Start_uploadVoicesData();		//¿ªÊ¼ÉÏ´«ÓïÒô
+			Start_uploadVoicesData();		//å¼€å§‹ä¸Šä¼ è¯­éŸ³
 			goto exit0;
 		}
 		else if(RV->len_voices < VOICES_ERR){			//
 			printf("%s < VOICES_ERR RV->len_voices=%d\n",__func__,RV->len_voices);
 			SpeekEvent_process_log((const char *)"< VOICES_ERR","error voices",GetRecordeVoices_PthreadState());
-			goto exit1;	//Îó´¥·¢
+			goto exit1;	//è¯¯è§¦å‘
 		}
-		else{	//VOICES_ERR --->VOICES_MIN Çø¼äµÄÒôÆµ£¬ÈÏ¶¨ÎªÎŞĞ§ÒôÆµ
+		else{	//VOICES_ERR --->VOICES_MIN åŒºé—´çš„éŸ³é¢‘ï¼Œè®¤å®šä¸ºæ— æ•ˆéŸ³é¢‘
 			printf("%s < VOICES_MIN RV->len_voices=%d\n",__func__,RV->len_voices);
 			SpeekEvent_process_log((const char *)"< VOICES_MIN","error voices",GetRecordeVoices_PthreadState());
 			goto exit1;
@@ -263,7 +260,7 @@ exit0:
 #endif	
 	return ;
 }
-//ÉèÖÃ¶à¾ÃÖ®ºó¹Ø»ú£¬½«µ±Ç°ÏµÍ³Ê±¼ä·¢ËÍ¸øMCU
+//è®¾ç½®å¤šä¹…ä¹‹åå…³æœºï¼Œå°†å½“å‰ç³»ç»Ÿæ—¶é—´å‘é€ç»™MCU
 int SetMucClose_Time(unsigned char closeTime){
 	time_t timep;
 	struct tm *p;
@@ -271,7 +268,7 @@ int SetMucClose_Time(unsigned char closeTime){
 	char syscloseTime[64]={0};
 	SocSendMenu(3,0);
 	usleep(100*1000);
-	p=localtime(&timep); /*È¡µÃµ±µØÊ±¼ä*/
+	p=localtime(&timep); /*å–å¾—å½“åœ°æ—¶é—´*/
 	if((p->tm_hour)+8>=24){
 		p->tm_hour=(p->tm_hour)+8-24;
 	}else{
@@ -283,9 +280,9 @@ int SetMucClose_Time(unsigned char closeTime){
 	return 0;
 }
 /*******************************************************
-º¯Êı¹¦ÄÜ: Â¼ÒôÏß³Ì £¬¶Ôµ±Ç°»·¾³¼ì²â£¬É¸Ñ¡ÓĞĞ§ÒôÆµ
-²ÎÊı:   	ÎŞ
-·µ»ØÖµ: 
+å‡½æ•°åŠŸèƒ½: å½•éŸ³çº¿ç¨‹ ï¼Œå¯¹å½“å‰ç¯å¢ƒæ£€æµ‹ï¼Œç­›é€‰æœ‰æ•ˆéŸ³é¢‘
+å‚æ•°:   	æ— 
+è¿”å›å€¼: 
 ********************************************************/
 static void *PthreadRecordVoices(void *arg){
 	char *pBuf;
@@ -294,17 +291,18 @@ static void *PthreadRecordVoices(void *arg){
 	int endtime,starttime;
 	starttime=time(&t);
 	endtime=time(&t);
+	pause_record_audio();
 	while(GetRecordeVoices_PthreadState()!=RECODE_STOP){
 		endtime=time(&t);
 		//printf("%s: time=%d  =GetRecordeVoices_PthreadState =%d\n",__func__,endtime-starttime,GetRecordeVoices_PthreadState());
-		if((endtime-starttime)>ERRORTIME){	//¿ª»úÊ±ºò£¬Ã»ÓĞ»ñÈ¡ÍøÂçÊ±¼ä£¬µ¼ÖÂÊ±¼ä²î¹ı´ó
+		if((endtime-starttime)>ERRORTIME){	//å¼€æœºæ—¶å€™ï¼Œæ²¡æœ‰è·å–ç½‘ç»œæ—¶é—´ï¼Œå¯¼è‡´æ—¶é—´å·®è¿‡å¤§
 			starttime=time(&t);
 		}else{
 			if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
-				if((endtime-starttime)==LONG_TIME_NOT_USER_MUTE_VOICES){	//10s Ö®ºó£¬²»ÓÃ¹Ø±ÕÒôÆµ
+				if((endtime-starttime)==LONG_TIME_NOT_USER_MUTE_VOICES){	//10s ä¹‹åï¼Œä¸ç”¨å…³é—­éŸ³é¢‘
 					Mute_voices(MUTE);
 				}
-				if((endtime-starttime)>SYSTEMOUTSIGN){		//µÚÒ»´Î³¤Ê±¼ä²»´¥·¢ÊÂ¼ş£¬Ôò¹Ø±Õ
+				if((endtime-starttime)>SYSTEMOUTSIGN){		//ç¬¬ä¸€æ¬¡é•¿æ—¶é—´ä¸è§¦å‘äº‹ä»¶ï¼Œåˆ™å…³é—­
 					SetRecordeVoices_PthreadState(TIME_SIGN);
 				}
 			}else{
@@ -312,20 +310,20 @@ static void *PthreadRecordVoices(void *arg){
 			}		
 		}
 		switch(GetRecordeVoices_PthreadState()){
-			case START_SPEEK_VOICES:	//»á»°Â¼Òô
+			case START_SPEEK_VOICES:	//ä¼šè¯å½•éŸ³
 				pBuf = I2sGetvoicesData();
 				Save_VoicesPackt((const char *)pBuf,I2S_PAGE_SIZE);
 				break;
-			case END_SPEEK_VOICES:		//»á»°Â¼Òô½áÊø
-				Save_VoicesPackt(NULL, 0);	//·¢ËÍ¿ÕÒôÆµ×÷ÎªÒ»¶ÎÒôÆµµÄ½áÊø±êÖ¾
+			case END_SPEEK_VOICES:		//ä¼šè¯å½•éŸ³ç»“æŸ
+				Save_VoicesPackt(NULL, 0);	//å‘é€ç©ºéŸ³é¢‘ä½œä¸ºä¸€æ®µéŸ³é¢‘çš„ç»“æŸæ ‡å¿—
 				break;
-			case START_TAIK_MESSAGE:	//¶Ô½²Â¼Òô
+			case START_TAIK_MESSAGE:	//å¯¹è®²å½•éŸ³
 				pBuf = I2sGetvoicesData();
 				SaveRecorderVoices((const char *)pBuf,I2S_PAGE_SIZE);
-				usleep(5000);			//²»»áÓĞ¿ì½øµÄ¸Ğ¾õ
+				usleep(5000);			//ä¸ä¼šæœ‰å¿«è¿›çš„æ„Ÿè§‰
 				break;
 
-			case TIME_SIGN:				//ÌáÊ¾ĞİÏ¢ºÜ¾ÃÁË
+			case TIME_SIGN:				//æç¤ºä¼‘æ¯å¾ˆä¹…äº†
 				System_StateLog("time out for play music");
 				if(!SleepSystem())	{
 					Create_PlaySystemEventVoices(MIN_10_NOT_USER_WARN);
@@ -335,18 +333,18 @@ static void *PthreadRecordVoices(void *arg){
 			case PLAY_DING_VOICES:
 				usleep(50000);
 				break;
-			case HUASHANG_SLEEP:		//»ªÉÏË¯Ãß×´Ì¬
+			case HUASHANG_SLEEP:		//åä¸Šç¡çœ çŠ¶æ€
 				if(++RV->closeTime==60){
 					showFacePicture(CLEAR_SYSTEM_PICTURE);
 					SetRecordeVoices_PthreadState(HUASHANG_SLEEP_OK);
 					RV->closeTime=0;
 				}
-				I2sGetvoicesData();		//Ä¬ÈÏ×´Ì¬Çå³ıÒôÆµ
+				I2sGetvoicesData();		//é»˜è®¤çŠ¶æ€æ¸…é™¤éŸ³é¢‘
 				usleep(50000);
 				break;
 				
 			default:
-				I2sGetvoicesData();		//Ä¬ÈÏ×´Ì¬Çå³ıÒôÆµ
+				I2sGetvoicesData();		//é»˜è®¤çŠ¶æ€æ¸…é™¤éŸ³é¢‘
 				usleep(50000);
 				break;
 		}
@@ -355,13 +353,8 @@ static void *PthreadRecordVoices(void *arg){
 	DEBUG_VOICES("handle record voices exit\n");
 	return NULL;
 }
-static void *start_playHuashang(void *arg){
-	int eventsNum = updateCurrentEventNums();
-	PlayStartPcm("qtts/start_10.amr",eventsNum);
-	return NULL;
-}
 /*****************************************************
-¿ªÆôÂ¼Òô¹¤×÷Ïß³Ì
+å¼€å¯å½•éŸ³å·¥ä½œçº¿ç¨‹
 *****************************************************/
 void InitRecord_VoicesPthread(void){	
 	RV =(RecoderVoices_t *)calloc(1,sizeof(RecoderVoices_t));
@@ -369,37 +362,25 @@ void InitRecord_VoicesPthread(void){
 		perror("calloc RecoderVoices_t memory failed");
         exit(-1);
 	}
-#if defined(HUASHANG_JIAOYU)
 	char playFile[24]={0};
 	srand((unsigned)time(NULL));
-	int i=(rand()%5)+1;
-	if(i>=5)
-		i=5;
-	//i=5;
-	snprintf(playFile,24,"qtts/start_%d.amr",i);
-	PlayStartPcm(playFile,0);
-	RV->freeVoicesNum =FREE_VOICE_NUMS;
-#else
-	//PlayImportVoices(START_SYS_VOICES,0);
-	PlayStartPcm(START_SYS_VOICES,0);//¿ª»úÆô¶¯Òô
-#endif
-
-#ifdef TEST_MIC
-	if(pthread_create_attr(TestRecordePlay,NULL)){
-		perror("create test recorde play failed!");
-		exit(-1);
+	int i=(rand()%10)+1;
+	if(i%2){
+		PlayStartPcm(AMR_9_START_PLAY,0);
+	}else{
+		PlayStartPcm(AMR_10_START_PLAY,0);
 	}
-#else
+	PlayStartPcm(AMR_11_START_SYSTEM_OK,0);
+	RV->freeVoicesNum =FREE_VOICE_NUMS;
 	if(pthread_create_attr(PthreadRecordVoices,NULL)){
   	  	perror("create handle record voices failed!");
         	exit(-1);
 	}
-#endif	//end TEST_MIC
 	usleep(300);
 }
 
 /*****************************************************
-ÍË³öÂ¼Òô(ÍË³öÏµÍ³)
+é€€å‡ºå½•éŸ³(é€€å‡ºç³»ç»Ÿ)
 *****************************************************/
 void ExitRecord_Voicespthread(void){
 	unsigned char timeout=0;
@@ -412,6 +393,4 @@ void ExitRecord_Voicespthread(void){
 			break;
 	}
 	DEBUG_VOICES("exit record pthread success (%d)\n",GetRecordeVoices_PthreadState());
-
-	//Ö÷Ïß³Ì¡¢½ÓÊÕÍøÂç¡¢Â¼Òô¡¢²¥·ÅÏß³Ì¡¢ÊÂ¼ş´¦ÀíÏß³Ì¡¢´®¿ÚÏß³Ì¡¢ÍøÂçÏß³Ì
 }

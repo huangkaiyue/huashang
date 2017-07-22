@@ -7,10 +7,8 @@
 #include "huashangMusic.h"
 
 //------------------------------------------------------------------------------
-
 static HuashangUser_t *hsUser=NULL;
-
-//¸üÐÂµ±Ç°Ä¿Â¼,²¢²¥·Å
+//æ›´æ–°å½“å‰ç›®å½•,å¹¶æ’­æ”¾
 void Huahang_SelectDirMenu(void){
 	char playBuf[128]={0};
 	char *readBuf = readFileBuf((const char * )DEFALUT_DIR_MENU_JSON);
@@ -53,8 +51,8 @@ exit0:
 	free(readBuf);
 	return ret;
 }
-//¸ù¾Ýµ±Ç°²¥·ÅË÷Òý£¬¸üÐÂÄ¿Â¼
-int Update_DirMenu(int PlayHuashang_MusicIndex){
+//æ ¹æ®å½“å‰æ’­æ”¾ç´¢å¼•ï¼Œæ›´æ–°ç›®å½•
+int Huashang_Update_DirMenu(int PlayHuashang_MusicIndex){
 	char *readBuf = readFileBuf((const char * )DEFALUT_DIR_MENU_JSON);
 	if(readBuf==NULL){
 		return -1;
@@ -95,49 +93,14 @@ exit0:
 	return ret;
 
 }
-void Huashang_Init(void){
-	hsUser = (HuashangUser_t *)calloc(1,sizeof(HuashangUser_t));
-	if(hsUser==NULL){
-		perror("calloc hsUser failed ");
-		return ;
-	}
-	hsUser->dirMenu=1;
-}
-//¿ª»ú»ñÈ¡»ªÉÏ½ÌÓýÄÚÈÝ²¥·Å¼ÇÂ¼
-void openSystemload_huashangData(void){
-	char jsonfile[128]={0};
-	snprintf(jsonfile,128,"%s%s",TF_SYS_PATH,HUASHANG_JIAOYU_PLAY_JSON_FILE);
-	char *filebuf = readFileBuf(jsonfile);
-	if(filebuf==NULL){
-		Write_huashang_log((const char *)"openSystemload_huashangData",(const char * )"read filefailed",1);
-		return ;
-	}
-	cJSON * pJson = cJSON_Parse(filebuf);
-	if(NULL == pJson){
-		goto exit0;
-	}
-	cJSON * pSub = cJSON_GetObjectItem(pJson, "playindex");
-	if(pSub==NULL){
-		goto exit0;
-	}
-	hsUser->PlayHuashang_MusicIndex = pSub->valueint;
-	pSub = cJSON_GetObjectItem(pJson, "total");
-	if(pSub==NULL){
-		hsUser->Huashang_MusicTotal = HUASHANG_MUSIC_TOTAL_NUM;
-		goto exit0;
-	}
-	hsUser->Huashang_MusicTotal=pSub->valueint;
-exit0:	
-	free(filebuf);
-}
-//»ñÈ¡sdcard ¸èÇú±àºÅ½øÐÐ²¥·Å
-int GetScard_forPlayHuashang_Music(unsigned char playMode,unsigned char EventSource){
+//èŽ·å–sdcard æ­Œæ›²ç¼–å·è¿›è¡Œæ’­æ”¾
+int Huashang_GetScard_forPlayMusic(unsigned char playMode,unsigned char EventSource){
 	int ret=-1;
 	char playBuf[128]={0};
 	if(hsUser==NULL){
 		return ret;
 	}
-	if(access(TF_SYS_PATH, F_OK)){	//¼ì²étf¿¨
+	if(access(TF_SYS_PATH, F_OK)){	//æ£€æŸ¥tfå¡
 		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE)
 			Create_PlaySystemEventVoices(TF_ERROT_PLAY);
 		return ret;
@@ -155,14 +118,15 @@ int GetScard_forPlayHuashang_Music(unsigned char playMode,unsigned char EventSou
 	snprintf(playBuf,128,"%s%s/%d.mp3",TF_SYS_PATH,HUASHANG_GUOXUE_DIR,hsUser->PlayHuashang_MusicIndex);
 	if(access(playBuf, F_OK)==0){
 		Write_huashang_log((const char *)"get play file ok",(const char * )playBuf,2);
-		Update_DirMenu(hsUser->PlayHuashang_MusicIndex);
+		Huashang_Update_DirMenu(hsUser->PlayHuashang_MusicIndex);
 		ret=__AddLocalMp3ForPaly((const char *)playBuf,EventSource);
 	}else{
 		Write_huashang_log((const char *)"get play file failed",(const char * )playBuf,3);
 	}	
 	return ret;
 }
-int huashang_CreatePlayDefaultMusic_forPlay(char *getBuf,const char* musicType){
+//èŽ·å–é»˜è®¤è®¾ç½®æŽ¨é€çš„æ•°æ®å†…å®¹, é‡‡ç”¨json æ ¼å¼ï¼Œåˆ†5ä¸ªç±»åˆ«ï¼Œæ¯ä¸€ä¸ªç±»åˆ«åŒ…å«æ­Œæ›²çš„å¼€å§‹ç¼–å·åˆ°ç»“æŸç¼–å·
+int Huashang_CreatePlayDefaultMusic_forPlay(char *getBuf,const char* musicType){
 	char *readBuf = readFileBuf((const char * )DEFALUT_HUASHANG_JSON);
 	if(readBuf==NULL){
 		return -1;
@@ -215,39 +179,10 @@ exit0:
 	return ret;
 }
 
-//¹Ø»ú±£´æ»ªÉÏ½ÌÓýÄÚÈÝ²¥·Å¼ÇÂ¼Êý¾Ý
-void closeSystemSave_huashangData(void){
-	char jsonfile[128]={0};
-	snprintf(jsonfile,128,"%s%s",TF_SYS_PATH,HUASHANG_JIAOYU_PLAY_JSON_FILE);
-
-	char* szJSON = NULL;
-	cJSON* pItem = NULL;
-	pItem = cJSON_CreateObject();
-	if(hsUser!=NULL){
-		cJSON_AddNumberToObject(pItem, "playindex", hsUser->PlayHuashang_MusicIndex);
-		cJSON_AddNumberToObject(pItem, "total",hsUser->Huashang_MusicTotal); 
-	}else{
-		cJSON_AddNumberToObject(pItem, "playindex", 0);
-		cJSON_AddNumberToObject(pItem, "total",HUASHANG_MUSIC_TOTAL_NUM); 
-	}
-	szJSON = cJSON_Print(pItem);
-	cJSON_Delete(pItem);
-	FILE *fp =fopen(jsonfile,"w+");
-	if(fp){
-		fwrite((szJSON),strlen(szJSON),1,fp);
-		fclose(fp);
-	}
-	free(szJSON);
-	if(hsUser!=NULL){
-		free(hsUser);
-		hsUser=NULL;
-	}
-}
-
-void updatePlayindex(int playIndex){
+void Huashang_updatePlayindex(int playIndex){
 	if(hsUser){
 		hsUser->PlayHuashang_MusicIndex=playIndex;
-		Update_DirMenu(hsUser->PlayHuashang_MusicIndex);
+		Huashang_Update_DirMenu(hsUser->PlayHuashang_MusicIndex);
 	}
 }
 //------------------------------------------------------------------------------
@@ -258,11 +193,10 @@ void Huashang_changePlayVoicesName(void){
 		}
 	}	
 }
-
-int HuaShang_WeiXin_playMusic(int playIndex){
+int Huashang_WeiXinplayMusic(int playIndex){
 	int ret=-1;
 	char playBuf[128]={0};
-	if(access(TF_SYS_PATH, F_OK)){	//¼ì²étf¿¨
+	if(access(TF_SYS_PATH, F_OK)){	//æ£€æŸ¥tfå¡
 		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE)
 			Create_PlaySystemEventVoices(TF_ERROT_PLAY);
 		return ret;
@@ -279,9 +213,9 @@ int HuaShang_WeiXin_playMusic(int playIndex){
 	return ret;
 }
 /**
-»ñÈ¡²¥ÒôÈË
+èŽ·å–æ’­éŸ³äºº
 **/
-void GetPlayVoicesName(char *playVoicesName,int *speek){
+void Huashang_GetPlayVoicesName(char *playVoicesName,int *speek){
 	if(hsUser==NULL){
 		snprintf(playVoicesName,8,"tuling");
 		*speek =50;
@@ -310,3 +244,69 @@ void GetPlayVoicesName(char *playVoicesName,int *speek){
 			break;
 	}
 }
+
+//å¼€æœºèŽ·å–åŽä¸Šæ•™è‚²å†…å®¹æ’­æ”¾è®°å½•
+void Huashang_loadSystemdata(void){
+	char jsonfile[128]={0};
+	snprintf(jsonfile,128,"%s%s",TF_SYS_PATH,HUASHANG_JIAOYU_PLAY_JSON_FILE);
+	char *filebuf = readFileBuf(jsonfile);
+	if(filebuf==NULL){
+		Write_huashang_log((const char *)"Huashang_loadSystemdata",(const char * )"read filefailed",1);
+		return ;
+	}
+	cJSON * pJson = cJSON_Parse(filebuf);
+	if(NULL == pJson){
+		goto exit0;
+	}
+	cJSON * pSub = cJSON_GetObjectItem(pJson, "playindex");
+	if(pSub==NULL){
+		goto exit0;
+	}
+	hsUser->PlayHuashang_MusicIndex = pSub->valueint;
+	pSub = cJSON_GetObjectItem(pJson, "total");
+	if(pSub==NULL){
+		hsUser->Huashang_MusicTotal = HUASHANG_MUSIC_TOTAL_NUM;
+		goto exit0;
+	}
+	hsUser->Huashang_MusicTotal=pSub->valueint;
+exit0:	
+	free(filebuf);
+}
+void Huashang_Init(void){
+	hsUser = (HuashangUser_t *)calloc(1,sizeof(HuashangUser_t));
+	if(hsUser==NULL){
+		perror("calloc hsUser failed ");
+		return ;
+	}
+	hsUser->dirMenu=1;
+}
+
+//å…³æœºä¿å­˜åŽä¸Šæ•™è‚²å†…å®¹æ’­æ”¾è®°å½•æ•°æ®
+void Huashang_closeSystemSavedata(void){
+	char jsonfile[128]={0};
+	snprintf(jsonfile,128,"%s%s",TF_SYS_PATH,HUASHANG_JIAOYU_PLAY_JSON_FILE);
+
+	char* szJSON = NULL;
+	cJSON* pItem = NULL;
+	pItem = cJSON_CreateObject();
+	if(hsUser!=NULL){
+		cJSON_AddNumberToObject(pItem, "playindex", hsUser->PlayHuashang_MusicIndex);
+		cJSON_AddNumberToObject(pItem, "total",hsUser->Huashang_MusicTotal); 
+	}else{
+		cJSON_AddNumberToObject(pItem, "playindex", 0);
+		cJSON_AddNumberToObject(pItem, "total",HUASHANG_MUSIC_TOTAL_NUM); 
+	}
+	szJSON = cJSON_Print(pItem);
+	cJSON_Delete(pItem);
+	FILE *fp =fopen(jsonfile,"w+");
+	if(fp){
+		fwrite((szJSON),strlen(szJSON),1,fp);
+		fclose(fp);
+	}
+	free(szJSON);
+	if(hsUser!=NULL){
+		free(hsUser);
+		hsUser=NULL;
+	}
+}
+

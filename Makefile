@@ -56,8 +56,6 @@ all +=host/StreamPlay/downMp3.o
 export CC
 $(TAR): $(all)
 	$(CC) $(CFLAGS) -o $(TAR) $(all) $(LDFLAGS)
-#	cp $(TAR) /nfs/yue/
-#	cp $(TAR) $(SDK_PATH)/romfs/bin/
 	$(RM) -f *.gch *.bak $(all) 
 	
 %.o:%.c

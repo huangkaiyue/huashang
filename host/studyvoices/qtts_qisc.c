@@ -22,36 +22,36 @@ void initputPcmdata(void){
 
 void setPlayAudioSize(int downSize){
 }
-//½«ÏÂÔØµ½µÄpcmµ¥ÉùµÀÊı¾İÌí¼Óµ½¶ÓÁĞµ±ÖĞ
+//å°†ä¸‹è½½åˆ°çš„pcmå•å£°é“æ•°æ®æ·»åŠ åˆ°é˜Ÿåˆ—å½“ä¸­
 void putPcmStreamToQueue(const void *data,int size){
 	int ret =0;
 	void *newdata=NULL;
-	if(size%2==0&&cacheFlag==0){		//Å¼Êı£¬Ã»ÓĞÔ¤Áô
+	if(size%2==0&&cacheFlag==0){		//å¶æ•°ï¼Œæ²¡æœ‰é¢„ç•™
 		newdata= (char *)calloc(1,size);
 		memcpy(newdata,(void *)data,size);
 		ret=size;
 		cacheFlag=0;
-	}else if(size%2==0&&cacheFlag==1){	//Å¼Êı£¬ÓĞÔ¤Áô
+	}else if(size%2==0&&cacheFlag==1){	//å¶æ•°ï¼Œæœ‰é¢„ç•™
 		newdata= (char *)calloc(1,size);
 		memcpy(newdata,savebuf,1);
 		memcpy(savebuf,(void *)(data+size-1),1);
 		memcpy(newdata+1,(void *)data,size-1);
 		ret=size;
 		cacheFlag=1;
-	}else if(size%2==1&&cacheFlag==1){	//ÆæÊı£¬ÓĞÔ¤Áô
+	}else if(size%2==1&&cacheFlag==1){	//å¥‡æ•°ï¼Œæœ‰é¢„ç•™
 		newdata= (char *)calloc(1,size+1);
 		memcpy(newdata,savebuf,1);
 		memcpy(newdata+1,(void *)data,size);
 		ret=size+1;
 		cacheFlag=0;
-	}else if(size%2==1&&cacheFlag==0){	//ÆæÊı£¬Ã»ÓĞÔ¤Áô
+	}else if(size%2==1&&cacheFlag==0){	//å¥‡æ•°ï¼Œæ²¡æœ‰é¢„ç•™
 		newdata= (char *)calloc(1,size-1);
 		memcpy(savebuf,(void *)(data+size-1),1);
 		memcpy(newdata,(void *)data,size-1);
 		ret=size-1;
 		cacheFlag=1;
 	}
-	putPcmDataToPlay((const void *)newdata,ret);	//Ìí¼Óµ½²¥·Å¶ÓÁĞ	
+	putPcmDataToPlay((const void *)newdata,ret);	//æ·»åŠ åˆ°æ’­æ”¾é˜Ÿåˆ—	
 }
 static void putStreamVoicesForPlay(const void *userdata,const void *data,int audio_len){
 	//printf("%s: audio_len = %d \n",__func__,audio_len);
@@ -59,11 +59,11 @@ static void putStreamVoicesForPlay(const void *userdata,const void *data,int aud
 
 }
 /***************************************************************************
-@º¯Êı¹¦ÄÜ:	ÎÄ±¾×ª»»ÓïÒô
-@²ÎÊı:	src_text ÎÄ±¾ÎÄ¼ş 
-@		params	ÎÄ±¾×ª»»ÓïÒô²ÎÊı
-@·µ»ØÖµ:	0 ³É¹¦
-@			ÆäËü	´íÎóÂë
+@å‡½æ•°åŠŸèƒ½:	æ–‡æœ¬è½¬æ¢è¯­éŸ³
+@å‚æ•°:	src_text æ–‡æœ¬æ–‡ä»¶ 
+@		params	æ–‡æœ¬è½¬æ¢è¯­éŸ³å‚æ•°
+@è¿”å›å€¼:	0 æˆåŠŸ
+@			å…¶å®ƒ	é”™è¯¯ç 
 ***************************************************************************/
 static int text_to_speech(const char* src_text,const void *userdata,unsigned char type,const char* playVoicesName,int playSpeed,unsigned int playEventNums,void GetXunFeiVoicesData(const void *userdata,const void *voicesdata,int size)){
 	char* sess_id = NULL;
@@ -99,12 +99,12 @@ static int text_to_speech(const char* src_text,const void *userdata,unsigned cha
 			GetXunFeiVoicesData(userdata,(const void *)data,audio_len);
 		}
 		usleep(100*1000);
-		if (synth_status==2|| ret!= 0){		//Õı³£ÍË³ö
+		if (synth_status==2|| ret!= 0){		//æ­£å¸¸é€€å‡º
 			ret=0;
 			DEBUG_QTTS(" synth_status ok exit\n");
 			break;
 		}
-		if(GetCurrentEventNums()!=playEventNums){	//µ±Ç°ÊÂ¼ş±»ÇĞ»»£¬Ö±½Ó´ò¶ÏÏÂÔØ
+		if(GetCurrentEventNums()!=playEventNums){	//å½“å‰äº‹ä»¶è¢«åˆ‡æ¢ï¼Œç›´æ¥æ‰“æ–­ä¸‹è½½
 			ret=-1;
 			DEBUG_QTTS(" event break exit\n");
 			break;
@@ -116,9 +116,9 @@ exit0:
 	return ret;
 }
 /****************************************
-@º¯Êı¹¦ÄÜ:	ÎÄ±¾×ª»»ÓïÒô²ÎÊıÑ¡Ôñ
-@²ÎÊı:	text ÎÄ±¾ÎÄ¼ş 
-@		VINN_GBK	ÎÄ±¾×ª»»ÓïÒô²ÎÊı
+@å‡½æ•°åŠŸèƒ½:	æ–‡æœ¬è½¬æ¢è¯­éŸ³å‚æ•°é€‰æ‹©
+@å‚æ•°:	text æ–‡æœ¬æ–‡ä»¶ 
+@		VINN_GBK	æ–‡æœ¬è½¬æ¢è¯­éŸ³å‚æ•°
 ******************************************/
 int Qtts_voices_text(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed){
 	return text_to_speech(text,NULL,type,playVoicesName,playSpeed,playEventNums,putStreamVoicesForPlay);
@@ -154,13 +154,13 @@ int QttsTextVoicesFile(const char *text,unsigned char type,const char *playVoice
 	return ret;
 }
 int Init_Iat_MSPLogin(void){
-	//APPIDÇëÎğËæÒâ¸Ä¶¯
+	//APPIDè¯·å‹¿éšæ„æ”¹åŠ¨
 	int ret = 0;
 	char login_configs[100];
 	strcpy(login_config.appid,"57909831");
 	strcpy(login_config.dvc,"hpm10000");
 	snprintf(login_configs,100,"appid=%s,dvc=%s, work_dir =   . ",login_config.appid,login_config.dvc);
-	ret = MSPLogin(NULL, NULL, login_configs);//ÓÃ»§µÇÂ¼
+	ret = MSPLogin(NULL, NULL, login_configs);//ç”¨æˆ·ç™»å½•
 	if ( ret != MSP_SUCCESS ){
 		DEBUG_QTTS("iat MSPLogin failed , Error code %d\n",ret);
 		return -1;

@@ -23,7 +23,7 @@ int __safe_fread(char *data,int input_size){
 			return -1;
 		}
 	}
-	fseek(st->rfp,st->playSize,SEEK_SET);	//Ìø×ªµ½Ö¸¶¨µÄÎ»ÖÃ²¥·Å
+	fseek(st->rfp,st->playSize,SEEK_SET);	//è·³è½¬åˆ°æŒ‡å®šçš„ä½ç½®æ’­æ”¾
 	while(1){
 		ret = fread(data+r_size,1,input_size-r_size,st->rfp);
 		r_size +=ret;
@@ -53,16 +53,16 @@ static void GetMusicMessage(int rate,int channels){
 	st->rate = rate;
 	st->SetI2SRate(rate,"NetplayStreamMusic set rate");
 }
-//ÊµÏÖĞ´ÈëÒôÆµÁ÷µÄ½Ó¿Ú, ĞèÒªÊäÈëµÄÊı¾İÄÚ´æ´æ·ÅÎ»ÖÃ inputMsg  inputSize ÊäÈëµÄÊı¾İÁ÷´óĞ¡
+//å®ç°å†™å…¥éŸ³é¢‘æµçš„æ¥å£, éœ€è¦è¾“å…¥çš„æ•°æ®å†…å­˜å­˜æ”¾ä½ç½® inputMsg  inputSize è¾“å…¥çš„æ•°æ®æµå¤§å°
 static void InputNetStream(const void * inputMsg,int inputSize){
 	printf("InputNetStream inputSize=%d\n",inputSize);
 	while(st->playSize+inputSize>st->cacheSize){
-		if(getDownState()==DOWN_QUIT){	//ÒÑ¾­ÍË³öÏÂÔØ£¬Í£Ö¹²¥·Å	
+		if(getDownState()==DOWN_QUIT){	//å·²ç»é€€å‡ºä¸‹è½½ï¼Œåœæ­¢æ’­æ”¾	
 			DEBUG_STREAM("exit ...st->cacheSize =%d st->playSize%d\n",st->cacheSize,st->playSize);
 			if(st->cacheSize > st->playSize){
 				if(st->streamLen != 0){
 					st->player.progress = (st->playSize*100)/st->streamLen;
-					st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);	//»ØÓ¦²¥·Å½ø¶È
+					st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);	//å›åº”æ’­æ”¾è¿›åº¦
 				}
 				__safe_fread(inputMsg,st->cacheSize-st->playSize);
 				memset(inputMsg+st->cacheSize-st->playSize,0,st->playSize+inputSize-st->cacheSize);
@@ -75,7 +75,7 @@ static void InputNetStream(const void * inputMsg,int inputSize){
 			st->wait=1;
 			st->ack_playCtr(TCP_ACK,&st->player,MAD_PAUSE);
 		}
-		usleep(100);//ÏÂÔØ±È½ÏÂı£¬Ë¯ÃßµÈ´ıÏÂÔØ ,·¢ËÍÍ£Ö¹×´Ì¬,ÏÂÔØµ½Ò»¶¨³Ì¶È£¬»½ĞÑ  (appµÈµ½ÏÂÒ»¸öÊ±¿ÌÔÙ×Ô¶¯»½ĞÑ)
+		usleep(100);//ä¸‹è½½æ¯”è¾ƒæ…¢ï¼Œç¡çœ ç­‰å¾…ä¸‹è½½ ,å‘é€åœæ­¢çŠ¶æ€,ä¸‹è½½åˆ°ä¸€å®šç¨‹åº¦ï¼Œå”¤é†’  (appç­‰åˆ°ä¸‹ä¸€ä¸ªæ—¶åˆ»å†è‡ªåŠ¨å”¤é†’)
 	}
 	if(st->wait==1){
 		st->wait=0;
@@ -109,7 +109,7 @@ int GetFileNameForPath(const char *path){
 	return (size-strlen(p)+1);
 }
 
-//²¥·ÅÍøÂçÁ÷ÒôÆµÎÄ¼ş
+//æ’­æ”¾ç½‘ç»œæµéŸ³é¢‘æ–‡ä»¶
 static void *NetplayStreamMusic(void *arg){
 	pthread_mutex_lock(&st->mutex);
 	if(st->rfp==NULL){
@@ -137,14 +137,14 @@ static void *NetplayStreamMusic(void *arg){
 	
 	DecodePlayMusic(GetMusicMessage,InputNetStream);
 
-	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//·¢ËÍ½áÊø×´Ì¬
-	cleanStreamData(st);	//×´Ì¬ÇĞ»»ÊÇ·ñ¼ÓËø
+	st->ack_playCtr(TCP_ACK,&st->player,MAD_EXIT);	//å‘é€ç»“æŸçŠ¶æ€
+	cleanStreamData(st);	//çŠ¶æ€åˆ‡æ¢æ˜¯å¦åŠ é”
 	
 	DEBUG_STREAM("exit play ok \n");
 	return NULL;
 }
 
-//¿ªÊ¼ÏÂÔØ, ½Ó¿Ú¼æÈİ£¬ĞèÒªÈ¥µôstreamLen
+//å¼€å§‹ä¸‹è½½, æ¥å£å…¼å®¹ï¼Œéœ€è¦å»æ‰streamLen
 static void NetStartDown(const char *filename,int streamLen){
 	DEBUG_STREAM("filename =%s streamLen=%d\n",filename,streamLen);
 	if(st->wfp==NULL){
@@ -160,7 +160,7 @@ static void NetStartDown(const char *filename,int streamLen){
 	st->streamLen=streamLen;
 	snprintf(st->mp3name,128,"%s",filename);
 }
-//»ñÈ¡µ½Á÷Êı¾İ
+//è·å–åˆ°æµæ•°æ®
 static void NetGetStreamData(const char *data,int size){
 	pthread_mutex_lock(&st->mutex);
 #ifdef SAFE_READ_WRITER	
@@ -173,14 +173,14 @@ static void NetGetStreamData(const char *data,int size){
 	}
 #endif
 	pthread_mutex_unlock(&st->mutex);
-	//¶ÓÁĞ»º´æµ½8*KBÊı¾İ£¬¿ªÊ¼²¥·Å
+	//é˜Ÿåˆ—ç¼“å­˜åˆ°8*KBæ•°æ®ï¼Œå¼€å§‹æ’­æ”¾
 	if(st->player.playState==MAD_NEXT&&st->cacheSize>CACHE_PLAY_SIZE&&getDownState()==DOWN_ING){
 		st->player.playState=MAD_PLAY;
 		DecodeStart();
 		pool_add_task(NetplayStreamMusic,NULL);
 	}
 }
-//½áÊøÏÂÔØ
+//ç»“æŸä¸‹è½½
 static void NetEndDown(int downLen){
 	DEBUG_STREAM("OK \n");
 	//st->cacheSize=downLen;
@@ -190,15 +190,15 @@ static void NetEndDown(int downLen){
 	st->wfp=NULL;
 }
 
-//ÍË³öµ±Ç°Á÷ÏÂÔØºÍ²¥·Å
+//é€€å‡ºå½“å‰æµä¸‹è½½å’Œæ’­æ”¾
 void NetStreamExitFile(void){
-	if(getDownState()==DOWN_ING){		//ÍË³öÏÂÔØ
+	if(getDownState()==DOWN_ING){		//é€€å‡ºä¸‹è½½
 		quitDownFile();
 		WriteEventlockLog("eventlock quitDownFile",2);
 	}
 	printf("%s: rate =%d\n",__func__,st->rate);
 	int error_timeout_check=0;
-	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//ÍË³ö²¥·Å
+	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//é€€å‡ºæ’­æ”¾
 		pthread_mutex_lock(&st->mutex);
 		st->player.progress=0;
 		st->player.musicTime=0;
@@ -226,13 +226,13 @@ void NetStreamExitFile(void){
 	WriteEventlockLog("eventlock exit end",st->player.playState);
 }
 
-//¿½±´ÍÆËÍ¹ıÀ´µÄĞÅÏ¢
+//æ‹·è´æ¨é€è¿‡æ¥çš„ä¿¡æ¯
 static void CopyUrlMessage(Player_t *srcPlayer,Player_t *DestPlayer){
 	snprintf(DestPlayer->playfilename,128,"%s",srcPlayer->playfilename);	
 	snprintf(DestPlayer->musicname,64,"%s",srcPlayer->musicname);
 	DestPlayer->musicTime = srcPlayer->musicTime;
 }
-//¿ªÊ¼±ßÏÂ±ß²¥·Å 
+//å¼€å§‹è¾¹ä¸‹è¾¹æ’­æ”¾ 
 static int NetStreamDownFilePlay(Player_t *play){
 	int ret=0;
 	setDowning();
@@ -262,7 +262,7 @@ static int NetStreamDownFilePlay(Player_t *play){
 	DEBUG_STREAM("NetStreamDownFilePlay end ...\n");
 	return ret;
 }
-//ÔİÍ£
+//æš‚åœ
 void StreamPause(void){
 	if(st->player.playState==MAD_PLAY){
 		st->player.playState=MAD_PAUSE;
@@ -273,7 +273,7 @@ void StreamPause(void){
 	}
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 }
-//²¥·Å
+//æ’­æ”¾
 void StreamPlay(void){
 	if(st->player.playState==MAD_PAUSE){
 		st->player.playState=MAD_PLAY;
@@ -284,11 +284,11 @@ void StreamPlay(void){
 	}
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 }
-//ÉèÖÃµ±Ç°Á÷²¥·Å×´Ì¬
+//è®¾ç½®å½“å‰æµæ’­æ”¾çŠ¶æ€
 void SetStreamPlayState(unsigned char playliststate){
 	st->player.playListState=playliststate;
 }
-//ÇĞ»»µ¥ÇúºÍÁĞ±í²¥·Å
+//åˆ‡æ¢å•æ›²å’Œåˆ—è¡¨æ’­æ”¾
 void GpioKey_SetStreamPlayState(void){
 	if(st->player.playListState==MUSIC_PLAY_LIST){
 		st->player.playListState=MUSIC_SINGLE_LIST;
@@ -296,11 +296,11 @@ void GpioKey_SetStreamPlayState(void){
 		st->player.playListState=MUSIC_PLAY_LIST;
 	}
 }
-//»ñÈ¡µ±Ç°Á÷²¥·Å×´Ì¬
+//è·å–å½“å‰æµæ’­æ”¾çŠ¶æ€
 int GetStreamPlayState(void){
 	return (int)st->player.playListState; 
 }
-//°´¼üÇĞ»»²¥·Å×´Ì¬
+//æŒ‰é”®åˆ‡æ¢æ’­æ”¾çŠ¶æ€
 void keyStreamPlay(void){
 	if(st->player.playState==MAD_PAUSE){
 		st->player.playState=MAD_PLAY;
@@ -315,11 +315,11 @@ void keyStreamPlay(void){
 		showFacePicture(WAIT_CTRL_NUM4);
 		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	}else if(st->player.playState==MAD_EXIT){
-		GetScard_forPlayHuashang_Music(PLAY_NEXT,EXTERN_PLAY_EVENT);//ÔİÍ£×´Ì¬£¬Ìí¼Ó»ªÉÏ½ÌÓı¸èÇú²¥·Å
-		usleep(1000);//·ÀÖ¹Ìí¼Ó°´¼üÌ«¿ì	
+		Huashang_GetScard_forPlayMusic(PLAY_NEXT,EXTERN_PLAY_EVENT);//æš‚åœçŠ¶æ€ï¼Œæ·»åŠ åä¸Šæ•™è‚²æ­Œæ›²æ’­æ”¾
+		usleep(1000);//é˜²æ­¢æ·»åŠ æŒ‰é”®å¤ªå¿«	
 	}
 }
-//½ø¶ÈÌõ¿ØÖÆ²¥·Å 
+//è¿›åº¦æ¡æ§åˆ¶æ’­æ”¾ 
 void seekToStream(int progress){
 #ifdef SEEK_TO
 	if(st->player.playState!=MAD_PLAY){
@@ -333,7 +333,7 @@ void seekToStream(int progress){
 	DEBUG_STREAM("progress =%d\n",progress);
 	if(st->player.playState==MAD_PLAY){
 		pthread_mutex_lock(&st->mutex);
-		st->playSize=st->streamLen*progress/100;//¼ÆËã³öµ±Ç°²¥·Å³¤¶È	
+		st->playSize=st->streamLen*progress/100;//è®¡ç®—å‡ºå½“å‰æ’­æ”¾é•¿åº¦	
 		st->player.progress = progress;
 		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 		pthread_mutex_unlock(&st->mutex);
@@ -354,7 +354,7 @@ static void InputlocalStream(const void * inputMsg,int inputSize){
 	fread(inputMsg,1,inputSize,st->rfp);
 	st->playSize+=inputSize;
 }
-//²¥·Å±¾µØÒôÆµÁ÷ 
+//æ’­æ”¾æœ¬åœ°éŸ³é¢‘æµ 
 static void playLocalMp3(const char *mp3file){
 	st->player.progress=0;
 	st->streamLen=0;
@@ -364,18 +364,18 @@ static void playLocalMp3(const char *mp3file){
 		perror("fopen read failed ");
 		return ;
 	}
-	printf("============playLocalMp3==============\n"); //---bug,²»ÄÜÉ¾£¬¸¡µãÒì³£
+	printf("============playLocalMp3==============\n"); //---bug,ä¸èƒ½åˆ ï¼Œæµ®ç‚¹å¼‚å¸¸
 	pthread_mutex_lock(&st->mutex);
 	st->player.playState =MAD_PLAY;
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	
-	printf("=============ack_playCtr=============\n"); //---bug,²»ÄÜÉ¾
+	printf("=============ack_playCtr=============\n"); //---bug,ä¸èƒ½åˆ 
 
 	fseek(st->rfp,0,SEEK_END);
 	st->streamLen = ftell(st->rfp);
 	fseek(st->rfp,0,SEEK_SET);
 
-	printf("=============fseek=============\n"); //---bug,²»ÄÜÉ¾
+	printf("=============fseek=============\n"); //---bug,ä¸èƒ½åˆ 
 
 	pthread_mutex_unlock(&st->mutex);
 
@@ -383,11 +383,11 @@ static void playLocalMp3(const char *mp3file){
 	DecodeStart();
 	DEBUG_STREAM("music start play \n");
 	DecodePlayMusic(GetMusicMessage,InputlocalStream);
-	cleanStreamData(st);	//×´Ì¬ÇĞ»»ÊÇ·ñ¼ÓËø
+	cleanStreamData(st);	//çŠ¶æ€åˆ‡æ¢æ˜¯å¦åŠ é”
 	DEBUG_STREAM(" exit play ok \n");
 	WriteEventlockLog("playLocalMp3  exit play ok ",(int)st->player.playState);
 }
-//²¥·Å¸èÇú½Ó¿Ú  play: ²¥·ÅĞÅÏ¢½á¹¹Ìå
+//æ’­æ”¾æ­Œæ›²æ¥å£  play: æ’­æ”¾ä¿¡æ¯ç»“æ„ä½“
 int Mad_PlayMusic(Player_t *play){
 	int ret =1;
 	start_event_play_Mp3music();
@@ -412,7 +412,7 @@ exit0:
 	return ret;
 }
 
-//»ñÈ¡²¥·ÅÁ÷×´Ì¬
+//è·å–æ’­æ”¾æµçŠ¶æ€
 void getStreamState(void *data,void StreamState(void *data,Player_t *player)){
 	st->player.vol = st->GetVol();
 	StreamState(data,&st->player);

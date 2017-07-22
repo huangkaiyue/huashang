@@ -22,7 +22,7 @@ void test_ConnetEvent(int event){
 	printf("event =%d\n",event);
 }
 /*
-@ µ÷ÊÔÃüÁî£¬±àÒë¹Ì¼şĞèÒªÈ¥µô
+@ è°ƒè¯•å‘½ä»¤ï¼Œç¼–è¯‘å›ºä»¶éœ€è¦å»æ‰
 @
 */
 void pasreInputCmd(const char *com){

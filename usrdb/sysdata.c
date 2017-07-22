@@ -6,8 +6,8 @@
 #include "../host/studyvoices/qtts_qisc.h"
 #include "host/voices/wm8960i2s.h"
 
-//----------------------------ÒôÁ¿-------------------------------------
-//´ÓÂ·ÓÉ±íµ±ÖĞ»ñÈ¡ÒôÁ¿
+//----------------------------éŸ³é‡-------------------------------------
+//ä»è·¯ç”±è¡¨å½“ä¸­è·å–éŸ³é‡
 void GetVol_formRouteTable(unsigned char *size){
 	char *vol = nvram_bufget(RT2860_NVRAM, "VoiceSIZE");
 	if(!strcmp(vol,"")){
@@ -17,24 +17,24 @@ void GetVol_formRouteTable(unsigned char *size){
 	}
 }
 
-//ÉèÖÃÒôÁ¿µ½Â·ÓÉ±íµ±ÖĞ
+//è®¾ç½®éŸ³é‡åˆ°è·¯ç”±è¡¨å½“ä¸­
 void SaveVol_toRouteTable(unsigned char vol){
 	char buf_s[64]={0};
 	sprintf(buf_s,"nvram_set 2860 VoiceSIZE %d", vol);
 	system(buf_s);
 }
-//----------------------------¿ª¹Ø»ú-------------------------------------
-//ÉèÖÃ¿ª¹Ø»úµ½Â·ÓÉ±íµ±ÖĞ
+//----------------------------å¼€å…³æœº-------------------------------------
+//è®¾ç½®å¼€å…³æœºåˆ°è·¯ç”±è¡¨å½“ä¸­
 void Save_OpenCloseTime_toRouteTable(int type,unsigned char *time){
 	char buf_s[64]={0};
-	if(type==0)	//¹Ø»úÊ±¼ä
+	if(type==0)	//å…³æœºæ—¶é—´
 		sprintf(buf_s,"nvram_set 2860 Closetime %s", time);
-	else if (type==1)//¿ª»úÊ±¼ä
+	else if (type==1)//å¼€æœºæ—¶é—´
 		sprintf(buf_s,"nvram_set 2860 Opentime %s", time);
 	system(buf_s);
 }
 
-//»ñÈ¡¿ª¹Ø»úÊ±¼ä
+//è·å–å¼€å…³æœºæ—¶é—´
 void Get_OpenCloseTime_formRouteTable(int type, char *time){
 	char *buf=NULL;
 	if(type==0){
@@ -46,7 +46,7 @@ void Get_OpenCloseTime_formRouteTable(int type, char *time){
 	memcpy(time,buf,strlen(buf));
 }
 
-//¹Ø»úÊ±ºò±£´æÍ¼ÁéµÄtokenÖµµ½Â·ÓÉ±íµ±ÖĞ
+//å…³æœºæ—¶å€™ä¿å­˜å›¾çµçš„tokenå€¼åˆ°è·¯ç”±è¡¨å½“ä¸­
 void Save_TulingToken_toRouteTable(const char *tokenVal){
 	char buf_s[128]={0};
 	sprintf(buf_s,"nvram_set 2860 tokenVal %s", tokenVal);
