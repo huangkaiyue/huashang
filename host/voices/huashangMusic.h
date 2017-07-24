@@ -39,4 +39,15 @@ extern void Huashang_Init(void);
 extern void Huashang_closeSystemSavedata(void);
 
 
+#define NOT_MESSAGE			0	//没有微信消息
+#define WEIXIN_MESSAGE		1	//微信新消息
+#define WEIXIN_PUSH_MESSAGE	2	//微信消息推送
+
+int AddWeiXinMessage_Text(const char *data,int Size);
+int AddWeiXinMessage_Voices(const char *data,int Size);
+int GetWeiXinMessageForPlay(void);
+void InitWeixinMeesageList(void);
+void CleanWeixinMeesageList(void);
+int GetWeixinMessageFlag(void);
+
 #endif

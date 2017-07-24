@@ -122,7 +122,7 @@
 #define END_UPLOAD		0
 
 #define SYSTEM_INIT		0			//系统处于初始状态
-#define SYSTEM_SLEEP	4			//系统进入睡眠状态
+#define SYSTEM_SLEEP	2			//系统进入睡眠状态
 
 
 #define FREE_VOICE_NUMS	3

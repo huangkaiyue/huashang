@@ -94,5 +94,5 @@ extern void disable_gpio(void);
 extern void clean_7620_gpio(void);
 extern void Running_light_500Hz(void);
 extern void Stop_light_500Hz(void);
-
+extern void PlayWakeUpVoices(void);
 #endif

@@ -4,6 +4,8 @@
 #include "gpio_7620.h"
 #include "../studyvoices/qtts_qisc.h"
 #include "host/voices/wm8960i2s.h"
+#include "huashangMusic.h"
+#include "host/studyvoices/prompt_tone.h"
 #include "log.h"
 #include "nvram.h"
 #include "config.h"
@@ -46,8 +48,6 @@ void Running_light_500Hz(void){
 	led_lr_oc(closeled);
 	gpio.lightRunState=LIGHT_500HZ_RUNING;
 	pool_add_task(Running_light_500Hz,NULL);
-
-
 }
 static void led_left_right(unsigned char type,unsigned char io){
 	switch(type){
@@ -253,6 +253,20 @@ static void *weixin_mutiplekey_Thread(void *arg){
 	return NULL;
 }
 
+void PlayWakeUpVoices(void){
+	printf("%s: wake up system\n",__func__);
+	if (GetWeixinMessageFlag()==NOT_MESSAGE) {		
+		//Create_PlayImportVoices(CMD_20_CONNET_OK); 		//20、(8634代号)小培老师与总部课堂连接成功，我们来聊天吧！（每次连接成功的语音，包括唤醒）
+		PlayImportVoices(AMR_20_CONNET_OK, GetCurrentEventNums());
+	}else if(GetWeixinMessageFlag()==WEIXIN_MESSAGE){
+		//Create_PlayImportVoices(CMD_27_WAKEUP_RECV_MSG); //27、你有新消息，请按信息键听取吧！（唤醒之后播放，播放网络成功之后）
+		PlayImportVoices(AMR_27_NEW_MESSAGE, GetCurrentEventNums());
+	}else if(GetWeixinMessageFlag()==WEIXIN_PUSH_MESSAGE){
+		//Create_PlayImportVoices(CMD_28_WAKEUP_RECV_MSG); //28、你有新故事未听取,按信息键开始听吧！（唤醒之后播放，播放网络成功之后）
+		PlayImportVoices(AMR_28_NEW_STROY, GetCurrentEventNums());
+	}
+	unlock_msgEv();
+}
 static void signal_handler(int signum){
 	static key_mutiple_t mutiple_key_SUB,mutiple_key_ADD,mutiple_key_speek,mutiple_key_weixin;
 	//拿到底层按键事件号码
@@ -268,7 +282,7 @@ static void signal_handler(int signum){
 	}
 	lock_msgEv();
 	if(checkAndWakeupSystem()){
-		goto exit0;
+		return ;
 	}
 	if (signum == GPIO_UP){			//短按按键事件
 		switch(gpio.mount){

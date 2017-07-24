@@ -1,6 +1,12 @@
 #include "comshead.h"
 #include "base/queWorkCond.h"
 #include "../studyvoices/qtts_qisc.h"
+#include "huashangMusic.h"
+
+#define WEIXIN_TEXT 	1
+#define WEIXIN_VOICES	2
+
+#define WEIXIN_PLAY_LIST_MAX	20	//允许当前存最大的队列数据
 
 typedef struct {
 	void *data;	//添加到队列的消息数据(音频or文字)
@@ -8,12 +14,18 @@ typedef struct {
 	int type;	//添加到队列当中消息类型
 }WeiXinMsg;
 
+
+
 static WorkQueue *WeixinEvent=NULL;
 static WeiXinMsg *Bak_Message=NULL;
-#define WEIXIN_TEXT 	1
-#define WEIXIN_VOICES	2
+static unsigned char newMessageFlag=NOT_MESSAGE;	//新消息标志
 
-#define WEIXIN_PLAY_LIST_MAX	20	//允许当前存最大的队列数据
+static void SetWeixinMessageFlag(unsigned char state){
+	newMessageFlag=state;
+}
+int GetWeixinMessageFlag(void){
+	return (int)newMessageFlag;
+}
 
 static int __AddWeiXinMessage(const char *data,int Size,int type){
 	WeiXinMsg *msg = NULL;
@@ -50,7 +62,7 @@ static int __AddWeiXinMessage(const char *data,int Size,int type){
 	snprintf(msg->data,Size+8,"%s",data);
 	msg->type = type;
 	msg->size = Size;
-
+	SetWeixinMessageFlag(WEIXIN_MESSAGE);
 	return putMsgQueue(WeixinEvent,msg, sizeof(WeiXinMsg));
 }
 //添加文本消息到队列当中
@@ -115,6 +127,7 @@ int GetWeiXinMessageForPlay(void){
 				memset(Bak_Message->data,0,strlen(Bak_Message->data));	
 				sprintf(Bak_Message->data,"/Down/%d.amr",ti);
 			}
+			SetWeixinMessageFlag(NOT_MESSAGE);//微信消息已经取完
 		}
 	}
 	return 0;

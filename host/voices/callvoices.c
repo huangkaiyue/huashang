@@ -145,8 +145,8 @@ int  checkAndWakeupSystem(void){
 	if(RV->recorde_live==HUASHANG_SLEEP){
 		RV->WaitSleep =SYSTEM_INIT;
 		pause_record_audio();
-		//需要播放唤醒声音
-		Create_PlayImportVoices(1000);
+		pool_add_task(PlayWakeUpVoices,NULL);
+		usleep(1000);
 		return -1;
 	}
 	return 0;
