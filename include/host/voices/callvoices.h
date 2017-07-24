@@ -53,57 +53,58 @@
 //----------------------系统音---------------------------------------
 
 
-#define END_SYS_VOICES_PLAY			1	//结束音
-#define TULING_WINT_PLAY			2	//请稍等
-#define LOW_BATTERY_PLAY			3	//低电关机
-#define RESET_HOST_V_PLAY			4	//恢复出厂设置
-#define REQUEST_FAILED_PLAY			5	//重连，请求服务器数据失败
-#define UPDATA_END_PLAY				6	//更新固件结束
-#define TIMEOUT_PLAY_LOCALFILE		7	//请求服务器超时，播放本地已经录制好的音频
-#define CONNET_ING_PLAY				9	//正在连接
-#define CONNECT_OK_PLAY				10	//连接成功
-#define START_SMARTCONFIG_PLAY		11	//启动配网
-#define SMART_CONFIG_OK_PLAY		12	//接受密码成功
+/*
 #define NOT_FIND_WIFI_PLAY			13	//没有扫描到wifi
-#define SMART_CONFIG_FAILED_PLAY	14	//没有收到用户发送的wifi
-#define CONNET_NETWORK				16	//正在连接网络
 #define NOT_NETWORK_PLAY			18	//板子没有连接上网络
 #define SEND_OK_PLAY				20	//发送成功
 #define SEND_ERROR_PLAY				21	//发送失败
 #define SEND_LINK_PLAY				22	//正在发送
-#define KEY_DOWN_PLAY				23	//按下按键音
-#define PLAY_ERROT_PLAY				24	//播放失败
-#define TF_ERROT_PLAY				25	//TF加载失败
-#define NETWORK_ERROT_PLAY			12	//网络连接失败
+*/
 
-#define LIKE_ERROT_PLAY				30	//当前没有喜爱内容，快去收藏喜爱内容吧
 
-#define BIND_SSID_PLAY				31	//成功收到小伙伴的绑定请求。
-#define BIND_OK_PLAY				32	//成功处理小伙伴的绑定请求。
-#define SEND_LINK_ER_PLAY			33	//当前网络环境差，语音发送失败，请检查网络。
-#define TALK_CONFIRM_PLAY			34	//在家么，在家么，有人在家么，有重要消息通知你哟，请按按键回复我。
-#define TALK_CONFIRM_OK_PLAY		35	//确认消息回复成功，请发上传语音。
-#define TALK_CONFIRM_ER_PLAY		36	//当前还没有人呼叫你。
 
-#ifdef DOWN_IMAGE
-#define DOWNLOAD_ING_PLAY			37	//正在下载固件。
-#define DOWNLOAD_ERROE_PLAY			38	//下载固件错误。
-#define DOWNLOAD_END_PLAY			39	//下载固件结束。
-#define DOWNLOAD_25_PLAY			40	//下载到百分之二十五。
-#define DOWNLOAD_50_PLAY			41	//下载到百分之五十。
-#define DOWNLOAD_75_PLAY			42	//下载到百分之七十五。
-#define UPDATA_NEW_PLAY				43	//有新版本，需要更新。
-#define UPDATA_START_PLAY			44	//开始更新固件。
-#define UPDATA_ERROR_PLAY			45	//更新固件错误。
-#endif
-
-#define AI_KEY_TALK_ERROR			46	//智能会话按键误触发，播放系统音
 #define MIN_10_NOT_USER_WARN		47	//10分钟不用提示用户
-#define TULING_WAIT_VOICES			48	//播放图灵系统等待音
-#define CONTINUE_PLAY_MUSIC_VOICES	49	//请继续点播吧
+#define TULING_WAIT_VOICES			148	//播放图灵系统等待音
+#define CONTINUE_PLAY_MUSIC_VOICES	149	//请继续点播吧
 
-#define HUASHANG_SLEEP_VOICES 		50	//华上睡眠提示音
-#define HUASHANG_START_10_VOICES 	51	//华上开机提示语音
+
+#define CMD_12_NOT_NETWORK			12	//网络连接失败
+#define CMD_15_START_CONFIG			15	//15、开始配网，请发送wifi名以及密码！
+#define CMD_16_CONNET_NETWORK		16	//16、正在尝试连接网络，请稍等！
+#define CMD_18_CONNET_ING			18	//18、小培老师正在努力与总部课堂连接中，请稍等！
+#define CMD_19_CONNET_ING			19	//19、网络正在连接中，请耐心等一会儿吧！
+#define CMD_20_CONNET_OK			20	//20、(8634代号)小培老师与总部课堂连接成功，我们来聊天吧！（每次连接成功的语音，包括唤醒）
+
+#define CMD_21_NOT_SCAN_WIFI		21	//21、无法扫描到您的wifi,请检查您的网络
+#define CMD_22_NOT_RECV_WIFI		22	//22、没有收到你发送的wifi,请重新发送一遍
+#define CMD_23_NOT_WIFI				23	//23、正在检查网络是否可用，请等待，或重新配网。（注：开机过程离wifi远、或者到新的环境，出现连接不上）
+
+#define CMD_26_SEND_RECV_MSG		26	//26、设备端信息发送成功音,和接收到消息音
+#define CMD_27_WAKEUP_RECV_MSG		27	//27、你有新消息，请按信息键听取吧！（唤醒之后播放，播放网络成功之后）
+#define CMD_28_WAKEUP_RECV_MSG		28	//28、你有新故事未听取,按信息键开始听吧！（唤醒之后播放，播放网络成功之后）
+
+#define CMD_29_BIND_PLAY			29	//29、小朋友请让爸爸在微信界面当中邀请小伙伴一起来聊天吧！
+#define CMD_30_RECV_BIND			30	//30、成功收到小伙伴的绑定请求。
+#define CMD_31_HANDLE_BIND			31	//31、成功处理小伙伴的绑定请求。
+
+#define CMD_32_NETWORK_FAILED		32	//32、当前网络环境差，语音发送失败，请检查网络！
+#define CMD_38_42_REQUEST_FAILED	38	//38、我给你读首诗吧！--->42、按栏目键然后再按左右键切换你想要听的本地内容吧！
+
+#define CMD_43_NOT_USER_WARN 		43	//43、小朋友，你去哪里了，请跟我一起来玩吧！！
+#define CMD_4850_SLEEP 				48	//48、亲我先去休息了，当你想我的时候，记得叫醒我喔!
+
+#define CMD_51_TF_ERROT_PLAY		51	//51、没有读到本地内容，请联系总部!
+#define CMD_52_POWER_LOW			52	//52、我饿了，请帮我充电吧!
+
+#define CMD_55_POWER_AC				55	//55、正在补充能量
+#define CMD_56_POWER_FULL			56	//56、能量补充完毕
+#define CMD_57_POWER_INTERRUPT		57	//57、能量补充断开
+
+#define CMD_58_NEW_VERSION			58	//58、发现新程序版本，正在升级，请不要关机。
+#define CMD_59_RESET_SYSTEM			59	//59、亲，我已经恢复到最初状态，正在重新启动。
+
+
+#define CMD_90_UPDATE_OK			90	//90.更新固件结束
 
 //---------------------------------------------------------
 #define VOICES_MIN	13200	//是否是大于0.5秒的音频，采样率16000、量化位16位
@@ -172,7 +173,6 @@ extern void pause_record_audio(void);
 extern int GetRecordeVoices_PthreadState(void);
 extern void start_event_talk_message(void);
 extern int SetMucClose_Time(unsigned char closeTime);
-
 extern void InitRecord_VoicesPthread(void);
 extern void ExitRecord_Voicespthread(void);
 //--------------------eventVoices.c-----------------------------------------------
@@ -204,13 +204,9 @@ extern void Create_WeixinSpeekEvent(unsigned int gpioState);
 extern void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums);
 extern void SaveRecorderVoices(const char *voices_data,int size);
 
-
-
 //--------------------message_wav.c-----------------------------------------------
-
 #define PLAY_IS_COMPLETE		1		//完整播放   ---->适用在智能会话过渡音当中，不允许打断
 #define PLAY_IS_INTERRUPT		2		//可以打断播放
-
 extern int __playResamplePlayPcmFile(const char *pcmFile,unsigned int playEventNums);
 extern int PlayWeixin_SpeekAmrFileVoices(const char *filename,unsigned int playEventNums,unsigned char mixMode);
 extern int PlaySystemAmrVoices(const char *filePath,unsigned int playEventNums);

@@ -68,12 +68,8 @@ void ReqTulingServer(HandlerText_t *handText,const char *voices_type,const char*
 	if(GetCurrentEventNums()!=handText->EventNums){	//如果当前还是处于播放等待图灵状态，表明没有其他外部事件打断，添加进去播放请求图灵服务器失败
 		return;
 	}
-	if (err == -1){	//请求服务器失败
-		Create_PlaySystemEventVoices(REQUEST_FAILED_PLAY);//播放请求服务器数据失败
-		goto exit1;
-	}
-	else if (err == 1){
-		Create_PlaySystemEventVoices(TIMEOUT_PLAY_LOCALFILE);//播放本地已经录制好的文件		
+	if (err){	//请求服务器失败
+		Create_PlaySystemEventVoices(CMD_38_42_REQUEST_FAILED);//播放请求服务器数据失败
 		goto exit1;
 	}
 	if (text){

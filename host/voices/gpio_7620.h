@@ -52,8 +52,11 @@ enum{
 	closeled,
 };
 
-#define	LED_VIGUE_OPEN	1
-#define LED_VIGUE_CLOSE	0
+#define	LIGHT_500HZ_RUNING	1
+#define LIGHT_500HZ_STOP	0
+
+#define	GPIO_ENABLE			1
+#define GPIO_DISABLE		0
 
 enum{
 	gpio3200,
@@ -61,10 +64,13 @@ enum{
 	gpio9564,
 };
 typedef struct {
+	unsigned char sig_lock;//锁
+	unsigned char bindsign;
+	unsigned char lightRunState;	//灯闪烁状态
+	unsigned char enable;
 	int fd;
 	unsigned int mount;//中断gpio口
-	unsigned char sig_lock:4,//锁
-		bindsign:4;
+
 }Gpio;
 
 //用于按键长短按复用，主要用于音量加减与上下曲按键复用
@@ -86,7 +92,7 @@ extern void enable_gpio(void);
 extern void InitMtk76xx_gpio(void);
 extern void disable_gpio(void);
 extern void clean_7620_gpio(void);
-extern void Led_vigue_open(void);
-extern void Led_vigue_close(void);
+extern void Running_light_500Hz(void);
+extern void Stop_light_500Hz(void);
 
 #endif

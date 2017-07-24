@@ -16,14 +16,12 @@ int checkconnetState(void){
 	else
 		return -1;
 }
-
 static void createSmartConfigLock(void){
 	FILE *fp = fopen(SMART_CONFIG_FILE_LOCK,"w+");
 	if(fp){
 		fclose(fp);
 	}
 }
-
 static void delSmartConfigLock(void){
 	remove(SMART_CONFIG_FILE_LOCK);
 }
@@ -36,7 +34,6 @@ static void createInternetLock(void){
 static void delInternetLock(void){
 	remove(INTEN_NETWORK_FILE_LOCK);
 }
-
 int SendSsidPasswd_toNetServer(const char *ssid,const char *passwd,int random){
 	int ret=0;
 	char* szJSON = NULL;
@@ -164,7 +161,7 @@ static void *RunSmartConfig_Task(void *arg){
 			delInternetLock();		//防止联网进程出现问题，需要手动删除  2017-03-05-22:57
 		}
 	}else{
-		wifi->connetEvent(SMART_CONFIG_FAILED); //没有收到app发送过来的ssid和passwd
+		wifi->connetEvent(CMD_22_NOT_RECV_WIFI); //没有收到app发送过来的ssid和passwd
 		delSmartConfigLock();
 		delInternetLock();	//上半段解文件锁
 	}
@@ -184,7 +181,7 @@ int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
 		WiterSmartConifg_Log("startSmartConfig  ","failed");
 		return -1;
 	}
-	ConnetEvent(START_SMARTCONFIG);	//通知用户输入wifi 密码，进行配网
+	ConnetEvent(CMD_15_START_CONFIG);	//通知用户输入wifi 密码，进行配网
 	
 	connetState = LOCK_SMART_CONFIG_WIFI;
 	ConnetWIFI *wifi =(ConnetWIFI *)calloc(1,sizeof(ConnetWIFI));
@@ -208,15 +205,18 @@ exit1:
 
 void RecvNetWorkConnetState(int event){
 	switch(event){
+		case CONNECT_OK:
+			Create_PlaySystemEventVoices(CMD_20_CONNET_OK);
+			break;
 		case NOT_FIND_WIFI:
-			Create_PlaySystemEventVoices(event);
+			Create_PlaySystemEventVoices(CMD_23_NOT_WIFI);
 			break;
 		case NOT_NETWORK:
+			Create_PlaySystemEventVoices(CMD_12_NOT_NETWORK);
 			break;
 		case CONNET_ING:
-			Create_PlaySystemEventVoices(CONNET_NETWORK);
+			Create_PlaySystemEventVoices(CMD_16_CONNET_NETWORK);
 			break;
-			
 	}
 	
 }

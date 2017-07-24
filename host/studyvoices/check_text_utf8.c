@@ -12,6 +12,7 @@
 #define CMD_SUB_VOL					3	//发现重要的text
 #define CMD_CLOSE					4	//发现重要的text
 #define CMD_ID						5	//发现重要的text
+#define CMD_AGE						6	//年龄
 
 /********************************************************
 @函数功能:      匹配文字语音控制
@@ -33,7 +34,7 @@ int CheckinfoText_forContorl(const char *infoText,const char *text,char *getPlay
 		else if(strstr(infoText,"减")||strstr(infoText,"小")){	
 			ret =CMD_SUB_VOL;
 		}
-	}else if(strstr(infoText,"拜拜")||strstr(infoText,"关机")){
+	}else if(strstr(infoText,"拜拜")||strstr(infoText,"晚安")||strstr(infoText,"你先休息")||strstr(infoText,"你先去睡觉")){
 			ret =CMD_CLOSE;
 	}else if(strstr(infoText,"id")&&strstr(infoText,"我的")){
 		ret = CMD_ID;
@@ -44,7 +45,13 @@ int CheckinfoText_forContorl(const char *infoText,const char *text,char *getPlay
 			Huashang_updatePlayindex(playIndex);
 			ret =CMD_MUSIC_MEUN;
 		}
-	}	
+	}else if(strstr(infoText,"你")&&strstr(infoText,"岁")||strstr(infoText,"你")&&strstr(infoText,"多大")){
+		ret =CMD_AGE;
+	}else if(strstr(infoText,"大声")||strstr(infoText,"听不到")){
+		ret =CMD_ADD_VOL;
+	}else if(strstr(infoText,"小声")||strstr(infoText,"太吵")){
+		ret =CMD_SUB_VOL;
+	}
 	return ret;
 }
 
@@ -52,30 +59,27 @@ int HandlerPlay_checkTextResult(int cmd,const char *playname,unsigned int playEv
 	int ret=-1;
 	char *list=NULL;
 	char *PlayText=NULL;
-	switch(cmd){
-#if defined(HUASHANG_JIAOYU)		
+	switch(cmd){		
 		case CMD_MUSIC_MEUN:
 			pause_record_audio();//需要切换到暂停状态，才能添加歌曲进去播放------------>当前状态为播放wav状态
 			Write_huashangTextLog(playname);
 			ret =__AddLocalMp3ForPaly(playname,EXTERN_PLAY_EVENT);		
-			break;
-#endif			
+			break;		
 		case CMD_WHO_NAME:
-			ret =PlaySystemAmrVoices(TULING_HAHAXIONG,playEventNums);
+			ret =PlaySystemAmrVoices(AMR_67_WHO_NAME,playEventNums);
 			break;
 		case CMD_ADD_VOL:
 			Setwm8960Vol(VOL_ADD,0);
-			ret =PlaySystemAmrVoices(VOICE_ADD,playEventNums);
+			ret =PlaySystemAmrVoices(AMR_64_ADD_VOL,playEventNums);
 			ack_VolCtr("add",GetVol());	
 			break;
 		case CMD_SUB_VOL:
 			Setwm8960Vol(VOL_SUB,0);
-			ret =PlaySystemAmrVoices(VOICE_SUB,playEventNums);
+			ret =PlaySystemAmrVoices(AMR_65_SUB_VOL,playEventNums);
 			ack_VolCtr("sub",GetVol());
 			break;
 		case CMD_CLOSE:
-			PlaySystemAmrVoices((const char *)END_SYS_VOICES,playEventNums);
-			closeSystem(0);
+			closeSystem();
 			ret =-1;
 			break;
 		case CMD_ID:
@@ -88,6 +92,9 @@ int HandlerPlay_checkTextResult(int cmd,const char *playname,unsigned int playEv
 			enabledownNetworkVoiceState();
 			ret =PlayQttsText(PlayText,QTTS_UTF8,"vinn",playEventNums,50);
 			free(PlayText);
+			break;
+		case CMD_AGE:
+			ret =PlaySystemAmrVoices(AMR_69_AGE,playEventNums);
 			break;
 	}
 	return ret;

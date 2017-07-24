@@ -473,21 +473,14 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	else if(!strcmp(pSub->valuestring,"updateHost")){	//----------->由版本监测进程发送过来	
 		pSub = cJSON_GetObjectItem(pJson, "status");
 		if(!strcmp(pSub->valuestring,"newversion")){	//有新版本，需要更新
-			Create_PlaySystemEventVoices(UPDATA_NEW_PLAY);
 		}else if(!strcmp(pSub->valuestring,"start")){	//正在下载固件
-			Create_PlaySystemEventVoices(DOWNLOAD_ING_PLAY);
 		}else if(!strcmp(pSub->valuestring,"error")){	//下载固件错误
-			Create_PlaySystemEventVoices(DOWNLOAD_ERROE_PLAY);
 		}else if(!strcmp(pSub->valuestring,"end")){ 	//下载固件结束
-			Create_PlaySystemEventVoices(DOWNLOAD_END_PLAY);
 		}else if(!strcmp(pSub->valuestring,"progress")){		//下载进度
 			pSub = cJSON_GetObjectItem(pJson, "value");
 			if(pSub->valueint==25){
-				Create_PlaySystemEventVoices(DOWNLOAD_25_PLAY);			
 			}else if(pSub->valueint==50){
-				Create_PlaySystemEventVoices(DOWNLOAD_50_PLAY);	
 			}else if(pSub->valueint==75){
-				Create_PlaySystemEventVoices(DOWNLOAD_75_PLAY);
 			}
 		}
 	}
@@ -502,7 +495,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			Create_PlaySystemEventVoices(UPDATA_ERROR_PLAY);
 #endif			
 		}else if(!strcmp(pSub->valuestring,"end")){ 	//更新固件结束
-			Create_PlaySystemEventVoices(UPDATA_END_PLAY);
+			Create_PlaySystemEventVoices(CMD_90_UPDATE_OK);
 		}
 	}//  end updateImage                // end----------->由版本监测进程发送过来
 	else if(!strcmp(pSub->valuestring,"newImage")){	// app端确认还是取消更新操作
@@ -517,30 +510,17 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	}else if(!strcmp(pSub->valuestring,"TestNet")){
 		test_brocastCtr(sockfd,peer,recvdata);
 	}else if(!strcmp(pSub->valuestring,"qtts")){
-#if defined(HUASHANG_JIAOYU)	
-		if(!strncmp(cJSON_GetObjectItem(pJson, "text")->valuestring,"123456",6)){
-			Huashang_changePlayVoicesName();
-		}
-#endif	
 		if(!strncmp(cJSON_GetObjectItem(pJson, "text")->valuestring,"openwifi",8)){
 			OpenWifi();
 		}
-#if defined(HUASHANG_JIAOYU)	
-		Create_PlaySystemEventVoices(KEY_DOWN_PLAY);
+		Create_PlaySystemEventVoices(CMD_26_SEND_RECV_MSG);
 		char *WeiXintxt =cJSON_GetObjectItem(pJson, "text")->valuestring;
 		AddWeiXinMessage_Text((const char *)WeiXintxt,strlen(WeiXintxt));
-#else
-		Create_PlayQttsEvent(cJSON_GetObjectItem(pJson, "text")->valuestring,QTTS_UTF8);
-#endif
 	}
 	else if (!strcmp(pSub->valuestring,"speek")){//微信对讲
-#if defined(HUASHANG_JIAOYU)
-		Create_PlaySystemEventVoices(KEY_DOWN_PLAY);
+		Create_PlaySystemEventVoices(CMD_26_SEND_RECV_MSG);
 		char *WeiXinFile =cJSON_GetObjectItem(pJson, "file")->valuestring;
 		AddWeiXinMessage_Voices((const char *)WeiXinFile,strlen(WeiXinFile));
-#else
-		CreatePlayWeixinVoicesSpeekEvent((const char *)cJSON_GetObjectItem(pJson, "file")->valuestring);
-#endif
 	}
 	else if (!strcmp(pSub->valuestring,"binddev")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
@@ -548,7 +528,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			Create_PlayQttsEvent(TULING_PLAY_TEXT_WEIXIN_FAILED,QTTS_GBK);
 		}else if(!strcmp(pSub->valuestring,"ask")){
 			EnableBindDev();
-			Create_PlaySystemEventVoices(BIND_SSID_PLAY);
+			Create_PlaySystemEventVoices(CMD_30_RECV_BIND);
 		}
 	}
 	else if (!strcmp(pSub->valuestring,"call")){		//微信界面发送过来的呼叫请求	
@@ -558,7 +538,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		if(!strcmp(pSub->valuestring,"ok")){			//发送成功
 		}else if(!strcmp(pSub->valuestring,"failed")){	//发送失败
 		}else if(!strcmp(pSub->valuestring,"timeout")){	//发送失败
-			Create_PlaySystemEventVoices(SEND_LINK_ER_PLAY);//"当前网络环境差，语音发送失败，请检查网络。"
+			Create_PlaySystemEventVoices(CMD_32_NETWORK_FAILED);//"当前网络环境差，语音发送失败，请检查网络。"
 		}
 	}
 	else if (!strcmp(pSub->valuestring,"clock")){

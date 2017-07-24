@@ -116,7 +116,7 @@ void lock_pause_record_audio(void){
 	}
 }
 
-void closeSystem(unsigned char eventInterrupt){
+void closeSystem(void){
 	RV->WaitSleep=SYSTEM_INIT;
 	System_StateLog("close system");
 	SleepRecoder_Phthread();
@@ -124,12 +124,7 @@ void closeSystem(unsigned char eventInterrupt){
 #if defined(HUASHANG_JIAOYU)	
 	led_lr_oc(openled);
 	Close_tlak_Light();
-	if(eventInterrupt){
-		Create_PlayImportVoices(HUASHANG_SLEEP_VOICES);
-	}else{
-		usleep(100000);
-		showFacePicture(WAIT_CTRL_NUM1);
-	}
+	Create_PlayImportVoices(CMD_4850_SLEEP);
 #else
 	SetMucClose_Time(1);	//设置一分钟后关机
 #endif
@@ -140,7 +135,7 @@ void SleepRecoder_Phthread(void){
 int SleepSystem(void){
 	if(++RV->WaitSleep>=SYSTEM_SLEEP){
 		printf("-----------------------\n close system --------------------\n");
-		closeSystem(1);
+		closeSystem();
 		return -1;
 	}
 	return 0;
@@ -183,12 +178,8 @@ static void Start_uploadVoicesData(void){
 	}
 	RV->uploadState = START_UPLOAD;
 	start_play_tuling();	//设置当前播放状态为 : 播放上传请求
-#if defined(HUASHANG_JIAOYU)
-
-//#else
 	Create_PlayImportVoices(TULING_WAIT_VOICES);
 	usleep(200);
-#endif	
 	HandlerText_t *up = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(up){
 		up->dataSize =RV->len_voices*2;
@@ -326,7 +317,7 @@ static void *PthreadRecordVoices(void *arg){
 			case TIME_SIGN:				//提示休息很久了
 				System_StateLog("time out for play music");
 				if(!SleepSystem())	{
-					Create_PlaySystemEventVoices(MIN_10_NOT_USER_WARN);
+					Create_PlaySystemEventVoices(CMD_43_NOT_USER_WARN);
 				}
 				sleep(1);
 				break;

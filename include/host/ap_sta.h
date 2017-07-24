@@ -3,7 +3,6 @@
 
 #define CONNET_ING         	9						//正在连接
 #define CONNECT_OK			10						//连接成功
-#define START_SMARTCONFIG	11						//启动配网
 #define SMART_CONFIG_OK		12
 #define NOT_FIND_WIFI		13						//没有扫描到wifi
 #define SMART_CONFIG_FAILED	14						//没有收到用户发送的wifi

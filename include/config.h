@@ -8,7 +8,7 @@
 
 #define MY_HTTP_REQ			//使用自己写的http 请求接口
 #define TULING_FILE_LOG		//开启图灵写入日志文件
-#define LOCAL_MP3		//MP3鏈湴鎾斁
+#define LOCAL_MP3			//MP3鏈湴鎾斁
 
 #define  HUASHANG_JIAOYU_PLAY_JSON_FILE		"huashang_play.json"
 
@@ -28,10 +28,6 @@
 #define URL_SDPATH			"/home/cache.tmp"		//url缂撳瓨璺緞
 #define MP3_SDPATH			"/media/mmcblk0p1/"	//url淇濆瓨璺緞
 #define MP3_LIKEPATH		"/media/mmcblk0p1/ximalaya/"//url鍠滅埍璺緞
-//#define DEBUG_PLAY_SYSTEM_IP			//开启按键按下语音播放wifi 和IP 地址功能
-//#define TEST_PLAY_EQ_MUSIC			//测试音效		
-//#define PCM_TEST						//测试保存pcm文件
-
 
 #define TULING_PLAY_TEXT_WEIXIN_FAILED	"小朋友绑定失败，请重新在微信界面输入要绑定的设备号。"
 

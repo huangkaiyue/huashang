@@ -9,9 +9,6 @@
 #include "config.h"
 
 static Gpio gpio;
-
-static int led_type;
-
 #define GVOL_ADD 	VOL_ADD
 #define GVOL_SUB 	VOL_SUB
 
@@ -29,24 +26,28 @@ void open_sys_led(void){
 void close_sys_led(void){
 	ioctl(gpio.fd, TANG_LED_OPEN);
 }
-void Led_vigue_close(void){
-	led_type=LED_VIGUE_CLOSE;
+void Stop_light_500Hz(void){
+	gpio.lightRunState=LIGHT_500HZ_STOP;
 }
-
-void Led_vigue_open(void){
-	Led_vigue_close();
-	close_sys_led();
-	usleep(500*1000);
-	open_sys_led();
-	usleep(500*1000);
-	led_type=LED_VIGUE_OPEN;
-	while(led_type==LED_VIGUE_OPEN){
+static void *__Running_light_500Hz(void *arg){
+	while(gpio.lightRunState==LIGHT_500HZ_RUNING){
 		close_sys_led();
 		usleep(500*1000);
 		open_sys_led();
 		usleep(500*1000);
 	}
 	open_sys_led();	
+	return NULL;
+}
+void Running_light_500Hz(void){
+	if(gpio.lightRunState=LIGHT_500HZ_RUNING){
+		return;
+	}
+	led_lr_oc(closeled);
+	gpio.lightRunState=LIGHT_500HZ_RUNING;
+	pool_add_task(Running_light_500Hz,NULL);
+
+
 }
 static void led_left_right(unsigned char type,unsigned char io){
 	switch(type){
@@ -87,7 +88,7 @@ void led_lr_oc(unsigned char type){
 //设备恢复出厂设置
 void ResetHostDevicesFactory(void){
 	ResetWeixinBindUserMessage();
-	Create_PlaySystemEventVoices(RESET_HOST_V_PLAY);
+	Create_PlaySystemEventVoices(CMD_59_RESET_SYSTEM);
 	system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
 }
 //接收到微信发送过来的绑定请求
@@ -99,10 +100,10 @@ void EnableBindDev(void){
 static void keyDownAck_userBind(void){
 	if(gpio.bindsign==BIND_DEV_OK){
 		BindDevToaliyun();
-		Create_PlaySystemEventVoices(BIND_OK_PLAY);
+		Create_PlaySystemEventVoices(CMD_31_HANDLE_BIND);
 		gpio.bindsign=BIND_DEV_ER;
 	}else{//没有接收到绑定请求
-		Create_PlayQttsEvent("小朋友请让爸爸妈妈在微信界面当中邀请小伙伴一起来聊天吧。",QTTS_GBK);
+		Create_PlaySystemEventVoices(CMD_29_BIND_PLAY);	
 	}
 }
 //按下音
@@ -274,8 +275,6 @@ static void signal_handler(int signum){
 			case NETWORK_KEY:		//播报WiFi名
 				ShortKeyDown_ForPlayWifiMessage();
 				break;
-				
-
 			case SPEEK_KEY:			//智能会话按键事件
 				keyUp_AndSetGpioFor_play();
 				StopTuling_RecordeVoices();
@@ -398,6 +397,9 @@ static void gpio_set_dir(int r){
 //使能按键函数
 void enable_gpio(void){
 	ralink_gpio_reg_info info;
+	if(gpio.enable==GPIO_ENABLE)
+		return;
+	gpio.enable=GPIO_ENABLE;
 	gpio_set_dir(gpio6332);
 	gpio_set_dir(gpio3200);
 
@@ -517,12 +519,15 @@ void InitMtk76xx_gpio(void){
 		perror(GPIO_DEV);
 		return ;
 	}
+	gpio.lightRunState=LIGHT_500HZ_STOP;
+	gpio.enable=GPIO_DISABLE;
 	enableUart();
-	pool_add_task(Led_vigue_open,NULL);
+	Running_light_500Hz();
 	enableResetgpio();	//使能恢复出厂设置按键 (防止开机出现死机现象，无法操作)
 }
 //去使能按键
 void disable_gpio(void){
+	gpio.enable=GPIO_DISABLE;
 	if (ioctl(gpio.fd, RALINK_GPIO_DISABLE_INTP) < 0) {
 		perror("disable ioctl");
 		close(gpio.fd);

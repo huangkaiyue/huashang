@@ -102,7 +102,7 @@ int Huashang_GetScard_forPlayMusic(unsigned char playMode,unsigned char EventSou
 	}
 	if(access(TF_SYS_PATH, F_OK)){	//检查tf卡
 		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE)
-			Create_PlaySystemEventVoices(TF_ERROT_PLAY);
+			Create_PlaySystemEventVoices(CMD_51_TF_ERROT_PLAY);
 		return ret;
 	}
 	if(playMode==PLAY_NEXT){
@@ -198,7 +198,7 @@ int Huashang_WeiXinplayMusic(int playIndex){
 	char playBuf[128]={0};
 	if(access(TF_SYS_PATH, F_OK)){	//检查tf卡
 		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE)
-			Create_PlaySystemEventVoices(TF_ERROT_PLAY);
+			Create_PlaySystemEventVoices(CMD_51_TF_ERROT_PLAY);
 		return ret;
 	}
 	if(playIndex>HUASHANG_MUSIC_TOTAL_NUM||playIndex<0){
