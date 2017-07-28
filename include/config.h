@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 //----------------------版本类-----------------------------------
-//#define WORK_INTER
+#define WORK_INTER
 
 #define HUASHANG_JIAOYU
 //----------------------功能类-----------------------------------
@@ -14,7 +14,7 @@
 
 //----------------------测试类-----------------------------------
 
-//#define TEST_MIC			//测试录音并直接播放出来
+#define TEST_MIC			//测试录音并直接播放出来
 
 
 #define ENABLE_LOG			//使能写入文件log

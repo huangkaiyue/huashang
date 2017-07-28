@@ -67,7 +67,6 @@ typedef struct {
 	unsigned char sig_lock;//锁
 	unsigned char bindsign;
 	unsigned char lightRunState;	//灯闪烁状态
-	unsigned char enable;
 	int fd;
 	unsigned int mount;//中断gpio口
 

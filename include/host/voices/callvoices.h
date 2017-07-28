@@ -122,7 +122,7 @@
 #define END_UPLOAD		0
 
 #define SYSTEM_INIT		0			//系统处于初始状态
-#define SYSTEM_SLEEP	2			//系统进入睡眠状态
+#define SYSTEM_SLEEP	4			//系统进入睡眠状态
 
 
 #define FREE_VOICE_NUMS	3
@@ -186,7 +186,7 @@ typedef struct{
 }Speek_t;
 
 extern void ShortKeyDown_ForPlayWifiMessage(void);
-extern void LongNetKeyDown_ForConfigWifi(void);
+extern int LongNetKeyDown_ForConfigWifi(void);
 
 #define	EXTERN_PLAY_EVENT	1	//外部产生邋播放事件
 #define AUTO_PLAY_EVENT		2	//内部自身产生播放事件

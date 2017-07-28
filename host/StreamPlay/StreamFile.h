@@ -61,7 +61,7 @@ extern Mp3Stream *st;
 
 //#define STREAM_DEBUG(fmt, args...)	printf("%s: "fmt,__func__, ## args)
 
-//#define DBG_STREAM
+#define DBG_STREAM
 #ifdef 	DBG_STREAM
 #define DEBUG_STREAM(fmt, args...) printf("%s: " fmt,__func__, ## args)
 #else   

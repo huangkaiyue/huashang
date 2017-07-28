@@ -269,21 +269,23 @@ void PlayWakeUpVoices(void){
 }
 static void signal_handler(int signum){
 	static key_mutiple_t mutiple_key_SUB,mutiple_key_ADD,mutiple_key_speek,mutiple_key_weixin;
+	printf("%s : recv signum =%d\n",__func__,signum);
 	//拿到底层按键事件号码
 	if (ioctl(gpio.fd, TANG_GET_NUMBER,&gpio.mount) < 0){
 		perror("ioctl");
-		close(gpio.fd);
 		return ;
 	}
-	printf("signum = %d\n",signum);
-	if(check_lock_msgEv()){
+	printf("%s : signum = %d gpio.mount=%d\n",__func__,signum,gpio.mount);
+	if(check_lock_msgEv()&&gpio.mount!=RESET_KEY){
 		printf("error is lock signal_handler\n");
 		return ;
 	}
 	lock_msgEv();
 	if(checkAndWakeupSystem()){
+		printf("%s : signum = %d gpio.mount=%d  exit\n",__func__,signum,gpio.mount);
 		return ;
 	}
+	printf("%s : signum = %d gpio.mount=%d  GPIO_UP=%d\n",__func__,signum,gpio.mount,GPIO_UP);
 	if (signum == GPIO_UP){			//短按按键事件
 		switch(gpio.mount){
 			case NETWORK_KEY:		//播报WiFi名
@@ -328,7 +330,9 @@ static void signal_handler(int signum){
 				break;
 									
 			case NETWORK_KEY://配网键
-				LongNetKeyDown_ForConfigWifi();
+				if(!LongNetKeyDown_ForConfigWifi()){
+					return;
+				}
 				break;
 				
 			case SPEEK_KEY://会话键
@@ -383,7 +387,7 @@ static void signal_handler(int signum){
 		DEBUG_GPIO("signal down (%d) !!!\n",gpio.mount);
 	}
 	else{
-		DEBUG_GPIO("not know signum ...\n");
+		DEBUG_GPIO("unknow signum ...\n");
 	}
 exit0:	
 	unlock_msgEv();
@@ -410,19 +414,24 @@ static void gpio_set_dir(int r){
 }
 //使能按键函数
 void enable_gpio(void){
-	ralink_gpio_reg_info info;
-	if(gpio.enable==GPIO_ENABLE)
-		return;
-	gpio.enable=GPIO_ENABLE;
-	gpio_set_dir(gpio6332);
-	gpio_set_dir(gpio3200);
-
+	unlock_msgEv();
+	signal(SIGUSR1, signal_handler);
+	signal(SIGUSR2, signal_handler);
+}
+//初始化GPIO
+static void enableResetgpio(void){
+	if (ioctl(gpio.fd, RALINK_GPIO6332_SET_DIR_IN, (0x1<<6)) < 0) {
+		perror("ioctl");
+		close(gpio.fd);
+		return ;
+	}
 	if (ioctl(gpio.fd, RALINK_GPIO_ENABLE_INTP) < 0) {
 		perror("ioctl");
 		close(gpio.fd);
 		return ;
 	}
-//------------------------------------------------------------
+	//使能恢复出厂设置按键
+	ralink_gpio_reg_info info;
 	info.pid = getpid();
 	info.irq = RESET_KEY;
 	if (ioctl(gpio.fd, RALINK_GPIO_REG_IRQ, &info) < 0) {
@@ -430,6 +439,11 @@ void enable_gpio(void){
 		close(gpio.fd);
 		return ;
 	}
+
+	gpio_set_dir(gpio6332);
+	gpio_set_dir(gpio3200);
+
+//------------------------------------------------------------
 	info.pid = getpid();
 	info.irq = NETWORK_KEY;
 	if (ioctl(gpio.fd, RALINK_GPIO_REG_IRQ, &info) < 0) {
@@ -495,31 +509,11 @@ void enable_gpio(void){
 	}
 	signal(SIGUSR1, signal_handler);
 	signal(SIGUSR2, signal_handler);
+	printf("................enable gpio.......... ok \n");
 }
-//初始化GPIO
-static void enableResetgpio(void){
-	if (ioctl(gpio.fd, RALINK_GPIO6332_SET_DIR_IN, (0x1<<6)) < 0) {
-		perror("ioctl");
-		close(gpio.fd);
-		return ;
-	}
-	if (ioctl(gpio.fd, RALINK_GPIO_ENABLE_INTP) < 0) {
-		perror("ioctl");
-		close(gpio.fd);
-		return ;
-	}
-#if 1	//使能恢复出厂设置按键
-	ralink_gpio_reg_info info;
-	info.pid = getpid();
-	info.irq = RESET_KEY;
-	if (ioctl(gpio.fd, RALINK_GPIO_REG_IRQ, &info) < 0) {
-		perror("ioctl");
-		close(gpio.fd);
-		return ;
-	}
-#endif
-	signal(SIGUSR1, signal_handler);
-	signal(SIGUSR2, signal_handler);
+//去使能按键
+void disable_gpio(void){
+	lock_msgEv();
 }
 /*
 @ 
@@ -534,21 +528,12 @@ void InitMtk76xx_gpio(void){
 		return ;
 	}
 	gpio.lightRunState=LIGHT_500HZ_STOP;
-	gpio.enable=GPIO_DISABLE;
 	enableUart();
 	Running_light_500Hz();
 	enableResetgpio();	//使能恢复出厂设置按键 (防止开机出现死机现象，无法操作)
+	disable_gpio();
 }
-//去使能按键
-void disable_gpio(void){
-	gpio.enable=GPIO_DISABLE;
-	if (ioctl(gpio.fd, RALINK_GPIO_DISABLE_INTP) < 0) {
-		perror("disable ioctl");
-		close(gpio.fd);
-		return ;
-	}
-	enableResetgpio();	//使能恢复出厂设置按键
-}
+
 //清除GPIO
 void CleanMtk76xx_gpio(void){
 	sleep(1);

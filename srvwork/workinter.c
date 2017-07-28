@@ -35,6 +35,12 @@ void pasreInputCmd(const char *com){
 		test_single_playurl();
 	}else if(!strcmp(com, "4")){
 		memcpy(p,"123456",6);
+	}else if(!strcmp(com, "en")){
+		enable_gpio();
+	}else if(!strcmp(com, "q")){
+		CleanSystemResources();
+	}else if(!strcmp(com, "reset")){
+		system("restartNetwork.sh &");
 	}
 }
 #endif	//end WORK_INTER

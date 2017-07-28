@@ -107,7 +107,7 @@ void ShortKeyDown_ForPlayWifiMessage(void){
 #else
 		snprintf(wifiMessage,128,"已连接 wifi %s ",wifi);
 #endif	
-		Create_PlayQttsEvent(wifiMessage,QTTS_GBK);
+		Create_PlayQttsEvent(wifiMessage,QTTS_UTF8);
 	}
 }
 
@@ -116,19 +116,25 @@ void ShortKeyDown_ForPlayWifiMessage(void){
 参数: 无
 返回值: 无
 ********************************************************/
-void LongNetKeyDown_ForConfigWifi(void){
+int LongNetKeyDown_ForConfigWifi(void){
 	CheckNetManger_PidRunState();
 	WiterSmartConifg_Log("Network key down","ok");
 	if(!checkInternetFile()){
 		WiterSmartConifg_Log("startSmartConfig checkInternetFile","failed");
-		return;
+		return -1;
 	}
 	if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){//处于播放事件当中，不予许配网
-		disable_gpio();
-		startSmartConfig(Create_PlaySystemEventVoices,enable_gpio);	
-	}else{		
-		WiterSmartConifg_Log("startSmartConfig  failed ","is not RECODE_PAUSE");
-	}
+		if(access(INTEN_NETWORK_FILE_LOCK,F_OK)<0){
+			disable_gpio();
+			Create_PlaySystemEventVoices(CMD_15_START_CONFIG);
+			//startSmartConfig(Create_PlaySystemEventVoices,enable_gpio);	
+			system("smartconfig &");
+			return 0;
+		}
+	}	
+	printf("startSmartConfig  failed is not RECODE_PAUSE\n");
+	WiterSmartConifg_Log("startSmartConfig  failed ","is not RECODE_PAUSE");
+	return -1;
 }
 //连接成功设置工作指示灯,更新muc时间
 static void Link_NetworkOk(void){
@@ -389,14 +395,15 @@ void Create_PlaySystemEventVoices(int sys_voices){
 		return;
 	}
 	char addsys_voices[128]={0};
-	sprintf(addsys_voices,"Create_PlaySystemEventVoices%d",sys_voices);
-	printf("addsys_voices =%s\n",addsys_voices);
+	sprintf(addsys_voices,"Create_PlaySystemEventVoices  %d",sys_voices);
+	printf("\naddsys_voices =%s\n",addsys_voices);
 	Write_huashangTextLog(addsys_voices);
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext){
 		handtext->EventNums =updateCurrentEventNums();
 		handtext->playLocalVoicesIndex =sys_voices;
 		handtext->event =SYS_VOICES_EVENT;
+		printf("\n  add sys_voices ok=%d\n",sys_voices);
 		AddworkEvent(handtext,sizeof(HandlerText_t));
 	}	
 }
@@ -415,6 +422,7 @@ void UartEventcallFuntion(int event){
 	updateCurrentEventNums();
 	switch(event){
 		case UART_EVENT_CLOSE_SYSTEM:		//串口发送关机事件
+			printf("\nuart close system \n");
 			Mute_voices(MUTE);				//关闭功放
 			Close_Mtk76xxSystem();			//关机处理和保存后台数据
 			disable_gpio();					//关闭gpio中断功能,防止关机过程再产生按键事件

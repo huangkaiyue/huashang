@@ -48,10 +48,12 @@ int getEventNum(void){
 ********************************************************/
 int AddworkEvent(HandlerText_t *eventMsg,int msgSize){
 	if(event_lock){
+		printf("event_lock add error  \n");
 		WriteEventlockLog("event_lock add error",event_lock);
 		return -1;
 	}
 	WriteEventlockLog("event_lock add ok",event_lock);
+	printf("AddworkEvent ok getEventNum =%d  \n",getEventNum());
 	return putMsgQueue(EventQue,(const char *)eventMsg,msgSize);
 }
 /*
@@ -296,6 +298,7 @@ static void runJsonEvent(HandlerText_t *handText){
 void cleanQuequeEvent(void){
 	char *msg;
 	int msgSize;
+	printf("\n cleanQuequeEvent \n");
 	event_lock=1;	//受保护状态事件
 	while(getWorkMsgNum(EventQue)){
 		getMsgQueue(EventQue,&msg,&msgSize);
@@ -321,6 +324,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 		case SYS_VOICES_EVENT:		//系统音事件
 			start_event_play_wav();	//切换成wav模式，播放系统音正常退出，则自动切换到挂起状态，否则保留最新打断状态
 			Handle_PlaySystemEventVoices(handText->playLocalVoicesIndex,handText->EventNums);
+			free((void *)handText);
 			break;
 			
 		case SET_RATE_EVENT:		//URL清理事件

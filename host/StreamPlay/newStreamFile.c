@@ -189,15 +189,18 @@ static void NetEndDown(int downLen){
 		fclose(st->wfp);
 	st->wfp=NULL;
 }
-
+static int error_timeout_check=0;
 //退出当前流下载和播放
 void NetStreamExitFile(void){
+	if(error_timeout_check>0){
+		return;
+	}
+	error_timeout_check=1;
 	if(getDownState()==DOWN_ING){		//退出下载
 		quitDownFile();
 		WriteEventlockLog("eventlock quitDownFile",2);
 	}
 	printf("%s: rate =%d\n",__func__,st->rate);
-	int error_timeout_check=0;
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//退出播放
 		pthread_mutex_lock(&st->mutex);
 		st->player.progress=0;
@@ -207,23 +210,24 @@ void NetStreamExitFile(void){
 		DecodeExit();
 		pthread_mutex_unlock(&st->mutex);
 		WriteEventlockLog("eventlock wait exit mp3 state",(int)st->player.playState);
-		printf("%s: while wait exit ...\n",__func__);
+		printf("%s: while wait exit error_timeout_check=%d st->player.playState=%d\n",__func__,error_timeout_check,st->player.playState);
 		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
 			WriteEventlockLog("error exit ,and set  ",(int)st->player.playState);
 			printf("%s: error RECODE_PAUSE exit ,and set ... st->player.playState=%d\n",__func__,st->player.playState);
 			st->player.playState=MAD_NEXT;
 			break;
 		}
-		if(++error_timeout_check>300000){
+		if(++error_timeout_check>20){
 			WriteEventlockLog("error timeout_check ,and set exit",(int)st->player.playState);
 			printf("%s: error timeout_check exit ,and set ... st->player.playState=%d\n",__func__,st->player.playState);
 			st->player.playState=MAD_NEXT;
 			break;
 		}
-		usleep(100);
+		usleep(1000);
 	}
-	printf("%s: paly end ... st->player.playState=%d\n",__func__,st->player.playState);
+	printf("%s: play end ... st->player.playState=%d\n",__func__,st->player.playState);
 	WriteEventlockLog("eventlock exit end",st->player.playState);
+	error_timeout_check=0;
 }
 
 //拷贝推送过来的信息

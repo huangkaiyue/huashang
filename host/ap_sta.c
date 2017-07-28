@@ -106,6 +106,7 @@ static void *CheckNetWork_taskRunState(void *arg){
 	}
 	return NULL;
 }
+#if 0
 static void *RunSmartConfig_Task(void *arg){
   	FILE *fp=NULL;
    	char *buf, *ptr;
@@ -120,7 +121,7 @@ static void *RunSmartConfig_Task(void *arg){
 	}	
 	createSmartConfigLock();
 	system("iwpriv apcli0 elian start");
-	while (++timeout<400){	
+	while (++timeout<400){	//100--->400
 		//必须实时打开管道，才能读取到更新的数据
 		if((fp = popen("iwpriv apcli0 elian result", "r"))==NULL){
 			fprintf(stderr, "%s: iwpriv apcli0 elian result failed !\n", __func__);
@@ -168,12 +169,14 @@ static void *RunSmartConfig_Task(void *arg){
 	free(buf);
 exit0:	
 	connetState=UNLOCK_SMART_CONFIG_WIFI;
+	printf("enable gpio \n");
 	wifi->enableGpio();
 	free(wifi);
 	wifi=NULL;
 	pthread_create_attr(CheckNetWork_taskRunState, NULL);
 	return NULL;
 }
+
 int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
 	WiterSmartConifg_Log("startSmartConfig ","start");
 	int ret=-1;
@@ -202,7 +205,84 @@ exit1:
 	delInternetLock();	//上半段解文件锁
 	return ret;
 }
+#else
+static void *test_RunSmartConfig_Task(void *arg){
+  	FILE *fp=NULL;
+   	char *buf, *ptr;
+	char ssid[64]={0},pwd[64]={0};
+	int ret=-1,timeout=0;
+	int random=0;
+	//ConnetWIFI *wifi = (ConnetWIFI *)arg;
+	buf = (char *)calloc(512,1);
+	if(buf==NULL){
+		perror("calloc failed ");
+		goto exit0;
+	}	
+	createSmartConfigLock();
+	system("iwpriv apcli0 elian start");
+	while (++timeout<100){	//100--->400
+		usleep(100000);
+		continue;
+		//必须实时打开管道，才能读取到更新的数据
+		if((fp = popen("iwpriv apcli0 elian result", "r"))==NULL){
+			fprintf(stderr, "%s: iwpriv apcli0 elian result failed !\n", __func__);
+			break;
+		}
+		memset(buf,0,512);
+		fgets(buf, 512, fp);
+		ptr =buf; 
 
+		if(!GetSsidAndPasswd(ptr,ssid,pwd,&random)){
+			DEBUG_AP_STA("ssid:%s   pwd:%s\n",ssid,pwd);
+			ret=0;
+			break;
+		}
+		usleep(100000);
+		
+		memset(ssid,0,64);
+		memset(pwd,0,64);
+		pclose(fp);
+	}
+	timeout=0;
+	system("iwpriv apcli0 elian stop");
+	system("iwpriv apcli0 elian clear");
+	if(ret==0){
+		//snprintf(wifi->ssid,64,"%s",ssid);
+		//snprintf(wifi->passwd,64,"%s",pwd);
+		SendSsidPasswd_toNetServer(ssid,pwd,random);//已经接收到ssid 和 passwd
+		delSmartConfigLock();
+		sleep(5);
+		while(++timeout<40){	//等待配网成功后，使能按键
+			sleep(1);
+			if(checkInternetFile()){
+				sleep(5);
+				break;
+			}
+		}
+		if(timeout>=40){
+			delInternetLock();		//防止联网进程出现问题，需要手动删除  2017-03-05-22:57
+		}
+	}else{
+		//wifi->connetEvent(CMD_22_NOT_RECV_WIFI); //没有收到app发送过来的ssid和passwd
+		delSmartConfigLock();
+		delInternetLock();	//上半段解文件锁
+	}
+	free(buf);
+exit0:	
+	connetState=UNLOCK_SMART_CONFIG_WIFI;
+	printf("enable gpio \n");
+	enable_gpio();
+	pthread_create_attr(CheckNetWork_taskRunState, NULL);
+	return NULL;
+}
+
+int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
+	pthread_create_attr(test_RunSmartConfig_Task, NULL);
+	usleep(200);
+	return 0;
+}
+
+#endif
 void RecvNetWorkConnetState(int event){
 	switch(event){
 		case CONNECT_OK:
@@ -216,6 +296,10 @@ void RecvNetWorkConnetState(int event){
 			break;
 		case CONNET_ING:
 			Create_PlaySystemEventVoices(CMD_16_CONNET_NETWORK);
+			break;
+		case CMD_22_NOT_RECV_WIFI:
+			Create_PlaySystemEventVoices(CMD_22_NOT_RECV_WIFI);
+			enable_gpio();
 			break;
 	}
 	
