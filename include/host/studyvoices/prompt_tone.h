@@ -72,72 +72,70 @@
 #define AMR_21_NOT_SCAN_WIFI		"qtts/21.amr"		//21、无法扫描到您的wifi,请检查您的网络
 #define AMR_22_NOT_RECV_WIFI		"qtts/22.amr"		//22、没有收到你发送的wifi,请重新发送一遍
 #define AMR_23_CHECK_NETWORk		"qtts/23.amr"		//23、正在检查网络是否可用，请等待，或重新配网。（注：开机过程离wifi远、或者到新的环境，出现连接不上）
+#define AMR_24_NEW_MESSAGE			"qtts/24.amr"		//24、你有新消息，请按信息键听取吧！
+#define AMR_25_NEW_STROY			"qtts/25.amr"		//25、你有新故事未听取,按信息键开始听吧！
 
-#define AMR_26_SEND_RECV			"qtts/26.amr"		//26、设备端信息发送成功音,和接收到消息音
+#define AMR_26_BIND					"qtts/26.amr"		//26、小朋友请让爸爸在微信界面当中邀请小伙伴一起来聊天吧！
+#define AMR_27_RECV_BIND			"qtts/27.amr"		//27、成功收到小伙伴的绑定请求。
+#define AMR_28_BIND_OK				"qtts/28.amr"		//28、成功处理小伙伴的绑定请求。
 
-
-#define AMR_27_NEW_MESSAGE			"qtts/27.amr"		//27、你有新消息，请按信息键听取吧！
-#define AMR_28_NEW_STROY			"qtts/28.amr"		//28、你有新故事未听取,按信息键开始听吧！
-#define AMR_29_BIND					"qtts/29.amr"		//29、小朋友请让爸爸在微信界面当中邀请小伙伴一起来聊天吧！
-#define AMR_30_RECV_BIND			"qtts/30.amr"		//30、成功收到小伙伴的绑定请求。
-#define AMR_31_BIND_OK				"qtts/31.amr"		//31、成功处理小伙伴的绑定请求。
-
-#define AMR_32_NETWORK_FAILED		"qtts/32.amr"		//32、当前网络环境差，语音发送失败，请检查网络！
+#define AMR_29_NETWORK_FAILED		"qtts/29.amr"		//29、当前网络环境差，语音发送失败，请检查网络！
 
 
-#define AMR_33_AI_FAILED			"qtts/33.amr"		//33、不好意思，我没听清楚您说什么，请再说一遍！
-#define AMR_34_AI_FAILED			"qtts/34.amr"		//34、你在跟我说悄悄话吗？我没听清楚，能再说一遍吗？
-#define AMR_35_AI_FAILED			"qtts/35.amr"		//35、这个可难倒我了，我们换个话题吧！
-#define AMR_36_AI_FAILED			"qtts/36.amr"		//36、长按我头顶上的按键有提示音时我才能听到你说什么呢！
-#define AMR_37_AI_FAILED			"qtts/37.amr"		//37、请长按头顶按键听到提示音后才跟我对话
+#define AMR_30_AI_FAILED			"qtts/30.amr"		//30、不好意思，我没听清楚您说什么，请再说一遍！
+#define AMR_31_AI_FAILED			"qtts/31.amr"		//31、你在跟我说悄悄话吗？我没听清楚，能再说一遍吗？
+#define AMR_32_AI_FAILED			"qtts/32.amr"		//32、这个可难倒我了，我们换个话题吧！
+#define AMR_33_AI_FAILED			"qtts/33.amr"		//33、长按我头顶上的按键有提示音时我才能听到你说什么呢！
+#define AMR_34_AI_FAILED			"qtts/34.amr"		//34、请长按头顶按键听到提示音后才跟我对话
 
-#define AMR_38_AI_STROY_0			"qtts/38.amr"		//38、我给你读首诗吧！
-#define AMR_39_AI_STROY_1			"qtts/39.amr"		//39、我给你讲个笑话吧！
-#define AMR_40_AI_STROY_2			"qtts/40.amr"		//40、我给你讲个故事吧！
-#define AMR_41_AI_STROY_3			"qtts/41.amr"		//41、我给你讲讲百科知识吧。
-#define AMR_42_AI_STROY_4			"qtts/42.amr"		//42、按栏目键然后再按左右键切换你想要听的本地内容吧！
-
-
-#define AMR_43_NOT_USR				"qtts/43.amr"		//43、小朋友，你去哪里了，请跟我一起来玩吧！！
-#define AMR_44_LISTEN_MUSIC			"qtts/44.amr"		//44、要不我们今天听一下歌曲！
-#define AMR_45_LISTEN_GUOXUE		"qtts/45.amr"		//45、小朋友，要不我们今天学习一下国学内容吧，我的国学知识很丰富的!
-#define AMR_46_LISTEN_CHENGYU		"qtts/46.amr"		//46、要不我们今天学习一下成语!
-#define AMR_47_LONG_NOT_USR			"qtts/47.amr"		//47、小伙伴,在家想爸爸妈妈吗？快用我给爸爸妈妈发微聊吧!按住我的微聊键发语音然后松开，爸爸妈妈就能马上收到你的思念了！
+#define AMR_35_AI_STROY_0			"qtts/35.amr"		//35、我给你读首诗吧！
+#define AMR_36_AI_STROY_1			"qtts/36.amr"		//36、我给你讲个笑话吧！
+#define AMR_37_AI_STROY_2			"qtts/37.amr"		//37、我给你讲个故事吧！
+#define AMR_38_AI_STROY_3			"qtts/38.amr"		//38、我给你讲讲百科知识吧。
+#define AMR_39_AI_STROY_4			"qtts/39.amr"		//39、按栏目键然后再按左右键切换你想要听的本地内容吧！
 
 
-#define AMR_48_SLEEP_1				"qtts/48.amr"		//48、亲我先去休息了，当你想我的时候，记得叫醒我喔!
-#define AMR_49_SLEEP_2				"qtts/49.amr"		//49、今天就先陪你到这里，我们先休息一下再继续吧。
-#define AMR_50_SLEEP_3				"qtts/50.amr"		//50、没人理我，我先去总部学习去了,当你想问我问题的时候再叫醒我吧。
+#define AMR_40_NOT_USR				"qtts/40.amr"		//40、小朋友，你去哪里了，请跟我一起来玩吧！！
+#define AMR_41_LISTEN_MUSIC			"qtts/41.amr"		//41、要不我们今天听一下歌曲！
+#define AMR_42_LISTEN_GUOXUE		"qtts/42.amr"		//42、小朋友，要不我们今天学习一下国学内容吧，我的国学知识很丰富的!
+#define AMR_43_LISTEN_CHENGYU		"qtts/43.amr"		//43、要不我们今天学习一下成语!
+#define AMR_44_LONG_NOT_USR			"qtts/44.amr"		//44、小伙伴,在家想爸爸妈妈吗？快用我给爸爸妈妈发微聊吧!按住我的微聊键发语音然后松开，爸爸妈妈就能马上收到你的思念了！
 
-#define AMR_51_NOT_SCARD			"qtts/51.amr"		//51、没有读到本地内容，请联系总部!
 
-#define AMR_52_POWER_LOW			"qtts/52.amr"		//52、我饿了，请帮我充电吧!
-#define AMR_53_POWER_OFF_1			"qtts/53.amr"		//53、电池电量过低，即将关机。
-#define AMR_54_POWER_OFF_1			"qtts/54.amr"		//54、饿晕了，没能量了，即将关机。
-#define AMR_55_POWER_AC				"qtts/55.amr"		//55、正在补充能量
-#define AMR_56_POWER_FULL			"qtts/56.amr"		//56、能量补充完毕
-#define AMR_57_POWER_DISCONNET		"qtts/57.amr"		//57、能量补充断开
+#define AMR_45_SLEEP_1				"qtts/45.amr"		//45、亲我先去休息了，当你想我的时候，记得叫醒我喔!
+#define AMR_46_SLEEP_2				"qtts/46.amr"		//46、今天就先陪你到这里，我们先休息一下再继续吧。
+#define AMR_47_SLEEP_3				"qtts/47.amr"		//47、没人理我，我先去总部学习去了,当你想问我问题的时候再叫醒我吧。
 
-#define AMR_58_NEW_VERSION			"qtts/58.amr"		//58、发现新程序版本，正在升级，请不要关机。
-#define AMR_59_RESET				"qtts/59.amr"		//59、亲，我已经恢复到最初状态，正在重新启动。
+#define AMR_48_NOT_SCARD			"qtts/48.amr"		//48、没有读到本地内容，请联系总部!
 
-#define AMR_60_key_down				"qtts/60.amr"		//60、设备端对话按键按下
-#define AMR_61_key_up				"qtts/61.amr"		//61、设备端对话按键弹起
-#define AMR_62_send_ok				"qtts/62.amr"		//62、设备端信息发送成功音。
-#define AMR_63_recv_message			"qtts/63.amr"		//63、请稍等，正在接受总部信息。
+#define AMR_49_POWER_LOW			"qtts/49.amr"		//49、我饿了，请帮我充电吧!
+#define AMR_50_POWER_OFF_1			"qtts/50.amr"		//50、电池电量过低，即将关机。
+#define AMR_51_POWER_OFF_1			"qtts/51.amr"		//51、饿晕了，没能量了，即将关机。
+#define AMR_52_POWER_AC				"qtts/52.amr"		//52、正在补充能量
+#define AMR_53_POWER_FULL			"qtts/53.amr"		//53、能量补充完毕
+#define AMR_54_POWER_DISCONNET		"qtts/54.amr"		//54、能量补充断开
 
-#define AMR_64_ADD_VOL				"qtts/64.amr"		//64、加大音量
-#define AMR_65_SUB_VOL				"qtts/65.amr"		//65、减小音量
-#define AMR_66_CLOSE_SYSTEM			"qtts/66.amr"		//66、关机
-#define AMR_67_WHO_NAME				"qtts/67.amr"		//67、我是小培老师开心又可爱的智能教育机器人。
-#define AMR_68_WHO_NAME				"qtts/68.amr"		//68、我是小培老师，你的好朋友啊！
-#define AMR_69_AGE					"qtts/69.amr"		//69、我比你大一点
+#define AMR_55_NEW_VERSION			"qtts/55.amr"		//55、发现新程序版本，正在升级，请不要关机。
+#define AMR_56_RESET				"qtts/56.amr"		//56、亲，我已经恢复到最初状态，正在重新启动。
+
+#define AMR_57_recv_message			"qtts/57.amr"		//57、请稍等，正在接受总部信息。
+
+#define AMR_58_WHO_NAME				"qtts/58.amr"		//58、我是小培老师开心又可爱的智能教育机器人。
+#define AMR_59_WHO_NAME				"qtts/59.amr"		//59、我是小培老师，你的好朋友啊！
+#define AMR_60_AGE					"qtts/60.amr"		//60、我比你大一点
+
+
+#define AMR_ADD_VOL					"qtts/add_vol.amr"		//64、加大音量
+#define AMR_SUB_VOL					"qtts/sub_vol.amr"		//65、减小音量
+
+
 
 #define AMR_WEIXIN_SEND_ERROR		"qtts/weixin_send_error.amr"	//消息弄丢了呜呜!
 #define AMR_UPDATE_OK				"qtts/update_ok_8K.amr"			//更新固件结束
 #define TIMEOUT_baike				"qtts/timeOut_baike.amr"		//上知天文，下知地理，我给你讲百科知识吧!
 #define TIMEOUT_sleep				"qtts/timeOut_sleep.amr"		//小朋友今天已经很晚了，早睡早起做一个乖宝宝，我给你放睡眠曲吧!
 #define TULING_WINT					"qtts/TuLin_Wint_8K.amr"		//请稍等  
+#define AMR_WEIXIN_SEND_OK			"qtts/weixin_send_ok.amr"
 
 /*******************************************************************************
 零时音频文件路径

@@ -79,29 +79,29 @@
 #define CMD_22_NOT_RECV_WIFI		22	//22、没有收到你发送的wifi,请重新发送一遍
 #define CMD_23_NOT_WIFI				23	//23、正在检查网络是否可用，请等待，或重新配网。（注：开机过程离wifi远、或者到新的环境，出现连接不上）
 
-#define CMD_26_SEND_RECV_MSG		26	//26、设备端信息发送成功音,和接收到消息音
-#define CMD_27_WAKEUP_RECV_MSG		27	//27、你有新消息，请按信息键听取吧！（唤醒之后播放，播放网络成功之后）
-#define CMD_28_WAKEUP_RECV_MSG		28	//28、你有新故事未听取,按信息键开始听吧！（唤醒之后播放，播放网络成功之后）
+#define CMD_24_WAKEUP_RECV_MSG		24	//24、你有新消息，请按信息键听取吧！（唤醒之后播放，播放网络成功之后）
+#define CMD_25_WAKEUP_RECV_MSG		25	//25、你有新故事未听取,按信息键开始听吧！（唤醒之后播放，播放网络成功之后）
 
-#define CMD_29_BIND_PLAY			29	//29、小朋友请让爸爸在微信界面当中邀请小伙伴一起来聊天吧！
-#define CMD_30_RECV_BIND			30	//30、成功收到小伙伴的绑定请求。
-#define CMD_31_HANDLE_BIND			31	//31、成功处理小伙伴的绑定请求。
+#define CMD_26_BIND_PLAY			26	//26、小朋友请让爸爸在微信界面当中邀请小伙伴一起来聊天吧！
+#define CMD_27_RECV_BIND			27	//27、成功收到小伙伴的绑定请求。
+#define CMD_28_HANDLE_BIND			28	//28、成功处理小伙伴的绑定请求。
 
-#define CMD_32_NETWORK_FAILED		32	//32、当前网络环境差，语音发送失败，请检查网络！
-#define CMD_38_42_REQUEST_FAILED	38	//38、我给你读首诗吧！--->42、按栏目键然后再按左右键切换你想要听的本地内容吧！
+#define CMD_29_NETWORK_FAILED		29	//29、当前网络环境差，语音发送失败，请检查网络！
+#define CMD_35_39_REQUEST_FAILED	35	//35、我给你读首诗吧！--->42、按栏目键然后再按左右键切换你想要听的本地内容吧！
 
-#define CMD_43_NOT_USER_WARN 		43	//43、小朋友，你去哪里了，请跟我一起来玩吧！！
-#define CMD_4850_SLEEP 				48	//48、亲我先去休息了，当你想我的时候，记得叫醒我喔!
+#define CMD_40_NOT_USER_WARN 		40	//40、小朋友，你去哪里了，请跟我一起来玩吧！！
+#define CMD_4547_SLEEP 				45	//45、亲我先去休息了，当你想我的时候，记得叫醒我喔!
 
-#define CMD_51_TF_ERROT_PLAY		51	//51、没有读到本地内容，请联系总部!
-#define CMD_52_POWER_LOW			52	//52、我饿了，请帮我充电吧!
+#define CMD_48_TF_ERROT_PLAY		48	//48、没有读到本地内容，请联系总部!
+#define CMD_4951_POWER_LOW			49	//49、我饿了，请帮我充电吧!
 
-#define CMD_55_POWER_AC				55	//55、正在补充能量
-#define CMD_56_POWER_FULL			56	//56、能量补充完毕
-#define CMD_57_POWER_INTERRUPT		57	//57、能量补充断开
 
-#define CMD_58_NEW_VERSION			58	//58、发现新程序版本，正在升级，请不要关机。
-#define CMD_59_RESET_SYSTEM			59	//59、亲，我已经恢复到最初状态，正在重新启动。
+#define CMD_52_POWER_AC				52	//52、正在补充能量
+#define CMD_53_POWER_FULL			53	//53、能量补充完毕
+#define CMD_54_POWER_INTERRUPT		54	//54、能量补充断开
+
+#define CMD_55_NEW_VERSION			55	//55、发现新程序版本，正在升级，请不要关机。
+#define CMD_56_RESET_SYSTEM			56	//56、亲，我已经恢复到最初状态，正在重新启动。
 
 
 #define CMD_90_UPDATE_OK			90	//90.更新固件结束

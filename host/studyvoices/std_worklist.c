@@ -71,7 +71,7 @@ void ReqTulingServer(HandlerText_t *handText,const char *voices_type,const char*
 		return;
 	}
 	if (err){	//请求服务器失败
-		Create_PlaySystemEventVoices(CMD_38_42_REQUEST_FAILED);//播放请求服务器数据失败
+		Create_PlaySystemEventVoices(CMD_35_39_REQUEST_FAILED);//播放请求服务器数据失败
 		goto exit1;
 	}
 	if (text){

@@ -124,7 +124,7 @@ void closeSystem(void){
 #if defined(HUASHANG_JIAOYU)	
 	led_lr_oc(openled);
 	Close_tlak_Light();
-	Create_PlayImportVoices(CMD_4850_SLEEP);
+	Create_PlayImportVoices(CMD_4547_SLEEP);
 #else
 	SetMucClose_Time(1);	//设置一分钟后关机
 #endif
@@ -317,7 +317,7 @@ static void *PthreadRecordVoices(void *arg){
 			case TIME_SIGN:				//提示休息很久了
 				System_StateLog("time out for play music");
 				if(!SleepSystem())	{
-					Create_PlaySystemEventVoices(CMD_43_NOT_USER_WARN);
+					Create_PlaySystemEventVoices(CMD_40_NOT_USER_WARN);
 				}
 				sleep(1);
 				break;

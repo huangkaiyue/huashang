@@ -513,12 +513,12 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		if(!strncmp(cJSON_GetObjectItem(pJson, "text")->valuestring,"openwifi",8)){
 			OpenWifi();
 		}
-		Create_PlaySystemEventVoices(CMD_26_SEND_RECV_MSG);
+		Create_PlaySystemEventVoices(TULING_WAIT_VOICES);
 		char *WeiXintxt =cJSON_GetObjectItem(pJson, "text")->valuestring;
 		AddWeiXinMessage_Text((const char *)WeiXintxt,strlen(WeiXintxt));
 	}
 	else if (!strcmp(pSub->valuestring,"speek")){//微信对讲
-		Create_PlaySystemEventVoices(CMD_26_SEND_RECV_MSG);
+		Create_PlaySystemEventVoices(TULING_WAIT_VOICES);
 		char *WeiXinFile =cJSON_GetObjectItem(pJson, "file")->valuestring;
 		AddWeiXinMessage_Voices((const char *)WeiXinFile,strlen(WeiXinFile));
 	}
@@ -528,7 +528,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			Create_PlayQttsEvent(TULING_PLAY_TEXT_WEIXIN_FAILED,QTTS_GBK);
 		}else if(!strcmp(pSub->valuestring,"ask")){
 			EnableBindDev();
-			Create_PlaySystemEventVoices(CMD_30_RECV_BIND);
+			Create_PlaySystemEventVoices(CMD_27_RECV_BIND);
 		}
 	}
 	else if (!strcmp(pSub->valuestring,"call")){		//微信界面发送过来的呼叫请求	
@@ -538,7 +538,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		if(!strcmp(pSub->valuestring,"ok")){			//发送成功
 		}else if(!strcmp(pSub->valuestring,"failed")){	//发送失败
 		}else if(!strcmp(pSub->valuestring,"timeout")){	//发送失败
-			Create_PlaySystemEventVoices(CMD_32_NETWORK_FAILED);//"当前网络环境差，语音发送失败，请检查网络。"
+			Create_PlaySystemEventVoices(CMD_29_NETWORK_FAILED);//"当前网络环境差，语音发送失败，请检查网络。"
 		}
 	}
 	else if (!strcmp(pSub->valuestring,"clock")){

@@ -88,7 +88,7 @@ void led_lr_oc(unsigned char type){
 //设备恢复出厂设置
 void ResetHostDevicesFactory(void){
 	ResetWeixinBindUserMessage();
-	Create_PlaySystemEventVoices(CMD_59_RESET_SYSTEM);
+	Create_PlaySystemEventVoices(CMD_56_RESET_SYSTEM);
 	system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
 }
 //接收到微信发送过来的绑定请求
@@ -100,10 +100,10 @@ void EnableBindDev(void){
 static void keyDownAck_userBind(void){
 	if(gpio.bindsign==BIND_DEV_OK){
 		BindDevToaliyun();
-		Create_PlaySystemEventVoices(CMD_31_HANDLE_BIND);
+		Create_PlaySystemEventVoices(CMD_28_HANDLE_BIND);
 		gpio.bindsign=BIND_DEV_ER;
 	}else{//没有接收到绑定请求
-		Create_PlaySystemEventVoices(CMD_29_BIND_PLAY);	
+		Create_PlaySystemEventVoices(CMD_26_BIND_PLAY);	
 	}
 }
 //按下音
@@ -259,11 +259,11 @@ void PlayWakeUpVoices(void){
 		//Create_PlayImportVoices(CMD_20_CONNET_OK); 		//20、(8634代号)小培老师与总部课堂连接成功，我们来聊天吧！（每次连接成功的语音，包括唤醒）
 		PlayImportVoices(AMR_20_CONNET_OK, GetCurrentEventNums());
 	}else if(GetWeixinMessageFlag()==WEIXIN_MESSAGE){
-		//Create_PlayImportVoices(CMD_27_WAKEUP_RECV_MSG); //27、你有新消息，请按信息键听取吧！（唤醒之后播放，播放网络成功之后）
-		PlayImportVoices(AMR_27_NEW_MESSAGE, GetCurrentEventNums());
+		//Create_PlayImportVoices(CMD_24_WAKEUP_RECV_MSG); //24、你有新消息，请按信息键听取吧！（唤醒之后播放，播放网络成功之后）
+		PlayImportVoices(AMR_24_NEW_MESSAGE, GetCurrentEventNums());
 	}else if(GetWeixinMessageFlag()==WEIXIN_PUSH_MESSAGE){
-		//Create_PlayImportVoices(CMD_28_WAKEUP_RECV_MSG); //28、你有新故事未听取,按信息键开始听吧！（唤醒之后播放，播放网络成功之后）
-		PlayImportVoices(AMR_28_NEW_STROY, GetCurrentEventNums());
+		//Create_PlayImportVoices(CMD_25_WAKEUP_RECV_MSG); //25、你有新故事未听取,按信息键开始听吧！（唤醒之后播放，播放网络成功之后）
+		PlayImportVoices(AMR_25_NEW_STROY, GetCurrentEventNums());
 	}
 	unlock_msgEv();
 }

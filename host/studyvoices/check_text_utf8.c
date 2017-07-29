@@ -66,16 +66,16 @@ int HandlerPlay_checkTextResult(int cmd,const char *playname,unsigned int playEv
 			ret =__AddLocalMp3ForPaly(playname,EXTERN_PLAY_EVENT);		
 			break;		
 		case CMD_WHO_NAME:
-			ret =PlaySystemAmrVoices(AMR_67_WHO_NAME,playEventNums);
+			ret =PlaySystemAmrVoices(AMR_58_WHO_NAME,playEventNums);
 			break;
 		case CMD_ADD_VOL:
 			Setwm8960Vol(VOL_ADD,0);
-			ret =PlaySystemAmrVoices(AMR_64_ADD_VOL,playEventNums);
+			ret =PlaySystemAmrVoices(AMR_ADD_VOL,playEventNums);
 			ack_VolCtr("add",GetVol());	
 			break;
 		case CMD_SUB_VOL:
 			Setwm8960Vol(VOL_SUB,0);
-			ret =PlaySystemAmrVoices(AMR_65_SUB_VOL,playEventNums);
+			ret =PlaySystemAmrVoices(AMR_SUB_VOL,playEventNums);
 			ack_VolCtr("sub",GetVol());
 			break;
 		case CMD_CLOSE:
@@ -94,7 +94,7 @@ int HandlerPlay_checkTextResult(int cmd,const char *playname,unsigned int playEv
 			free(PlayText);
 			break;
 		case CMD_AGE:
-			ret =PlaySystemAmrVoices(AMR_69_AGE,playEventNums);
+			ret =PlaySystemAmrVoices(AMR_60_AGE,playEventNums);
 			break;
 	}
 	return ret;
