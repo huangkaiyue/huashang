@@ -97,14 +97,14 @@ void EnableBindDev(void){
 }
 
 //按键按下绑定用户请求
-static void keyDownAck_userBind(void){
+static int keyDownAck_userBind(void){
 	if(gpio.bindsign==BIND_DEV_OK){
+		gpio.bindsign=BIND_DEV_ER;
 		BindDevToaliyun();
 		Create_PlaySystemEventVoices(CMD_28_HANDLE_BIND);
-		gpio.bindsign=BIND_DEV_ER;
-	}else{//没有接收到绑定请求
-		Create_PlaySystemEventVoices(CMD_26_BIND_PLAY);	
+		return 0;
 	}
+	return -1;
 }
 //按下音
 static void keyDown_AndSetGpioFor_play(void){
@@ -337,6 +337,9 @@ static void signal_handler(int signum){
 				
 			case SPEEK_KEY://会话键
 				keyDown_AndSetGpioFor_play();
+				if(!keyDownAck_userBind()){
+					goto exit0;
+				}
 				TulingKeyDownSingal();
 				break;
 			

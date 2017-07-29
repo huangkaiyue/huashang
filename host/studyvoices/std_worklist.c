@@ -354,6 +354,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			AddDownEvent((const char *)data,LOCAL_MP3_EVENT);
 			DEBUG_STD_MSG("handle_event_msg LOCAL_MP3_EVENT add end\n");
 			break;		
+			
 		case QTTS_PLAY_EVENT:		//QTTS事件
 			newEventNums=handText->EventNums;
 			Handler_PlayQttsEvent(handText);
@@ -369,7 +370,24 @@ static void HandleEventMessage(const char *data,int msgSize){
 			
 		case TALK_EVENT_EVENT:		//对讲事件
 			Handle_WeixinSpeekEvent(handText->playLocalVoicesIndex,handText->EventNums);
-			break;		
+			break;	
+			
+		case DIR_MENU_PLAY_EVENT:
+			if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){
+				Handle_PlaySystemEventVoices(handText->playLocalVoicesIndex,handText->EventNums);
+			}
+			if(GetCurrentEventNums()!=handText->EventNums){
+				free((void *)handText->data);
+				free((void *)handText);
+				return ;
+			}
+			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
+			NetStreamExitFile();
+			start_event_play_Mp3music();
+			handText->event =LOCAL_MP3_EVENT;
+			AddDownEvent((const char *)data,LOCAL_MP3_EVENT);
+			break;
+			
 		default:
 			DEBUG_STD_MSG("not event msg !!!\n");
 			break;

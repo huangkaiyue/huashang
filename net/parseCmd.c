@@ -6,6 +6,7 @@
 #include "StreamFile.h"
 #include "host/voices/wm8960i2s.h"
 #include "../host/studyvoices/qtts_qisc.h"
+#include "host/studyvoices/prompt_tone.h"
 #include "../host/voices/gpio_7620.h"
 #include "host/ap_sta.h"
 #include "host/voices/callvoices.h"
@@ -513,12 +514,16 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		if(!strncmp(cJSON_GetObjectItem(pJson, "text")->valuestring,"openwifi",8)){
 			OpenWifi();
 		}
-		Create_PlaySystemEventVoices(TULING_WAIT_VOICES);
+		char playTicesVoices[48]={0};
+		snprintf(playTicesVoices,48,"%s%s",sysMes.localVoicesPath,TULING_WINT);
+		CreatePlayWeixinVoicesSpeekEvent((const char *)playTicesVoices);
 		char *WeiXintxt =cJSON_GetObjectItem(pJson, "text")->valuestring;
 		AddWeiXinMessage_Text((const char *)WeiXintxt,strlen(WeiXintxt));
 	}
 	else if (!strcmp(pSub->valuestring,"speek")){//微信对讲
-		Create_PlaySystemEventVoices(TULING_WAIT_VOICES);
+		char playTicesVoices[48]={0};
+		snprintf(playTicesVoices,48,"%s%s",sysMes.localVoicesPath,TULING_WINT);
+		CreatePlayWeixinVoicesSpeekEvent((const char *)playTicesVoices);
 		char *WeiXinFile =cJSON_GetObjectItem(pJson, "file")->valuestring;
 		AddWeiXinMessage_Voices((const char *)WeiXinFile,strlen(WeiXinFile));
 	}

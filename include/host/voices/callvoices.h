@@ -49,6 +49,7 @@
 #define QUIT_MAIN				10		//退出main函数
 #define TULING_URL_MAIN			11		//图灵URL事件
 #define TULING_URL_VOICES		12		//图灵mp3事件
+#define DIR_MENU_PLAY_EVENT		13		
 
 //----------------------系统音---------------------------------------
 
@@ -66,6 +67,7 @@
 #define MIN_10_NOT_USER_WARN		47	//10分钟不用提示用户
 #define TULING_WAIT_VOICES			148	//播放图灵系统等待音
 #define CONTINUE_PLAY_MUSIC_VOICES	149	//请继续点播吧
+#define RECV_WEIXIN_MESSAGE_VOICES	150	//播放图灵系统等待音
 
 
 #define CMD_12_NOT_NETWORK			12	//网络连接失败
@@ -102,6 +104,24 @@
 
 #define CMD_55_NEW_VERSION			55	//55、发现新程序版本，正在升级，请不要关机。
 #define CMD_56_RESET_SYSTEM			56	//56、亲，我已经恢复到最初状态，正在重新启动。
+
+
+#define CMD_6175_DIR_MENU			61
+#define CMD_62_DIR_MENU				62
+#define CMD_63_DIR_MENU				63
+#define CMD_64_DIR_MENU				64
+#define CMD_65_DIR_MENU				65
+#define CMD_66_DIR_MENU				66
+#define CMD_67_DIR_MENU				67
+#define CMD_68_DIR_MENU				68
+#define CMD_69_DIR_MENU				69
+#define CMD_70_DIR_MENU				70
+#define CMD_71_DIR_MENU				71
+#define CMD_72_DIR_MENU				72
+#define CMD_73_DIR_MENU				73
+#define CMD_74_DIR_MENU				74
+#define CMD_75_DIR_MENU				75
+
 
 
 #define CMD_90_UPDATE_OK			90	//90.更新固件结束

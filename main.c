@@ -146,6 +146,9 @@ static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 	if(Mad_PlayMusic((const char *)hand->data)){
 		goto exit0;
 	}
+	if(hand->EventNums!=GetCurrentEventNums()){
+		goto exit0;
+	}
 	Write_huashangTextLog("Main_Thread_AddPlayLocalSdcard_Music");
 	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
 		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_SDCARD);

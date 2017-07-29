@@ -124,6 +124,22 @@
 #define AMR_59_WHO_NAME				"qtts/59.amr"		//59、我是小培老师，你的好朋友啊！
 #define AMR_60_AGE					"qtts/60.amr"		//60、我比你大一点
 
+#define AMR_61_DIR					"qtts/61.amr"		
+#define AMR_62_DIR					"qtts/62.amr"		
+#define AMR_63_DIR					"qtts/63.amr"		
+#define AMR_64_DIR					"qtts/64.amr"
+#define AMR_65_DIR					"qtts/65.amr"		
+#define AMR_66_DIR					"qtts/66.amr"
+#define AMR_67_DIR					"qtts/67.amr"		
+#define AMR_68_DIR					"qtts/68.amr"
+#define AMR_69_DIR					"qtts/69.amr"		
+#define AMR_70_DIR					"qtts/70.amr"
+#define AMR_71_DIR					"qtts/71.amr"
+#define AMR_72_DIR					"qtts/72.amr"
+#define AMR_73_DIR					"qtts/73.amr"
+#define AMR_74_DIR					"qtts/74.amr"
+#define AMR_75_DIR					"qtts/75.amr"
+
 
 #define AMR_ADD_VOL					"qtts/add_vol.amr"		//64、加大音量
 #define AMR_SUB_VOL					"qtts/sub_vol.amr"		//65、减小音量

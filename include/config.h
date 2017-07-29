@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 //----------------------版本类-----------------------------------
-#define WORK_INTER
+//#define WORK_INTER
 
 #define HUASHANG_JIAOYU
 //----------------------功能类-----------------------------------

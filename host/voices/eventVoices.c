@@ -219,6 +219,35 @@ exit0:
 	free(handEvent);
 	return -1;
 }
+void CreateDirMenuPlay(int MenuIndex,const char *playName){
+	if(getEventNum()>0){	//事件任务过多，直接丢掉，防止添加过快，导致后面清理时间过长
+		DEBUG_EVENT("num =%d \n",getEventNum());
+		return -1;
+	}
+	if(GetRecordeVoices_PthreadState() == START_SPEEK_VOICES||GetRecordeVoices_PthreadState() == START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() == END_SPEEK_VOICES||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){	
+		return -1;
+	}
+	int ret=-1;
+	HandlerText_t *handEvent = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));	
+	if(handEvent){
+		Player_t *player= (char *)calloc(1,sizeof(Player_t));
+		if(player==NULL){
+			perror("calloc error !!!");
+			goto exit0;
+		}
+		player->playListState=EXTERN_PLAY_EVENT;
+		sprintf(player->playfilename,"%s",playName);
+		handEvent->playLocalVoicesIndex=MenuIndex;
+		handEvent->EventNums=updateCurrentEventNums();
+		handEvent->data = (char *)player;
+		handEvent->event=DIR_MENU_PLAY_EVENT;	
+		ret = AddworkEvent(handEvent,sizeof(HandlerText_t));
+	}
+	return ret; 
+exit0:
+	free(handEvent);
+	return -1;
+}
 /**
 处理按下播放暂停键
 **/
@@ -529,34 +558,53 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 	struct tm *p;
 	time(&timep);
 	p=localtime(&timep);
-	showFacePicture(WAIT_CTRL_NUM3);
+	showFacePicture(WAIT_CTRL_NUM3);	
 	if(p->tm_hour+8>=21){
 		ret =PlaySystemAmrVoices(TIMEOUT_sleep,playEventNums);
 		snprintf(musictype,12,"%s","sleep");	//播放音乐内容
 		goto exit1;
 	}
-	if(PlaySystemAmrVoices(AMR_40_NOT_USR,playEventNums)){
-		goto exit0;	//异常打断退出
-	}
-	int randNums=(1+(int)(3.0*rand()/(RAND_MAX+1.0)));
+	int randNums=(1+(int)(6.0*rand()/(RAND_MAX+1.0)));
 	start_event_play_wav();
 	switch(randNums){
 		case 1:
+			if(PlaySystemAmrVoices(AMR_40_NOT_USR,playEventNums)){
+				goto exit0;	//异常打断退出
+			}
+			start_event_play_wav();
 			ret =PlaySystemAmrVoices(AMR_41_LISTEN_MUSIC,playEventNums);
 			snprintf(musictype,12,"%s","music");	//播放音乐内容
 			break;
 		case 2:
+			if(PlaySystemAmrVoices(AMR_40_NOT_USR,playEventNums)){
+				goto exit0;	//异常打断退出
+			}
+			start_event_play_wav();
 			ret =PlaySystemAmrVoices(AMR_42_LISTEN_GUOXUE,playEventNums);
 			snprintf(musictype,12,"%s","guoxue");	//播放国学内容
 			break;
 		case 3:
+			if(PlaySystemAmrVoices(AMR_40_NOT_USR,playEventNums)){
+				goto exit0;	//异常打断退出
+			}
+			start_event_play_wav();
 			ret =PlaySystemAmrVoices(AMR_43_LISTEN_CHENGYU,playEventNums);
 			snprintf(musictype,12,"%s","gushi");	//播放成语故事
 			break;
 		case 4:
+			if(PlaySystemAmrVoices(AMR_40_NOT_USR,playEventNums)){
+				goto exit0;	//异常打断退出
+			}
+			start_event_play_wav();
 			ret =PlaySystemAmrVoices(TIMEOUT_baike,playEventNums);
 			snprintf(musictype,12,"%s","baike");	//播放百科知识
 			break;
+		case 5:
+			ret =PlaySystemAmrVoices(AMR_26_BIND,playEventNums);
+			goto exit0;
+		case 6:
+			ret =PlaySystemAmrVoices(AMR_44_LONG_NOT_USR,playEventNums);
+			goto exit0;
 		default:
 			ret =PlaySystemAmrVoices(AMR_41_LISTEN_MUSIC,playEventNums);
 			snprintf(musictype,12,"%s","music");	//播放音乐内容
@@ -687,14 +735,57 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			PlaySystemAmrVoices(AMR_56_RESET,playEventNums);
 			system("reboot");
 			break;
-
+		case CMD_6175_DIR_MENU:
+			PlaySystemAmrVoices(AMR_61_DIR,playEventNums);
+			break;
+		case CMD_62_DIR_MENU:
+			PlaySystemAmrVoices(AMR_62_DIR,playEventNums);
+			break;
+		case CMD_63_DIR_MENU:
+			PlaySystemAmrVoices(AMR_63_DIR,playEventNums);
+			break;
+		case CMD_64_DIR_MENU:
+			PlaySystemAmrVoices(AMR_64_DIR,playEventNums);
+			break;
+		case CMD_65_DIR_MENU:
+			PlaySystemAmrVoices(AMR_65_DIR,playEventNums);
+			break;
+		case CMD_66_DIR_MENU:
+			PlaySystemAmrVoices(AMR_66_DIR,playEventNums);
+			break;
+		case CMD_67_DIR_MENU:
+			PlaySystemAmrVoices(AMR_67_DIR,playEventNums);
+			break;
+		case CMD_68_DIR_MENU:
+			PlaySystemAmrVoices(AMR_68_DIR,playEventNums);
+			break;
+		case CMD_69_DIR_MENU:
+			PlaySystemAmrVoices(AMR_69_DIR,playEventNums);
+			break;
+		case CMD_70_DIR_MENU:
+			PlaySystemAmrVoices(AMR_70_DIR,playEventNums);
+			break;
+		case CMD_71_DIR_MENU:
+			PlaySystemAmrVoices(AMR_71_DIR,playEventNums);
+			break;
+		case CMD_72_DIR_MENU:
+			PlaySystemAmrVoices(AMR_72_DIR,playEventNums);
+			break;
+		case CMD_73_DIR_MENU:
+			PlaySystemAmrVoices(AMR_73_DIR,playEventNums);
+			break;
+		case CMD_74_DIR_MENU:
+			PlaySystemAmrVoices(AMR_74_DIR,playEventNums);
+			break;	
+		case CMD_75_DIR_MENU:
+			PlaySystemAmrVoices(AMR_75_DIR,playEventNums);
+			break;			
 		case TULING_WAIT_VOICES:
 			vol =GetVol();
 			Setwm8960Vol(VOL_APP_SET,PLAY_PASUSE_VOICES_VOL);
 			PlayImportVoices(TULING_WINT,playEventNums);
 			Setwm8960Vol(VOL_SET_VAULE,vol);
 			break;
-
 		case CONTINUE_PLAY_MUSIC_VOICES:
 			PlaySystemAmrVoices(PLAY_CONTINUE_MUSIC,playEventNums);
 			break;	

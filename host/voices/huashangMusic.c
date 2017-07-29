@@ -40,9 +40,10 @@ void Huahang_SelectDirMenu(void){
 	if(cj!=NULL){
 			hsUser->PlayHuashang_MusicIndex=cj->valueint;
 			snprintf(playBuf,128,"%s%s/%d.mp3",TF_SYS_PATH,HUASHANG_GUOXUE_DIR,hsUser->PlayHuashang_MusicIndex);
-			Write_huashang_log((const char *)"SetDirMenu",(const char * )playBuf,2);
+			printf("playBuf =%s ---> hsUser->dirMenu=%d\n",playBuf,hsUser->dirMenu);
+			Write_huashang_log((const char *)"SetDirMenu",(const char * )playBuf,hsUser->dirMenu);
 			if(access(playBuf, F_OK)==0){
-			ret=__AddLocalMp3ForPaly((const char *)playBuf,EXTERN_PLAY_EVENT);
+			ret=CreateDirMenuPlay(hsUser->dirMenu+CMD_6175_DIR_MENU,(const char *)playBuf);
 		}
 	}
 exit1:
