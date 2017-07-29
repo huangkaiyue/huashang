@@ -551,7 +551,7 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 			break;
 		case 3:
 			ret =PlaySystemAmrVoices(AMR_46_LISTEN_CHENGYU,playEventNums);
-			snprintf(musictype,12,"%s","chengyu");	//播放成语故事
+			snprintf(musictype,12,"%s","gushi");	//播放成语故事
 			break;
 		case 4:
 			ret =PlaySystemAmrVoices(TIMEOUT_baike,playEventNums);

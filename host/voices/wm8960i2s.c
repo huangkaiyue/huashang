@@ -146,7 +146,6 @@ void PlayorPause(void){
 }
 void mute_recorde_vol(int change){
 	int setVol=0;
-#if 1
 	if(change==UNMUTE){
 		printf("UNMUTE change %d tx_vol %d\n",change,I2S.tx_vol);
 		SET_TX_VOL(I2S.i2s_fd,I2S.tx_vol);
@@ -157,7 +156,6 @@ void mute_recorde_vol(int change){
 		SET_TX_VOL(I2S.i2s_fd,setVol);
 	}
 	usleep(1000);
-#endif
 }
 
 /********************************************
@@ -230,17 +228,13 @@ void SET_MUTE_ENABLE(void){
 	usleep(100);
 }
 #endif
-void Mute_voices(unsigned char stat)
-{
+void Mute_voices(unsigned char stat){
 	switch(stat){
 		case MUTE:
-			//SET_MUTE_DISABLE();
-			//mute_recorde_vol(MUTE);
 			close_wm8960_voices();
 			break;
 		case UNMUTE:
 			open_wm8960_voices();
-			//SET_MUTE_ENABLE();
 			mute_recorde_vol(UNMUTE);
 			break;
 	}
