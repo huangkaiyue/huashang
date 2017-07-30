@@ -6,7 +6,7 @@
 #include "base/queWorkCond.h"
 #include "host/voices/callvoices.h"
 #include "host/voices/wm8960i2s.h"
-#include "qtts_qisc.h"
+#include "host/studyvoices/qtts_qisc.h"
 #include "config.h"
 #include "StreamFile.h"
 #include "../voices/gpio_7620.h"
@@ -309,6 +309,27 @@ void cleanQuequeEvent(void){
 	}
 	event_lock=0;
 }
+static void playSelectDirMenu(HandlerText_t *handText){
+	SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
+	NetStreamExitFile();
+	if(GetCurrentEventNums()!=handText->EventNums){
+		goto exit0;
+	}
+	//if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){
+		Handle_PlaySystemEventVoices(handText->playLocalVoicesIndex,handText->EventNums);
+	//}
+	if(GetCurrentEventNums()!=handText->EventNums){
+		goto exit0;
+	}
+	SetStreamPlayState(MUSIC_PLAY_LIST);
+	start_event_play_Mp3music();
+	handText->event =LOCAL_MP3_EVENT;
+	AddDownEvent((const char *)handText,LOCAL_MP3_EVENT);
+	return ;
+exit0:
+	free((void *)handText->data);
+	free((void *)handText);
+}
 /*******************************************************
 @函数功能:	事件处理函数
 @参数:	data 数据	msgSize事件类型以及数据大小结构体
@@ -373,19 +394,7 @@ static void HandleEventMessage(const char *data,int msgSize){
 			break;	
 			
 		case DIR_MENU_PLAY_EVENT:
-			if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){
-				Handle_PlaySystemEventVoices(handText->playLocalVoicesIndex,handText->EventNums);
-			}
-			if(GetCurrentEventNums()!=handText->EventNums){
-				free((void *)handText->data);
-				free((void *)handText);
-				return ;
-			}
-			SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
-			NetStreamExitFile();
-			start_event_play_Mp3music();
-			handText->event =LOCAL_MP3_EVENT;
-			AddDownEvent((const char *)data,LOCAL_MP3_EVENT);
+			playSelectDirMenu(handText);
 			break;
 			
 		default:

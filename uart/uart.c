@@ -7,7 +7,6 @@
 
 static ReacData data;
 static int serialFd[2];
-static char quit=0;
 static uart_t *uartCtr=NULL;
 
 #if 0
@@ -260,7 +259,11 @@ static void handle_uartMsg(int fd ,unsigned char buf,int size){
 				else if((data.data&0x80)==0x00){//未充电
 					DEBUG_UART("handle_uartMsg	SMBATTYPE ERROR \n");
 					uartCtr->charge=0;
-				uartCtr->voicesEvent(BATTERRY);
+					if(uartCtr->startSystem>0){	//start system don't play baterry work voices
+						uartCtr->startSystem--;
+					}else{	
+						uartCtr->voicesEvent(BATTERRY);
+					}
 				}
 				DEBUG_UART("SMBATTYPE bat=%d\n",data.data);
 				if(CacheUarl()==0){
@@ -303,7 +306,7 @@ static void *uart_read_serial(void){
 	int ret =0,r_size=1;
 	unsigned char buf=0x0;
 	data.head=0x0;
-	while(quit){
+	while(uartCtr->quit){
 		FD_ZERO(&rdfd);
 		FD_SET(serialFd[0],&rdfd);
 		ret = select(serialFd[0] + 1,&rdfd, NULL,NULL,&timeout);
@@ -343,10 +346,11 @@ static void *uart_read_serial(void){
 * 返回值  :0 成功 -1失败
 **************************************************/
 int init_Uart(void VoicesEvent(int event),void ack_batteryCtr(int recvdata,int power)){
-	quit=1;
 	uartCtr = (uart_t *)calloc(1,sizeof(uart_t));
 	if(uartCtr==NULL)
 		return -1;
+	uartCtr->quit=1;
+	uartCtr->startSystem=1;
 	uartCtr->voicesEvent=VoicesEvent;
 	uartCtr->Ack_batteryCtr=ack_batteryCtr;
 	serialFd[0] = serial_open(SERIAL_SOC_PATH,SPEED_SOC);

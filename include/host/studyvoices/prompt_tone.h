@@ -99,7 +99,7 @@
 #define AMR_41_LISTEN_MUSIC			"qtts/41.amr"		//41、要不我们今天听一下歌曲！
 #define AMR_42_LISTEN_GUOXUE		"qtts/42.amr"		//42、小朋友，要不我们今天学习一下国学内容吧，我的国学知识很丰富的!
 #define AMR_43_LISTEN_CHENGYU		"qtts/43.amr"		//43、要不我们今天学习一下成语!
-#define AMR_44_LONG_NOT_USR			"qtts/44.amr"		//44、小伙伴,在家想爸爸妈妈吗？快用我给爸爸妈妈发微聊吧!按住我的微聊键发语音然后松开，爸爸妈妈就能马上收到你的思念了！
+#define AMR_44_WEIXIN_WARN			"qtts/44.amr"		//44、小伙伴,在家想爸爸妈妈吗？快用我给爸爸妈妈发微聊吧!按住我的微聊键发语音然后松开，爸爸妈妈就能马上收到你的思念了！
 
 
 #define AMR_45_SLEEP_1				"qtts/45.amr"		//45、亲我先去休息了，当你想我的时候，记得叫醒我喔!

@@ -1,9 +1,9 @@
 #include "comshead.h"
-#include "qtts.h"
-#include "msp_cmn.h"
-#include "msp_errors.h"
+#include "host/studyvoices/qtts.h"
+#include "host/studyvoices/msp_cmn.h"
+#include "host/studyvoices/msp_errors.h"
 #include "base/queWorkCond.h"
-#include "qtts_qisc.h"
+#include "host/studyvoices/qtts_qisc.h"
 #include "host/voices/callvoices.h"
 #include "config.h"
 

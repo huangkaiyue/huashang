@@ -12,7 +12,7 @@
 #include "systools.h"
 #include "gpio_7620.h"
 
-#include "../studyvoices/qtts_qisc.h"
+#include "host/studyvoices/qtts_qisc.h"
 #include "uart/uart.h"
 #include "config.h"
 #include "log.h"
@@ -373,15 +373,34 @@ void Close_Mtk76xxSystem(void){
 //请求图灵服务器失败，播放本地内容
 static void TaiwanToTulingError(unsigned int playEventNums){
 	char buf[32]={0};
+	char musictype[12]={0};
 	int i=(35+(int)(5*rand()/(RAND_MAX+1.0)));
 	snprintf(buf,32,"qtts/%d.amr",i);
 	PlaySystemAmrVoices(buf,playEventNums);
+	if(GetCurrentEventNums()!=playEventNums){
+		return ;
+	}
+	switch(i){
+		case 35:
+			snprintf(musictype,12,"%s","guoxue");
+			break;
+		case 36:
+			snprintf(musictype,12,"%s","music");
+			break;
+		case 37:
+			snprintf(musictype,12,"%s","gushi");
+			break;
+		case 38:
+			snprintf(musictype,12,"%s","baike");
+			break;	
+	}
+	CreatePlayDefaultMusic_forPlay(musictype);
 }
 /*
 @ 没有网络的时候，播放本地系统固定录好台本(按键触发播放)
 @
 */
-static void Handle_PlayTaiBenToNONetWork(unsigned int playEventNums){
+void Handle_PlayTaiBenToNONetWork(unsigned int playEventNums){
 	char file[64]={0};
 	int i=(12+(int)(3.0*rand()/(RAND_MAX+1.0)));
 	snprintf(file,64,"qtts/%d.amr",i);
@@ -460,6 +479,7 @@ void UartEventcallFuntion(int event){
 				printf("Create Clean url event \n");
 				Create_CleanUrlEvent();
 			}
+			Create_PlaySystemEventVoices(CMD_26_BIND_PLAY);	
 			Lock_EventQueue();
 			showFacePicture(CLOSE_SYSTEM_PICTURE);	
 			CreateCloseSystemLockFile();
@@ -596,14 +616,14 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 				goto exit0;	//异常打断退出
 			}
 			start_event_play_wav();
-			ret =PlaySystemAmrVoices(TIMEOUT_baike,playEventNums);
+			ret =PlaySystemAmrVoices(AMR_38_AI_STROY_3,playEventNums);
 			snprintf(musictype,12,"%s","baike");	//播放百科知识
 			break;
 		case 5:
 			ret =PlaySystemAmrVoices(AMR_26_BIND,playEventNums);
 			goto exit0;
 		case 6:
-			ret =PlaySystemAmrVoices(AMR_44_LONG_NOT_USR,playEventNums);
+			ret =PlaySystemAmrVoices(AMR_44_WEIXIN_WARN,playEventNums);
 			goto exit0;
 		default:
 			ret =PlaySystemAmrVoices(AMR_41_LISTEN_MUSIC,playEventNums);
@@ -710,6 +730,9 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 		case CMD_40_NOT_USER_WARN: 				//40、小朋友，你去哪里了，请跟我一起来玩吧！！
 			Custom_Interface_RunPlayVoices(playEventNums);
 			break;
+		case CMD_44_WEIXIN_WARN:
+			PlaySystemAmrVoices(AMR_44_WEIXIN_WARN,playEventNums);
+			break;
 		case CMD_4547_SLEEP:					//45、亲我先去休息了，当你想我的时候，记得叫醒我喔!
 			System_EntrySleeping(playEventNums);	
 			break;	
@@ -783,6 +806,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 		case TULING_WAIT_VOICES:
 			vol =GetVol();
 			Setwm8960Vol(VOL_APP_SET,PLAY_PASUSE_VOICES_VOL);
+			usleep(2000);
 			PlayImportVoices(TULING_WINT,playEventNums);
 			Setwm8960Vol(VOL_SET_VAULE,vol);
 			break;
@@ -949,7 +973,8 @@ void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 		start_event_play_wav();
 		if(voicesTime<1||voicesTime>10){//时间太短或太长
 			shortVoicesClean();
-			PlaySystemAmrVoices(AMR_WEIXIN_SEND_ERROR,playEventNums);
+			//PlaySystemAmrVoices(AMR_WEIXIN_SEND_ERROR,playEventNums);
+			pause_record_audio();
 			return ;
 		}else{
 			StopRecorder_AndSendFile(playEventNums);

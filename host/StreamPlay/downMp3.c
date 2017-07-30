@@ -4,7 +4,7 @@
 #include "host/studyvoices/std_worklist.h"
 #include "host/voices/callvoices.h"
 #include "log.h"
-#include "../studyvoices/qtts_qisc.h"
+#include "host/studyvoices/qtts_qisc.h"
 static unsigned int playTulingEventNums=0;
 static int playRet=-1;
 #define PLAY_FINNISH	0

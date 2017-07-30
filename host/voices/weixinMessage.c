@@ -1,6 +1,8 @@
 #include "comshead.h"
 #include "base/queWorkCond.h"
-#include "../studyvoices/qtts_qisc.h"
+#include "host/studyvoices/qtts_qisc.h"
+#include "host/studyvoices/prompt_tone.h"
+#include "host/voices/callvoices.h"
 #include "huashangMusic.h"
 
 #define WEIXIN_TEXT 	1
@@ -115,7 +117,10 @@ int GetWeiXinMessageForPlay(void){
 		}
 	}else{
 		if(Bak_Message==NULL){
-			Create_PlayQttsEvent("小朋友没有消息喔！",QTTS_UTF8);
+			//Create_PlayQttsEvent("小朋友没有消息喔！",QTTS_UTF8);
+			char playName[48]={0};
+			snprintf(playName,48,"%s%s",sysMes.localVoicesPath,AMR_44_WEIXIN_WARN);
+			CreatePlayWeixinVoicesSpeekEvent(playName);
 		}else{
 			if(Bak_Message->type ==WEIXIN_TEXT){
 				Create_PlayQttsEvent(Bak_Message->data,QTTS_UTF8);

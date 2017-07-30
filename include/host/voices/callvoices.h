@@ -92,6 +92,7 @@
 #define CMD_35_39_REQUEST_FAILED	35	//35、我给你读首诗吧！--->42、按栏目键然后再按左右键切换你想要听的本地内容吧！
 
 #define CMD_40_NOT_USER_WARN 		40	//40、小朋友，你去哪里了，请跟我一起来玩吧！！
+#define CMD_44_WEIXIN_WARN			44
 #define CMD_4547_SLEEP 				45	//45、亲我先去休息了，当你想我的时候，记得叫醒我喔!
 
 #define CMD_48_TF_ERROT_PLAY		48	//48、没有读到本地内容，请联系总部!

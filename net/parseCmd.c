@@ -5,7 +5,7 @@
 #include "mplay.h"
 #include "StreamFile.h"
 #include "host/voices/wm8960i2s.h"
-#include "../host/studyvoices/qtts_qisc.h"
+#include "host/studyvoices/qtts_qisc.h"
 #include "host/studyvoices/prompt_tone.h"
 #include "../host/voices/gpio_7620.h"
 #include "host/ap_sta.h"

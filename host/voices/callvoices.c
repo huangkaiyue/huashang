@@ -6,7 +6,7 @@
 #include "host/studyvoices/std_worklist.h"
 #include "host/studyvoices/prompt_tone.h"
 #include "gpio_7620.h"
-#include "../studyvoices/qtts_qisc.h"
+#include "host/studyvoices/qtts_qisc.h"
 #include "config.h"
 #include "uart/uart.h"
 #include "huashangMusic.h"

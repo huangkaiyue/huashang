@@ -3,7 +3,7 @@
 #include "config.h"
 #include "nvram.h"
 #include "host/voices/callvoices.h"
-#include "../host/studyvoices/qtts_qisc.h"
+#include "host/studyvoices/qtts_qisc.h"
 #include "host/voices/wm8960i2s.h"
 
 //----------------------------音量-------------------------------------

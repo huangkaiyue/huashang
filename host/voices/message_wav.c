@@ -192,7 +192,7 @@ int PlayWeixin_SpeekAmrFileVoices(const char *filename,unsigned int playEventNum
 		start_event_play_wav();
 		ret= __playAmrVoices(filename,PLAY_IS_INTERRUPT,playEventNums);
 	}
-	if(strstr(filename,TULING_WINT)==NULL){
+	if(strstr(filename,"home/qtts/")==NULL){
 		remove(filename);
 	}
 	return ret;

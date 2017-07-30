@@ -169,6 +169,7 @@ int Huashang_CreatePlayDefaultMusic_forPlay(char *getBuf,const char* musicType){
 	snprintf(getBuf,128,"%s%s/%d.mp3",TF_SYS_PATH,HUASHANG_GUOXUE_DIR,min);
 	if(access(getBuf, F_OK)){
 		ret=-1;
+		Create_PlaySystemEventVoices(CMD_48_TF_ERROT_PLAY);
 		goto exit1;
 	}
 	ret=0;

@@ -99,6 +99,8 @@ typedef struct {//开关机时间
 }AckSmok;
 
 typedef struct{
+	unsigned char quit;
+	unsigned char startSystem;
 	unsigned char charge;
 	unsigned char battery;
 	void (*voicesEvent)(int event);

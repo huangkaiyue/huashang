@@ -2,7 +2,7 @@
 #include "host/voices/callvoices.h"
 #include "ralink_gpio.h"
 #include "gpio_7620.h"
-#include "../studyvoices/qtts_qisc.h"
+#include "host/studyvoices/qtts_qisc.h"
 #include "host/voices/wm8960i2s.h"
 #include "huashangMusic.h"
 #include "host/studyvoices/prompt_tone.h"
@@ -254,9 +254,16 @@ static void *weixin_mutiplekey_Thread(void *arg){
 }
 
 void PlayWakeUpVoices(void){
-	printf("%s: wake up system\n",__func__);
+	//printf("%s: wake up system\n",__func__);
 	if (GetWeixinMessageFlag()==NOT_MESSAGE) {		
 		//Create_PlayImportVoices(CMD_20_CONNET_OK); 		//20、(8634代号)小培老师与总部课堂连接成功，我们来聊天吧！（每次连接成功的语音，包括唤醒）
+/*
+		if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
+			Handle_PlayTaiBenToNONetWork(GetCurrentEventNums());
+		}else{
+			PlayImportVoices(AMR_20_CONNET_OK, GetCurrentEventNums());	
+		}
+*/		
 		PlayImportVoices(AMR_20_CONNET_OK, GetCurrentEventNums());
 	}else if(GetWeixinMessageFlag()==WEIXIN_MESSAGE){
 		//Create_PlayImportVoices(CMD_24_WAKEUP_RECV_MSG); //24、你有新消息，请按信息键听取吧！（唤醒之后播放，播放网络成功之后）
@@ -269,13 +276,13 @@ void PlayWakeUpVoices(void){
 }
 static void signal_handler(int signum){
 	static key_mutiple_t mutiple_key_SUB,mutiple_key_ADD,mutiple_key_speek,mutiple_key_weixin;
-	printf("%s : recv signum =%d\n",__func__,signum);
+	//printf("%s : recv signum =%d\n",__func__,signum);
 	//拿到底层按键事件号码
 	if (ioctl(gpio.fd, TANG_GET_NUMBER,&gpio.mount) < 0){
 		perror("ioctl");
 		return ;
 	}
-	printf("%s : signum = %d gpio.mount=%d\n",__func__,signum,gpio.mount);
+	//printf("%s : signum = %d gpio.mount=%d\n",__func__,signum,gpio.mount);
 	if(check_lock_msgEv()&&gpio.mount!=RESET_KEY){
 		printf("error is lock signal_handler\n");
 		return ;
@@ -285,7 +292,7 @@ static void signal_handler(int signum){
 		printf("%s : signum = %d gpio.mount=%d  exit\n",__func__,signum,gpio.mount);
 		return ;
 	}
-	printf("%s : signum = %d gpio.mount=%d  GPIO_UP=%d\n",__func__,signum,gpio.mount,GPIO_UP);
+	//printf("%s : signum = %d gpio.mount=%d  GPIO_UP=%d\n",__func__,signum,gpio.mount,GPIO_UP);
 	if (signum == GPIO_UP){			//短按按键事件
 		switch(gpio.mount){
 			case NETWORK_KEY:		//播报WiFi名
