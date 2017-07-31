@@ -13,6 +13,7 @@ void Huahang_SelectDirMenu(void){
 	char playBuf[128]={0};
 	char *readBuf = readFileBuf((const char * )DEFALUT_DIR_MENU_JSON);
 	if(readBuf==NULL){
+		printf("%s: readFileBuf is failed \n",__func__);
 		return -1;
 	}
 	int ret=-1;
@@ -29,22 +30,26 @@ void Huahang_SelectDirMenu(void){
 	}
 	int iCount = cJSON_GetArraySize(pArray);
 	++hsUser->dirMenu;
-	if(hsUser->dirMenu>iCount){
+	if(hsUser->dirMenu>=iCount){
 		hsUser->dirMenu=0;
 	}
 	cJSON* pItem = cJSON_GetArrayItem(pArray, hsUser->dirMenu);
 	if (NULL == pItem){
+		printf("%s: cJSON_GetArrayItem is failed \n",__func__);
 		goto exit1;
 	}
 	cJSON *cj =cJSON_GetObjectItem(pItem, "start");
 	if(cj!=NULL){
 			hsUser->PlayHuashang_MusicIndex=cj->valueint;
 			snprintf(playBuf,128,"%s%s/%d.mp3",TF_SYS_PATH,HUASHANG_GUOXUE_DIR,hsUser->PlayHuashang_MusicIndex);
-			printf("playBuf =%s ---> hsUser->dirMenu=%d\n",playBuf,hsUser->dirMenu);
+			printf("playBuf =%s ---> hsUser->dirMenu=%d iCount=%d\n",playBuf,hsUser->dirMenu,iCount);
 			Write_huashang_log((const char *)"SetDirMenu",(const char * )playBuf,hsUser->dirMenu);
 			if(access(playBuf, F_OK)==0){
-			ret=CreateDirMenuPlay(hsUser->dirMenu+CMD_6175_DIR_MENU,(const char *)playBuf);
-		}
+				ret=CreateDirMenuPlay(hsUser->dirMenu+CMD_6175_DIR_MENU,(const char *)playBuf);
+			}else{
+				printf("not found file =%s \n",playBuf);
+				Create_PlaySystemEventVoices(CMD_48_TF_ERROT_PLAY);
+			}
 	}
 exit1:
 	cJSON_Delete(pJson);

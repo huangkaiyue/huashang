@@ -312,12 +312,14 @@ void cleanQuequeEvent(void){
 static void playSelectDirMenu(HandlerText_t *handText){
 	SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
 	NetStreamExitFile();
+	if(GetRecordeVoices_PthreadState()==PLAY_MP3_MUSIC){
+		usleep(150000);	
+	}
 	if(GetCurrentEventNums()!=handText->EventNums){
 		goto exit0;
 	}
-	//if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){
-		Handle_PlaySystemEventVoices(handText->playLocalVoicesIndex,handText->EventNums);
-	//}
+	Handle_PlaySystemEventVoices(handText->playLocalVoicesIndex,handText->EventNums);
+	usleep(100000);	
 	if(GetCurrentEventNums()!=handText->EventNums){
 		goto exit0;
 	}

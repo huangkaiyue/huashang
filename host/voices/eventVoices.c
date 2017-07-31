@@ -260,6 +260,7 @@ void KeydownEventPlayPause(void){
 }
 //按下目录按键切换菜单，并播放歌曲
 void SelectDirMenu(void){
+	//printf("%s: start get music \n",__func__);
 	updateCurrentEventNums();
 	Huahang_SelectDirMenu();
 }
@@ -374,9 +375,10 @@ void Close_Mtk76xxSystem(void){
 static void TaiwanToTulingError(unsigned int playEventNums){
 	char buf[32]={0};
 	char musictype[12]={0};
-	int i=(35+(int)(5*rand()/(RAND_MAX+1.0)));
+	int i=(29+(int)(3*rand()/(RAND_MAX+1.0)));
 	snprintf(buf,32,"qtts/%d.amr",i);
 	PlaySystemAmrVoices(buf,playEventNums);
+#if 0	
 	if(GetCurrentEventNums()!=playEventNums){
 		return ;
 	}
@@ -395,6 +397,7 @@ static void TaiwanToTulingError(unsigned int playEventNums){
 			break;	
 	}
 	CreatePlayDefaultMusic_forPlay(musictype);
+#endif
 }
 /*
 @ 没有网络的时候，播放本地系统固定录好台本(按键触发播放)
@@ -470,9 +473,10 @@ void UartEventcallFuntion(int event){
 	updateCurrentEventNums();
 	switch(event){
 		case UART_EVENT_CLOSE_SYSTEM:		//串口发送关机事件
-			printf("\nuart close system \n");
+			printf("\n   uart close system v1.1 for fix no delay colse system \n");
+			return;
 			Mute_voices(MUTE);				//关闭功放
-			Close_Mtk76xxSystem();			//关机处理和保存后台数据
+			//Close_Mtk76xxSystem();			//关机处理和保存后台数据
 			disable_gpio();					//关闭gpio中断功能,防止关机过程再产生按键事件
 			cleanQuequeEvent();				//清理事件队列，保证能够播放语音
 			if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){
