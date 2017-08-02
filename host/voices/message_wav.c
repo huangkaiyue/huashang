@@ -138,13 +138,22 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 }
 
 int __playResamplePlayPcmFile(const char *pcmFile,unsigned int playEventNums){
-	int currentRate = 0;
+	int currentRate = 0,ret =-1;
+	while(1){		
+		currentRate = GetWm8960Rate();
+		if(currentRate!=RECODE_RATE){
+			break;
+		}	
+		if(GetCurrentEventNums()!=playEventNums){
+			return -1;
+		}
+		usleep(200000);	//wait main pthread set rate to music
+	}
 	StreamPause();
-	currentRate = GetWm8960Rate();
 	start_event_play_soundMix();//切换到混音播放状态		
-	SetWm8960Rate(RECODE_RATE,(const char *)"__playResamplePlayPcmFile set rate");
-	usleep(80000);
-	int ret =PlaySignleWavVoices((const char *)pcmFile,PLAY_IS_INTERRUPT,playEventNums);	
+	ret = SetWm8960Rate(RECODE_RATE,(const char *)"__playResamplePlayPcmFile set rate");
+	usleep(100000);
+	ret =PlaySignleWavVoices((const char *)pcmFile,PLAY_IS_INTERRUPT,playEventNums);	
 	start_event_play_Mp3music();
 	//需要优化一下，检查到还有音频文件
 	SetWm8960Rate(currentRate,(const char *)"__playResamplePlayPcmFile set rate");

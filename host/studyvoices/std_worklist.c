@@ -323,7 +323,7 @@ static void playSelectDirMenu(HandlerText_t *handText){
 			}
 		}
 	}
-	keyUp_AndSetGpioFor_play();
+	//keyUp_AndSetGpioFor_play();
 	if(GetCurrentEventNums()!=handText->EventNums){
 		goto exit0;
 	}

@@ -52,6 +52,7 @@ void cleanStreamData(Mp3Stream *st){
 static void GetMusicMessage(int rate,int channels){
 	st->rate = rate;
 	st->SetI2SRate(rate,"NetplayStreamMusic set rate");
+	st->lockSetRate=0;
 }
 //实现写入音频流的接口, 需要输入的数据内存存放位置 inputMsg  inputSize 输入的数据流大小
 static void InputNetStream(const void * inputMsg,int inputSize){
@@ -253,6 +254,9 @@ static void CopyUrlMessage(Player_t *srcPlayer,Player_t *DestPlayer){
 int getLockNetwork(void){
 	return (int)st->lockNetwork;
 }
+int getlockSetRate(void){
+	return (int)st->lockSetRate;
+}
 //开始边下边播放 
 static int NetStreamDownFilePlay(Player_t *play,int EventNums){
 	int ret=0;
@@ -426,6 +430,7 @@ int Mad_PlayMusic(Player_t *play,int EventNums){
 	int port = 80;
 	printf("%s: play->playfilename =%s\n",__func__,play->playfilename);
 	if(!access(play->playfilename,F_OK)){
+		st->lockSetRate=1;
 		playLocalMp3(play->playfilename);
 	}else{
 		if(strstr(play->playfilename,"/media/mmcblk0p1/")){
@@ -435,7 +440,9 @@ int Mad_PlayMusic(Player_t *play,int EventNums){
 		CopyUrlMessage(play,(Player_t *)&st->player);
 		snprintf(st->mp3name,128,"%s",filename);			
 		DEBUG_STREAM("network play music : %s \n",filename);
+		st->lockSetRate=1;
 		NetStreamDownFilePlay(play, EventNums);
+		st->lockSetRate=0;	// if don't down voices >8k size  ,nerver enter  void GetMusicMessage(int rate,int channels)
 	}
 	ret =0;
 exit0:	

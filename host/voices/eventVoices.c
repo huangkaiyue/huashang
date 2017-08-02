@@ -1014,6 +1014,7 @@ void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 			pause_record_audio();
 			return ;
 		}else{
+			PlaySystemAmrVoices(AMR_WEIXIN_KEY_UP,playEventNums);	// play key up voices
 			StopRecorder_AndSendFile(playEventNums);
 			pause_record_audio();
 		}

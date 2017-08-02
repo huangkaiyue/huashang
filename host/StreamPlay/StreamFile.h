@@ -37,6 +37,7 @@ typedef struct{
 }Player_t;
 
 typedef struct{
+	unsigned char lockSetRate;
 	unsigned char lockNetwork;
 	char channel;					//采样通道
 	unsigned char wait;

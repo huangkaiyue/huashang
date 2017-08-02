@@ -155,6 +155,7 @@
 #define TULING_WINT					"qtts/TuLin_Wint_8K.amr"		//请稍等  
 #define AMR_WEIXIN_SEND_OK			"qtts/weixin_send_ok.amr"
 #define AMR_WEIXIN_RECV_OK			"qtts/weixin_recv_ok.amr"
+#define AMR_WEIXIN_KEY_UP			"qtts/weixin_key_up.amr"
 
 /*******************************************************************************
 零时音频文件路径
