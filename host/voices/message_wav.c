@@ -139,12 +139,16 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 
 int __playResamplePlayPcmFile(const char *pcmFile,unsigned int playEventNums){
 	int currentRate = 0,ret =-1;
+	int timeOut=0;
 	while(1){		
 		currentRate = GetWm8960Rate();
 		if(currentRate!=RECODE_RATE){
 			break;
 		}	
 		if(GetCurrentEventNums()!=playEventNums){
+			return -1;
+		}
+		if(++timeOut>8){
 			return -1;
 		}
 		usleep(200000);	//wait main pthread set rate to music
