@@ -142,7 +142,7 @@ int SleepSystem(void){
 }
 //检查并唤醒当前系统
 int  checkAndWakeupSystem(void){
-	if(RV->recorde_live==HUASHANG_SLEEP){
+	if(RV->recorde_live==HUASHANG_SLEEP||RV->recorde_live==HUASHANG_SLEEP_OK){
 		RV->WaitSleep =SYSTEM_INIT;
 		pause_record_audio();
 		pool_add_task(PlayWakeUpVoices,NULL);

@@ -123,10 +123,15 @@ void keyDown_AndSetGpioFor_play(void){
 
 //抬起音
 void keyUp_AndSetGpioFor_play(void){
-	//if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){
+	if(GetRecordeVoices_PthreadState()==PLAY_MP3_MUSIC){
 		StreamPause();
+		usleep(100000);
 		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x20);//弹起
-	//}
+		usleep(200000);
+		StreamPlay();
+	}else{
+		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x20);//弹起
+	}
 	keyDown_AndSetGpioFor_clean();
 }	
 
@@ -189,7 +194,7 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 		
 		if(time_ms >=500){		//before is 500  2017.6.28 22:43
 			if(playDownVoicesFlag==0){
-				keyDown_AndSetGpioFor_play();
+				//keyUp_AndSetGpioFor_play();
 				playDownVoicesFlag++;
 			}
 			printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
@@ -247,7 +252,7 @@ static void *weixin_mutiplekey_Thread(void *arg){
 		if(time_ms >=500){		//before is 500  2017.6.28 22:43
 			if(playDownVoicesFlag==0){
 				//在这里开始录音
-				keyDown_AndSetGpioFor_play();
+				//keyDown_AndSetGpioFor_play();
 				Create_WeixinSpeekEvent(KEYDOWN);
 				playDownVoicesFlag++;
 			}
@@ -267,7 +272,7 @@ static void *weixin_mutiplekey_Thread(void *arg){
 }
 
 void PlayWakeUpVoices(void){
-	//printf("%s: wake up system\n",__func__);
+	printf("%s: wake up system\n",__func__);
 	if (GetWeixinMessageFlag()==NOT_MESSAGE) {		
 		//Create_PlayImportVoices(CMD_20_CONNET_OK); 		//20、(8634代号)小培老师与总部课堂连接成功，我们来聊天吧！（每次连接成功的语音，包括唤醒）
 /*
@@ -328,6 +333,7 @@ static void signal_handler(int signum){
 				GpioLog("key up",SUBVOL_KEY);
 				break;
 			case PLAY_PAUSE_KEY:	//播放、暂停
+				//keyUp_AndSetGpioFor_play();
 				KeydownEventPlayPause();
 				break;
 			case DIR_MENU_KEY:	//华上教育，设置单曲循环和列表
@@ -364,7 +370,7 @@ static void signal_handler(int signum){
 				break;
 			
 			case PLAY_PAUSE_KEY://长按播放/暂停  切换智能会话播音人
-				keyDown_AndSetGpioFor_play();
+				//keyUp_AndSetGpioFor_play();
 				break;
 			case ADDVOL_KEY:	//长按音量加
 				keydown_flashingLED();
@@ -403,7 +409,7 @@ static void signal_handler(int signum){
 				
 				break;
 			case DIR_MENU_KEY:	//长按切换单曲和列表
-				keyUp_AndSetGpioFor_play();
+				//keyUp_AndSetGpioFor_play();
 				GpioKey_SetStreamPlayState();
 				break;
 		}// end gpio_down
