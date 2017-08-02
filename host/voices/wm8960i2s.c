@@ -239,6 +239,9 @@ void Mute_voices(unsigned char stat){
 			break;
 	}
 }
+int GetLockRate(void){
+	return I2S.lockSetRate;
+}
 //获取当前播放采样率
 int GetWm8960Rate(void){
 	return I2S.tx_rate;

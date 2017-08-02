@@ -31,6 +31,7 @@
 
 #define AC_BATTERRY				5	//正在充电
 #define BATTERRY				6	//电池供电
+#define POWER_FULL				7	
 
 #define CLEAR_SYSTEM_PICTURE		0	//清屏目
 #define OPEN_SYSTEM_PICTURE			1	//开机动画

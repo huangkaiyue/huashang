@@ -339,7 +339,8 @@ void Handler_PlayQttsEvent(HandlerText_t *handText){
 返回值: 无
 ********************************************************/
 void TulingKeyDownSingal(void){
-	updateCurrentEventNums();	
+	updateCurrentEventNums();
+	//printf("---updateCurrentEventNums start \n");
 	Write_Speekkeylog((const char *)"TulingKeyDownSingal",0);
 	//处于微信对讲状态，直接退出	
 	if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){		
@@ -348,17 +349,35 @@ void TulingKeyDownSingal(void){
 	}	
 	Lock_EventQueue();
 	Write_Speekkeylog((const char *)"PLAY_MP3_MUSIC",GetRecordeVoices_PthreadState());
+	//printf("---NetStreamExitFile start \n");
+	int lock =0;
+	while(GetLockRate()){
+		//printf("------------------\n v1 warning is pthread set rate \n------------------\n");
+		usleep(100000);
+		lock=1;
+	}
+	if(lock){
+		return;
+	}
+	if(getLockNetwork()){
+		//printf("..........\nerror lock network \n ...........\n ");
+		printf("..........\n error exit ok \n ...........\n ");
+		return ;
+	}
 	NetStreamExitFile();//退出歌曲播放,并切换采样率	
+	//printf("---SetWm8960Rate start \n");
 	if(SetWm8960Rate(RECODE_RATE,(const char *)"TulingKeyDownSingal set rate")){	//切换采样率失败，退出(防止多线程当中切换，资源冲突问题)
 		Unlock_EventQueue();
 		return ;
 	}
+	//printf("---Unlock_EventQueue start \n");
 	Unlock_EventQueue();
 	if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
 		return;
 	}
 	Show_KeyDownPicture();
-	StartTuling_RecordeVoices();
+	StartTuling_RecordeVoices();	
+	keyDown_AndSetGpioFor_play();
 	Write_Speekkeylog((const char *)"StartTuling_RecordeVoices",GetRecordeVoices_PthreadState());
 }
 //关机保存文件和清理工作
@@ -468,6 +487,11 @@ void Create_PlayImportVoices(int sys_voices){
 		AddworkEvent(handtext,sizeof(HandlerText_t));
 	}
 }
+void CreateSystemPlay_ProtectMusic(const char *filename){
+	char playTicesVoices[48]={0};
+	snprintf(playTicesVoices,48,"%s%s",sysMes.localVoicesPath,filename);
+	CreatePlayWeixinVoicesSpeekEvent(playTicesVoices);
+}
 //串口事件回调函数
 void UartEventcallFuntion(int event){
 	updateCurrentEventNums();
@@ -492,13 +516,17 @@ void UartEventcallFuntion(int event){
 			led_lr_oc(closeled);
 			break;
 		case UART_EVENT_LOW_BASTERRY:		//电量低提醒
-			Create_PlaySystemEventVoices(CMD_4951_POWER_LOW);
+			CreateSystemPlay_ProtectMusic(AMR_49_POWER_LOW);
 			break;
 		case  AC_BATTERRY:	//正在充电
-			Create_PlaySystemEventVoices(CMD_52_POWER_AC);	
+			CreateSystemPlay_ProtectMusic(AMR_52_POWER_AC);	
 			break;
+		case POWER_FULL:
+			CreateSystemPlay_ProtectMusic(AMR_53_POWER_FULL);
+			break;			
 		case BATTERRY:		//电池供电
-			Create_PlaySystemEventVoices(CMD_54_POWER_INTERRUPT);	
+			//Create_PlaySystemEventVoices(CMD_54_POWER_INTERRUPT);	
+			CreateSystemPlay_ProtectMusic(AMR_54_POWER_DISCONNET);
 			break;
 	}
 } 
@@ -760,7 +788,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;
 		case CMD_56_RESET_SYSTEM:				//59、亲，我已经恢复到最初状态，正在重新启动。
 			PlaySystemAmrVoices(AMR_56_RESET,playEventNums);
-			system("reboot");
+			//system("reboot");
 			break;
 		case CMD_6175_DIR_MENU:
 			PlaySystemAmrVoices(AMR_61_DIR,playEventNums);
@@ -810,6 +838,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 		case TULING_WAIT_VOICES:
 			vol =GetVol();
 			Setwm8960Vol(VOL_APP_SET,PLAY_PASUSE_VOICES_VOL);
+			PlayImportVoices(TULING_KEYUP,playEventNums);
 			usleep(2000);
 			PlayImportVoices(TULING_WINT,playEventNums);
 			Setwm8960Vol(VOL_SET_VAULE,vol);
@@ -844,7 +873,11 @@ void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
 		sprintf(handtext->data,"%s",filename);
 		handtext->event = SPEEK_VOICES_EVENT;
 		handtext->mixMode=mixMode;
-		handtext->EventNums=updateCurrentEventNums();
+		if(handtext->mixMode==MIX_PLAY_PCM){	// for play music mode  don't interrupt auto play music 
+			handtext->EventNums=GetCurrentEventNums();
+		}else{
+			handtext->EventNums=updateCurrentEventNums();
+		}
 		if(AddworkEvent(handtext,sizeof(HandlerText_t))){
 			printf("add play amr voices failed ,and remove file \n");
 			goto exit2;

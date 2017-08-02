@@ -37,6 +37,7 @@ typedef struct{
 }Player_t;
 
 typedef struct{
+	unsigned char lockNetwork;
 	char channel;					//采样通道
 	unsigned char wait;
 	unsigned short rate;			//采样率	
@@ -44,6 +45,7 @@ typedef struct{
 	int playSize;					//当前播放大小
 	int cacheSize;					//当前下载音频数据大小
 	unsigned int streamLen;			//数据流大小
+	unsigned int eventNums;
 	Player_t player; 
 	pthread_mutex_t mutex;			//资源锁
 	void (*SetI2SRate)(int rate,const char *function);	//切换音频采样率
@@ -69,7 +71,7 @@ extern Mp3Stream *st;
 #endif
 
 extern void NetStreamExitFile(void);	//退出播放,耗时退出
-extern int Mad_PlayMusic(Player_t *play);	//播放URL接口，本地存在就不下载了
+extern int Mad_PlayMusic(Player_t *play,int EventNums);	//播放URL接口，本地存在就不下载了
 extern void StreamPause(void);
 extern void StreamPlay(void);
 extern void SetStreamPlayState(unsigned char playliststate);

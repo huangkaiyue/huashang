@@ -93,6 +93,12 @@ static void InputNetStream(const void * inputMsg,int inputSize){
 		st->playSize +=inputSize;
 	}
 #endif
+	if(GetCurrentEventNums()!=st->eventNums){
+		quitDownFile();
+		DecodeExit();
+		printf("\n InputNetStream-------------------------\n interrupt exit\n ------------------\n");
+	}
+
 	pthread_mutex_unlock(&st->mutex);
 }
 int GetFileNameForPath(const char *path){
@@ -193,14 +199,21 @@ static int error_timeout_check=0;
 //退出当前流下载和播放
 void NetStreamExitFile(void){
 	if(error_timeout_check>0){
+		printf("\n ..........error exit ...........\n");
 		return;
 	}
+	printf("start exit NetStreamExitFile \n");
 	error_timeout_check=1;
+#if 0	
 	if(getDownState()==DOWN_ING){		//退出下载
+		printf("start exit quitDownFile \n");
 		quitDownFile();
 		WriteEventlockLog("eventlock quitDownFile",2);
 	}
-	printf("%s: rate =%d\n",__func__,st->rate);
+#endif	
+
+
+	printf("%s: ... v2 rate =%d\n",__func__,st->rate);
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//退出播放
 		pthread_mutex_lock(&st->mutex);
 		st->player.progress=0;
@@ -208,6 +221,7 @@ void NetStreamExitFile(void){
 		st->player.proflag=0;
 		memset(st->player.musicname,0,64);
 		DecodeExit();
+		//quitDownFile();
 		pthread_mutex_unlock(&st->mutex);
 		WriteEventlockLog("eventlock wait exit mp3 state",(int)st->player.playState);
 		printf("%s: while wait exit error_timeout_check=%d st->player.playState=%d\n",__func__,error_timeout_check,st->player.playState);
@@ -236,8 +250,11 @@ static void CopyUrlMessage(Player_t *srcPlayer,Player_t *DestPlayer){
 	snprintf(DestPlayer->musicname,64,"%s",srcPlayer->musicname);
 	DestPlayer->musicTime = srcPlayer->musicTime;
 }
+int getLockNetwork(void){
+	return (int)st->lockNetwork;
+}
 //开始边下边播放 
-static int NetStreamDownFilePlay(Player_t *play){
+static int NetStreamDownFilePlay(Player_t *play,int EventNums){
 	int ret=0;
 	setDowning();
 	st->player.progress=0;
@@ -247,6 +264,8 @@ static int NetStreamDownFilePlay(Player_t *play){
 	WritePlayUrl_Log("play url",play->playfilename);
 	st->player.playState=MAD_NEXT;
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
+	st->eventNums=EventNums;
+	st->lockNetwork=1;
 	demoDownFile(play->playfilename,15,NetStartDown,NetGetStreamData,NetEndDown);
 	while(st->player.playState!=MAD_EXIT){
 		printf("wait exit play state: %d \n",GetRecordeVoices_PthreadState());
@@ -261,8 +280,15 @@ static int NetStreamDownFilePlay(Player_t *play){
 			printf("\n-------------------------\n not run play pthread exit\n ------------------\n");
 			break;
 		}
+		if(GetCurrentEventNums()!=EventNums){
+			quitDownFile();
+			DecodeExit();
+			printf("\n-------------------------\n interrupt exit\n ------------------\n");
+			break;
+		}
 	}
 	pause_record_audio();
+	st->lockNetwork=0;
 	DEBUG_STREAM("NetStreamDownFilePlay end ...\n");
 	return ret;
 }
@@ -392,7 +418,7 @@ static void playLocalMp3(const char *mp3file){
 	WriteEventlockLog("playLocalMp3  exit play ok ",(int)st->player.playState);
 }
 //播放歌曲接口  play: 播放信息结构体
-int Mad_PlayMusic(Player_t *play){
+int Mad_PlayMusic(Player_t *play,int EventNums){
 	int ret =1;
 	start_event_play_Mp3music();
 	char domain[64] = {0};
@@ -409,7 +435,7 @@ int Mad_PlayMusic(Player_t *play){
 		CopyUrlMessage(play,(Player_t *)&st->player);
 		snprintf(st->mp3name,128,"%s",filename);			
 		DEBUG_STREAM("network play music : %s \n",filename);
-		NetStreamDownFilePlay(play);
+		NetStreamDownFilePlay(play, EventNums);
 	}
 	ret =0;
 exit0:	

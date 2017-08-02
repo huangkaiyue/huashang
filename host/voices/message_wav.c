@@ -143,6 +143,7 @@ int __playResamplePlayPcmFile(const char *pcmFile,unsigned int playEventNums){
 	currentRate = GetWm8960Rate();
 	start_event_play_soundMix();//切换到混音播放状态		
 	SetWm8960Rate(RECODE_RATE,(const char *)"__playResamplePlayPcmFile set rate");
+	usleep(80000);
 	int ret =PlaySignleWavVoices((const char *)pcmFile,PLAY_IS_INTERRUPT,playEventNums);	
 	start_event_play_Mp3music();
 	//需要优化一下，检查到还有音频文件
@@ -192,7 +193,7 @@ int PlayWeixin_SpeekAmrFileVoices(const char *filename,unsigned int playEventNum
 		start_event_play_wav();
 		ret= __playAmrVoices(filename,PLAY_IS_INTERRUPT,playEventNums);
 	}
-	if(strstr(filename,"home/qtts/")==NULL){
+	if(strstr(filename,"/home/qtts/")==NULL){
 		remove(filename);
 	}
 	return ret;

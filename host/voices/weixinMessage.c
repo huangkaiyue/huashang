@@ -118,9 +118,7 @@ int GetWeiXinMessageForPlay(void){
 	}else{
 		if(Bak_Message==NULL){
 			//Create_PlayQttsEvent("小朋友没有消息喔！",QTTS_UTF8);
-			char playName[48]={0};
-			snprintf(playName,48,"%s%s",sysMes.localVoicesPath,AMR_44_WEIXIN_WARN);
-			CreatePlayWeixinVoicesSpeekEvent(playName);
+			CreateSystemPlay_ProtectMusic((const char *)AMR_44_WEIXIN_WARN);
 		}else{
 			if(Bak_Message->type ==WEIXIN_TEXT){
 				Create_PlayQttsEvent(Bak_Message->data,QTTS_UTF8);

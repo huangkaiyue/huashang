@@ -106,17 +106,28 @@ static int keyDownAck_userBind(void){
 	}
 	return -1;
 }
+void keyDown_AndSetGpioFor_clean(void){
+	//if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){
+		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x00);//按下
+	//}
+}
+
 //按下音
-static void keyDown_AndSetGpioFor_play(void){
+void keyDown_AndSetGpioFor_play(void){
 	if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){
+		printf("play key down voices \n");
 		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x01);//按下
 	}
+	keyDown_AndSetGpioFor_clean();
 }
+
 //抬起音
-static void keyUp_AndSetGpioFor_play(void){
-	if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){
+void keyUp_AndSetGpioFor_play(void){
+	//if(GetRecordeVoices_PthreadState()!=PLAY_MP3_MUSIC){
+		StreamPause();
 		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x20);//弹起
-	}
+	//}
+	keyDown_AndSetGpioFor_clean();
 }	
 
 //串口开关
@@ -129,10 +140,12 @@ static void enableUart(void){
 }
 //锁gpio事件函数，防止底层触发按键太频繁
 static void lock_msgEv(void){
+	printf("%s: lock \n",__func__);
 	gpio.sig_lock=1;	
 }
 //解锁函数
 static void unlock_msgEv(void){
+	printf("%s: un lock \n",__func__);
 	gpio.sig_lock=0;
 }
 //检查当前锁
@@ -299,7 +312,7 @@ static void signal_handler(int signum){
 				ShortKeyDown_ForPlayWifiMessage();
 				break;
 			case SPEEK_KEY:			//智能会话按键事件
-				keyUp_AndSetGpioFor_play();
+				//keyUp_AndSetGpioFor_play();
 				StopTuling_RecordeVoices();
 				break;
 			case ADDVOL_KEY:	//短按播放喜爱内容,下一曲
@@ -343,11 +356,11 @@ static void signal_handler(int signum){
 				break;
 				
 			case SPEEK_KEY://会话键
-				keyDown_AndSetGpioFor_play();
 				if(!keyDownAck_userBind()){
 					goto exit0;
 				}
 				TulingKeyDownSingal();
+				printf("end ... TulingKeyDownSingal ...\n");
 				break;
 			
 			case PLAY_PAUSE_KEY://长按播放/暂停  切换智能会话播音人
@@ -390,7 +403,7 @@ static void signal_handler(int signum){
 				
 				break;
 			case DIR_MENU_KEY:	//长按切换单曲和列表
-				keyDown_AndSetGpioFor_play();
+				keyUp_AndSetGpioFor_play();
 				GpioKey_SetStreamPlayState();
 				break;
 		}// end gpio_down

@@ -150,6 +150,8 @@
 #define AMR_UPDATE_OK				"qtts/update_ok_8K.amr"			//更新固件结束
 #define TIMEOUT_baike				"qtts/timeOut_baike.amr"		//上知天文，下知地理，我给你讲百科知识吧!
 #define TIMEOUT_sleep				"qtts/timeOut_sleep.amr"		//小朋友今天已经很晚了，早睡早起做一个乖宝宝，我给你放睡眠曲吧!
+
+#define TULING_KEYUP				"qtts/tuling_keyup.amr"		//
 #define TULING_WINT					"qtts/TuLin_Wint_8K.amr"		//请稍等  
 #define AMR_WEIXIN_SEND_OK			"qtts/weixin_send_ok.amr"
 #define AMR_WEIXIN_RECV_OK			"qtts/weixin_recv_ok.amr"

@@ -113,7 +113,7 @@ int Huashang_GetScard_forPlayMusic(unsigned char playMode,unsigned char EventSou
 	}
 	if(playMode==PLAY_NEXT){
 		if(++hsUser->PlayHuashang_MusicIndex>HUASHANG_MUSIC_TOTAL_NUM){
-			hsUser->PlayHuashang_MusicIndex=0;
+			hsUser->PlayHuashang_MusicIndex=1;
 		}
 	}else if(playMode==PLAY_PREV){
 		if(--hsUser->PlayHuashang_MusicIndex<=0){

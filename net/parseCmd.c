@@ -514,16 +514,12 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		if(!strncmp(cJSON_GetObjectItem(pJson, "text")->valuestring,"openwifi",8)){
 			OpenWifi();
 		}
-		char playTicesVoices[48]={0};
-		snprintf(playTicesVoices,48,"%s%s",sysMes.localVoicesPath,TULING_WINT);
-		CreatePlayWeixinVoicesSpeekEvent((const char *)playTicesVoices);
+		CreateSystemPlay_ProtectMusic((const char *)AMR_WEIXIN_RECV_OK);
 		char *WeiXintxt =cJSON_GetObjectItem(pJson, "text")->valuestring;
 		AddWeiXinMessage_Text((const char *)WeiXintxt,strlen(WeiXintxt));
 	}
 	else if (!strcmp(pSub->valuestring,"speek")){//微信对讲
-		char playTicesVoices[48]={0};
-		snprintf(playTicesVoices,48,"%s%s",sysMes.localVoicesPath,AMR_WEIXIN_RECV_OK);
-		CreatePlayWeixinVoicesSpeekEvent((const char *)playTicesVoices);
+		CreateSystemPlay_ProtectMusic((const char *)AMR_WEIXIN_RECV_OK);
 		char *WeiXinFile =cJSON_GetObjectItem(pJson, "file")->valuestring;
 		AddWeiXinMessage_Voices((const char *)WeiXinFile,strlen(WeiXinFile));
 	}

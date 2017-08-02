@@ -252,17 +252,25 @@ static void handle_uartMsg(int fd ,unsigned char buf,int size){
 			case SMBATTYPE://充电状态
 				if((data.data&0x80)==0x80){//充电
 					DEBUG_UART("handle_uartMsg	SMBATTYPE OK \n");
-					uartCtr->voicesEvent(AC_BATTERRY);
-					uartCtr->charge=1;
+					if(uartCtr->charge==0){
+						//if(data.data&0x85){	//power full
+						//	uartCtr->voicesEvent(POWER_FULL);
+						//}else{
+							uartCtr->voicesEvent(AC_BATTERRY);
+						//}
+						uartCtr->charge=1;
+					}
 					batterylow=1;
 				}
 				else if((data.data&0x80)==0x00){//未充电
 					DEBUG_UART("handle_uartMsg	SMBATTYPE ERROR \n");
-					uartCtr->charge=0;
 					if(uartCtr->startSystem>0){	//start system don't play baterry work voices
 						uartCtr->startSystem--;
-					}else{	
-						uartCtr->voicesEvent(BATTERRY);
+					}else{
+						if(uartCtr->charge==1){
+							uartCtr->voicesEvent(BATTERRY);
+							uartCtr->charge=0;
+						}
 					}
 				}
 				DEBUG_UART("SMBATTYPE bat=%d\n",data.data);

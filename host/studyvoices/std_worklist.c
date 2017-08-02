@@ -270,6 +270,7 @@ exit2:
 		}
 		handMainMusic->EventNums =handText->EventNums;//添加歌曲也要标记当前事件编号
 		handMainMusic->data=(char *)player;
+		start_event_play_Mp3music();
 		AddDownEvent((const char *)handMainMusic,TULING_URL_VOICES);
 	}
 	cJSON_Delete(pJson);
@@ -310,16 +311,24 @@ void cleanQuequeEvent(void){
 	event_lock=0;
 }
 static void playSelectDirMenu(HandlerText_t *handText){
+	int timeOut=0;
 	SetMainQueueLock(MAIN_QUEUE_UNLOCK);		//去除清理锁
 	NetStreamExitFile();
 	if(GetRecordeVoices_PthreadState()==PLAY_MP3_MUSIC){
-		usleep(150000);	
+		usleep(200000);	
+		while(GetLockRate()){	// main pthread is change rate ��delay  time  for play dirent name voices
+			usleep(100000);
+			if(++timeOut>5){
+				break;
+			}
+		}
 	}
+	keyUp_AndSetGpioFor_play();
 	if(GetCurrentEventNums()!=handText->EventNums){
 		goto exit0;
 	}
 	Handle_PlaySystemEventVoices(handText->playLocalVoicesIndex,handText->EventNums);
-	usleep(100000);	
+	usleep(200000);	
 	if(GetCurrentEventNums()!=handText->EventNums){
 		goto exit0;
 	}

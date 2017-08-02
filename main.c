@@ -132,7 +132,7 @@ static void Create_playContinueMusic(HandlerText_t *hand){
 static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 	Player_t *play =(Player_t *)hand->data;
 	Show_musicPicture();
-	Mad_PlayMusic(play);
+	Mad_PlayMusic(play,hand->EventNums);
 	Create_playContinueMusic(hand);
 exit1:
 	free((void *)hand->data);
@@ -143,7 +143,7 @@ exit0:
 static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 	Player_t * player =hand->data;
 	Show_musicPicture();
-	if(Mad_PlayMusic((const char *)hand->data)){
+	if(Mad_PlayMusic((const char *)hand->data,hand->EventNums)){
 		goto exit0;
 	}
 	if(hand->EventNums!=GetCurrentEventNums()){
@@ -151,9 +151,11 @@ static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 	}
 	Write_huashangTextLog("Main_Thread_AddPlayLocalSdcard_Music");
 	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
+		printf("%s: start CreatePlayListMuisc \n",__func__);
 		CreatePlayListMuisc((const char *)hand->data,PLAY_MUSIC_SDCARD);
 	}else{											//自动播放
 		if(getEventNum()==0&&getWorkMsgNum(DownEvent)==0){
+			printf("%s: start Huashang_GetScard_forPlayMusic \n",__func__);
 			Huashang_GetScard_forPlayMusic(PLAY_NEXT,EXTERN_PLAY_EVENT);
 		}	
 	}
@@ -170,7 +172,7 @@ static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
 	}
 	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic startplay");
 	Show_musicPicture();
-	Mad_PlayMusic((Player_t *)hand->data);
+	Mad_PlayMusic((Player_t *)hand->data,hand->EventNums);
 	if(hand->EventNums==GetCurrentEventNums()){
 		Create_playContinueMusic(hand);
 	}	
