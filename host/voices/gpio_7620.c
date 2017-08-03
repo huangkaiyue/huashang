@@ -389,9 +389,10 @@ static void signal_handler(int signum){
 				mutiple_key_SUB.key_state  = KEYDOWN;
 				mutiple_key_SUB.key_number = SUBVOL_KEY;
 				gettimeofday(&mutiple_key_SUB.time_start,0);
+				//printf("start get sub time \n");
 				if(mutiple_key_SUB.PthreadState == PthreadState_run)
 					break;
-				
+				//printf("start run sub pthread \n");
 				mutiple_key_SUB.PthreadState = PthreadState_run;
 				pool_add_task(mus_vol_mutiplekey_Thread,(void *)&mutiple_key_SUB);
 				ack_VolCtr("sub",GetVol());		//----------->音量减
@@ -404,7 +405,7 @@ static void signal_handler(int signum){
 				if(mutiple_key_weixin.PthreadState == PthreadState_run)
 					break;
 				
-				mutiple_key_SUB.PthreadState = PthreadState_run;
+				mutiple_key_weixin.PthreadState = PthreadState_run;
 				pool_add_task(weixin_mutiplekey_Thread,(void *)&mutiple_key_weixin);
 				
 				break;
