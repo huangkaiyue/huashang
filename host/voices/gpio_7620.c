@@ -123,15 +123,9 @@ void keyDown_AndSetGpioFor_play(void){
 
 //抬起音
 void keyUp_AndSetGpioFor_play(void){
-	if(GetRecordeVoices_PthreadState()==PLAY_MP3_MUSIC){
-		StreamPause();
-		usleep(100000);
+	//if(GetRecordeVoices_PthreadState()==PLAY_MP3_MUSIC){
 		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x20);//弹起
-		usleep(200000);
-		StreamPlay();
-	}else{
-		ioctl(gpio.fd, AUDIO_IC_CONTROL,0x20);//弹起
-	}
+	//}
 	keyDown_AndSetGpioFor_clean();
 }	
 
@@ -179,10 +173,12 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 			{
 				if(mutiplekey->key_number == ADDVOL_KEY){
 					printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);		
+					keyUp_AndSetGpioFor_play();
 					Huashang_GetScard_forPlayMusic(PLAY_NEXT,EXTERN_PLAY_EVENT);
 				}
 				else{
 					printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
+					keyUp_AndSetGpioFor_play();
 					Huashang_GetScard_forPlayMusic(PLAY_PREV,EXTERN_PLAY_EVENT);
 				}
 				break;
@@ -194,7 +190,7 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 		
 		if(time_ms >=500){		//before is 500  2017.6.28 22:43
 			if(playDownVoicesFlag==0){
-				//keyUp_AndSetGpioFor_play();
+				keyUp_AndSetGpioFor_play();
 				playDownVoicesFlag++;
 			}
 			printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
@@ -252,7 +248,7 @@ static void *weixin_mutiplekey_Thread(void *arg){
 		if(time_ms >=500){		//before is 500  2017.6.28 22:43
 			if(playDownVoicesFlag==0){
 				//在这里开始录音
-				//keyDown_AndSetGpioFor_play();
+				keyUp_AndSetGpioFor_play();
 				Create_WeixinSpeekEvent(KEYDOWN);
 				playDownVoicesFlag++;
 			}
@@ -314,10 +310,10 @@ static void signal_handler(int signum){
 	if (signum == GPIO_UP){			//短按按键事件
 		switch(gpio.mount){
 			case NETWORK_KEY:		//播报WiFi名
+				keyUp_AndSetGpioFor_play();
 				ShortKeyDown_ForPlayWifiMessage();
 				break;
 			case SPEEK_KEY:			//智能会话按键事件
-				//keyUp_AndSetGpioFor_play();
 				StopTuling_RecordeVoices();
 				break;
 			case ADDVOL_KEY:	//短按播放喜爱内容,下一曲
@@ -333,10 +329,11 @@ static void signal_handler(int signum){
 				GpioLog("key up",SUBVOL_KEY);
 				break;
 			case PLAY_PAUSE_KEY:	//播放、暂停
-				//keyUp_AndSetGpioFor_play();
+				keyUp_AndSetGpioFor_play();
 				KeydownEventPlayPause();
 				break;
 			case DIR_MENU_KEY:	//华上教育，设置单曲循环和列表
+				keyUp_AndSetGpioFor_play();
 				SelectDirMenu();
 				break;
 			case WEIXIN_SPEEK_KEY:	//华上教育微信对讲
@@ -352,10 +349,12 @@ static void signal_handler(int signum){
 	else if (signum == GPIO_DOWN){	//长按按键事件
 		switch(gpio.mount){
 			case RESET_KEY://恢复出厂设置
+				keyUp_AndSetGpioFor_play();
 				ResetHostDevicesFactory();
 				break;
 									
 			case NETWORK_KEY://配网键
+				keyUp_AndSetGpioFor_play();
 				if(!LongNetKeyDown_ForConfigWifi()){
 					return;
 				}
@@ -410,7 +409,7 @@ static void signal_handler(int signum){
 				
 				break;
 			case DIR_MENU_KEY:	//长按切换单曲和列表
-				//keyUp_AndSetGpioFor_play();
+				keyUp_AndSetGpioFor_play();
 				GpioKey_SetStreamPlayState();
 				break;
 		}// end gpio_down
