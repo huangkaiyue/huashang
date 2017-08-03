@@ -128,6 +128,7 @@ int LongNetKeyDown_ForConfigWifi(void){
 		if(access(INTEN_NETWORK_FILE_LOCK,F_OK)<0){
 			disable_gpio();
 			Create_PlaySystemEventVoices(CMD_15_START_CONFIG);
+			sysMes.lockRestartNetwork=RESTART_NETWORK_UNLOCK;
 			//startSmartConfig(Create_PlaySystemEventVoices,enable_gpio);	
 			system("smartconfig start &");
 			return 0;
@@ -740,11 +741,15 @@ static void *updateHuashangFacePthread(void *arg){
 		showFacePicture(PLAY_MUSIC_NUM4);	
 	}
 }
+//smartconfig not recv wifi message, restart network
 static void *RunTask_restartNetwork(void *arg){
 	sleep(60);
+	if(sysMes.lockRestartNetwork==RESTART_NETWORK_UNLOCK){
+		return ;
+	}
 	disable_gpio();
 	system("smartconfig restart &");
-	sysMes.lockRestartNetwork=0;
+	sysMes.lockRestartNetwork=RESTART_NETWORK_UNLOCK;
 }
 /*******************************************************
 函数功能: 系统音事件处理函数
