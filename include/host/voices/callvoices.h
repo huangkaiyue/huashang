@@ -72,7 +72,7 @@
 
 #define CMD_12_NOT_NETWORK			12	//网络连接失败
 #define CMD_15_START_CONFIG			15	//15、开始配网，请发送wifi名以及密码！
-#define CMD_16_CONNET_NETWORK		16	//16、正在尝试连接网络，请稍等！
+#define CMD_16_CONNET_ING			16	//16、正在尝试连接网络，请稍等！
 #define CMD_18_CONNET_ING			18	//18、小培老师正在努力与总部课堂连接中，请稍等！
 #define CMD_19_CONNET_ING			19	//19、网络正在连接中，请耐心等一会儿吧！
 #define CMD_20_CONNET_OK			20	//20、(8634代号)小培老师与总部课堂连接成功，我们来聊天吧！（每次连接成功的语音，包括唤醒）

@@ -295,7 +295,7 @@ void RecvNetWorkConnetState(int event){
 			Create_PlaySystemEventVoices(CMD_12_NOT_NETWORK);
 			break;
 		case CONNET_ING:
-			Create_PlaySystemEventVoices(CMD_16_CONNET_NETWORK);
+			Create_PlaySystemEventVoices(CMD_16_CONNET_ING);
 			break;
 		case CMD_22_NOT_RECV_WIFI:
 			Create_PlaySystemEventVoices(CMD_22_NOT_RECV_WIFI);

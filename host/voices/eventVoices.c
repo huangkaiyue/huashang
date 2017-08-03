@@ -149,6 +149,17 @@ static void Link_NetworkError(void){
 	Running_light_500Hz();
 	setNetWorkLive(NETWORK_ER);
 }
+static void NetWorkConnetIngPlayVoices(int playEventNums){
+	char file[64]={0};
+	PlaySystemAmrVoices(AMR_16_CONNET_ING,playEventNums);
+	sleep(1);
+	PlaySystemAmrVoices(AMR_17_NETWORK_1,playEventNums);
+	sleep(1);
+	int i=(18+(int)(2.0*rand()/(RAND_MAX+1.0)));
+	snprintf(file,64,"qtts/%d.amr",i);
+	PlaySystemAmrVoices(file,playEventNums);
+
+}
 
 //--------------end config network and set system network state---------------------------------------------------------
 /*******************************************************
@@ -699,6 +710,7 @@ static void *updateHuashangFacePthread(void *arg){
 		showFacePicture(PLAY_MUSIC_NUM4);	
 	}
 }
+
 /*******************************************************
 函数功能: 系统音事件处理函数
 参数: sys_voices 系统音标号
@@ -716,8 +728,8 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			setNetWorkLive(NETWORK_ER);
 			PlaySystemAmrVoices(AMR_15_START_CONFIG,playEventNums);
 			break;
-		case CMD_16_CONNET_NETWORK:				//16、正在尝试连接网络，请稍等！
-			PlaySystemAmrVoices(AMR_16_CONNET_ING,playEventNums);
+		case CMD_16_CONNET_ING:					//16、正在尝试连接网络，请稍等！
+			NetWorkConnetIngPlayVoices(playEventNums);
 			break;
 		case CMD_20_CONNET_OK:					//20、(8634代号)小培老师与总部课堂连接成功，我们来聊天吧！（每次连接成功的语音，包括唤醒）
 			showFacePicture(CONNECT_WIFI_OK_PICTURE);	
