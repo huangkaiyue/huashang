@@ -238,7 +238,7 @@ int main(int argc, char **argv){
 			case LOCAL_MP3_EVENT:	//本地播放
 				Main_Thread_AddPlayLocalSdcard_Music((HandlerText_t *)msg);
 				printf("%s: Main_Thread_AddPlayLocalSdcard_Music end\n",__func__);
-				break;				
+				break;	
 			case QUIT_MAIN:
 				printf("end main !!!\n");
 				CleanSystemResources();

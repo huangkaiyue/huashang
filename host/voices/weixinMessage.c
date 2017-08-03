@@ -95,6 +95,7 @@ int GetWeiXinMessageForPlay(void){
 			CreatePlayWeixinVoicesSpeekEvent((const char *)msg->data);
 		}
 		if(getWorkMsgNum(WeixinEvent)==0){
+			SetWeixinMessageFlag(NOT_MESSAGE);//微信消息已经取完
 			if(Bak_Message!=NULL){
 				if(Bak_Message->type ==WEIXIN_VOICES)
 					remove(Bak_Message->data);
@@ -130,7 +131,6 @@ int GetWeiXinMessageForPlay(void){
 				memset(Bak_Message->data,0,strlen(Bak_Message->data));	
 				sprintf(Bak_Message->data,"/Down/%d.amr",ti);
 			}
-			SetWeixinMessageFlag(NOT_MESSAGE);//微信消息已经取完
 		}
 	}
 	return 0;

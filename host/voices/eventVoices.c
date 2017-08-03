@@ -151,16 +151,22 @@ static void Link_NetworkError(void){
 	Running_light_500Hz();
 	setNetWorkLive(NETWORK_ER);
 }
+static void WarnIng_notRecvConetNetwork(void){
+	sleep(20);
+	unlockRecoderPthread_TimeoutCheck();
+}
 static void NetWorkConnetIngPlayVoices(int playEventNums){
 	char file[64]={0};
 	PlaySystemAmrVoices(AMR_16_CONNET_ING,playEventNums);
-	sleep(1);
+	sleep(3);
 	PlaySystemAmrVoices(AMR_17_NETWORK_1,playEventNums);
-	sleep(1);
+	sleep(3);
 	int i=(18+(int)(2.0*rand()/(RAND_MAX+1.0)));
 	snprintf(file,64,"qtts/%d.amr",i);
 	PlaySystemAmrVoices(file,playEventNums);
-	unlockRecoderPthread_TimeoutCheck();
+	if(getlockRecoderPthread_TimeoutCheck()==TIME_OUT_CHECK_LOCK){
+		pthread_create_attr(WarnIng_notRecvConetNetwork,NULL);
+	}
 }
 
 //--------------end config network and set system network state---------------------------------------------------------
@@ -231,6 +237,33 @@ int __AddLocalMp3ForPaly(const char *localpath,unsigned char EventSource){
 exit0:
 	free(handEvent);
 	return -1;
+}
+int __AddLocalMp3_autoPlay(Player_t *player){
+	if(getEventNum()>0||getplayEventNum()>0){//防止添加过快
+		DEBUG_EVENT("num =%d getplayEventNum() =%d\n",getEventNum(),getplayEventNum());
+		WritePlayUrl_Log("__AddLocalMp3_autoPlay"," getEventNum ");
+		goto exit0;
+	}
+	if(GetRecordeVoices_PthreadState() == START_SPEEK_VOICES||GetRecordeVoices_PthreadState() == START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() == END_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==PLAY_WAV||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){ 
+		WritePlayUrl_Log("__AddNetWork_UrlForPaly"," GetRecordeVoices_PthreadState failed ");
+		return -1;
+	}
+	int ret=-1;
+	HandlerText_t *handEvent = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
+	if(handEvent){
+		WritePlayUrl_Log("__AddLocalMp3_autoPlay"," add ok");
+		handEvent->data = (char *)player;
+		handEvent->event=URL_VOICES_EVENT;
+		handEvent->EventNums=updateCurrentEventNums();
+		ret = AddworkEvent(handEvent,sizeof(HandlerText_t));
+	}else{
+		goto exit0;
+	}
+	return ret;
+exit0:
+	free(player);
+	return -1;
+
 }
 void CreateDirMenuPlay(int MenuIndex,const char *playName){
 	if(getEventNum()>0){	//事件任务过多，直接丢掉，防止添加过快，导致后面清理时间过长
@@ -599,18 +632,11 @@ void CreatePlayDefaultMusic_forPlay(const char* musicType){
 	}	
 	player->musicTime=100;
 	player->playListState=AUTO_PLAY_EVENT;
-	snprintf(player->musicname,64,"%s",musicType);//musicname 暂时定义采用这个结构成语变量存放播放类型
-#if defined(HUASHANG_JIAOYU)		
+	snprintf(player->musicname,64,"%s",musicType);//musicname 暂时定义采用这个结构成语变量存放播放类型		
 	if(Huashang_CreatePlayDefaultMusic_forPlay(player->playfilename,musicType)){
 		return ;
 	}
-#else
-	if(GetDefaultMusicJson_forPlay(player->playfilename,musicType)){
-		free(player);
-		return ;
-	}
-#endif
-	__AddNetWork_UrlForPaly(player);
+	__AddLocalMp3_autoPlay(player);
 }
 static int playLongNotuserVoices(unsigned int playEventNums){
 	int ret =0;
