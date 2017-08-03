@@ -253,7 +253,7 @@ exit0:
 **/
 void KeydownEventPlayPause(void){
 	keydown_flashingLED();	
-	updateCurrentEventNums();
+	//updateCurrentEventNums();
 	if(GetRecordeVoices_PthreadState()==PLAY_MP3_MUSIC){
 		keyStreamPlay();
 	}
