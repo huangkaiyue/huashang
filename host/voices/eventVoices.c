@@ -13,6 +13,7 @@
 #include "gpio_7620.h"
 
 #include "host/studyvoices/qtts_qisc.h"
+#include "huashangMusic.h"
 #include "uart/uart.h"
 #include "config.h"
 #include "log.h"
@@ -128,7 +129,7 @@ int LongNetKeyDown_ForConfigWifi(void){
 			disable_gpio();
 			Create_PlaySystemEventVoices(CMD_15_START_CONFIG);
 			//startSmartConfig(Create_PlaySystemEventVoices,enable_gpio);	
-			system("smartconfig &");
+			system("smartconfig start &");
 			return 0;
 		}
 	}	
@@ -158,7 +159,7 @@ static void NetWorkConnetIngPlayVoices(int playEventNums){
 	int i=(18+(int)(2.0*rand()/(RAND_MAX+1.0)));
 	snprintf(file,64,"qtts/%d.amr",i);
 	PlaySystemAmrVoices(file,playEventNums);
-
+	unlockRecoderPthread_TimeoutCheck();
 }
 
 //--------------end config network and set system network state---------------------------------------------------------
@@ -433,11 +434,11 @@ static void TaiwanToTulingError(unsigned int playEventNums){
 @ 没有网络的时候，播放本地系统固定录好台本(按键触发播放)
 @
 */
-void Handle_PlayTaiBenToNONetWork(unsigned int playEventNums){
+int Handle_PlayTaiBenToNONetWork(unsigned int playEventNums){
 	char file[64]={0};
 	int i=(12+(int)(3.0*rand()/(RAND_MAX+1.0)));
 	snprintf(file,64,"qtts/%d.amr",i);
-	PlaySystemAmrVoices(file,playEventNums);
+	return PlaySystemAmrVoices(file,playEventNums);
 }
 //进入睡眠状态，播放语音提醒
 static void System_EntrySleeping(unsigned int playEventNums){
@@ -610,18 +611,34 @@ void CreatePlayDefaultMusic_forPlay(const char* musicType){
 #endif
 	__AddNetWork_UrlForPaly(player);
 }
+static int playLongNotuserVoices(unsigned int playEventNums){
+	int ret =0;
+	if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
+		ret = Handle_PlayTaiBenToNONetWork(playEventNums);
+	}else{
+		ret = PlaySystemAmrVoices(AMR_40_NOT_USR,playEventNums);
+	}
+	return ret;
+}
 //客户后台定制推送的内容
 void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 	int ret =-1;
 	char musictype[12]={0};
-	if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
-		return;
+	int state= GetWeixinMessageFlag();
+	switch(state){
+		case NOT_MESSAGE:
+			break;
+		case WEIXIN_MESSAGE:
+			PlaySystemAmrVoices(AMR_24_NEW_MESSAGE, playEventNums);
+			goto exit0;
+		case WEIXIN_PUSH_MESSAGE:
+			PlaySystemAmrVoices(AMR_25_NEW_STROY, playEventNums);
+			goto exit0;
 	}
 	time_t timep;
 	struct tm *p;
 	time(&timep);
-	p=localtime(&timep);
-	showFacePicture(WAIT_CTRL_NUM3);	
+	p=localtime(&timep);	
 	if(p->tm_hour+8>=21){
 		ret =PlaySystemAmrVoices(TIMEOUT_sleep,playEventNums);
 		snprintf(musictype,12,"%s","sleep");	//播放音乐内容
@@ -631,7 +648,7 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 	start_event_play_wav();
 	switch(randNums){
 		case 1:
-			if(PlaySystemAmrVoices(AMR_40_NOT_USR,playEventNums)){
+			if(playLongNotuserVoices(playEventNums)){
 				goto exit0;	//异常打断退出
 			}
 			start_event_play_wav();
@@ -639,7 +656,7 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 			snprintf(musictype,12,"%s","music");	//播放音乐内容
 			break;
 		case 2:
-			if(PlaySystemAmrVoices(AMR_40_NOT_USR,playEventNums)){
+			if(playLongNotuserVoices(playEventNums)){
 				goto exit0;	//异常打断退出
 			}
 			start_event_play_wav();
@@ -647,7 +664,7 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 			snprintf(musictype,12,"%s","guoxue");	//播放国学内容
 			break;
 		case 3:
-			if(PlaySystemAmrVoices(AMR_40_NOT_USR,playEventNums)){
+			if(playLongNotuserVoices(playEventNums)){
 				goto exit0;	//异常打断退出
 			}
 			start_event_play_wav();
@@ -655,7 +672,7 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 			snprintf(musictype,12,"%s","gushi");	//播放成语故事
 			break;
 		case 4:
-			if(PlaySystemAmrVoices(AMR_40_NOT_USR,playEventNums)){
+			if(playLongNotuserVoices(playEventNums)){
 				goto exit0;	//异常打断退出
 			}
 			start_event_play_wav();
@@ -663,18 +680,31 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 			snprintf(musictype,12,"%s","baike");	//播放百科知识
 			break;
 		case 5:
-			ret =PlaySystemAmrVoices(AMR_26_BIND,playEventNums);
+			if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
+				ret = Handle_PlayTaiBenToNONetWork(playEventNums);
+			}else{
+				ret =PlaySystemAmrVoices(AMR_26_BIND,playEventNums);
+			}
 			goto exit0;
 		case 6:
-			ret =PlaySystemAmrVoices(AMR_44_WEIXIN_WARN,playEventNums);
+			if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
+				ret = Handle_PlayTaiBenToNONetWork(playEventNums);
+			}else{
+				ret =PlaySystemAmrVoices(AMR_44_WEIXIN_WARN,playEventNums);
+			}
 			goto exit0;
 		default:
+			if(playLongNotuserVoices(playEventNums)){
+				goto exit0;
+			}
+			start_event_play_wav();
 			ret =PlaySystemAmrVoices(AMR_41_LISTEN_MUSIC,playEventNums);
 			snprintf(musictype,12,"%s","music");	//播放音乐内容
 			break;
 	}
 exit1:	
 	if(!ret){
+		//printf("%s: CreatePlayDefaultMusic_forPlay musictype=%s\n",__func__,musictype);
 		CreatePlayDefaultMusic_forPlay(musictype);	//musictype 
 	}
 exit0:
@@ -710,7 +740,12 @@ static void *updateHuashangFacePthread(void *arg){
 		showFacePicture(PLAY_MUSIC_NUM4);	
 	}
 }
-
+static void *RunTask_restartNetwork(void *arg){
+	sleep(60);
+	disable_gpio();
+	system("smartconfig restart &");
+	sysMes.lockRestartNetwork=0;
+}
 /*******************************************************
 函数功能: 系统音事件处理函数
 参数: sys_voices 系统音标号
@@ -725,6 +760,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;
 		case CMD_15_START_CONFIG:				//15、开始配网，请发送wifi名以及密码！
 			Running_light_500Hz();
+			lockRecoderPthread_TimeoutCheck();
 			setNetWorkLive(NETWORK_ER);
 			PlaySystemAmrVoices(AMR_15_START_CONFIG,playEventNums);
 			break;
@@ -732,6 +768,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			NetWorkConnetIngPlayVoices(playEventNums);
 			break;
 		case CMD_20_CONNET_OK:					//20、(8634代号)小培老师与总部课堂连接成功，我们来聊天吧！（每次连接成功的语音，包括唤醒）
+			unlockRecoderPthread_TimeoutCheck();
 			showFacePicture(CONNECT_WIFI_OK_PICTURE);	
 			pool_add_task(updateHuashangFacePthread,&playEventNums);		
 			Link_NetworkOk();						//连接成功关灯，开灯，状态设置
@@ -739,13 +776,20 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			PlaySystemAmrVoices(AMR_20_CONNET_OK,playEventNums);
 			break;
 		case CMD_21_NOT_SCAN_WIFI:				//21、无法扫描到您的wifi,请检查您的网络
+			unlockRecoderPthread_TimeoutCheck();
 			PlaySystemAmrVoices(AMR_21_NOT_SCAN_WIFI,playEventNums);
 			enable_gpio();
 			break;	
 		case CMD_22_NOT_RECV_WIFI:				//22、没有收到你发送的wifi,请重新发送一遍
+			unlockRecoderPthread_TimeoutCheck();
 			PlaySystemAmrVoices(AMR_22_NOT_RECV_WIFI,playEventNums);
+			if(sysMes.lockRestartNetwork==RESTART_NETWORK_LOCK)
+				break;
+			sysMes.lockRestartNetwork=RESTART_NETWORK_LOCK;
+			pthread_create_attr(RunTask_restartNetwork,NULL);
 			break;
 		case CMD_23_NOT_WIFI:
+			unlockRecoderPthread_TimeoutCheck();
 			PlaySystemAmrVoices(AMR_23_CHECK_NETWORk,playEventNums);			
 			Link_NetworkError();
 			enable_gpio();

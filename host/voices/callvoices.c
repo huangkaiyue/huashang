@@ -28,6 +28,17 @@ struct wave_pcm_hdr pcmwavhdr = {//默认音频wav头部数据
 	0  
 };
 
+
+void lockRecoderPthread_TimeoutCheck(void){
+	RV->lockTimeOutcheck=TIME_OUT_CHECK_LOCK;
+}
+void unlockRecoderPthread_TimeoutCheck(void){
+	RV->lockTimeOutcheck=TIME_OUT_CHECK_UNLOCK;
+}	
+int getlockRecoderPthread_TimeoutCheck(void){
+	return (int)RV->lockTimeOutcheck;
+}
+
 //将录制的8k语音转换成16k语音
 static void pcmVoice8kTo16k(const char *inputdata,char *outputdata,int inputLen){
 	int pos=0,npos=0;
@@ -277,6 +288,7 @@ int SetMucClose_Time(unsigned char closeTime){
 ********************************************************/
 static void *PthreadRecordVoices(void *arg){
 	char *pBuf;
+	lockRecoderPthread_TimeoutCheck();
 	SetRecordeVoices_PthreadState(RECODE_PAUSE);
 	time_t t;
 	int endtime,starttime;
@@ -315,6 +327,11 @@ static void *PthreadRecordVoices(void *arg){
 				break;
 
 			case TIME_SIGN:				//提示休息很久了
+				if(getlockRecoderPthread_TimeoutCheck()==TIME_OUT_CHECK_LOCK){
+					starttime=time(&t);
+					SetRecordeVoices_PthreadState(RECODE_PAUSE);
+					break;
+				}
 				System_StateLog("time out for play music");
 				if(!SleepSystem())	{
 					Create_PlaySystemEventVoices(CMD_40_NOT_USER_WARN);

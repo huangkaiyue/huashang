@@ -145,9 +145,12 @@
 #define SYSTEM_INIT		0			//系统处于初始状态
 #define SYSTEM_SLEEP	4			//系统进入睡眠状态
 
+#define TIME_OUT_CHECK_LOCK		1
+#define TIME_OUT_CHECK_UNLOCK	0
 
 #define FREE_VOICE_NUMS	3
 typedef struct{
+	unsigned char lockTimeOutcheck;
 	unsigned char recorde_live;
 	unsigned char uploadState;
 	unsigned char freeVoicesNum;	
@@ -168,7 +171,11 @@ typedef struct{
 #define PLAY_MUSIC_NETWORK			1	//播放歌曲为网络播放类型	
 #define PLAY_MUSIC_SDCARD			2	//播放歌曲为sdcard 存储歌曲
 
+#define RESTART_NETWORK_LOCK		1
+#define RESTART_NETWORK_UNLOCK		0
+
 typedef struct{
+	unsigned char lockRestartNetwork;
 	unsigned char wifiState;
 	unsigned char netstate;				//板子连接外部网络状态
 	char localVoicesPath[20];			//板子系统音存放路径
