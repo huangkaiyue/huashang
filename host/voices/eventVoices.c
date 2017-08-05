@@ -157,13 +157,13 @@ static void WarnIng_notRecvConetNetwork(void){
 }
 static void NetWorkConnetIngPlayVoices(int playEventNums){
 	char file[64]={0};
-	PlaySystemAmrVoices(AMR_16_CONNET_ING,playEventNums);
-	sleep(3);
-	PlaySystemAmrVoices(AMR_17_NETWORK_1,playEventNums);
-	sleep(3);
+	PlayImportVoices(AMR_16_CONNET_ING,playEventNums);
+	sleep(1);
+	PlayImportVoices(AMR_17_NETWORK_1,playEventNums);
+	sleep(1);
 	int i=(18+(int)(2.0*rand()/(RAND_MAX+1.0)));
 	snprintf(file,64,"qtts/%d.amr",i);
-	PlaySystemAmrVoices(file,playEventNums);
+	PlayImportVoices(file,playEventNums);
 	if(getlockRecoderPthread_TimeoutCheck()==TIME_OUT_CHECK_LOCK){
 		pthread_create_attr(WarnIng_notRecvConetNetwork,NULL);
 	}
@@ -941,6 +941,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;	
 		case CMD_90_UPDATE_OK:						//更新固件结束
 			PlaySystemAmrVoices(AMR_UPDATE_OK,playEventNums);
+			AddDownEvent(NULL, QUIT_MAIN);
 			break;
 		default:
 			pause_record_audio();
@@ -1166,6 +1167,7 @@ static int checkSdcard_MountState(void){
 static void *waitLoadMusicList(void *arg){
 	int timeout=0;
 	sleep(20);
+	enable_gpio();
 	while(++timeout<20){
 		if(!access(TF_SYS_PATH, F_OK)){		//检查tf卡
 			break;
@@ -1188,7 +1190,7 @@ static void *waitLoadMusicList(void *arg){
 	}
 	if(sysMes.netstate==NETWORK_UNKOWN){	//默认是未知状态，长时间未收到联网进程发送过来的状态，直接使能gpio
 		sysMes.netstate=NETWORK_ER;
-		enable_gpio();
+		//enable_gpio();
 	}
 	Huashang_loadSystemdata();
 	return NULL;

@@ -14,6 +14,14 @@
 #define CMD_ID						5	//发现重要的text
 #define CMD_AGE						6	//年龄
 
+
+static int PlayAgeVoices(int playEventNums){
+	char file[64]={0};
+	int i=(100+(int)(2.0*rand()/(RAND_MAX+1.0)));
+	snprintf(file,64,"qtts/%d.amr",i);
+	return PlaySystemAmrVoices(file,playEventNums);
+}
+
 /********************************************************
 @函数功能:      匹配文字语音控制
 @参数:  text 匹配的文本
@@ -94,7 +102,7 @@ int HandlerPlay_checkTextResult(int cmd,const char *playname,unsigned int playEv
 			free(PlayText);
 			break;
 		case CMD_AGE:
-			ret =PlaySystemAmrVoices(AMR_60_AGE,playEventNums);
+			ret =PlayAgeVoices(playEventNums);
 			break;
 	}
 	return ret;

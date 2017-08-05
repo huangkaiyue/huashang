@@ -122,7 +122,6 @@
 
 #define AMR_58_WHO_NAME				"qtts/58.amr"		//58、我是小培老师开心又可爱的智能教育机器人。
 #define AMR_59_WHO_NAME				"qtts/59.amr"		//59、我是小培老师，你的好朋友啊！
-#define AMR_60_AGE					"qtts/60.amr"		//60、我比你大一点
 
 #define AMR_61_DIR					"qtts/61.amr"		
 #define AMR_62_DIR					"qtts/62.amr"		
@@ -143,7 +142,8 @@
 
 #define AMR_ADD_VOL					"qtts/add_vol.amr"		//64、加大音量
 #define AMR_SUB_VOL					"qtts/sub_vol.amr"		//65、减小音量
-
+#define AMR_100_AGE					"qtts/100.amr"			//100、我比你大一点
+#define AMR_101_AGE					"qtts/101.amr"			//101、我比你大一点
 
 
 #define AMR_WEIXIN_SEND_ERROR		"qtts/weixin_send_error.amr"	//消息弄丢了呜呜!
