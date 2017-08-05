@@ -51,6 +51,11 @@ void cleanStreamData(Mp3Stream *st){
 
 static void GetMusicMessage(int rate,int channels){
 	st->rate = rate;
+	if(GetCurrentEventNums()!=st->eventNums){
+		DecodeExit();
+		st->lockSetRate=0;
+		return ;
+	}
 	st->SetI2SRate(rate,"NetplayStreamMusic set rate");
 	st->lockSetRate=0;
 }
@@ -268,7 +273,6 @@ static int NetStreamDownFilePlay(Player_t *play,int EventNums){
 	WritePlayUrl_Log("play url",play->playfilename);
 	st->player.playState=MAD_NEXT;
 	st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
-	st->eventNums=EventNums;
 	st->lockNetwork=1;
 	demoDownFile(play->playfilename,15,NetStartDown,NetGetStreamData,NetEndDown);
 	while(st->player.playState!=MAD_EXIT){
@@ -382,6 +386,9 @@ static void InputlocalStream(const void * inputMsg,int inputSize){
 		DecodeExit();
 		return ;
 	}
+	if(GetCurrentEventNums()!=st->eventNums){
+		DecodeExit();
+	}
 	if(st->GetWm8960Rate==8000){
 		DecodeExit();
 	}
@@ -428,10 +435,12 @@ int Mad_PlayMusic(Player_t *play,int EventNums){
 	char domain[64] = {0};
 	char filename[128]={0};
 	int port = 80;
+	st->eventNums=EventNums;
 	printf("%s: play->playfilename =%s\n",__func__,play->playfilename);
 	if(!access(play->playfilename,F_OK)){
 		st->lockSetRate=1;
 		playLocalMp3(play->playfilename);
+		st->lockSetRate=0;
 	}else{
 		if(strstr(play->playfilename,"/media/mmcblk0p1/")){
 			goto exit0;

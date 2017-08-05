@@ -242,6 +242,9 @@ void Mute_voices(unsigned char stat){
 int GetLockRate(void){
 	return I2S.lockSetRate;
 }
+void setLock(void){
+	I2S.lockSetRate =0;
+}
 //获取当前播放采样率
 int GetWm8960Rate(void){
 	return I2S.tx_rate;
@@ -254,18 +257,18 @@ int GetWm8960Rate(void){
 int SetWm8960Rate(unsigned short rate,const char *function){
 	I2S.play_size=0;
 	if(I2S.lockSetRate==1){
-		WriteRateTextLog(function,"lockSetRate",I2S.tx_rate);
+		WriteRateTextLog(function,"lockSetRate error",I2S.tx_rate,rate);
 		return -1;
 	}
 	I2S.lockSetRate=1;
+	WriteRateTextLog(function,"start lock rate 1",I2S.tx_rate,rate);
 	if(rate==I2S.tx_rate){  //播放的采样率等于录音采样率，不需要切换
 		printf("start play rate = %d\n",rate);
 		Mute_voices(UNMUTE);
 		I2S.lockSetRate=0;
-		WriteRateTextLog(function,"equal rate",rate);
+		WriteRateTextLog(function," equal unlock rate 0",I2S.tx_rate,rate);
 		return 0;
 	}
-	WriteRateTextLog(function,"Set Rate",rate);
 	Mute_voices(MUTE);
 	set_rx_state(I2S.i2s_fd,0);		//先关闭发送和接收，切换采样率
 	set_tx_state(I2S.i2s_fd,0);
@@ -277,6 +280,7 @@ int SetWm8960Rate(unsigned short rate,const char *function){
 	I2S.execute_mode = PLAY_MODE;	
 	Mute_voices(UNMUTE);
 	I2S.tx_rate=rate;				//生效采样率
+	WriteRateTextLog(function,"set rate unlock 0",I2S.tx_rate,rate);
 	I2S.lockSetRate=0;
 	return 0;
 }

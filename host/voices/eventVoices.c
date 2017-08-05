@@ -386,7 +386,7 @@ void Handler_PlayQttsEvent(HandlerText_t *handText){
 ********************************************************/
 void TulingKeyDownSingal(void){
 	updateCurrentEventNums();
-	//printf("---updateCurrentEventNums start \n");
+	printf("---updateCurrentEventNums start \n");
 	Write_Speekkeylog((const char *)"TulingKeyDownSingal",0);
 	//处于微信对讲状态，直接退出	
 	if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){		
@@ -395,28 +395,31 @@ void TulingKeyDownSingal(void){
 	}	
 	Lock_EventQueue();
 	Write_Speekkeylog((const char *)"PLAY_MP3_MUSIC",GetRecordeVoices_PthreadState());
-	//printf("---NetStreamExitFile start \n");
+	printf("---NetStreamExitFile start \n");
 	int lock =0;
 	while(GetLockRate()){
-		//printf("------------------\n v1 warning is pthread set rate \n------------------\n");
+		printf("%s: GetWm8960Rate =%d\n",__func__,GetWm8960Rate());
 		usleep(100000);
 		lock=1;
+		if(GetWm8960Rate()==RECODE_RATE){
+			printf("error exit rate ......\n");
+			break;
+		}
 	}
 	if(lock){
-		return;
+		goto exit0;
 	}
 	if(getLockNetwork()){
 		//printf("..........\nerror lock network \n ...........\n ");
 		printf("..........\n error exit ok \n ...........\n ");
-		return ;
+		goto exit0;
 	}
 	NetStreamExitFile();//退出歌曲播放,并切换采样率	
-	//printf("---SetWm8960Rate start \n");
+	printf("---SetWm8960Rate start \n");
 	if(SetWm8960Rate(RECODE_RATE,(const char *)"TulingKeyDownSingal set rate")){	//切换采样率失败，退出(防止多线程当中切换，资源冲突问题)
-		Unlock_EventQueue();
-		return ;
+		goto exit0;
 	}
-	//printf("---Unlock_EventQueue start \n");
+	printf("---Unlock_EventQueue start \n");
 	Unlock_EventQueue();
 	if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
 		return;
@@ -425,6 +428,9 @@ void TulingKeyDownSingal(void){
 	StartTuling_RecordeVoices();	
 	keyDown_AndSetGpioFor_play();
 	Write_Speekkeylog((const char *)"StartTuling_RecordeVoices",GetRecordeVoices_PthreadState());
+	return ;
+exit0:
+	Unlock_EventQueue();
 }
 //关机保存文件和清理工作
 void Close_Mtk76xxSystem(void){
@@ -1224,3 +1230,4 @@ void CleanMtkPlatfrom76xx(void){
 	cleanStream();
 	System_StateLog("cleanStream ok \n");
 }
+                 

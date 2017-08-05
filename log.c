@@ -207,7 +207,7 @@ void Write_huashangTextLog(const char *text){
 	return ;
 #endif	
 }
-void WriteRateTextLog(const char *funtion,const char *text,int rate){
+void WriteRateTextLog(const char *funtion,const char *text,int rate,int newRate){
 #ifdef ENABLE_LOG	
 		FILE *fplog = NULL;
 		fplog =fopen("/log/commonRate.log","a+");		
@@ -215,7 +215,7 @@ void WriteRateTextLog(const char *funtion,const char *text,int rate){
 			return ;
 		}
 		if(fplog){
-			fprintf(fplog,"%s: %s %d\n",funtion,text,rate);
+			fprintf(fplog,"%s: %s current=%d new=%d\n",funtion,text,rate,newRate);
 			fclose(fplog);
 		}
 		return ;
