@@ -83,7 +83,7 @@ void PlayStartPcm(const char *filename,int eventsNum){
 
 }
 //播放单声道wav格式音频数据
-static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,unsigned int playEventNums){
+static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,unsigned int playEventNums,unsigned char showFace){
 	int r_size=0,pos=0;
 	char readbuf[2]={0};
 	int ret=0;
@@ -94,10 +94,12 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 	}
 	fseek(fp,WAV_HEAD,SEEK_SET);		//跳过wav头部	
 #if defined(HUASHANG_JIAOYU)	
-	Show_tlak_Light();	
-	led_lr_oc(closeled);
-	usleep(100000);
-	showFacePicture(WAIT_CTRL_NUM3);
+	if(showFace==SHOW_FACE){
+		Show_tlak_Light();	
+		led_lr_oc(closeled);
+		usleep(100000);
+		showFacePicture(WAIT_CTRL_NUM3);
+	}
 #endif
 	while(1){
 		if(playMode==PLAY_IS_INTERRUPT&&playEventNums!=GetCurrentEventNums()){
@@ -129,10 +131,12 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 	fclose(fp);
 	memset(play_buf,0,I2S_PAGE_SIZE);
 #if defined(HUASHANG_JIAOYU)	
-	Close_tlak_Light();
-	led_lr_oc(openled);
-	usleep(100000);
-	showFacePicture(WAIT_CTRL_NUM4);
+	if(showFace==SHOW_FACE){
+		Close_tlak_Light();
+		led_lr_oc(openled);
+		usleep(100000);
+		showFacePicture(WAIT_CTRL_NUM4);
+	}
 #endif	
 	return ret;
 }
@@ -157,7 +161,7 @@ int __playResamplePlayPcmFile(const char *pcmFile,unsigned int playEventNums){
 	start_event_play_soundMix();//切换到混音播放状态		
 	ret = SetWm8960Rate(RECODE_RATE,(const char *)"__playResamplePlayPcmFile set rate");
 	usleep(100000);
-	ret =PlaySignleWavVoices((const char *)pcmFile,PLAY_IS_INTERRUPT,playEventNums);	
+	ret =PlaySignleWavVoices((const char *)pcmFile,PLAY_IS_INTERRUPT,playEventNums,SHOW_FACE);	
 	start_event_play_Mp3music();
 	//需要优化一下，检查到还有音频文件
 	SetWm8960Rate(currentRate,(const char *)"__playResamplePlayPcmFile set rate");
@@ -177,21 +181,21 @@ static int playResamplePlayAmrFile(const char *filename,unsigned int playEventNu
 }
 
 //播放单声道amr格式音频数据
-static int __playAmrVoices(const char *filename,unsigned char playMode,unsigned int playEventNums){
+static int __playAmrVoices(const char *filename,unsigned char playMode,unsigned int playEventNums,unsigned char showFace){
 	char *outfile ="speek.wav";
 	AmrToWav8k(filename,(const char *)outfile);
 	SetWm8960Rate(RECODE_RATE,(const char *)"__playAmrVoices set rate");
-	int ret = PlaySignleWavVoices((const char *)outfile,playMode,playEventNums);
+	int ret = PlaySignleWavVoices((const char *)outfile,playMode,playEventNums,showFace);
 	if(ret==0){	//正常播放完，把录音线程挂起来
 		pause_record_audio();
 	}
 	remove(outfile);
 	return ret;
 }
-static int __playSystemAmrVoices(const char *filePath,unsigned char playMode,unsigned int playEventNums){
+static int __playSystemAmrVoices(const char *filePath,unsigned char playMode,unsigned int playEventNums,unsigned char showFace){
 	char path[128]={0};
 	snprintf(path,128,"%s%s",sysMes.localVoicesPath,filePath);
-	return __playAmrVoices(path,playMode,playEventNums);
+	return __playAmrVoices(path,playMode,playEventNums,showFace);
 }
 /********************************************************
 @ 播放接收到手机发送的对讲消息
@@ -204,7 +208,7 @@ int PlayWeixin_SpeekAmrFileVoices(const char *filename,unsigned int playEventNum
 		ret =playResamplePlayAmrFile(filename,playEventNums);
 	}else{
 		start_event_play_wav();
-		ret= __playAmrVoices(filename,PLAY_IS_INTERRUPT,playEventNums);
+		ret= __playAmrVoices(filename,PLAY_IS_INTERRUPT,playEventNums,SHOW_FACE);
 	}
 	if(strstr(filename,"/home/qtts/")==NULL){
 		remove(filename);
@@ -217,11 +221,15 @@ int PlayWeixin_SpeekAmrFileVoices(const char *filename,unsigned int playEventNum
 @ 返回值: 无
 *********************************************************/
 int PlaySystemAmrVoices(const char *filePath,unsigned int playEventNums){
-	return __playSystemAmrVoices(filePath,PLAY_IS_INTERRUPT,playEventNums);
+	return __playSystemAmrVoices(filePath,PLAY_IS_INTERRUPT,playEventNums,SHOW_FACE);
 }
 //播放过渡音，不允许打断
 void PlayImportVoices(const char *filePath,unsigned int playEventNums){
-	__playSystemAmrVoices(filePath,PLAY_IS_COMPLETE,playEventNums);
+	__playSystemAmrVoices(filePath,PLAY_IS_COMPLETE,playEventNums,SHOW_FACE);
+}
+
+void playVoicesNotFace(const char *filePath,unsigned int playEventNums){
+	__playSystemAmrVoices(filePath,PLAY_IS_INTERRUPT,playEventNums,NOT_FACE);
 }
 
 /********************************************************
@@ -231,6 +239,8 @@ void PlayImportVoices(const char *filePath,unsigned int playEventNums){
 *********************************************************/
 int PlayQttsText(const char *text,unsigned char type,const char *playVoicesName,unsigned int playEventNums,int playSpeed){
 	SetWm8960Rate(RECODE_RATE,(const char *)"PlayQttsText set rate");
+	usleep(100000);
+	Show_tlak_Light();					
 	return Qtts_voices_text(text,type,playVoicesName,playEventNums,playSpeed);
 
 }

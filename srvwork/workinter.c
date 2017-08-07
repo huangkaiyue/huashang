@@ -28,11 +28,13 @@ void test_ConnetEvent(int event){
 void pasreInputCmd(const char *com){
 	char *p=NULL;
 	if (!strcmp(com, "1")){
-		test_start_playurl();
+		Show_tlak_Light();
+		printf("Show_tlak_Light \n");
 	}else if(!strcmp(com, "2")){
-		test_stop_playurl();
+		Close_tlak_Light();
+		printf("Close_tlak_Light \n");
 	}else if(!strcmp(com, "3")){
-		test_single_playurl();
+
 	}else if(!strcmp(com, "4")){
 		memcpy(p,"123456",6);
 	}else if(!strcmp(com, "en")){

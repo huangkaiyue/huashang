@@ -234,9 +234,12 @@ extern void SaveRecorderVoices(const char *voices_data,int size);
 //--------------------message_wav.c-----------------------------------------------
 #define PLAY_IS_COMPLETE		1		//完整播放   ---->适用在智能会话过渡音当中，不允许打断
 #define PLAY_IS_INTERRUPT		2		//可以打断播放
+#define SHOW_FACE			1		//
+#define NOT_FACE			0		//
 extern int __playResamplePlayPcmFile(const char *pcmFile,unsigned int playEventNums);
 extern int PlayWeixin_SpeekAmrFileVoices(const char *filename,unsigned int playEventNums,unsigned char mixMode);
 extern int PlaySystemAmrVoices(const char *filePath,unsigned int playEventNums);
 extern void PlayImportVoices(const char *filepath,unsigned int playEventNums);
+extern void playVoicesNotFace(const char *filePath,unsigned int playEventNums);
 
 #endif

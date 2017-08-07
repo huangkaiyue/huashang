@@ -931,9 +931,9 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 		case TULING_WAIT_VOICES:
 			vol =GetVol();
 			Setwm8960Vol(VOL_APP_SET,PLAY_PASUSE_VOICES_VOL);
-			PlayImportVoices(TULING_KEYUP,playEventNums);
+			playVoicesNotFace(TULING_KEYUP,playEventNums);
 			usleep(2000);
-			PlayImportVoices(TULING_WINT,playEventNums);
+			playVoicesNotFace(TULING_WINT,playEventNums);
 			Setwm8960Vol(VOL_SET_VAULE,vol);
 			break;
 		case CONTINUE_PLAY_MUSIC_VOICES:
@@ -1046,7 +1046,7 @@ static void StopRecorder_AndSendFile(unsigned int playEventNums){
 		}
 		DEBUG_EVENT("stop save file \n");
 		uploadVoicesToaliyun(filepath,pcmwavhdr.data_size/10+6);
-		PlaySystemAmrVoices(AMR_WEIXIN_SEND_OK,playEventNums);	//播放微信提示音，表示音频正在发送	
+		playVoicesNotFace(AMR_WEIXIN_SEND_OK,playEventNums);	//播放微信提示音，表示音频正在发送	
 	}else{
 		pthread_mutex_unlock(&speek->mutex);
 	}
@@ -1108,7 +1108,7 @@ void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 			pause_record_audio();
 			return ;
 		}else{
-			PlaySystemAmrVoices(AMR_WEIXIN_KEY_UP,playEventNums);	// play key up voices
+			playVoicesNotFace(AMR_WEIXIN_KEY_UP,playEventNums);	// play key up voices
 			StopRecorder_AndSendFile(playEventNums);
 			pause_record_audio();
 		}

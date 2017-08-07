@@ -482,16 +482,18 @@ static void *PlayVoicesPthread(void *arg){
 						break;
 					}
 					if(cacheNetWorkPlaySize>12*KB){
-#if defined(HUASHANG_JIAOYU)						
-						Show_tlak_Light();
-						led_lr_oc(closeled);
+#if defined(HUASHANG_JIAOYU)	
 						usleep(100000);
 						showFacePicture(WAIT_CTRL_NUM3);
+						//printf("----------set face 1\n");
+						led_lr_oc(closeled);
 #endif						
 						break;
 					}
 					if(downState==0){
-						Show_tlak_Light();
+						//usleep(100000);
+						//Show_tlak_Light();
+						//printf("------------set face 2\n");
 						break;
 					}
 					usleep(10000);
