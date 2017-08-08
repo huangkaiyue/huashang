@@ -14,6 +14,7 @@
 #define TIMEOUT_AIFI		-2
 
 typedef struct{
+	unsigned char fristLoad;
 	unsigned char playVoicesNameNums;
 	unsigned char dirMenu;
 	int PlayHuashang_MusicIndex;	//播放华上教育歌曲下表编号 

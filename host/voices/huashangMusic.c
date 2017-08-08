@@ -29,9 +29,16 @@ void Huahang_SelectDirMenu(void){
 		goto exit1;
 	}
 	int iCount = cJSON_GetArraySize(pArray);
-	++hsUser->dirMenu;
-	if(hsUser->dirMenu>=iCount){
-		hsUser->dirMenu=0;
+	if(hsUser->fristLoad==0){
+		hsUser->fristLoad =1;	
+		int i=((int)(15*rand()/(RAND_MAX+1.0)));
+		int j =((int)(15*rand()/(RAND_MAX+1.0)));
+		hsUser->dirMenu =(i+j)%14;
+	}else{
+		++hsUser->dirMenu;
+		if(hsUser->dirMenu>=iCount){
+			hsUser->dirMenu=0;
+		}
 	}
 	cJSON* pItem = cJSON_GetArrayItem(pArray, hsUser->dirMenu);
 	if (NULL == pItem){

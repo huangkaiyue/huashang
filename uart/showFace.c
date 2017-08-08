@@ -54,3 +54,6 @@ void Close_tlak_Light(void){
 	showFacePicture(CLOSE_TLAK_LIGHT);
 #endif
 }
+void __ReSetSystem(void){
+	showFacePicture(RESET_SYSTEM);
+}

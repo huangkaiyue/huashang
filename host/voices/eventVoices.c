@@ -495,7 +495,8 @@ static void Handle_LowBattery(unsigned int playEventNums){
 	char file[64]={0};
 	int i=(49+(int)(3.0*rand()/(RAND_MAX+1.0)));
 	snprintf(file,64,"qtts/%d.amr",i);
-	PlaySystemAmrVoices(file,playEventNums);
+	//PlaySystemAmrVoices(file,playEventNums);
+	PlayImportVoices(file,playEventNums);
 }
 
 static void CreateCloseSystemLockFile(void){
@@ -543,6 +544,10 @@ void CreateSystemPlay_ProtectMusic(const char *filename){
 	char playTicesVoices[48]={0};
 	snprintf(playTicesVoices,48,"%s%s",sysMes.localVoicesPath,filename);
 	CreatePlayWeixinVoicesSpeekEvent(playTicesVoices);
+}
+void ReSetSystem(void){
+	Mute_voices(MUTE);
+	__ReSetSystem();
 }
 //串口事件回调函数
 void UartEventcallFuntion(int event){
@@ -671,8 +676,14 @@ void Custom_Interface_RunPlayVoices(unsigned int playEventNums){
 	time_t timep;
 	struct tm *p;
 	time(&timep);
-	p=localtime(&timep);	
-	if(p->tm_hour+8>=21){
+	p=localtime(&timep);
+	int times =0;
+	if(p->tm_hour>16){
+		times = p->tm_hour-16;
+	}else{
+		times=p->tm_hour+8;
+	}
+	if(times>=21){
 		ret =PlaySystemAmrVoices(TIMEOUT_sleep,playEventNums);
 		snprintf(musictype,12,"%s","sleep");	//播放音乐内容
 		goto exit1;
@@ -881,7 +892,8 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;
 		case CMD_56_RESET_SYSTEM:				//59、亲，我已经恢复到最初状态，正在重新启动。
 			PlaySystemAmrVoices(AMR_56_RESET,playEventNums);
-			//system("reboot");
+			usleep(500000);
+			ReSetSystem();
 			break;
 		case CMD_6175_DIR_MENU:
 			PlaySystemAmrVoices(AMR_61_DIR,playEventNums);
@@ -941,7 +953,8 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;	
 		case CMD_90_UPDATE_OK:						//更新固件结束
 			PlaySystemAmrVoices(AMR_UPDATE_OK,playEventNums);
-			AddDownEvent(NULL, QUIT_MAIN);
+			usleep(500000);
+			ReSetSystem();
 			break;
 		default:
 			pause_record_audio();

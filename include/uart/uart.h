@@ -53,6 +53,7 @@
 #define CLOSE_TLAK_LIGHT			14	//关闭嘴灯
 
 
+#define RESET_SYSTEM				20	//
 
 #define SERIAL_SOC_PATH		"/dev/ttyS0"
 #define SPEED_SOC			9600
@@ -120,4 +121,5 @@ extern void SocSendMenu(unsigned char str,char *senddata);
 extern int Get_batteryVaule(void);
 extern int get_dc_state(void);
 
+extern void __ReSetSystem(void);
 #endif
