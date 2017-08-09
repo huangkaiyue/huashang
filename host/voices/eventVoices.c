@@ -51,7 +51,7 @@ static int getNetWorkLive(void){
 @ 0: 连接网络正常  -1: 连接网络失败
 */
 int checkNetWorkLive(unsigned char enablePlayVoices){
-	if(getNetWorkLive()==NETWORK_ER||getNetWorkLive()==NETWORK_UNKOWN){
+	if(getNetWorkLive()==NETWORK_ER||getNetWorkLive()==NETWORK_UNKOWN||getNetWorkLive()==NETWORK_RESTART){
 		//播报台本
 		if(getEventNum()>0){	//检查是否添加过事件
 			return -1;
@@ -499,12 +499,6 @@ static void Handle_LowBattery(unsigned int playEventNums){
 	PlayImportVoices(file,playEventNums);
 }
 
-static void CreateCloseSystemLockFile(void){
-	FILE *fp = fopen(CLOSE_SYSTEM_LOCK_FILE,"w+");
-	if(fp){
-		fclose(fp);
-	}
-}
 /*******************************************************
 函数功能: 创建一个播放系统声音事件，
 参数: sys_voices 系统音标号	
@@ -567,7 +561,6 @@ void UartEventcallFuntion(int event){
 			Create_PlaySystemEventVoices(CMD_26_BIND_PLAY);	
 			Lock_EventQueue();
 			showFacePicture(CLOSE_SYSTEM_PICTURE);	
-			CreateCloseSystemLockFile();
 			Stop_light_500Hz();
 			close_sys_led();
 			led_lr_oc(closeled);
@@ -786,7 +779,7 @@ static void *updateHuashangFacePthread(void *arg){
 }
 //smartconfig not recv wifi message, restart network
 static void *RunTask_restartNetwork(void *arg){
-	sleep(60);
+	sleep(20);
 	if(sysMes.lockRestartNetwork==RESTART_NETWORK_UNLOCK){
 		return ;
 	}
@@ -802,6 +795,9 @@ static void *RunTask_restartNetwork(void *arg){
 void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 	int vol=0;
 	switch(sys_voices){
+		case CMD_11_START:
+			PlayImportVoices(AMR_11_START_SYSTEM_OK,playEventNums);
+			break;
 		case CMD_12_NOT_NETWORK:				//12、小朋友你可以让爸爸妈妈帮我连接网络，我才会更聪明哦！
 			Handle_PlayTaiBenToNONetWork(playEventNums);
 			enable_gpio();
@@ -809,7 +805,11 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 		case CMD_15_START_CONFIG:				//15、开始配网，请发送wifi名以及密码！
 			Running_light_500Hz();
 			lockRecoderPthread_TimeoutCheck();
-			setNetWorkLive(NETWORK_ER);
+			if(getNetWorkLive()==NETWORK_OK){
+				setNetWorkLive(NETWORK_RESTART);
+			}else{
+				setNetWorkLive(NETWORK_ER);
+			}
 			PlaySystemAmrVoices(AMR_15_START_CONFIG,playEventNums);
 			break;
 		case CMD_16_CONNET_ING:					//16、正在尝试连接网络，请稍等！
@@ -833,8 +833,10 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			PlaySystemAmrVoices(AMR_22_NOT_RECV_WIFI,playEventNums);
 			if(sysMes.lockRestartNetwork==RESTART_NETWORK_LOCK)
 				break;
-			sysMes.lockRestartNetwork=RESTART_NETWORK_LOCK;
-			pthread_create_attr(RunTask_restartNetwork,NULL);
+			if(getNetWorkLive()==NETWORK_RESTART){
+				sysMes.lockRestartNetwork=RESTART_NETWORK_LOCK;
+				pthread_create_attr(RunTask_restartNetwork,NULL);
+			}
 			break;
 		case CMD_23_NOT_WIFI:
 			unlockRecoderPthread_TimeoutCheck();
@@ -862,6 +864,9 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;		
 		case CMD_35_39_REQUEST_FAILED:					//请求服务器超时，播放本地已经录制好的音频
 			TaiwanToTulingError(playEventNums);
+			break;
+		case CMD_39_REQUEST_FAILED:
+			PlaySystemAmrVoices(AMR_39_AI_STROY_4,playEventNums);
 			break;
 		case CMD_40_NOT_USER_WARN: 				//40、小朋友，你去哪里了，请跟我一起来玩吧！！
 			Custom_Interface_RunPlayVoices(playEventNums);
@@ -955,6 +960,11 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			PlaySystemAmrVoices(AMR_UPDATE_OK,playEventNums);
 			usleep(500000);
 			ReSetSystem();
+			break;
+		case CMD_110_NOT_NETWORK:			
+			Handle_PlayTaiBenToNONetWork(playEventNums);
+			PlaySystemAmrVoices(AMR_39_AI_STROY_4,playEventNums);
+			enable_gpio();
 			break;
 		default:
 			pause_record_audio();
@@ -1179,33 +1189,25 @@ static int checkSdcard_MountState(void){
 //开机加载sdcard 当中数据库信息
 static void *waitLoadMusicList(void *arg){
 	int timeout=0;
-	sleep(20);
-	enable_gpio();
-	while(++timeout<20){
-		if(!access(TF_SYS_PATH, F_OK)){		//检查tf卡
-			break;
-		}
-		//检测到关键文件锁，直接退出，不执行下面操作，防止在关机过程读写sdcard
-		if(access(CLOSE_SYSTEM_LOCK_FILE, F_OK)==F_OK){
-			return NULL;
-		}
-		sleep(1);
-	}
-	timeout=0;
-	while(++timeout<35){
+	while(++timeout<18){
 		CheckNetManger_PidRunState();	//检查网络服务
 		sleep(1);
 		if(sysMes.netstate==NETWORK_OK){
+			Write_StartLog("connet ok",timeout);
 			break;
 		}else if(sysMes.netstate==NETWORK_ER){
+			enable_gpio();
+			Write_StartLog("restart network failed",timeout);
 			break;
 		}
 	}
 	if(sysMes.netstate==NETWORK_UNKOWN){	//默认是未知状态，长时间未收到联网进程发送过来的状态，直接使能gpio
-		sysMes.netstate=NETWORK_ER;
-		//enable_gpio();
+		sysMes.netstate=NETWORK_ER;	
+		sysMes.startCheckNetworkFlag=1;
+		Write_StartLog("unkown network ",timeout);
+		Create_PlaySystemEventVoices(CMD_110_NOT_NETWORK);
 	}
-	Huashang_loadSystemdata();
+	//Huashang_loadSystemdata();
 	return NULL;
 } 
 
@@ -1227,6 +1229,7 @@ void InitMtkPlatfrom76xx(void){
 	initStream(ack_playCtr,WritePcmData,SetWm8960Rate,GetVol,GetWm8960Rate);
 	InitEventMsgPthread();
 	Huashang_Init();
+	Create_PlaySystemEventVoices(CMD_11_START);
 	pool_add_task(waitLoadMusicList, NULL);	//防止T卡加载慢
 }
 /*

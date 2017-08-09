@@ -19,7 +19,7 @@ static void __WriteLog_File(const char *file,const char *str1,const char *str2,i
 	}
 	if(NULL == fp ){
 		return ;
-    }
+    	}
 	char dateBuf[128]={0};
 	GetDate(dateBuf);
 	fprintf(fp,"%s:%s--->%s--->%d\n",dateBuf,str1,str2,val);
@@ -129,7 +129,9 @@ void SpeekEvent_process_log(const char *str1,const char *str2,int value){
 void Write_tulinglog(const char *logStr){
 	writeLog((const char * )"/log/tuling_log.txt",logStr);
 }
-
+void Write_StartLog(const char *logStr,int timeout){
+	__WriteLog_File((const char * )"/log/start_log.txt",logStr,"",timeout);
+}
 void WiterSmartConifg_Log(const char *data1,const char *data2){
 #ifdef ENABLE_LOG	
 	FILE *fplog = NULL;

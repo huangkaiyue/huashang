@@ -294,8 +294,12 @@ void RecvNetWorkConnetState(int event){
 		case NOT_NETWORK:
 			Create_PlaySystemEventVoices(CMD_12_NOT_NETWORK);
 			break;
-		case CONNET_ING:
-			Create_PlaySystemEventVoices(CMD_16_CONNET_ING);
+		case CONNET_ING:	
+			if(sysMes.startCheckNetworkFlag){
+				sysMes.startCheckNetworkFlag=0;
+			}else{
+				Create_PlaySystemEventVoices(CMD_16_CONNET_ING);
+			}
 			break;
 		case CMD_22_NOT_RECV_WIFI:
 			Create_PlaySystemEventVoices(CMD_22_NOT_RECV_WIFI);

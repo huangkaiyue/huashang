@@ -68,6 +68,7 @@
 #define CONTINUE_PLAY_MUSIC_VOICES	149	//请继续点播吧
 #define RECV_WEIXIN_MESSAGE_VOICES	150	//播放图灵系统等待音
 
+#define CMD_11_START					11	
 
 #define CMD_12_NOT_NETWORK			12	//网络连接失败
 #define CMD_15_START_CONFIG			15	//15、开始配网，请发送wifi名以及密码！
@@ -89,6 +90,9 @@
 
 #define CMD_29_NETWORK_FAILED		29	//29、当前网络环境差，语音发送失败，请检查网络！
 #define CMD_35_39_REQUEST_FAILED	35	//35、我给你读首诗吧！--->42、按栏目键然后再按左右键切换你想要听的本地内容吧！
+
+#define CMD_39_REQUEST_FAILED		39	//39
+
 
 #define CMD_40_NOT_USER_WARN 		40	//40、小朋友，你去哪里了，请跟我一起来玩吧！！
 #define CMD_44_WEIXIN_WARN			44
@@ -126,6 +130,7 @@
 
 #define CMD_90_UPDATE_OK			90	//90.更新固件结束
 
+#define CMD_110_NOT_NETWORK			110	// restart check network
 //---------------------------------------------------------
 #define VOICES_MIN	13200	//是否是大于0.5秒的音频，采样率16000、量化位16位
 #define VOICES_ERR	2000	//误触发
@@ -163,6 +168,7 @@ typedef struct{
 #define NETWORK_OK 0					//连接外网成功
 #define NETWORK_ER 1					//联网失败
 #define NETWORK_UNKOWN	2				//未知网络状态
+#define NETWORK_RESTART	3				//
 
 #define ENABLE_CHECK_VOICES_PLAY	1	//使能检查过程当中播放--->断网添加播放系统语音事件
 #define DISABLE_CHECK_VOICES_PLAY	0	//关闭检查网络状态播放--->断网添加播放系统语音事件
@@ -174,6 +180,7 @@ typedef struct{
 #define RESTART_NETWORK_UNLOCK		0
 
 typedef struct{
+	unsigned char startCheckNetworkFlag;
 	unsigned char lockRestartNetwork;
 	unsigned char wifiState;
 	unsigned char netstate;				//板子连接外部网络状态

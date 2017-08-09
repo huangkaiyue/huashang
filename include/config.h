@@ -42,7 +42,6 @@
 
 #define ENABLE_RECV_NETWORK_FILE_LOCK	"/var/startNet.lock"	//使能接收文件锁
 
-#define CLOSE_SYSTEM_LOCK_FILE			"/var/close_system.lock"
 #endif
 
 #define XIMALA_MUSIC_DIRNAME	"ximalaya/"	//喜马拉雅收藏的歌曲目录名		

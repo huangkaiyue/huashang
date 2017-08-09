@@ -378,7 +378,8 @@ void InitRecord_VoicesPthread(void){
 	}else{
 		PlayStartPcm(AMR_10_START_PLAY,0);
 	}
-	PlayStartPcm(AMR_11_START_SYSTEM_OK,0);
+	//PlayStartPcm(AMR_11_START_SYSTEM_OK,0);
+	sleep(3);
 	RV->freeVoicesNum =FREE_VOICE_NUMS;
 	if(pthread_create_attr(PthreadRecordVoices,NULL)){
   	  	perror("create handle record voices failed!");
