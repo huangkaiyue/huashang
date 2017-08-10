@@ -22,8 +22,8 @@
 
 //----------------------用户数据类-------------------------------
 	
-//#define TF_SYS_PATH 		"/media/mmcblk0p1/"		//tf卡路径
-#define TF_SYS_PATH 		"/media/mmcblk0/"		//tf卡路径
+#define TF_SYS_PATH 		"/media/mmcblk0p1/"		//tf卡路径
+//#define TF_SYS_PATH 		"/media/mmcblk0/"		//tf卡路径
 
 
 #define URL_SDPATH			"/home/cache.tmp"		//url缓存路径
