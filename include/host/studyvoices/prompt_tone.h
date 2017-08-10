@@ -139,6 +139,7 @@
 #define AMR_74_DIR					"qtts/74.amr"
 #define AMR_75_DIR					"qtts/75.amr"
 
+#define AMR_83_SMART_NOT_WIFI	"qtts/83.amr"
 
 #define AMR_ADD_VOL					"qtts/add_vol.amr"		//64、加大音量
 #define AMR_SUB_VOL					"qtts/sub_vol.amr"		//65、减小音量

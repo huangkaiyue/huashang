@@ -5,6 +5,8 @@
 #include "base/cJSON.h"
 #include "base/pool.h"
 #include "host/voices/callvoices.h"
+#include "host/studyvoices/prompt_tone.h"
+#include "uart/uart.h"
 #include "config.h"
 
 //#define MAIN_TEST
@@ -284,12 +286,18 @@ int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
 
 #endif
 void RecvNetWorkConnetState(int event){
+	unsigned int currentNums=0;
 	switch(event){
 		case CONNECT_OK:
-			Create_PlaySystemEventVoices(CMD_20_CONNET_OK);
+			//CreateSystemPlay_ProtectMusic((const char * )AMR_23_CHECK_NETWORk);
+			showFacePicture(CONNECT_WIFI_OK_PICTURE);	
+			CreateSystemPlay_ProtectMusic(AMR_20_CONNET_OK);
+			currentNums=GetCurrentEventNums();
+			pool_add_task(updateHuashangFacePthread,&currentNums);
 			break;
 		case NOT_FIND_WIFI:
-			Create_PlaySystemEventVoices(CMD_23_NOT_WIFI);
+			//Create_PlaySystemEventVoices(CMD_23_NOT_WIFI);
+			CreateSystemPlay_ProtectMusic((const char * )AMR_23_CHECK_NETWORk);
 			break;
 		case NOT_NETWORK:
 			Create_PlaySystemEventVoices(CMD_12_NOT_NETWORK);

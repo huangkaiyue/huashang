@@ -306,6 +306,7 @@ static void *PthreadRecordVoices(void *arg){
 					Mute_voices(MUTE);
 				}
 				if((endtime-starttime)>SYSTEMOUTSIGN){		//第一次长时间不触发事件，则关闭
+					//printf("entry not long time play voices =%d\n",getlockRecoderPthread_TimeoutCheck());
 					SetRecordeVoices_PthreadState(TIME_SIGN);
 				}
 			}else{
