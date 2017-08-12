@@ -667,9 +667,9 @@ void Custom_Interface_RunPlayVoices(int enablePlayVoices,int playVoicesType,unsi
 			snprintf(musictype,12,"%s","sleep");	//播放音乐内容
 			goto exit1;
 		}
-		randNums=(1+(int)(6.0*rand()/(RAND_MAX+1.0)));
+		randNums=(1+(int)(13.0*rand()/(RAND_MAX+1.0)));
 	}else{
-		randNums=(1+(int)(4.0*rand()/(RAND_MAX+1.0)));
+		randNums=(1+(int)(11.0*rand()/(RAND_MAX+1.0)));
 	}
 	
 	start_event_play_wav();
@@ -707,13 +707,69 @@ void Custom_Interface_RunPlayVoices(int enablePlayVoices,int playVoicesType,unsi
 			snprintf(musictype,12,"%s","baike");	//播放百科知识
 			break;
 		case 5:
+			if(playLongNotuserVoices(enablePlayVoices,playEventNums)){
+				goto exit0;	//异常打断退出
+			}
+			start_event_play_wav();
+			ret =PlaySystemAmrVoices(AMR_35_AI_STROY_0,playEventNums);
+			snprintf(musictype,12,"%s","tangshi");	//播放百科知识
+			break;
+		case 6:
+			if(playLongNotuserVoices(enablePlayVoices,playEventNums)){
+				goto exit0;	//异常打断退出
+			}
+			start_event_play_wav();
+			ret =PlaySystemAmrVoices(AMR_88_KEXUE,playEventNums);
+			snprintf(musictype,12,"%s","kexue");	//播放百科知识
+			break;
+		case 7:			
+			if(playLongNotuserVoices(enablePlayVoices,playEventNums)){
+				goto exit0;	//异常打断退出
+			}
+			start_event_play_wav();
+			ret =PlaySystemAmrVoices(AMR_89_SHANGXIA,playEventNums);
+			snprintf(musictype,12,"%s","shangxia");	//播放百科知识
+			break;
+		case 8:			
+			if(playLongNotuserVoices(enablePlayVoices,playEventNums)){
+				goto exit0;	//异常打断退出
+			}
+			start_event_play_wav();
+			ret =PlaySystemAmrVoices(AMR_90_HISTORY,playEventNums);
+			snprintf(musictype,12,"%s","history");	//播放百科知识
+			break;
+		case 9:			
+			if(playLongNotuserVoices(enablePlayVoices,playEventNums)){
+				goto exit0;	//异常打断退出
+			}
+			start_event_play_wav();
+			ret =PlaySystemAmrVoices(AMR_91_TONGYAO,playEventNums);
+			snprintf(musictype,12,"%s","tongyao");	//播放百科知识
+			break;	
+		case 10:			
+			if(playLongNotuserVoices(enablePlayVoices,playEventNums)){
+				goto exit0;	//异常打断退出
+			}
+			start_event_play_wav();
+			ret =PlaySystemAmrVoices(AMR_92_EN_MUSIC,playEventNums);
+			snprintf(musictype,12,"%s","enmusic");	//播放百科知识
+			break;
+		case 11:			
+			if(playLongNotuserVoices(enablePlayVoices,playEventNums)){
+				goto exit0;	//异常打断退出
+			}
+			start_event_play_wav();
+			ret =PlaySystemAmrVoices(AMR_93_GUDIAN,playEventNums);
+			snprintf(musictype,12,"%s","gudian");	//播放百科知识
+			break;			
+		case 12:
 			if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
 				ret = Handle_PlayTaiBenToNONetWork(playEventNums);
 			}else{
 				ret =PlaySystemAmrVoices(AMR_26_BIND,playEventNums);
 			}
 			goto exit0;
-		case 6:
+		case 13:
 			if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
 				ret = Handle_PlayTaiBenToNONetWork(playEventNums);
 			}else{
@@ -967,6 +1023,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;
 		case CMD_111_NOTWIFI_PLAYMUSIC:
 			Custom_Interface_RunPlayVoices(0,0,playEventNums);
+			unlockRecoderPthread_TimeoutCheck();
 			break;
 		default:
 			pause_record_audio();

@@ -94,6 +94,12 @@
 #define AMR_38_AI_STROY_3			"qtts/38.amr"		//38、我给你讲讲百科知识吧。
 #define AMR_39_AI_STROY_4			"qtts/39.amr"		//39、按栏目键然后再按左右键切换你想要听的本地内容吧！
 
+#define AMR_88_KEXUE				"qtts/88.amr"
+#define AMR_89_SHANGXIA			"qtts/89.amr"
+#define AMR_90_HISTORY				"qtts/90.amr"
+#define AMR_91_TONGYAO			"qtts/91.amr"
+#define AMR_92_EN_MUSIC			"qtts/92.amr"
+#define AMR_93_GUDIAN				"qtts/93.amr"
 
 #define AMR_40_NOT_USR				"qtts/40.amr"		//40、小朋友，你去哪里了，请跟我一起来玩吧！！
 #define AMR_41_LISTEN_MUSIC			"qtts/41.amr"		//41、要不我们今天听一下歌曲！
@@ -140,6 +146,8 @@
 #define AMR_75_DIR					"qtts/75.amr"
 
 #define AMR_83_SMART_NOT_WIFI	"qtts/83.amr"
+
+
 
 #define AMR_ADD_VOL					"qtts/add_vol.amr"		//64、加大音量
 #define AMR_SUB_VOL					"qtts/sub_vol.amr"		//65、减小音量
