@@ -23,7 +23,7 @@
 #define SOUND_MIX_PLAY				13	//混音播放
 #define HUASHANG_SLEEP				14	//华上睡眠状态
 #define HUASHANG_SLEEP_OK			15	//华上睡眠状态成功
-
+#define HUASHANG_CLOSE_SYSTEM	16	//华上睡眠状态成功
 //#define DBG_VOICES
 #ifdef DBG_VOICES
 #define DEBUG_VOICES(fmt, args...) printf("Call voices: " fmt, ## args) 
@@ -144,6 +144,8 @@
 #define ERRORTIME						30*24*60*MIN
 
 #define LONG_TIME_NOT_USER_MUTE_VOICES	15		//15s不用 mute音频
+
+#define CLOSE_SYSTEM_TIME				10		//long time not user system
 
 #define START_UPLOAD	1
 #define END_UPLOAD		0

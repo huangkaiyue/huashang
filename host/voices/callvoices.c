@@ -347,11 +347,21 @@ static void *PthreadRecordVoices(void *arg){
 					showFacePicture(CLEAR_SYSTEM_PICTURE);
 					SetRecordeVoices_PthreadState(HUASHANG_SLEEP_OK);
 					RV->closeTime=0;
+					starttime=time(&t);
 				}
 				I2sGetvoicesData();		//默认状态清除音频
 				usleep(50000);
 				break;
-				
+			case HUASHANG_SLEEP_OK:
+				I2sGetvoicesData();		//默认状态清除音频
+				usleep(50000);
+				endtime=time(&t);
+				if(endtime-starttime>CLOSE_SYSTEM_TIME){
+					SetRecordeVoices_PthreadState(HUASHANG_CLOSE_SYSTEM);
+					System_StateLog("close system");
+					SetMucClose_Time(1);
+				}
+				break;
 			default:
 				I2sGetvoicesData();		//默认状态清除音频
 				usleep(50000);
