@@ -525,10 +525,11 @@ void ReSetSystem(void){
 }
 //串口事件回调函数
 void UartEventcallFuntion(int event){
-	updateCurrentEventNums();
+	
 	switch(event){
 		case UART_EVENT_CLOSE_SYSTEM:		//串口发送关机事件
 			printf("\n   uart close system v1.1 for fix no delay colse system \n");
+			updateCurrentEventNums();
 			return;
 			Mute_voices(MUTE);				//关闭功放
 			//Close_Mtk76xxSystem();			//关机处理和保存后台数据
