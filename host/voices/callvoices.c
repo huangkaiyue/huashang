@@ -268,6 +268,7 @@ int SetMucClose_Time(unsigned char closeTime){
 	struct tm *p;
 	time(&timep);
 	char syscloseTime[64]={0};
+	printf("\n .............SetMucClose_Time : %d.............\n",closeTime);
 	SocSendMenu(3,0);
 	usleep(100*1000);
 	p=localtime(&timep); /*取得当地时间*/
@@ -277,7 +278,7 @@ int SetMucClose_Time(unsigned char closeTime){
 		p->tm_hour=(p->tm_hour)+8;
 	}
 	sprintf(syscloseTime,"%d:%d",(p->tm_hour),(p->tm_min)+closeTime);
-	printf("SetMucClose_Time : %s\n",syscloseTime);
+	printf("\n .............SetMucClose_Time : %s.............\n",syscloseTime);
 	SocSendMenu(2,syscloseTime);
 	return 0;
 }
@@ -291,7 +292,7 @@ static void *PthreadRecordVoices(void *arg){
 	lockRecoderPthread_TimeoutCheck();
 	SetRecordeVoices_PthreadState(RECODE_PAUSE);
 	time_t t;
-	int endtime,starttime;
+	int endtime,starttime,closeSystemTime;
 	starttime=time(&t);
 	endtime=time(&t);
 	pause_record_audio();
@@ -348,17 +349,21 @@ static void *PthreadRecordVoices(void *arg){
 					SetRecordeVoices_PthreadState(HUASHANG_SLEEP_OK);
 					RV->closeTime=0;
 					starttime=time(&t);
+					closeSystemTime=time(&t);
+					printf("\n .............HUASHANG_SLEEP .............\n");
 				}
 				I2sGetvoicesData();		//默认状态清除音频
 				usleep(50000);
 				break;
 			case HUASHANG_SLEEP_OK:
+				//printf("\n ............. HUASHANG endtime =%d  closeSystemTime=%d.............\n",endtime,closeSystemTime);
 				I2sGetvoicesData();		//默认状态清除音频
 				usleep(50000);
 				endtime=time(&t);
-				if(endtime-starttime>CLOSE_SYSTEM_TIME){
+				if(endtime-closeSystemTime>CLOSE_SYSTEM_TIME){
+					//printf("\n ............. start HUASHANG_SLEEP_OK endtime=%d  closeSystemTime=%d.............\n",endtime,closeSystemTime);
 					SetRecordeVoices_PthreadState(HUASHANG_CLOSE_SYSTEM);
-					System_StateLog("close system");
+					System_StateLog(".......close system........");
 					SetMucClose_Time(1);
 				}
 				break;

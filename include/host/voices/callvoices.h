@@ -145,7 +145,7 @@
 
 #define LONG_TIME_NOT_USER_MUTE_VOICES	15		//15s不用 mute音频
 
-#define CLOSE_SYSTEM_TIME				10		//long time not user system
+#define CLOSE_SYSTEM_TIME				10*MIN		//long time not user system
 
 #define START_UPLOAD	1
 #define END_UPLOAD		0

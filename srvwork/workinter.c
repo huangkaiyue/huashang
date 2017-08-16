@@ -43,6 +43,8 @@ void pasreInputCmd(const char *com){
 		CleanSystemResources();
 	}else if(!strcmp(com, "reset")){
 		system("restartNetwork.sh &");
+	}else if(!strcmp(com, "sleep")){
+		closeSystem();
 	}
 }
 #endif	//end WORK_INTER
