@@ -14,4 +14,7 @@ extern void Get_OpenCloseTime_formRouteTable(int type, char *time);
 //关机时候保存图灵的token值到路由表当中
 extern void Save_TulingToken_toRouteTable(const char *tokenVal);
 
+extern void Set_VersionRun(void);
+extern int Get_VersionRun(void);
+
 #endif

@@ -90,6 +90,7 @@ void ResetHostDevicesFactory(void){
 	ResetWeixinBindUserMessage();
 	Create_PlaySystemEventVoices(CMD_56_RESET_SYSTEM);
 	system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
+	Set_VersionRun();
 }
 //接收到微信发送过来的绑定请求
 void EnableBindDev(void){	
@@ -317,16 +318,26 @@ static void signal_handler(int signum){
 				StopTuling_RecordeVoices();
 				break;
 			case ADDVOL_KEY:	//短按播放喜爱内容,下一曲
+#if 0
 				keydown_flashingLED();
 				mutiple_key_ADD.key_number = ADDVOL_KEY;
 				mutiple_key_ADD.key_state  = KEYUP;
 				GpioLog("key up",ADDVOL_KEY);
+#else
+				keyUp_AndSetGpioFor_play();
+				Setwm8960Vol(VOL_ADD,0);
+#endif
 				break;
 			case SUBVOL_KEY:	//短按播放喜爱内容,上一曲
+#if 0
 				keydown_flashingLED();
 				mutiple_key_SUB.key_number = SUBVOL_KEY;
 				mutiple_key_SUB.key_state  = KEYUP;
 				GpioLog("key up",SUBVOL_KEY);
+#else
+				keyUp_AndSetGpioFor_play();
+				Setwm8960Vol(VOL_SUB,0);
+#endif
 				break;
 			case PLAY_PAUSE_KEY:	//播放、暂停
 				keyUp_AndSetGpioFor_play();
@@ -372,6 +383,7 @@ static void signal_handler(int signum){
 				//keyUp_AndSetGpioFor_play();
 				break;
 			case ADDVOL_KEY:	//长按音量加
+#if 0
 				keydown_flashingLED();
 				mutiple_key_ADD.key_state  = KEYDOWN;
 				mutiple_key_ADD.key_number = ADDVOL_KEY;
@@ -382,8 +394,14 @@ static void signal_handler(int signum){
 				pool_add_task(mus_vol_mutiplekey_Thread,(void *)&mutiple_key_ADD);
 				ack_VolCtr("add",GetVol());		//----------->音量减
 				GpioLog("key down",ADDVOL_KEY);
+#else
+				keyUp_AndSetGpioFor_play();
+				Huashang_GetScard_forPlayMusic(PLAY_NEXT,EXTERN_PLAY_EVENT);
+				
+#endif
 				break;
 			case SUBVOL_KEY:					//长按音量减
+#if 0
 				keydown_flashingLED();
 				mutiple_key_SUB.key_state  = KEYDOWN;
 				mutiple_key_SUB.key_number = SUBVOL_KEY;
@@ -396,6 +414,10 @@ static void signal_handler(int signum){
 				pool_add_task(mus_vol_mutiplekey_Thread,(void *)&mutiple_key_SUB);
 				ack_VolCtr("sub",GetVol());		//----------->音量减
 				GpioLog("key down",SUBVOL_KEY);
+#else
+				keyUp_AndSetGpioFor_play();
+				Huashang_GetScard_forPlayMusic(PLAY_PREV,EXTERN_PLAY_EVENT);	
+#endif
 				break;
 			case WEIXIN_SPEEK_KEY:	//华上教育微信对讲
 				mutiple_key_weixin.key_state = KEYDOWN;

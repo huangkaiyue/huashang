@@ -52,4 +52,16 @@ void Save_TulingToken_toRouteTable(const char *tokenVal){
 	sprintf(buf_s,"nvram_set 2860 tokenVal %s", tokenVal);
 	system(buf_s);
 }
+void Set_VersionRun(void){
+	char buf_s[128]={0};
+	sprintf(buf_s,"nvram_set 2860 run_ok %s", "rhw");
+	system(buf_s);
+}
+int Get_VersionRun(void){
+	char *buf= nvram_bufget(RT2860_NVRAM, "run_ok");
+	if(!strncmp(buf,"rhw",3)){
+		return 0;
+	}	
+	return -1;
+}
 //----------------------------end-------------------------------------
