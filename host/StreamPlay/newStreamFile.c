@@ -338,6 +338,9 @@ void GpioKey_SetStreamPlayState(void){
 int GetStreamPlayState(void){
 	return (int)st->player.playListState; 
 }
+int GetPlayMusicState(void){
+	return (int)st->player.playState;
+}
 //按键切换播放状态
 void keyStreamPlay(void){
 	if(st->player.playState==MAD_PAUSE){

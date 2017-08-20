@@ -52,6 +52,7 @@ void Save_TulingToken_toRouteTable(const char *tokenVal){
 	sprintf(buf_s,"nvram_set 2860 tokenVal %s", tokenVal);
 	system(buf_s);
 }
+static unsigned char runplay=0;
 void Set_VersionRun(void){
 	char buf_s[128]={0};
 	sprintf(buf_s,"nvram_set 2860 run_ok %s", "rhw");
@@ -62,6 +63,10 @@ int Get_VersionRun(void){
 	if(!strncmp(buf,"rhw",3)){
 		return 0;
 	}	
+	runplay=1;
 	return -1;
+}
+int getFactoryTest(void){
+	return (int)runplay;
 }
 //----------------------------end-------------------------------------

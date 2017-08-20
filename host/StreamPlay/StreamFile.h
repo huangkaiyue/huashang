@@ -77,6 +77,7 @@ extern void StreamPause(void);
 extern void StreamPlay(void);
 extern void SetStreamPlayState(unsigned char playliststate);
 extern int GetStreamPlayState(void);
+extern int GetPlayMusicState(void);
 extern void keyStreamPlay(void);
 
 extern void getStreamState(void *data,void StreamState(void *data,Player_t *player));	//获取播放流状态

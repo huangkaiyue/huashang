@@ -155,6 +155,7 @@ static int check_lock_msgEv(void){
 	}
 	return 0;
 }
+#if 0
 static void *mus_vol_mutiplekey_Thread(void *arg){
 	time_t t;
 	int volendtime=0;
@@ -217,7 +218,63 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 	mutiplekey->PthreadState = PthreadState_exit;
 	return NULL;
 }
+#else
+static void *mus_vol_mutiplekey_Thread(void *arg){
+	time_t t;
+	int volendtime=0;
+	unsigned int time_ms = 0;
+	key_mutiple_t *mutiplekey = (key_mutiple_t *)arg;
+	while(1){
+		
+		gettimeofday(&mutiplekey->time_end,0);
+		time_ms = 1000000*(mutiplekey->time_end.tv_sec - mutiplekey->time_start.tv_sec) + mutiplekey->time_end.tv_usec - mutiplekey->time_start.tv_usec;
+		time_ms /= 1000;
 
+		printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
+		
+		if(time_ms < 500){		//before is 500  2017.6.28 22:43
+			if(mutiplekey->key_state == KEYUP)
+			{
+				if(mutiplekey->key_number == ADDVOL_KEY){
+					printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);		
+					keyUp_AndSetGpioFor_play();
+					Setwm8960Vol(VOL_ADD,0) ;
+				}
+				else{
+					printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
+					keyUp_AndSetGpioFor_play();
+					Setwm8960Vol(VOL_SUB,0) ;
+				}
+				break;
+
+			}
+			usleep(100 * 1000);
+			continue;
+		}
+		
+		if(time_ms >=500){		//before is 500  2017.6.28 22:43
+			keyUp_AndSetGpioFor_play();
+			printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
+			if(mutiplekey->key_state == KEYUP)
+				break;
+
+			if(mutiplekey->key_number == ADDVOL_KEY){
+				printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
+				Huashang_GetScard_forPlayMusic(PLAY_NEXT,EXTERN_PLAY_EVENT);
+			}				
+			else{
+				printf("[ %s ]:[ %s ] printf in line [ %d ]\n",__FILE__,__func__,__LINE__);
+				Huashang_GetScard_forPlayMusic(PLAY_PREV,EXTERN_PLAY_EVENT);
+				
+			}
+			break;
+		}
+
+	}
+	mutiplekey->PthreadState = PthreadState_exit;
+	return NULL;
+}
+#endif
 static void *weixin_mutiplekey_Thread(void *arg){
 	time_t t;
 	int volendtime=0;
@@ -318,8 +375,7 @@ static void signal_handler(int signum){
 				StopTuling_RecordeVoices();
 				break;
 			case ADDVOL_KEY:	//短按播放喜爱内容,下一曲
-#if 0
-				keydown_flashingLED();
+#if 1
 				mutiple_key_ADD.key_number = ADDVOL_KEY;
 				mutiple_key_ADD.key_state  = KEYUP;
 				GpioLog("key up",ADDVOL_KEY);
@@ -329,8 +385,7 @@ static void signal_handler(int signum){
 #endif
 				break;
 			case SUBVOL_KEY:	//短按播放喜爱内容,上一曲
-#if 0
-				keydown_flashingLED();
+#if 1
 				mutiple_key_SUB.key_number = SUBVOL_KEY;
 				mutiple_key_SUB.key_state  = KEYUP;
 				GpioLog("key up",SUBVOL_KEY);
@@ -383,8 +438,7 @@ static void signal_handler(int signum){
 				//keyUp_AndSetGpioFor_play();
 				break;
 			case ADDVOL_KEY:	//长按音量加
-#if 0
-				keydown_flashingLED();
+#if 1
 				mutiple_key_ADD.key_state  = KEYDOWN;
 				mutiple_key_ADD.key_number = ADDVOL_KEY;
 				if(mutiple_key_ADD.PthreadState == PthreadState_run)
@@ -392,7 +446,6 @@ static void signal_handler(int signum){
 				mutiple_key_ADD.PthreadState = PthreadState_run;
 				gettimeofday(&mutiple_key_ADD.time_start,0);
 				pool_add_task(mus_vol_mutiplekey_Thread,(void *)&mutiple_key_ADD);
-				ack_VolCtr("add",GetVol());		//----------->音量减
 				GpioLog("key down",ADDVOL_KEY);
 #else
 				keyUp_AndSetGpioFor_play();
@@ -401,8 +454,7 @@ static void signal_handler(int signum){
 #endif
 				break;
 			case SUBVOL_KEY:					//长按音量减
-#if 0
-				keydown_flashingLED();
+#if 1
 				mutiple_key_SUB.key_state  = KEYDOWN;
 				mutiple_key_SUB.key_number = SUBVOL_KEY;
 				gettimeofday(&mutiple_key_SUB.time_start,0);
@@ -412,7 +464,6 @@ static void signal_handler(int signum){
 				//printf("start run sub pthread \n");
 				mutiple_key_SUB.PthreadState = PthreadState_run;
 				pool_add_task(mus_vol_mutiplekey_Thread,(void *)&mutiple_key_SUB);
-				ack_VolCtr("sub",GetVol());		//----------->音量减
 				GpioLog("key down",SUBVOL_KEY);
 #else
 				keyUp_AndSetGpioFor_play();

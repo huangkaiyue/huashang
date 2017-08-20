@@ -10,6 +10,7 @@
 #include "config.h"
 #include "uart/uart.h"
 #include "huashangMusic.h"
+#include "mplay.h"
 
 static RecoderVoices_t *RV=NULL;
 struct wave_pcm_hdr pcmwavhdr = {//默认音频wav头部数据
@@ -344,6 +345,11 @@ static void *PthreadRecordVoices(void *arg){
 				usleep(50000);
 				break;
 			case HUASHANG_SLEEP:		//华上睡眠状态
+#if 0			
+				if(getFactoryTest()){
+					break;
+				}
+#endif				
 				if(++RV->closeTime==60){
 					showFacePicture(CLEAR_SYSTEM_PICTURE);
 					SetRecordeVoices_PthreadState(HUASHANG_SLEEP_OK);
@@ -367,6 +373,20 @@ static void *PthreadRecordVoices(void *arg){
 					SetMucClose_Time(1);
 				}
 				break;
+			case PLAY_MP3_MUSIC:
+				if(GetPlayMusicState()==MAD_PAUSE){
+					endtime=time(&t);
+					//printf("\n ............play mp3 endtime=%d  closeSystemTime=%d.............\n",endtime,closeSystemTime);
+					if(endtime-closeSystemTime>CLOSE_SYSTEM_TIME){
+						//SetRecordeVoices_PthreadState(HUASHANG_CLOSE_SYSTEM);
+						System_StateLog(".......play music not user close........");
+						//printf("\n ............play mp3 endtime=%d  closeSystemTime=%d.............\n",endtime,closeSystemTime);
+						SetMucClose_Time(1);
+						disable_gpio();
+					}
+				}else if(GetPlayMusicState()==MAD_PLAY){
+					closeSystemTime=time(&t);
+				}
 			default:
 				I2sGetvoicesData();		//默认状态清除音频
 				usleep(50000);

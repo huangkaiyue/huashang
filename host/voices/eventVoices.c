@@ -1245,6 +1245,7 @@ static int checkSdcard_MountState(void){
 	return 0;
 }
 
+
 //----------------------end sdcard 收藏喜爱歌曲--------------------------------------------------------------
 //开机加载sdcard 当中数据库信息
 static void *waitLoadMusicList(void *arg){
@@ -1261,6 +1262,7 @@ static void *waitLoadMusicList(void *arg){
 			break;
 		}
 	}
+	Get_VersionRun();
 	if(sysMes.netstate==NETWORK_UNKOWN){	//默认是未知状态，长时间未收到联网进程发送过来的状态，直接使能gpio
 		sysMes.netstate=NETWORK_ER;	
 		sysMes.startCheckNetworkFlag=1;
