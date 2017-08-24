@@ -12,6 +12,7 @@
 #define NOT_NETWORK			18	//板子没有连接上网络
 #define CONNET_CHECK		19	//正在检查网络是否可用
 
+#define INTERRUPT_NETWORK	100	//��ϵ�ǰ��ɨ�������
 
 //#define DBG_AP_STA
 #ifdef DBG_AP_STA 

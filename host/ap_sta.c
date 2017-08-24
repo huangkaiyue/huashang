@@ -52,6 +52,20 @@ int SendSsidPasswd_toNetServer(const char *ssid,const char *passwd,int random){
 	free(szJSON);
 	return ret ;
 }
+int SendInterruptScanwifi_toNetServer(void){
+	int ret=0;
+	char* szJSON = NULL;
+	cJSON* pItem = NULL;
+	pItem = cJSON_CreateObject();
+	cJSON_AddStringToObject(pItem, "handler", "ServerWifi");
+	cJSON_AddNumberToObject(pItem, "event",INTERRUPT_NETWORK);
+	szJSON = cJSON_Print(pItem);
+	ret= SendtoServicesWifi(szJSON,strlen(szJSON));
+	cJSON_Delete(pItem);
+	free(szJSON);
+	return ret ;
+}
+
 /*******************************************************
 函数功能: 检查配网文件
 参数: 无

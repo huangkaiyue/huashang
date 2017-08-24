@@ -86,7 +86,7 @@ static void loadLocalServer(int argc,char *argv[]){
 			WriteLocalserver_Version((const char *)argv[i+1]);
 		}
 	}
-	sleep(sleeptime);	//增加一定睡眠时间，防止加载sdcard和sock冲突，导致udp sock不能通信
+	//sleep(sleeptime);	//增加一定睡眠时间，防止加载sdcard和sock冲突，导致udp sock不能通信
 	time_t t;
 	sysMes.netstate=NETWORK_UNKOWN;	//开机属于未知网络状态
 	InitWeixinMeesageList();

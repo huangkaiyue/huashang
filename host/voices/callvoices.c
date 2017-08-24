@@ -406,6 +406,11 @@ void InitRecord_VoicesPthread(void){
 		perror("calloc RecoderVoices_t memory failed");
         exit(-1);
 	}
+#if 1	
+	PlayStartPcm(AMR_11_START_SYSTEM_OK,0);
+	sleep(3);
+#endif
+	
 	char playFile[24]={0};
 	srand((unsigned)time(NULL));
 	int i=(rand()%10)+1;
@@ -415,7 +420,9 @@ void InitRecord_VoicesPthread(void){
 		PlayStartPcm(AMR_10_START_PLAY,0);
 	}
 	//PlayStartPcm(AMR_11_START_SYSTEM_OK,0);
-	sleep(3);
+#if 0
+	sleep(3);	//now 9.amr is 7.amr text  , 10.amr change is 8.amr text for play
+#endif
 	RV->freeVoicesNum =FREE_VOICE_NUMS;
 	if(pthread_create_attr(PthreadRecordVoices,NULL)){
   	  	perror("create handle record voices failed!");

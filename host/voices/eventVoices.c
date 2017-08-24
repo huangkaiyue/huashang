@@ -117,6 +117,7 @@ void ShortKeyDown_ForPlayWifiMessage(void){
 参数: 无
 返回值: 无
 ********************************************************/
+#if 0
 int LongNetKeyDown_ForConfigWifi(void){
 	CheckNetManger_PidRunState();
 	WiterSmartConifg_Log("Network key down","ok");
@@ -138,6 +139,47 @@ int LongNetKeyDown_ForConfigWifi(void){
 	WiterSmartConifg_Log("startSmartConfig  failed ","is not RECODE_PAUSE");
 	return -1;
 }
+#else
+static void *UnlockQuequePthread(void){
+	sleep(5);
+	Unlock_EventQueue();
+}
+int LongNetKeyDown_ForConfigWifi(void){
+	CheckNetManger_PidRunState();
+	WiterSmartConifg_Log("Network key down","ok");
+	if(!checkInternetFile()){
+		WiterSmartConifg_Log("startSmartConfig checkInternetFile","failed");
+		return -1;
+	}
+        if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){          
+                return -1;
+        }   
+	if(GetRecordeVoices_PthreadState()==PLAY_MP3_MUSIC){
+		Create_CleanUrlEvent();
+		return -1;
+	}
+	updateCurrentEventNums();
+	//if(GetRecordeVoices_PthreadState()==RECODE_PAUSE)//处于播放事件当中，不予许配网
+	{
+		if(access(INTEN_NETWORK_FILE_LOCK,F_OK)<0){
+			SendInterruptScanwifi_toNetServer();
+			disable_gpio();
+			Create_PlaySystemEventVoices(CMD_15_START_CONFIG);
+			Lock_EventQueue();
+			pthread_create_attr(UnlockQuequePthread,NULL);
+			sysMes.lockRestartNetwork=RESTART_NETWORK_UNLOCK;
+			//startSmartConfig(Create_PlaySystemEventVoices,enable_gpio);	
+			system("smartconfig start &");
+			return 0;
+		}else{
+			//CreateSystemPlay_ProtectMusic((const char *)AMR_19_CONNET_ING);
+		}
+	}	
+	printf("startSmartConfig  failed is not RECODE_PAUSE\n");
+	WiterSmartConifg_Log("startSmartConfig  failed ","is not RECODE_PAUSE");
+	return -1;
+}
+#endif
 //连接成功设置工作指示灯,更新muc时间
 static void Link_NetworkOk(void){
 	Stop_light_500Hz();
@@ -861,7 +903,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			}else{
 				setNetWorkLive(NETWORK_ER);
 			}
-			PlaySystemAmrVoices(AMR_15_START_CONFIG,playEventNums);
+			PlayImportVoices(AMR_15_START_CONFIG,playEventNums);
 			break;
 		case CMD_16_CONNET_ING:					//16、正在尝试连接网络，请稍等！
 			NetWorkConnetIngPlayVoices(playEventNums);
@@ -1185,7 +1227,7 @@ void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 		endtime=time(&t);
 		voicesTime = endtime - speek->Starttime;
 		start_event_play_wav();
-		if(voicesTime<1||voicesTime>10){//时间太短或太长
+		if(voicesTime<1||voicesTime>20){//时间太短或太长
 			shortVoicesClean();
 			//PlaySystemAmrVoices(AMR_WEIXIN_SEND_ERROR,playEventNums);
 			pause_record_audio();
@@ -1269,7 +1311,10 @@ static void *waitLoadMusicList(void *arg){
 		Write_StartLog("unkown network ",timeout);
 		Create_PlaySystemEventVoices(CMD_110_NOT_NETWORK);
 		unsigned int currentEvent= GetCurrentEventNums();
-		sleep(25);
+		sleep(24);
+		//printf("\n------------------\nremove wifi file\n----------------------\n");
+		remove(INTEN_NETWORK_FILE_LOCK);// import enable open system not network allow config wifi , is maybe bug
+		//remove(INTEN_NETWORK_FILE_LOCK);// import enable open system not network allow config wifi , is maybe bug
 		if(currentEvent==GetCurrentEventNums()){
 			Create_PlaySystemEventVoices(CMD_111_NOTWIFI_PLAYMUSIC);
 		}
@@ -1296,7 +1341,7 @@ void InitMtkPlatfrom76xx(void){
 	initStream(ack_playCtr,WritePcmData,SetWm8960Rate,GetVol,GetWm8960Rate);
 	InitEventMsgPthread();
 	Huashang_Init();
-	Create_PlaySystemEventVoices(CMD_11_START);
+	//Create_PlaySystemEventVoices(CMD_11_START);
 	pool_add_task(waitLoadMusicList, NULL);	//防止T卡加载慢
 }
 /*

@@ -293,7 +293,7 @@ static void *weixin_mutiplekey_Thread(void *arg){
 			if(mutiplekey->key_state == KEYUP)
 			{
 				//短按弹起处理，播放微信语音
-				GpioLog("GetWeiXinMessageForPlay ",WEIXIN_SPEEK_KEY);
+				//GpioLog("GetWeiXinMessageForPlay ",WEIXIN_SPEEK_KEY);
 				GetWeiXinMessageForPlay();
 				break;
 
@@ -316,7 +316,10 @@ static void *weixin_mutiplekey_Thread(void *arg){
 				Create_WeixinSpeekEvent(KEYUP);
 				break;
 			}
-
+			if(time_ms>=1000*1500){	//long time recoder voices
+				Create_WeixinSpeekEvent(KEYUP);
+				break;
+			}
 			usleep(300 * 1000);
 		}
 
@@ -325,6 +328,54 @@ static void *weixin_mutiplekey_Thread(void *arg){
 	return NULL;
 }
 
+static void *networkkey_mutiplekey_Thread(void *arg){
+	time_t t;
+	int volendtime=0;
+	unsigned int time_ms = 0;
+	key_mutiple_t *mutiplekey = (key_mutiple_t *)arg;
+	while(1){
+		
+		gettimeofday(&mutiplekey->time_end,0);
+		time_ms = 1000000*(mutiplekey->time_end.tv_sec - mutiplekey->time_start.tv_sec) + mutiplekey->time_end.tv_usec - mutiplekey->time_start.tv_usec;
+		time_ms /= 1000;
+
+		printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
+		
+		if(time_ms < 500){		//before is 500  2017.6.28 22:43
+			if(mutiplekey->key_state == KEYUP)
+			{
+				//短按弹起处理，播放wifi
+				keyUp_AndSetGpioFor_play();
+				ShortKeyDown_ForPlayWifiMessage();
+				unlock_msgEv();
+				break;
+
+			}
+			usleep(100 * 1000);
+			continue;
+		}
+		
+		if(time_ms >=2000){		//before is 500  2017.8.24 14:19
+			keyUp_AndSetGpioFor_play();
+			printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
+			if(mutiplekey->key_state == KEYUP){
+				unlock_msgEv();
+				break;
+			}
+			if(!LongNetKeyDown_ForConfigWifi()){
+				lock_msgEv();// entry congfig network please lock key
+				goto exit0;
+			}
+			unlock_msgEv();
+			break;
+			
+		}
+
+	}
+exit0:	
+	mutiplekey->PthreadState = PthreadState_exit;
+	return NULL;
+}
 void PlayWakeUpVoices(void){
 	printf("%s: wake up system\n",__func__);
 	if (GetWeixinMessageFlag()==NOT_MESSAGE) {		
@@ -347,7 +398,7 @@ void PlayWakeUpVoices(void){
 	unlock_msgEv();
 }
 static void signal_handler(int signum){
-	static key_mutiple_t mutiple_key_SUB,mutiple_key_ADD,mutiple_key_speek,mutiple_key_weixin;
+	static key_mutiple_t mutiple_key_SUB,mutiple_key_ADD,mutiple_key_speek,mutiple_key_weixin,mutiple_key_network;
 	//printf("%s : recv signum =%d\n",__func__,signum);
 	//拿到底层按键事件号码
 	if (ioctl(gpio.fd, TANG_GET_NUMBER,&gpio.mount) < 0){
@@ -368,8 +419,14 @@ static void signal_handler(int signum){
 	if (signum == GPIO_UP){			//短按按键事件
 		switch(gpio.mount){
 			case NETWORK_KEY:		//播报WiFi名
+#if 0
 				keyUp_AndSetGpioFor_play();
 				ShortKeyDown_ForPlayWifiMessage();
+#else
+				mutiple_key_network.key_number = NETWORK_KEY;
+				mutiple_key_network.key_state  = KEYUP;
+		
+#endif
 				break;
 			case SPEEK_KEY:			//智能会话按键事件
 				StopTuling_RecordeVoices();
@@ -378,7 +435,7 @@ static void signal_handler(int signum){
 #if 1
 				mutiple_key_ADD.key_number = ADDVOL_KEY;
 				mutiple_key_ADD.key_state  = KEYUP;
-				GpioLog("key up",ADDVOL_KEY);
+				//GpioLog("key up",ADDVOL_KEY);
 #else
 				keyUp_AndSetGpioFor_play();
 				Setwm8960Vol(VOL_ADD,0);
@@ -388,7 +445,7 @@ static void signal_handler(int signum){
 #if 1
 				mutiple_key_SUB.key_number = SUBVOL_KEY;
 				mutiple_key_SUB.key_state  = KEYUP;
-				GpioLog("key up",SUBVOL_KEY);
+				//GpioLog("key up",SUBVOL_KEY);
 #else
 				keyUp_AndSetGpioFor_play();
 				Setwm8960Vol(VOL_SUB,0);
@@ -420,10 +477,21 @@ static void signal_handler(int signum){
 				break;
 									
 			case NETWORK_KEY://配网键
+#if 0
 				keyUp_AndSetGpioFor_play();
 				if(!LongNetKeyDown_ForConfigWifi()){
 					return;
 				}
+#else
+				mutiple_key_network.key_state  = KEYDOWN;
+				mutiple_key_network.key_number = NETWORK_KEY;
+				if(mutiple_key_network.PthreadState == PthreadState_run)
+					return;
+				mutiple_key_network.PthreadState = PthreadState_run;
+				gettimeofday(&mutiple_key_network.time_start,0);
+				pool_add_task(networkkey_mutiplekey_Thread,(void *)&mutiple_key_network);
+				return;
+#endif
 				break;
 				
 			case SPEEK_KEY://会话键
@@ -446,7 +514,7 @@ static void signal_handler(int signum){
 				mutiple_key_ADD.PthreadState = PthreadState_run;
 				gettimeofday(&mutiple_key_ADD.time_start,0);
 				pool_add_task(mus_vol_mutiplekey_Thread,(void *)&mutiple_key_ADD);
-				GpioLog("key down",ADDVOL_KEY);
+				//GpioLog("key down",ADDVOL_KEY);
 #else
 				keyUp_AndSetGpioFor_play();
 				Huashang_GetScard_forPlayMusic(PLAY_NEXT,EXTERN_PLAY_EVENT);
@@ -464,7 +532,7 @@ static void signal_handler(int signum){
 				//printf("start run sub pthread \n");
 				mutiple_key_SUB.PthreadState = PthreadState_run;
 				pool_add_task(mus_vol_mutiplekey_Thread,(void *)&mutiple_key_SUB);
-				GpioLog("key down",SUBVOL_KEY);
+				//GpioLog("key down",SUBVOL_KEY);
 #else
 				keyUp_AndSetGpioFor_play();
 				Huashang_GetScard_forPlayMusic(PLAY_PREV,EXTERN_PLAY_EVENT);	
