@@ -6,6 +6,7 @@
 #include "base/pool.h"
 #include "host/voices/callvoices.h"
 #include "host/studyvoices/prompt_tone.h"
+#include "host/studyvoices/qtts_qisc.h"
 #include "uart/uart.h"
 #include "config.h"
 
@@ -301,6 +302,7 @@ int startSmartConfig(void ConnetEvent(int event),void EnableGpio(void)){
 #endif
 void RecvNetWorkConnetState(int event){
 	unsigned int currentNums=0;
+	//printf("%s: event = %d\n",__func__,event);
 	switch(event){
 		case CONNECT_OK:
 			//CreateSystemPlay_ProtectMusic((const char * )AMR_23_CHECK_NETWORk);
@@ -325,6 +327,10 @@ void RecvNetWorkConnetState(int event){
 			break;
 		case CMD_22_NOT_RECV_WIFI:
 			Create_PlaySystemEventVoices(CMD_22_NOT_RECV_WIFI);
+			enable_gpio();
+			break;
+		case INTERRUPT_NETWORK:
+			Create_PlaySystemEventVoices(CMD_100_CANLE_WIFI);	//"canle_wifi.amr"		
 			enable_gpio();
 			break;
 	}

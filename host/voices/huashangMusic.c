@@ -32,7 +32,7 @@ void Huahang_SelectDirMenu(void){
 	if(hsUser->fristLoad==0){
 		hsUser->fristLoad =1;	
 		struct timeval time_start;
-		int time_ms = 1000000*time_start.tv_sec +time_start.tv_usec;
+		int time_ms = time_start.tv_sec +time_start.tv_usec;
 		int i=((int)(15*rand()/(RAND_MAX+1.0)));
 		int j =((int)(15*rand()/(RAND_MAX+1.0)));
 		hsUser->dirMenu =(i+j+time_ms)%14;

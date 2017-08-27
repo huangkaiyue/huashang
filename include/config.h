@@ -42,6 +42,7 @@
 #define LOCAL_SERVER_FILE_LOCK			"/var/localserver.lock"	//本地服务器文件锁
 
 #define ENABLE_RECV_NETWORK_FILE_LOCK	"/var/startNet.lock"	//使能接收文件锁
+#define INTERRUPT_NETWORK_FILE			"/var/interrupt.file"	//打断配网
 
 #endif
 

@@ -145,6 +145,7 @@ static void *UnlockQuequePthread(void){
 	Unlock_EventQueue();
 }
 int LongNetKeyDown_ForConfigWifi(void){
+	updateCurrentEventNums();
 	CheckNetManger_PidRunState();
 	WiterSmartConifg_Log("Network key down","ok");
 	if(!checkInternetFile()){
@@ -154,11 +155,34 @@ int LongNetKeyDown_ForConfigWifi(void){
         if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){          
                 return -1;
         }   
-	if(GetRecordeVoices_PthreadState()==PLAY_MP3_MUSIC){
-		Create_CleanUrlEvent();
-		return -1;
+	Lock_EventQueue();
+	Write_Speekkeylog((const char *)"PLAY_MP3_MUSIC",GetRecordeVoices_PthreadState());
+	printf("---NetStreamExitFile start \n");
+	int lock =0;
+	while(GetLockRate()){
+		printf("%s: GetWm8960Rate =%d\n",__func__,GetWm8960Rate());
+		usleep(100000);
+		lock=1;
+		if(GetWm8960Rate()==RECODE_RATE){
+			printf("error exit rate ......\n");
+			break;
+		}
 	}
-	updateCurrentEventNums();
+	if(lock){
+		goto exit0;
+	}
+	if(getLockNetwork()){
+		//printf("..........\nerror lock network \n ...........\n ");
+		printf("..........\n error exit ok \n ...........\n ");
+		goto exit0;
+	}
+	NetStreamExitFile();//退出歌曲播放,并切换采样率	
+	printf("---SetWm8960Rate start \n");
+	if(SetWm8960Rate(RECODE_RATE,(const char *)"TulingKeyDownSingal set rate")){	//切换采样率失败，退出(防止多线程当中切换，资源冲突问题)
+		goto exit0;
+	}
+	printf("---Unlock_EventQueue start \n");
+	Unlock_EventQueue();
 	//if(GetRecordeVoices_PthreadState()==RECODE_PAUSE)//处于播放事件当中，不予许配网
 	{
 		if(access(INTEN_NETWORK_FILE_LOCK,F_OK)<0){
@@ -177,6 +201,8 @@ int LongNetKeyDown_ForConfigWifi(void){
 	}	
 	printf("startSmartConfig  failed is not RECODE_PAUSE\n");
 	WiterSmartConifg_Log("startSmartConfig  failed ","is not RECODE_PAUSE");
+exit0:
+	Unlock_EventQueue();
 	return -1;
 }
 #endif
@@ -1058,6 +1084,16 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			PlaySystemAmrVoices(AMR_UPDATE_OK,playEventNums);
 			usleep(500000);
 			ReSetSystem();
+			break;
+		case CMD_100_CANLE_WIFI:
+			unlockRecoderPthread_TimeoutCheck();
+			PlaySystemAmrVoices(AMR_100_CANLE_WIFI,playEventNums);
+			if(sysMes.lockRestartNetwork==RESTART_NETWORK_LOCK)
+				break;
+			if(getNetWorkLive()==NETWORK_RESTART){
+				sysMes.lockRestartNetwork=RESTART_NETWORK_LOCK;
+				pthread_create_attr(RunTask_restartNetwork,NULL);
+			}			
 			break;
 		case CMD_110_NOT_NETWORK:			
 			Handle_PlayTaiBenToNONetWork(playEventNums);

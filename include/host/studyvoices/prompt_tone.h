@@ -166,6 +166,8 @@
 #define AMR_WEIXIN_RECV_OK			"qtts/weixin_recv_ok.amr"
 #define AMR_WEIXIN_KEY_UP			"qtts/weixin_key_up.amr"
 
+#define AMR_100_CANLE_WIFI			"qtts/canle_wifi.amr"	
+
 /*******************************************************************************
 零时音频文件路径
 *******************************************************************************/

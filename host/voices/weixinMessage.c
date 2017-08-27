@@ -4,6 +4,7 @@
 #include "host/studyvoices/prompt_tone.h"
 #include "host/voices/callvoices.h"
 #include "huashangMusic.h"
+#include "StreamFile.h"
 
 #define WEIXIN_TEXT 	1
 #define WEIXIN_VOICES	2
@@ -16,11 +17,16 @@ typedef struct {
 	int type;	//添加到队列当中消息类型
 }WeiXinMsg;
 
-
-
 static WorkQueue *WeixinEvent=NULL;
 static WeiXinMsg *Bak_Message=NULL;
 static unsigned char newMessageFlag=NOT_MESSAGE;	//新消息标志
+
+typedef struct{
+	unsigned char play;
+	char url[256];
+}WeixinPushMsg_t;
+
+static WeixinPushMsg_t *PushMsg=NULL;
 
 static void SetWeixinMessageFlag(unsigned char state){
 	newMessageFlag=state;
@@ -75,6 +81,14 @@ int AddWeiXinMessage_Text(const char *data,int Size){
 int AddWeiXinMessage_Voices(const char *data,int Size){
 	return __AddWeiXinMessage(data,Size,WEIXIN_VOICES);
 }
+
+int AddWeiXinpushMessage_Voices(const char *data,int Size){
+	if(PushMsg){
+		SetWeixinMessageFlag(WEIXIN_PUSH_MESSAGE);
+		memset(PushMsg->url,0,sizeof(PushMsg->url));
+		snprintf(PushMsg->url,sizeof(PushMsg->url),"%s",data);
+	}
+}
 //获取微信消息队列进行播放
 int GetWeiXinMessageForPlay(void){
 	WeiXinMsg *msg = NULL;
@@ -83,6 +97,24 @@ int GetWeiXinMessageForPlay(void){
 	time_t t;	
 	char bak_voices[256]={0};
 	static int ti=1;
+	if(GetWeixinMessageFlag()==WEIXIN_PUSH_MESSAGE){
+		Player_t *player = (Player_t *)calloc(1,sizeof(Player_t));
+		if(player==NULL){
+			perror("calloc error !!!");
+			return -1;
+		}
+		if(player){				
+			snprintf(player->playfilename,128,"%s",PushMsg->url);
+			if(__AddNetWork_UrlForPaly(player)==0){
+				if(getWorkMsgNum(WeixinEvent)>0){
+					SetWeixinMessageFlag(WEIXIN_MESSAGE);
+				}else{
+					SetWeixinMessageFlag(NOT_MESSAGE);
+				}
+			}
+		}		
+		return 0;
+	}
 	if(getWorkMsgNum(WeixinEvent)>0){
 		getMsgQueue(WeixinEvent,&Get,&msgSize);
 		if(Get==NULL){
@@ -140,6 +172,10 @@ void InitWeixinMeesageList(void){
 	WeixinEvent = initQueue();
 	if(WeixinEvent==NULL){
 		printf("init WeixinEvent list failed \n");
+	}
+	PushMsg = (WeixinPushMsg_t *)calloc(1,sizeof(WeixinPushMsg_t));
+	if(PushMsg==NULL){
+		perror("calloc pushmsg failed ");
 	}
 }
 //清除微信消息队列

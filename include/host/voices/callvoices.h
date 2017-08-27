@@ -131,6 +131,7 @@
 
 #define CMD_90_UPDATE_OK				90	//90.更新固件结束
 
+#define CMD_100_CANLE_WIFI				100
 #define CMD_110_NOT_NETWORK			110	// restart check network
 #define CMD_111_NOTWIFI_PLAYMUSIC	111
 //---------------------------------------------------------

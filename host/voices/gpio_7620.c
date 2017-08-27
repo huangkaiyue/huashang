@@ -327,7 +327,12 @@ static void *weixin_mutiplekey_Thread(void *arg){
 	mutiplekey->PthreadState = PthreadState_exit;
 	return NULL;
 }
-
+static void Create_InterruptSmartConfigFile(void){
+	FILE *fp = fopen(INTERRUPT_NETWORK_FILE,"w+");
+	if(fp){
+		fclose(fp);
+	}
+}
 static void *networkkey_mutiplekey_Thread(void *arg){
 	time_t t;
 	int volendtime=0;
@@ -346,6 +351,10 @@ static void *networkkey_mutiplekey_Thread(void *arg){
 			{
 				//短按弹起处理，播放wifi
 				keyUp_AndSetGpioFor_play();
+				if(access(SMART_CONFIG_FILE_LOCK,0)==0){
+					Create_InterruptSmartConfigFile();
+					break;
+				}
 				ShortKeyDown_ForPlayWifiMessage();
 				unlock_msgEv();
 				break;
@@ -354,9 +363,16 @@ static void *networkkey_mutiplekey_Thread(void *arg){
 			usleep(100 * 1000);
 			continue;
 		}
-		
-		if(time_ms >=2000){		//before is 500  2017.8.24 14:19
+		if(time_ms>=1000&&time_ms<=1500){
+			updateCurrentEventNums();
+		}
+		if(time_ms >=3500){		//before is 500  2017.8.24 14:19
 			keyUp_AndSetGpioFor_play();
+			if(access(SMART_CONFIG_FILE_LOCK,0)==0){
+				Create_InterruptSmartConfigFile();
+				unlock_msgEv();
+				break;
+			}
 			printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
 			if(mutiplekey->key_state == KEYUP){
 				unlock_msgEv();
@@ -406,7 +422,7 @@ static void signal_handler(int signum){
 		return ;
 	}
 	//printf("%s : signum = %d gpio.mount=%d\n",__func__,signum,gpio.mount);
-	if(check_lock_msgEv()&&gpio.mount!=RESET_KEY){
+	if(check_lock_msgEv()&&gpio.mount!=RESET_KEY&&gpio.mount!=NETWORK_KEY){
 		printf("error is lock signal_handler\n");
 		return ;
 	}
