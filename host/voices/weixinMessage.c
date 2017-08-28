@@ -167,6 +167,12 @@ int GetWeiXinMessageForPlay(void){
 	}
 	return 0;
 }
+void SaveHuashangEvenydayMsg(const char *url,int playstate){
+	char file[128]={0};
+	if(access(TF_SYS_PATH, F_OK)==0){
+		snprintf(file,128,"%s%s",TF_SYS_PATH,HUASHANG_DAYSHOW_JSON);
+	}	
+}
 //初始化微信消息队列
 void InitWeixinMeesageList(void){
 	WeixinEvent = initQueue();

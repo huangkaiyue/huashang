@@ -15,7 +15,8 @@
 #include "uart/uart.h"
 #include "log.h"
 
-static const char *key = "b1833040534a6bfd761215154069ea58";
+//static const char *key = "b1833040534a6bfd761215154069ea58";
+static const char *key = "a2f6808bf85a693e1bde2069c8b7fd79";
 static WorkQueue *EventQue;
 static WorkQueue *PlayList=NULL;
 static unsigned int newEventNums=0;
@@ -92,65 +93,48 @@ exit1:
 playUrl:云端语义结果播放链接地址
 playText: 云端语义解析内容
 */
-static int playTulingQtts(const char *playUrl,const char *playText,unsigned int playEventNums,unsigned short playLocalVoicesIndex){
+static int playTulingQtts(const char *playText,unsigned int playEventNums,unsigned short playLocalVoicesIndex){
 	int ret =-1;
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext==NULL){
 		return -1;		
 	}
-	handtext->data= (char *)calloc(1,strlen(playUrl)+1);
-	if( handtext->data==NULL){
-		perror("calloc error !!!");
-		free(handtext);
-		return -1;
-	}
-	sprintf(handtext->data,"%s",playUrl);
-	DEBUG_STD_MSG("handtext->data:%s\n", handtext->data);
 	handtext->EventNums = playEventNums;
 	handtext->playLocalVoicesIndex=playLocalVoicesIndex;
 	SetMainQueueLock(MAIN_QUEUE_UNLOCK);
 	SpeekEvent_process_log((const char *)"playTulingQtts:","play text start",0);
-#if defined(HUASHANG_JIAOYU)	
 	char playVoicesName[12]={0};
 	int playSpeed=0;
 	Huashang_GetPlayVoicesName(playVoicesName,&playSpeed);
-	if(!strcmp(playVoicesName,"tuling")){	//当前播音人采用图灵的
-		ret =AddDownEvent((const char *)handtext,TULING_URL_MAIN);
-	}else{
-		char *huashangPlayText=(char *)calloc(1,strlen(playText)+8);
-		if(huashangPlayText==NULL){
-			return ret;
-		}
-		sprintf(huashangPlayText,"%s%s",playText," ,");
-		enabledownNetworkVoiceState();
-		SpeekEvent_process_log("xunfei text to text","start",0);
-		PlayQttsText(playText,QTTS_UTF8,playVoicesName,playEventNums,playSpeed);	
-		free(huashangPlayText);
-		if(playLocalVoicesIndex==TULING_TEXT_MUSIC){
-			//设置播放线程不要切换录音线程状态，不然会导致，添加歌曲的时候，后面的歌曲不能播放
-			while(1){
-				if(getPlaylistVoicesSate()==END_PLAY_VOICES_LIST){
-					ret=0;
-					printf("%s : exit play tuing qtts voices ,not playNums \n",__func__);
-					usleep(100000);
-					break;
-				}
-				if(GetCurrentEventNums()!=playEventNums){
-					printf("%s : exit play tuing qtts voices ,interrupts \n",__func__);
-					ret=-1;
-					break;
-				}
-				printf("%s : wait play tuing qtts voices nums[%d] \n",__func__,getWorkMsgNum(PlayList));
-				usleep(100000);
-			}
-		}
-		SpeekEvent_process_log("xunfei text to text","end",0);
-		disabledownNetworkVoiceState();
+	char *huashangPlayText=(char *)calloc(1,strlen(playText)+8);
+	if(huashangPlayText==NULL){
+		return ret;
 	}
-#else
-	Write_tulingTextLog("add play ok");
-	ret = AddDownEvent((const char *)handtext,TULING_URL_MAIN);
-#endif
+	sprintf(huashangPlayText,"%s%s",playText," ,");
+	enabledownNetworkVoiceState();
+	SpeekEvent_process_log("xunfei text to text","start",0);
+	PlayQttsText(playText,QTTS_UTF8,playVoicesName,playEventNums,playSpeed);	
+	free(huashangPlayText);
+	if(playLocalVoicesIndex==TULING_TEXT_MUSIC){
+	//设置播放线程不要切换录音线程状态，不然会导致，添加歌曲的时候，后面的歌曲不能播放
+	while(1){
+		if(getPlaylistVoicesSate()==END_PLAY_VOICES_LIST){
+			ret=0;
+			printf("%s : exit play tuing qtts voices ,not playNums \n",__func__);
+			usleep(100000);
+			break;
+		}
+		if(GetCurrentEventNums()!=playEventNums){
+			printf("%s : exit play tuing qtts voices ,interrupts \n",__func__);
+			ret=-1;
+			break;
+		}
+		printf("%s : wait play tuing qtts voices nums[%d] \n",__func__,getWorkMsgNum(PlayList));
+		usleep(100000);
+		}
+	}
+	SpeekEvent_process_log("xunfei text to text","end",0);
+	disabledownNetworkVoiceState();
 	return ret;
 }
 /*******************************************
@@ -197,13 +181,13 @@ static int parseJson_string(HandlerText_t *handText){
 		case 40013: 	//缺少 Token
 	}
 #endif	
-	pSub = cJSON_GetObjectItem(pJson, "info");		//返回识别的汉字结果 
-    if(NULL == pSub){
+	pSub = cJSON_GetObjectItem(pJson, "asr");		//返回识别的汉字结果 
+    	if(NULL == pSub){
 		DEBUG_STD_MSG("get info failed\n");
 		goto exit1;
     }
 	if(pSub->valuestring==NULL){	//当出现 "info":{}  --->这种字段，会遇到空指针
-		pSub = cJSON_GetObjectItem(pJson, "text");
+		pSub = cJSON_GetObjectItem(pJson, "tts");
 		if(pSub==NULL||pSub->valuestring==NULL){
 			goto exit1;
 		}else{
@@ -215,7 +199,7 @@ static int parseJson_string(HandlerText_t *handText){
 	DEBUG_STD_MSG("info: %s\n",pSub->valuestring);			//语音识别出来的汉字	
 	SpeekEvent_process_log("get tuling text",pSub->valuestring,0);
 	char getPlayMusicName[128]={0};
-	pSub = cJSON_GetObjectItem(pJson, "text");				//解析到语音结果
+	pSub = cJSON_GetObjectItem(pJson, "tts");				//解析到语音结果
 	if(NULL == pSub){
 		DEBUG_STD_MSG("get text failed\n");
 		goto exit1;
@@ -234,44 +218,38 @@ static int parseJson_string(HandlerText_t *handText){
 	}
 exit2:	
 	DEBUG_STD_MSG("text: %s\n",pSub->valuestring);
-	pSub = cJSON_GetObjectItem(pJson, "ttsUrl");		//解析到说话的内容的链接地址，需要下载播放
-    if(NULL == pSub||pSub->valuestring==NULL||(!strcmp(pSub->valuestring,""))){	//如果出现空的链接地址，直接跳出
-		DEBUG_STD_MSG("get fileUrl failed\n");
-		goto exit1;
-    }
-	DEBUG_STD_MSG("ttsUrl: %s \n",pSub->valuestring);
-	char *ttsURL= pSub->valuestring;
-	
-	pSub = cJSON_GetObjectItem(pJson, "fileUrl"); 	//检查是否有mp3歌曲返回，如果有
-	if(NULL == pSub){	//直接播放语义之后的结果
+	cJSON *funcpSub = cJSON_GetObjectItem(pJson, "func");
+	if(funcpSub==NULL){//直接播放语义之后的结果
 		SpeekEvent_process_log("playTulingQtts ","start play text",0);
-		playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums,TULING_TEXT);
-	}else{				//识别出有语义结果和mp3链接地址结果，先播放前面的语义内容，再播放mp3链接地址内容
-		if(!strcmp(pSub->valuestring,"")){//如果出现空的链接地址，直接跳出
-			goto exit1;
-		}
-		Player_t *player=(Player_t *)calloc(1,sizeof(Player_t));
-		if(player==NULL){
-			perror("calloc error !!!");
-			goto exit1;
-		}
-		snprintf(player->playfilename,128,"%s",pSub->valuestring);
-		snprintf(player->musicname,64,"%s","speek");
-		player->musicTime = 0;
-		SpeekEvent_process_log((const char *)"play tuling music url:",pSub->valuestring,0);
-		if(playTulingQtts((const char *)ttsURL,(const char *)cJSON_GetObjectItem(pJson, "text")->valuestring,handText->EventNums,TULING_TEXT_MUSIC)){
-			free((void *)player);
-			goto exit0;
-		}
-		HandlerText_t *handMainMusic = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
-		if(handMainMusic==NULL){
-			free((void *)player);
-			goto exit0;	
-		}
-		handMainMusic->EventNums =handText->EventNums;//添加歌曲也要标记当前事件编号
-		handMainMusic->data=(char *)player;
-		start_event_play_Mp3music();
-		AddDownEvent((const char *)handMainMusic,TULING_URL_VOICES);
+		playTulingQtts((const char *)cJSON_GetObjectItem(pJson, "tts")->valuestring,handText->EventNums,TULING_TEXT);
+	}else{
+			pSub = cJSON_GetObjectItem(funcpSub, "url"); 	//检查是否有mp3歌曲返回，如果有				
+			if(NULL == pSub||pSub->valuestring==NULL||!strcmp(pSub->valuestring,"")){//如果出现空的链接地址，直接跳出
+				goto exit1;
+			}
+			Player_t *player=(Player_t *)calloc(1,sizeof(Player_t));
+			if(player==NULL){
+				perror("calloc error !!!");
+				goto exit1;
+			}
+			snprintf(player->playfilename,128,"%s",pSub->valuestring);
+			snprintf(player->musicname,64,"%s","speek");
+			player->musicTime = 0;
+			SpeekEvent_process_log((const char *)"play tuling music url:",pSub->valuestring,0);
+			//识别出有语义结果和mp3链接地址结果，先播放前面的语义内容，再播放mp3链接地址内容
+			if(playTulingQtts((const char *)cJSON_GetObjectItem(pJson, "tts")->valuestring,handText->EventNums,TULING_TEXT_MUSIC)){
+				free((void *)player);
+				goto exit0;
+			}
+			HandlerText_t *handMainMusic = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
+			if(handMainMusic==NULL){
+				free((void *)player);
+				goto exit0;	
+			}
+			handMainMusic->EventNums =handText->EventNums;//添加歌曲也要标记当前事件编号
+			handMainMusic->data=(char *)player;
+			start_event_play_Mp3music();
+			AddDownEvent((const char *)handMainMusic,TULING_URL_VOICES);
 	}
 	cJSON_Delete(pJson);
 	return 0;

@@ -4,18 +4,22 @@
 #include <string.h>
 
 #include "comshead.h"
+//#define MAIN_TEST
+#ifdef MAIN_TEST
+#include "sock_fd.h"
+#include "cJSON.h"
+#else
 #include "base/demo_tcp.h"
 #include "base/cJSON.h"
 #include "config.h"
-#ifndef MY_HTTP_REQ
-#include <curl/curl.h>
 #endif
+
 #define AES_USER_ID
 #ifdef AES_USER_ID
 #include "aes.h"
 #endif
 
-//#define DBG_SPEEK
+#define DBG_SPEEK
 #ifdef  DBG_SPEEK
 #define DEBUG_SPEEK(fmt, args...) printf("%s: " fmt,__func__, ## args)
 #else
@@ -51,9 +55,9 @@ static void GetDate(char *date){
 static char *aifiJson(const char *key,int len,int rate,const char *format,const char* asr){
 	cJSON *root;
 	root=cJSON_CreateObject();
-	cJSON_AddStringToObject(root,"key",key);
+	cJSON_AddStringToObject(root,"ak",key);
 #ifdef AES_USER_ID	  
-	char *aes_key = "1234567890123456";    
+	char *aes_key = "fc8b8bf13ab56ae9";    
 	uint8_t in[17]={0};    
 	uint8_t out[64] = {'0'};	
 	uint8_t aes_key_1[17]={0};	  
@@ -71,18 +75,15 @@ static char *aifiJson(const char *key,int len,int rate,const char *format,const 
 		aseLen+=snprintf(outStr+aseLen,64,"%.2x",out[i]);	 
 	}
 	//printf("outStr = %s i=%d\n",outStr,i);
-	cJSON_AddStringToObject(root,"userid",outStr);
+	cJSON_AddStringToObject(root,"uid",outStr);
 #else
-	cJSON_AddStringToObject(root,"userid",tulingUser->user_id);
+	cJSON_AddStringToObject(root,"uid",tulingUser->user_id);
 #endif	
 
-	cJSON_AddNumberToObject(root,"rate", rate);
-	cJSON_AddStringToObject(root,"format", format);
-	cJSON_AddNumberToObject(root,"len", len);
 	cJSON_AddStringToObject(root,"asr", asr);
-	cJSON_AddStringToObject(root,"tts", "0");
+	cJSON_AddStringToObject(root,"tts", "4");
+	cJSON_AddNumberToObject(root,"flag", 3);
 	cJSON_AddStringToObject(root,"token", tulingUser->token);
-	cJSON_AddStringToObject(root,"elapsedtime", "true");
 	char* str_js = cJSON_Print(root);
 	cJSON_Delete(root);
 	//printf("str_js = %s\n",str_js);
@@ -90,7 +91,6 @@ static char *aifiJson(const char *key,int len,int rate,const char *format,const 
 	return str_js;
 }
 
-#ifdef MY_HTTP_REQ
 #define HTTP_PORT	80
 #define HOST_REQ
 #ifdef HOST_REQ
@@ -98,8 +98,7 @@ static unsigned char reqNum=15;
 static char ServerIp[20];
 #endif
 static char upload_head[] = 
-	"POST /speechapi/speech/speechapi HTTP/1.1\r\n"
-//	"POST /openapi/speech/speechapi HTTP/1.1\r\n"
+	"POST /speech/chat HTTP/1.1\r\n"
 	"Charset: UTF-8\r\n"
 	"Content-Type: multipart/form-data;boundary=***\r\n"
 	"Cache-Control: no-cache\r\n"
@@ -112,7 +111,7 @@ static char upload_head[] =
 
 static char upload_request[] = 
 	"\r\n"
-	"Content-Disposition: form-data; name=\"speech\";filename=\"./iflytek01.wav\"\r\n"
+	"Content-Disposition: form-data; name=\"speech\";filename=\"speech.wav\"\r\n"
 	"Content-Type: application/octet-stream\r\n\r\n";
 
 static sigjmp_buf jmpbuf;
@@ -352,132 +351,6 @@ int reqTlVoices(int timeout,const char *key,const void * audio,int len,int rate,
 #endif			
 	return 	ret;
 }
-#else
-typedef struct{
-	char *text;
-	int len;
-	int ret;
-}RequestData_t;
-static void process_data(void *buffer, size_t size, size_t nmemb, void *user_p){
-    printf("%s\n\n",buffer);
-    char *data = (char *)calloc(1,nmemb*size+1); 
-    if(data==NULL){
-       user_p=NULL;
-       return ;
-    }
-    memcpy(data,buffer,nmemb*size);
-    RequestData_t *request = (RequestData_t *)user_p;
-    request->text = data;
-    request->len=nmemb*size;
-	request->ret=0;
-}
-
-
-int reqTlVoices(int timeout,const char *key,const char *audiofile,int audiolen,int rate,const char *format,const char *tts,char **result,int *res_len){ 	
-	RequestData_t requestData;
-	requestData.ret=0;
-	requestData.text=NULL;
-	struct timeval starttime,endtime;
-	gettimeofday(&starttime,0); 
-	CURLcode code;
-    struct curl_slist *http_headers = NULL;
-    struct curl_httppost *post = NULL;
-    struct curl_httppost *last = NULL;
-    CURL *easy_handle = curl_easy_init();
-    
-    http_headers = curl_slist_append(http_headers, "Expect:");
-    http_headers = curl_slist_append(http_headers, "Charset: UTF-8");
-    
-	char *upjson = aifiJson(key,audiolen,rate,format,tts);
-	printf("upjson = %s\n",upjson);
-
-    curl_formadd(&post,&last,
-                 CURLFORM_COPYNAME,"parameters",
-                 CURLFORM_COPYCONTENTS,upjson,CURLFORM_END);
-
-    curl_formadd(&post, &last,
-                 CURLFORM_COPYNAME,"speech",
-                 CURLFORM_FILE,audiofile,
-                 CURLFORM_CONTENTTYPE,"application/octet-stream",
-                 CURLFORM_END);
-    
-    //curl_easy_setopt(easy_handle, CURLOPT_VERBOSE, 1L);
-    
-    curl_easy_setopt(easy_handle, CURLOPT_HTTPHEADER, http_headers);
-    //curl_easy_setopt(easy_handle, CURLOPT_URL, "http://test79.ai.tuling123.com/speechapi/speech/speechapi");
-    //curl_easy_setopt(easy_handle, CURLOPT_URL, "http://beta.app.tuling123.com/speechapi/speech/speechapi");
-    curl_easy_setopt(easy_handle, CURLOPT_URL, "http://smartdevice.ai.tuling123.com/speechapi/speech/speechapi");
-    curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data);
-    curl_easy_setopt(easy_handle, CURLOPT_HTTPPOST,post);
-//    curl_easy_setopt(easy_handle, CURLOPT_PROXY, "localhost:8888");
-	//curl_easy_setopt(easy_handle, CURLOPT_VERBOSE, 1L);
-    curl_easy_setopt(easy_handle,CURLOPT_TIMEOUT,timeout);
-    curl_easy_setopt(easy_handle,CURLOPT_CONNECTTIMEOUT,5);
-
-	
-
-	curl_easy_setopt(easy_handle,CURLOPT_FOLLOWLOCATION,1L);
-	curl_easy_setopt(easy_handle,CURLOPT_NOSIGNAL, 1L);
-	curl_easy_setopt(easy_handle, CURLOPT_FORBID_REUSE, 1L);
-
-    curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, &requestData); //å°†è¿”å›žçš„httpå¤´è¾“å‡ºåˆ°fpæŒ‡å‘çš„æ–‡ä»¶
-    code = curl_easy_perform(easy_handle);
-    *result= requestData.text;
-	*res_len = requestData.len;
-
-	gettimeofday(&endtime,0);
-	double timeuse = 1000000*(endtime.tv_sec - starttime.tv_sec) + endtime.tv_usec - starttime.tv_usec;
-	//³ýÒÔ1000Ôò½øÐÐºÁÃë¼ÆÊ±£¬Èç¹û³ýÒÔ1000000Ôò½øÐÐÃë¼¶±ð¼ÆÊ±£¬Èç¹û³ýÒÔ1Ôò½øÐÐÎ¢Ãî¼¶±ð¼ÆÊ±
-	//printf("reqTlVoices usr time:  %d.%d\n",(int)timeuse/1000000,(int)timeuse/1000%1000);  
-
-#ifdef TULING_FILE_LOG
-		if(logfp==NULL){
-			char filelog[128]={0},timeStr[128]={0};
-			GetDate(timeStr);
-			sprintf(filelog,"log/%s",timeStr);
-			logfp = fopen(filelog,"w+"); 
-			if(logfp==NULL){
-				printf("open failed \n");
-				return -1;
-			}
-	#ifndef AMR16K_DATA	
-			fprintf(logfp,"mtk76xx  libcurl upload file rate %d 16bit  type %s\n",16000,"pcm");
-	#else
-			fprintf(logfp,"mtk76xx libcurl upload file rate %d 16bit  type %s\n",16000,"amr");
-	#endif	
-			fprintf(logfp,"upload url: http://smartdevice.ai.tuling123.com/speechapi/speech/speechapi\n");
-			printf("open log file %s ok\n",filelog);
-	
-		}
-		char writedate[128]={0};
-		GetDate(writedate);
-		fprintf(logfp,"--request numeber %d date %s-------\n",++requestLogNum,writedate);
-	
-		fprintf(logfp,"reqTlVoices usr time:  %d.%d\n",(int)timeuse/1000000,(int)timeuse/1000%1000);  
-		fprintf(logfp,"userId:%s--->json:\n%s\n",tulingUser->user_id,upjson);
-		if(requestData.text){
-			fprintf(logfp,"%s\n",requestData.text);
-		}else{
-			fprintf(logfp,"%s\n","requst failed");
-			requestData.ret=1;
-		}
-		fflush(logfp);
-#endif			
-    //printf("len ret.data = %s \n",requestData.len,requestData.text);
-    //if(code != CURLE_OK){
-	//	fprintf(logfp,"CURLE failed \n");
-	//	requestData.ret=1;
-	//}
-    curl_slist_free_all(http_headers);
-    curl_formfree(post);
-    curl_easy_cleanup(easy_handle);
-    //curl_global_cleanup();
-    free(upjson);
-	//requestData.ret=1;
-	return requestData.ret;
-}
-
-#endif
 
 /*
 @ ¸üÐÂtokenÖµ£¬ÓÃÓÚÏÂÒ»´ÎÉÏ´«ÓïÒôµÄÊ±ºò£¬·þÎñÆ÷ÑéÖ¤
@@ -485,7 +358,7 @@ int reqTlVoices(int timeout,const char *key,const char *audiofile,int audiolen,i
 @ ÎÞ
 */
 void updateTokenValue(const char *token){
-	Write_tulinglog((const char * )token);
+//	Write_tulinglog((const char * )token);
 	int size = sizeof(tulingUser->token);
 	memset(tulingUser->token,0,size);
 	snprintf(tulingUser->token,size,"%s",token);
@@ -502,9 +375,9 @@ void GetTokenValue(char *token){
 @ 
 */
 int Load_useridAndToken(const char *userId,const char *token){
-	Write_tulinglog((const char * )"update tuling vaule");
-	Write_tulinglog((const char * )userId);
-	Write_tulinglog((const char * )token);
+//	Write_tulinglog((const char * )"update tuling vaule");
+//	Write_tulinglog((const char * )userId);
+//	Write_tulinglog((const char * )token);
 	if(!strcmp(userId,"12345678")){
 		return -1;
 	}
@@ -516,9 +389,9 @@ int Load_useridAndToken(const char *userId,const char *token){
 }
 
 int InitTuling(const char *userId,const char *token){
-	Write_tulinglog((const char * )"init tuling vaule");
-	Write_tulinglog((const char * )userId);
-	Write_tulinglog((const char * )token);
+//	Write_tulinglog((const char * )"init tuling vaule");
+//	Write_tulinglog((const char * )userId);
+//	Write_tulinglog((const char * )token);
 	tulingUser = (TulingUser_t *)calloc(1,sizeof(TulingUser_t));
 	if(tulingUser==NULL){
 		return -1;
@@ -535,7 +408,7 @@ void DestoryTuling(void){
 	}
 }
 
-//#define MAIN_TEST
+
 #ifdef MAIN_TEST
 #define PCM
 //#define AMR
@@ -613,37 +486,31 @@ static int parseJson_string(const char * pMsg){
 		case 40002:
 			goto exit;
 	}
-	pSub = cJSON_GetObjectItem(pJson, "info");		//·µ»Ø½á¹û
+	pSub = cJSON_GetObjectItem(pJson, "asr");		//·µ»Ø½á¹û
     if(NULL == pSub){
 
 		goto exit;
     }
 	printf("info: %s \n",pSub->valuestring);
-	pSub = cJSON_GetObjectItem(pJson, "text");		//·µ»Ø½á¹û---bug
+	pSub = cJSON_GetObjectItem(pJson, "tts");		//·µ»Ø½á¹û---bug
 	if(NULL == pSub){
 		goto exit;
 	}
 	printf("text: %s \n",pSub->valuestring);
-	pSub = cJSON_GetObjectItem(pJson, "ttsUrl");		//·µ»Ø½á¹û
+	pSub = cJSON_GetObjectItem(pJson, "func");		//·µ»Ø½á¹û
     if(NULL == pSub){
 		goto exit;
     }
-	char *ttsURL= (char *)calloc(1,strlen(pSub->valuestring)+1);
+	cJSON *urlSub = cJSON_GetObjectItem(pSub, "url");	
+	char *ttsURL= (char *)calloc(1,strlen(urlSub->valuestring)+1);
 	if(ttsURL==NULL){
 		perror("calloc error !!!");
 		goto exit;
 	}
-	sprintf(ttsURL,"%s",pSub->valuestring);
-	printf("url: %s \n",pSub->valuestring);
+	sprintf(ttsURL,"%s",urlSub->valuestring);
+	printf("url: %s \n",urlSub->valuestring);
 	
-	pSub = cJSON_GetObjectItem(pJson, "fileUrl"); 	//·µ»Ø½á¹û
-	if(NULL == pSub){
-		err=0;
-		goto exit;
-	}else{
-		err=0;
-		goto exit;
-	}
+
 exit:
 	cJSON_Delete(pJson);
 	return err;
@@ -684,19 +551,15 @@ int main(int argc,char **argv){
 
 	char *text=NULL;
 	int textSize=0;
-	//const char *key = "a2f6808bf85a693e1bde2069c8b7fd79";
-	const char *key = "b1833040534a6bfd761215154069ea58";
-	char token[64]={"772f32e9-1a8a-46fe-95ed-76b405e71fca"};
+	const char *key = "a2f6808bf85a693e1bde2069c8b7fd79";
+	//const char *key = "b1833040534a6bfd761215154069ea58";
+	char token[64]={"cebb4b73259c4f8b83658bbd4f74b852"};
 	char *user_id  = "ai22334455667780";
 	InitTuling(user_id,token);
 	
-	while(1){
-#ifdef PCM		
+	while(1){	
 		reqTlVoices(10,key,fileData,len,16000,"pcm","0",&text,&textSize);
-#endif
-#ifdef AMR
-		reqTlVoices(10,key,amr_data,len,16000,"amr","3",&text,&textSize);
-#endif
+
 		if(text){
 			printf("textSize =%d text = %s\n",textSize,text);
 			parseJson_string((const char * )text);

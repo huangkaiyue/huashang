@@ -52,7 +52,7 @@
 #define DEFALUT_URL_JSON		"/home/defalutUrl.json"
 #define DEFALUT_HUASHANG_JSON 	"/home/huashang_server.json"
 #define DEFALUT_DIR_MENU_JSON 	"/home/huashang_dir.json"
-
+#define HUASHANG_DAYSHOW_JSON 	"huashang_dayshow.json"
 
 #define PLAY_NEXT		1		//播放下一首歌曲
 #define PLAY_PREV		2 		//播放上一首歌曲

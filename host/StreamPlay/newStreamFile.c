@@ -353,7 +353,7 @@ void keyStreamPlay(void){
 		st->player.playState=MAD_PAUSE;
 		DecodePause();
 		PlayorPause();
-		showFacePicture(WAIT_CTRL_NUM4);
+		showFacePicture(PLAY_PAUSE);
 		st->ack_playCtr(TCP_ACK,&st->player,st->player.playState);
 	}else if(st->player.playState==MAD_EXIT){
 		Huashang_GetScard_forPlayMusic(PLAY_NEXT,EXTERN_PLAY_EVENT);//暂停状态，添加华上教育歌曲播放

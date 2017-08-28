@@ -51,6 +51,7 @@
 
 #define SHOW_TLAK_LIGHT				13	//显示嘴灯
 #define CLOSE_TLAK_LIGHT			14	//关闭嘴灯
+#define PLAY_PAUSE					15	//关闭嘴灯
 
 
 #define RESET_SYSTEM				20	//
