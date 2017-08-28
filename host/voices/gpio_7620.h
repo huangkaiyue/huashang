@@ -16,9 +16,9 @@
 #define	RESET_KEY					38	//恢复出厂设置键
 #define RESERVE_KEY2				39	//会话对讲开关键
 
-#define	NETWORK_KEY					40	//配网键
+#define	NETWORK_KEY				40	//配网键
 #define	SPEEK_KEY					41	//会话键
-#define	PLAY_PAUSE_KEY				42	//播放/暂停
+#define	PLAY_PAUSE_KEY			42	//播放/暂停
 
 #define DIR_MENU_KEY				20	//目录切换按键
 

@@ -5,11 +5,16 @@
 #include "host/voices/callvoices.h"
 #include "huashangMusic.h"
 #include "StreamFile.h"
+#include "base/cJSON.h"
 
 #define WEIXIN_TEXT 	1
 #define WEIXIN_VOICES	2
 
 #define WEIXIN_PLAY_LIST_MAX	20	//允许当前存最大的队列数据
+
+#define NOT_PLAY		0
+#define ALREADY_PLAY	1
+#define SAMEPLE_PLAY	2
 
 typedef struct {
 	void *data;	//添加到队列的消息数据(音频or文字)
@@ -22,7 +27,7 @@ static WeiXinMsg *Bak_Message=NULL;
 static unsigned char newMessageFlag=NOT_MESSAGE;	//新消息标志
 
 typedef struct{
-	unsigned char play;
+	int playstate;
 	char url[256];
 }WeixinPushMsg_t;
 
@@ -34,6 +39,7 @@ static void SetWeixinMessageFlag(unsigned char state){
 int GetWeixinMessageFlag(void){
 	return (int)newMessageFlag;
 }
+
 
 static int __AddWeiXinMessage(const char *data,int Size,int type){
 	WeiXinMsg *msg = NULL;
@@ -82,11 +88,54 @@ int AddWeiXinMessage_Voices(const char *data,int Size){
 	return __AddWeiXinMessage(data,Size,WEIXIN_VOICES);
 }
 
+static void SaveHuashangEvenydayMsg(const char *url,int playstate){
+	char file[128]={0};
+	if(access(TF_SYS_PATH, F_OK)==0){
+		snprintf(file,128,"%s%s",TF_SYS_PATH,HUASHANG_DAYSHOW_JSON);
+		FILE *fp =fopen(file,"w+");
+		if(fp==NULL){
+			return ;
+		}
+		cJSON *root;     
+		root=cJSON_CreateObject();  
+		cJSON_AddStringToObject(root,"url", url);
+		cJSON_AddNumberToObject(root,"playstate",playstate); 
+		char *out =cJSON_Print(root);
+		fwrite(out,strlen(out),1,fp);
+		cJSON_Delete(root); 
+		free(out);
+		fclose(fp);
+	}		
+}
+static int LoadSdcardEvenydayMsg(WeixinPushMsg_t *PushMsg){
+	if(!strcmp(PushMsg->url,"")){
+		if(access(TF_SYS_PATH, F_OK)==0){
+			char file[128]={0};
+			snprintf(file,128,"%s%s",TF_SYS_PATH,HUASHANG_DAYSHOW_JSON);
+			char *data =readFileBuf((const char * )file);
+			if(data==NULL){
+				return -1;
+			}
+			cJSON *root=cJSON_Parse(data);
+			cJSON *url = cJSON_GetObjectItem(root,"url")->valuestring;
+			snprintf(PushMsg->url,sizeof(PushMsg->url),"%s",url);
+			PushMsg->playstate=cJSON_GetObjectItem(root,"playstate")->valueint;
+			return 0;
+		}
+	}
+	return -1;
+}
+
 int AddWeiXinpushMessage_Voices(const char *data,int Size){
 	if(PushMsg){
 		SetWeixinMessageFlag(WEIXIN_PUSH_MESSAGE);
+		if(!strcmp(PushMsg->url,data)){
+			return -1;
+		}
 		memset(PushMsg->url,0,sizeof(PushMsg->url));
 		snprintf(PushMsg->url,sizeof(PushMsg->url),"%s",data);
+		PushMsg->playstate = NOT_PLAY;
+		SaveHuashangEvenydayMsg((const char *)PushMsg->url,NOT_PLAY);
 	}
 }
 //获取微信消息队列进行播放
@@ -97,6 +146,11 @@ int GetWeiXinMessageForPlay(void){
 	time_t t;	
 	char bak_voices[256]={0};
 	static int ti=1;
+	if(!LoadSdcardEvenydayMsg(PushMsg)){
+		if(PushMsg->playstate==NOT_PLAY){
+			SetWeixinMessageFlag(WEIXIN_PUSH_MESSAGE);
+		}
+	}
 	if(GetWeixinMessageFlag()==WEIXIN_PUSH_MESSAGE){
 		Player_t *player = (Player_t *)calloc(1,sizeof(Player_t));
 		if(player==NULL){
@@ -105,6 +159,7 @@ int GetWeiXinMessageForPlay(void){
 		}
 		if(player){				
 			snprintf(player->playfilename,128,"%s",PushMsg->url);
+			SaveHuashangEvenydayMsg((const char *)PushMsg->url,ALREADY_PLAY);
 			if(__AddNetWork_UrlForPaly(player)==0){
 				if(getWorkMsgNum(WeixinEvent)>0){
 					SetWeixinMessageFlag(WEIXIN_MESSAGE);
@@ -167,12 +222,7 @@ int GetWeiXinMessageForPlay(void){
 	}
 	return 0;
 }
-void SaveHuashangEvenydayMsg(const char *url,int playstate){
-	char file[128]={0};
-	if(access(TF_SYS_PATH, F_OK)==0){
-		snprintf(file,128,"%s%s",TF_SYS_PATH,HUASHANG_DAYSHOW_JSON);
-	}	
-}
+
 //初始化微信消息队列
 void InitWeixinMeesageList(void){
 	WeixinEvent = initQueue();

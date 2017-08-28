@@ -296,7 +296,14 @@ static void handle_uartMsg(int fd ,unsigned char buf,int size){
 					DEBUG_UART("handle_uartMsg error \n");
 				}
 				break;
-
+			case SMLOW:
+				if(CacheUarl()==0){
+					uartCtr->voicesEvent(UART_EVENT_LOW_OFF);
+					SocSendMenu(SMOKER_OK,0);
+				}else{
+					SocSendMenu(SMOKER_ER,0);
+				}			
+				break;
 		}
 		data.data=0x0;
 		data.head=0x0;

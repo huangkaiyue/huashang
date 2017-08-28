@@ -29,6 +29,8 @@
 #define UART_EVENT_CLOSE_SYSTEM	1	//mcu关机事件
 #define UART_EVENT_LOW_BASTERRY 3	//电量低
 
+#define UART_EVENT_LOW_OFF 		4
+
 #define AC_BATTERRY				5	//正在充电
 #define BATTERRY				6	//电池供电
 #define POWER_FULL				7	

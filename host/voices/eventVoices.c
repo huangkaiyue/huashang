@@ -617,6 +617,10 @@ void UartEventcallFuntion(int event){
 		case UART_EVENT_LOW_BASTERRY:		//电量低提醒
 			CreateSystemPlay_ProtectMusic(AMR_49_POWER_LOW);
 			break;
+		case UART_EVENT_LOW_OFF:
+			disable_gpio();
+			CreateSystemPlay_ProtectMusic(AMR_50_POWER_OFF_1);
+			break;
 		case  AC_BATTERRY:	//正在充电
 			CreateSystemPlay_ProtectMusic(AMR_52_POWER_AC);	
 			break;
