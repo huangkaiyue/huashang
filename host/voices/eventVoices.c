@@ -489,9 +489,17 @@ void TulingKeyDownSingal(void){
 	}
 	printf("---Unlock_EventQueue start \n");
 	Unlock_EventQueue();
+#ifdef TEST_FACTORY
+	if(!getFactoryTest()){
+		if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
+			return;
+		}
+	}
+#else
 	if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
 		return;
 	}
+#endif
 	Show_KeyDownPicture();
 	StartTuling_RecordeVoices();	
 	keyDown_AndSetGpioFor_play();

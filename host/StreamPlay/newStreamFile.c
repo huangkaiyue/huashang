@@ -276,7 +276,7 @@ static int NetStreamDownFilePlay(Player_t *play,int EventNums){
 	st->lockNetwork=1;
 	demoDownFile(play->playfilename,15,NetStartDown,NetGetStreamData,NetEndDown);
 	while(st->player.playState!=MAD_EXIT){
-		printf("wait exit play state: %d \n",GetRecordeVoices_PthreadState());
+		printf("wait exit play state: %d GetStreamPlayState()=%d \n",GetRecordeVoices_PthreadState(),GetStreamPlayState());
 		usleep(500000);
 		if(st->GetWm8960Rate==8000){
 			printf("\n-------------------------\nplay music rate is error exit\n ------------------\n");
@@ -297,7 +297,7 @@ static int NetStreamDownFilePlay(Player_t *play,int EventNums){
 	}
 	pause_record_audio();
 	st->lockNetwork=0;
-	DEBUG_STREAM("NetStreamDownFilePlay end ...\n");
+	//printf("NetStreamDownFilePlay end ...GetStreamPlayState()=%d\n",GetStreamPlayState());
 	return ret;
 }
 //暂停
@@ -325,12 +325,15 @@ void StreamPlay(void){
 //设置当前流播放状态
 void SetStreamPlayState(unsigned char playliststate){
 	st->player.playListState=playliststate;
+	printf("\n %s: st->player.playListState =%d\n",st->player.playListState);
 }
 //切换单曲和列表播放
 void GpioKey_SetStreamPlayState(void){
 	if(st->player.playListState==MUSIC_PLAY_LIST){
 		st->player.playListState=MUSIC_SINGLE_LIST;
+		printf("\n %s :is single music\n",__func__);
 	}else{
+		printf("\n %s:is list play\n",__func__);
 		st->player.playListState=MUSIC_PLAY_LIST;
 	}
 }

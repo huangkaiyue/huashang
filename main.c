@@ -133,7 +133,15 @@ static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 	Player_t *play =(Player_t *)hand->data;
 	Show_musicPicture();
 	Mad_PlayMusic(play,hand->EventNums);
-	Create_playContinueMusic(hand);
+	if(hand->EventNums!=GetCurrentEventNums()){
+		goto exit0;
+	}
+	if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
+		__AddNetWork_UrlForPaly((Player_t *)hand->data);	
+		goto exit0;
+	}else{
+		Create_playContinueMusic(hand);
+	}
 exit1:
 	free((void *)hand->data);
 exit0:
@@ -168,17 +176,24 @@ exit0:
 static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
 	usleep(800*1000);
 	if(hand->EventNums!=GetCurrentEventNums()){
-		goto exit0;
+		goto exit1;
 	}
 	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic startplay");
 	Show_musicPicture();
 	Mad_PlayMusic((Player_t *)hand->data,hand->EventNums);
 	if(hand->EventNums==GetCurrentEventNums()){
-		Create_playContinueMusic(hand);
+		if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环
+			__AddNetWork_UrlForPaly((Player_t *)hand->data);	
+			goto exit0;
+		}
+		else{
+			Create_playContinueMusic(hand);
+		}
 	}	
 	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic endplay");
-exit0:
+exit1:
 	free((void *)hand->data);
+exit0:
 	free((void *)hand);
 }
 //检查文件锁，防止配网、启动联网脚本导致多次启动进程

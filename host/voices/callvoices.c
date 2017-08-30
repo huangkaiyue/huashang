@@ -178,11 +178,32 @@ static void *uploadPcmPthread(void *arg){
 	RV->uploadState = END_UPLOAD;
 	return NULL;
 }
+#ifdef TEST_FACTORY
+static void FactoryTestWritePLay(char *data,int len){
+	int i=0,wLen=0; 
+	for(i=0;i<=len;i+=2){
+		memcpy(play_buf+wLen,data+i,2);
+		wLen+=2;
+		memcpy(play_buf+wLen,data+i,2);
+		wLen+=2;
+		if(wLen==I2S_PAGE_SIZE){
+			wLen=0;
+			write_pcm(play_buf);	
+		}
+	}
+}
+#endif
 /****************************************
 @函数功能:	开始上传语音到服务器
 @参数:	无
 *****************************************/
 static void Start_uploadVoicesData(void){
+#ifdef TEST_FACTORY
+	if(getFactoryTest()){
+		FactoryTestWritePLay(RV->buf_voices+WAV_HEAD,RV->len_voices);
+		return ;	
+	}
+#endif
 	if(RV->uploadState==START_UPLOAD){
 		printf("%s add upload voices failed \n",__func__);
 		SpeekEvent_process_log("add upload voices failed","",0);
@@ -344,12 +365,7 @@ static void *PthreadRecordVoices(void *arg){
 			case PLAY_DING_VOICES:
 				usleep(50000);
 				break;
-			case HUASHANG_SLEEP:		//华上睡眠状态
-#if 0			
-				if(getFactoryTest()){
-					break;
-				}
-#endif				
+			case HUASHANG_SLEEP:		//华上睡眠状态	
 				if(++RV->closeTime==60){
 					showFacePicture(CLEAR_SYSTEM_PICTURE);
 					SetRecordeVoices_PthreadState(HUASHANG_SLEEP_OK);

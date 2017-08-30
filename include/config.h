@@ -59,5 +59,6 @@
 #define PLAY_RANDOM		3		//Ëæ»ú²¥·Å
 
 
+#define TEST_FACTORY
 //#define TEST_ERROR_TULING
 

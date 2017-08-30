@@ -16,5 +16,5 @@ extern void Save_TulingToken_toRouteTable(const char *tokenVal);
 
 extern void Set_VersionRun(void);
 extern int Get_VersionRun(void);
-
+extern void Set7688Wifi(const char *wifi);
 #endif

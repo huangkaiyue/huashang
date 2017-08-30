@@ -91,6 +91,10 @@ void ResetHostDevicesFactory(void){
 	Create_PlaySystemEventVoices(CMD_56_RESET_SYSTEM);
 	system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan gpio");
 	Set_VersionRun();
+	char *list= nvram_bufget(RT2860_NVRAM, "list");
+	if(!strncmp(list,"hsjy",4)){
+		Set7688Wifi((const char *)list);
+	}
 }
 //接收到微信发送过来的绑定请求
 void EnableBindDev(void){	

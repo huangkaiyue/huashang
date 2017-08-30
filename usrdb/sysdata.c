@@ -69,4 +69,9 @@ int Get_VersionRun(void){
 int getFactoryTest(void){
 	return (int)runplay;
 }
+void Set7688Wifi(const char *wifi){
+	char buf_s[128]={0};
+	sprintf(buf_s,"nvram_set 2860 SSID1 %s", wifi);
+	system(buf_s);
+}
 //----------------------------end-------------------------------------
