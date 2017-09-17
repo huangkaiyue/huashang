@@ -513,11 +513,14 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 	}else if(!strcmp(pSub->valuestring,"qtts")){
 		if(!strncmp(cJSON_GetObjectItem(pJson, "text")->valuestring,"openwifi",8)){
 			OpenWifi();
-		}else if(!strncmp(cJSON_GetObjectItem(pJson, "text")->valuestring,"testmsg",7)){
+		}
+#if 0
+		else if(!strncmp(cJSON_GetObjectItem(pJson, "text")->valuestring,"testmsg",7)){
 			CreateSystemPlay_ProtectMusic((const char *)AMR_WEIXIN_RECV_OK);
 			AddWeiXinpushMessage_Voices("http://huashang-smart-oss.rhwxun.com/dailyShow/voice/a8628c1d845345d7a1c807391a581013.mp3",64); 
 			goto exit;
 		}
+#endif
 		CreateSystemPlay_ProtectMusic((const char *)AMR_WEIXIN_RECV_OK);
 		char *WeiXintxt =cJSON_GetObjectItem(pJson, "text")->valuestring;
 		AddWeiXinMessage_Text((const char *)WeiXintxt,strlen(WeiXintxt));

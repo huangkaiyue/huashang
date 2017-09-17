@@ -148,10 +148,12 @@ int LongNetKeyDown_ForConfigWifi(void){
 	updateCurrentEventNums();
 	CheckNetManger_PidRunState();
 	WiterSmartConifg_Log("Network key down","ok");
+#if 0
 	if(!checkInternetFile()){
 		WiterSmartConifg_Log("startSmartConfig checkInternetFile","failed");
 		return -1;
 	}
+#endif
         if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){          
                 return -1;
         }   
@@ -185,7 +187,8 @@ int LongNetKeyDown_ForConfigWifi(void){
 	Unlock_EventQueue();
 	//if(GetRecordeVoices_PthreadState()==RECODE_PAUSE)//处于播放事件当中，不予许配网
 	{
-		if(access(INTEN_NETWORK_FILE_LOCK,F_OK)<0){
+		//if(access(INTEN_NETWORK_FILE_LOCK,F_OK)<0)
+		{
 			SendInterruptScanwifi_toNetServer();
 			disable_gpio();
 			Create_PlaySystemEventVoices(CMD_15_START_CONFIG);
@@ -195,7 +198,7 @@ int LongNetKeyDown_ForConfigWifi(void){
 			//startSmartConfig(Create_PlaySystemEventVoices,enable_gpio);	
 			system("smartconfig start &");
 			return 0;
-		}else{
+		//}else{
 			//CreateSystemPlay_ProtectMusic((const char *)AMR_19_CONNET_ING);
 		}
 	}	
@@ -1108,9 +1111,12 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			}			
 			break;
 		case CMD_110_NOT_NETWORK:			
-			Handle_PlayTaiBenToNONetWork(playEventNums);
-			PlaySystemAmrVoices(AMR_39_AI_STROY_4,playEventNums);
 			enable_gpio();
+			Handle_PlayTaiBenToNONetWork(playEventNums);
+			sysMes.enableSmartconfig=1;	//open system ,and enable smartconfig
+			if(GetCurrentEventNums()==playEventNums){
+				PlaySystemAmrVoices(AMR_39_AI_STROY_4,playEventNums);
+			}
 			break;
 		case CMD_111_NOTWIFI_PLAYMUSIC:
 			Custom_Interface_RunPlayVoices(0,0,playEventNums);
@@ -1340,22 +1346,28 @@ static int checkSdcard_MountState(void){
 //开机加载sdcard 当中数据库信息
 static void *waitLoadMusicList(void *arg){
 	int timeout=0;
+	sysMes.startCheckNetworkFlag=1;
 	while(++timeout<18){
 		CheckNetManger_PidRunState();	//检查网络服务
 		sleep(1);
 		if(sysMes.netstate==NETWORK_OK){
 			Write_StartLog("connet ok",timeout);
-			break;
-		}else if(sysMes.netstate==NETWORK_ER){
-			enable_gpio();
-			Write_StartLog("restart network failed",timeout);
+			sysMes.startCheckNetworkFlag=0;
+			sysMes.enableSmartconfig=1;	
 			break;
 		}
+#if 0
+		else if(sysMes.netstate==NETWORK_ER){
+			//enable_gpio();
+			Write_StartLog("restart network failed",timeout);
+			sysMes.netstate=NETWORK_UNKOWN;
+			break;
+		}
+#endif
 	}
 	Get_VersionRun();
 	if(sysMes.netstate==NETWORK_UNKOWN){	//默认是未知状态，长时间未收到联网进程发送过来的状态，直接使能gpio
 		sysMes.netstate=NETWORK_ER;	
-		sysMes.startCheckNetworkFlag=1;
 		Write_StartLog("unkown network ",timeout);
 		Create_PlaySystemEventVoices(CMD_110_NOT_NETWORK);
 		unsigned int currentEvent= GetCurrentEventNums();

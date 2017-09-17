@@ -81,7 +81,7 @@ static char *aifiJson(const char *key,int len,int rate,const char *format,const 
 #endif	
 
 	cJSON_AddStringToObject(root,"asr", asr);
-	cJSON_AddStringToObject(root,"tts", "4");
+	cJSON_AddStringToObject(root,"tts", "0");
 	cJSON_AddNumberToObject(root,"flag", 3);
 	cJSON_AddStringToObject(root,"token", tulingUser->token);
 	char* str_js = cJSON_Print(root);

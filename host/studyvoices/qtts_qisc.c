@@ -26,6 +26,7 @@ void setPlayAudioSize(int downSize){
 void putPcmStreamToQueue(const void *data,int size){
 	int ret =0;
 	void *newdata=NULL;
+	//printf("-----------------------------------\nputPcmStreamToQueue\n-------------------------------\n");
 	if(size%2==0&&cacheFlag==0){		//偶数，没有预留
 		newdata= (char *)calloc(1,size);
 		memcpy(newdata,(void *)data,size);

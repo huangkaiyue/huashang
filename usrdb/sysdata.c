@@ -73,5 +73,15 @@ void Set7688Wifi(const char *wifi){
 	char buf_s[128]={0};
 	sprintf(buf_s,"nvram_set 2860 SSID1 %s", wifi);
 	system(buf_s);
+	usleep(1000);
+	sprintf(buf_s,"nvram_set 2860 OperationApcli 1");
+	system(buf_s);
+	usleep(1000);
+	sprintf(buf_s,"nvram_set 2860 OperationMode 1");
+	system(buf_s);
+	usleep(1000);
+	sprintf(buf_s,"nvram_set 2860 MacTs 22");
+	system(buf_s);	
 }
+
 //----------------------------end-------------------------------------

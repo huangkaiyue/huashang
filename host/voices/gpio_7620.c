@@ -351,7 +351,7 @@ static void *networkkey_mutiplekey_Thread(void *arg){
 		printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
 		
 		if(time_ms < 500){		//before is 500  2017.6.28 22:43
-			if(mutiplekey->key_state == KEYUP)
+			if(mutiplekey->key_state == KEYUP&&sysMes.enableSmartconfig==1)
 			{
 				//短按弹起处理，播放wifi
 				keyUp_AndSetGpioFor_play();
@@ -370,7 +370,7 @@ static void *networkkey_mutiplekey_Thread(void *arg){
 		if(time_ms>=1000&&time_ms<=1500){
 			updateCurrentEventNums();
 		}
-		if(time_ms >=3500){		//before is 500  2017.8.24 14:19
+		if(time_ms >=3500&&sysMes.enableSmartconfig==1){		//before is 500  2017.8.24 14:19
 			keyUp_AndSetGpioFor_play();
 			if(access(SMART_CONFIG_FILE_LOCK,0)==0){
 				Create_InterruptSmartConfigFile();

@@ -93,7 +93,7 @@ exit1:
 playUrl:云端语义结果播放链接地址
 playText: 云端语义解析内容
 */
-static int playTulingQtts(const char *playText,unsigned int playEventNums,unsigned short playLocalVoicesIndex){
+static int playTulingQtts(const char *playUrl,const char *playText,unsigned int playEventNums,unsigned short playLocalVoicesIndex){
 	int ret =-1;
 	HandlerText_t *handtext = (HandlerText_t *)calloc(1,sizeof(HandlerText_t));
 	if(handtext==NULL){
@@ -102,6 +102,7 @@ static int playTulingQtts(const char *playText,unsigned int playEventNums,unsign
 	handtext->EventNums = playEventNums;
 	handtext->playLocalVoicesIndex=playLocalVoicesIndex;
 	SetMainQueueLock(MAIN_QUEUE_UNLOCK);
+#if 0
 	SpeekEvent_process_log((const char *)"playTulingQtts:","play text start",0);
 	char playVoicesName[12]={0};
 	int playSpeed=0;
@@ -135,6 +136,16 @@ static int playTulingQtts(const char *playText,unsigned int playEventNums,unsign
 	}
 	SpeekEvent_process_log("xunfei text to text","end",0);
 	disabledownNetworkVoiceState();
+#else
+	handtext->data= (char *)calloc(1,strlen(playUrl)+1);
+        if( handtext->data==NULL){
+                perror("calloc error !!!");
+                free(handtext);
+                return -1; 
+        }
+        sprintf(handtext->data,"%s",playUrl);
+	ret = AddDownEvent((const char *)handtext,TULING_URL_MAIN);
+#endif
 	return ret;
 }
 /*******************************************
@@ -216,12 +227,28 @@ static int parseJson_string(HandlerText_t *handText){
 			goto exit1;
 		}
 	}
+	cJSON *nlp = cJSON_GetObjectItem(pJson, "nlp");
+	if(nlp==NULL){
+		goto exit1;
+	}
+	int count = cJSON_GetArraySize(nlp);
+	if(count==0){
+		goto exit1;
+	}
+	cJSON* pItem = cJSON_GetArrayItem(nlp, 0);
+	if(pItem==NULL){
+		goto exit1;
+	}
+	char *ttsUrl = pItem->valuestring;
+	if(ttsUrl==NULL||!strcmp(ttsUrl,"")){
+		goto exit1;
+	}
 exit2:	
 	DEBUG_STD_MSG("text: %s\n",pSub->valuestring);
 	cJSON *funcpSub = cJSON_GetObjectItem(pJson, "func");
 	if(funcpSub==NULL){//直接播放语义之后的结果
 		SpeekEvent_process_log("playTulingQtts ","start play text",0);
-		playTulingQtts((const char *)cJSON_GetObjectItem(pJson, "tts")->valuestring,handText->EventNums,TULING_TEXT);
+		playTulingQtts(ttsUrl,(const char *)cJSON_GetObjectItem(pJson, "tts")->valuestring,handText->EventNums,TULING_TEXT);
 	}else{
 			pSub = cJSON_GetObjectItem(funcpSub, "url"); 	//检查是否有mp3歌曲返回，如果有				
 			if(NULL == pSub||pSub->valuestring==NULL||!strcmp(pSub->valuestring,"")){//如果出现空的链接地址，直接跳出
@@ -237,7 +264,7 @@ exit2:
 			player->musicTime = 0;
 			SpeekEvent_process_log((const char *)"play tuling music url:",pSub->valuestring,0);
 			//识别出有语义结果和mp3链接地址结果，先播放前面的语义内容，再播放mp3链接地址内容
-			if(playTulingQtts((const char *)cJSON_GetObjectItem(pJson, "tts")->valuestring,handText->EventNums,TULING_TEXT_MUSIC)){
+			if(playTulingQtts(ttsUrl,(const char *)cJSON_GetObjectItem(pJson, "tts")->valuestring,handText->EventNums,TULING_TEXT_MUSIC)){
 				free((void *)player);
 				goto exit0;
 			}
@@ -432,6 +459,7 @@ static void *PlayVoicesPthread(void *arg){
 	playlistVoicesSate=START_PLAY_VOICES_LIST;
 	int i=0,pcmSize=0,CleanendVoicesNums=0;
 	int CacheNums=0;//保存打断这次播放之后缓存队列nums 数
+	unsigned char isplay=0;
 	PlayList = initQueue();
 	char *data=NULL; 
 	while(1){
@@ -441,6 +469,7 @@ static void *PlayVoicesPthread(void *arg){
 				if(getWorkMsgNum(PlayList)==0){	//当前队列为空，挂起播放	
 					if(playNetwork_pos!=0){		//播放尾音
 						memset(play_buf+playNetwork_pos,0,I2S_PAGE_SIZE-playNetwork_pos);
+						playNetwork_pos=0;
 						write_pcm(play_buf);
 					}
 #if defined(HUASHANG_JIAOYU)					
@@ -459,19 +488,23 @@ static void *PlayVoicesPthread(void *arg){
 					if(newEventNums!=GetCurrentEventNums()){
 						break;
 					}
-					if(cacheNetWorkPlaySize>12*KB){
-#if defined(HUASHANG_JIAOYU)	
-						usleep(100000);
+					if(isplay==1){
+						break;
+					}
+					if(cacheNetWorkPlaySize>24*KB){
+						//usleep(100000);
 						showFacePicture(WAIT_CTRL_NUM3);
+						isplay=1;
 						//printf("----------set face 1\n");
-						led_lr_oc(closeled);
-#endif						
+						//led_lr_oc(closeled);
 						break;
 					}
 					if(downState==0){
 						//usleep(100000);
 						//Show_tlak_Light();
-						//printf("------------set face 2\n");
+						showFacePicture(WAIT_CTRL_NUM3);
+						isplay=1;
+						//printf(" %s: ------------down ok \n",__func__);
 						break;
 					}
 					usleep(10000);
@@ -518,6 +551,7 @@ static void *PlayVoicesPthread(void *arg){
 					playlistVoicesSate=START_PLAY_VOICES_LIST;
 					cacheNetWorkPlaySize=0;
 				}
+				isplay=0;
 				break;
 			case EXIT_PLAY_VOICES_LIST:
 				goto exit0;

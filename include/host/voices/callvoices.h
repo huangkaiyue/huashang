@@ -185,6 +185,7 @@ typedef struct{
 #define RESTART_NETWORK_UNLOCK		0
 
 typedef struct{
+	unsigned char enableSmartconfig;
 	unsigned char startCheckNetworkFlag;
 	unsigned char lockRestartNetwork;
 	unsigned char wifiState;
