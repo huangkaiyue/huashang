@@ -9,12 +9,16 @@
 //----------------------------音量-------------------------------------
 //从路由表当中获取音量
 void GetVol_formRouteTable(unsigned char *size){
+#if 0
 	char *vol = nvram_bufget(RT2860_NVRAM, "VoiceSIZE");
 	if(!strcmp(vol,"")){
 		*size=SYSTEM_DEFALUT_VOL;
 	}else{
 		*size = (unsigned char)atoi(vol);
 	}
+#else
+	*size=SYSTEM_DEFALUT_VOL;
+#endif
 }
 
 //设置音量到路由表当中

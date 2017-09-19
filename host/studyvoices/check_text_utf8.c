@@ -30,10 +30,11 @@ static int PlayAgeVoices(int playEventNums){
 int CheckinfoText_forContorl(const char *infoText,const char *text,char *getPlayMusicName){
 	int ret = CMD_UNKOWN;
 	int playIndex=0;
-	if(strstr(infoText,"你是谁")||strstr(infoText,"名字")||strstr(text,"日辉")||strstr(text,"智娃")){	
-		ret =CMD_WHO_NAME;
-	}
-	else if(strstr(infoText,"音量")){
+	//if(strstr(infoText,"你是谁")||strstr(infoText,"名字")||strstr(text,"日辉")||strstr(text,"智娃")){	
+		//ret =CMD_WHO_NAME;
+	//}
+	//else 
+	if(strstr(infoText,"音量")){
 		if((strstr(infoText,"加")&&strstr(infoText,"减"))||(strstr(infoText,"大")&&strstr(infoText,"小")))
 			ret =CMD_UNKOWN;
 		else if(strstr(infoText,"加")||strstr(infoText,"大")){	
@@ -42,7 +43,7 @@ int CheckinfoText_forContorl(const char *infoText,const char *text,char *getPlay
 		else if(strstr(infoText,"减")||strstr(infoText,"小")){	
 			ret =CMD_SUB_VOL;
 		}
-	}else if(strstr(infoText,"拜拜")||strstr(infoText,"晚安")||strstr(infoText,"你先休息")||strstr(infoText,"你先去睡觉")){
+	}else if(strstr(infoText,"拜拜")||strstr(infoText,"晚安")||strstr(infoText,"你先休息")||strstr(infoText,"你先去睡觉")||strstr(infoText,"关机")){
 			ret =CMD_CLOSE;
 	}else if(strstr(infoText,"id")&&strstr(infoText,"我的")){
 		ret = CMD_ID;
@@ -53,11 +54,13 @@ int CheckinfoText_forContorl(const char *infoText,const char *text,char *getPlay
 			Huashang_updatePlayindex(playIndex);
 			ret =CMD_MUSIC_MEUN;
 		}
-	}else if(strstr(infoText,"你")&&strstr(infoText,"岁")||strstr(infoText,"你")&&strstr(infoText,"多大")){
-		ret =CMD_AGE;
-	}else if(strstr(infoText,"大声")||strstr(infoText,"听不到")){
+	}
+	//else if(strstr(infoText,"你")&&strstr(infoText,"岁")||strstr(infoText,"你")&&strstr(infoText,"多大")){
+	//	ret =CMD_AGE;
+	//}
+	else if(strstr(infoText,"大声点")||strstr(infoText,"听不到")||strstr(infoText,"太小声")){
 		ret =CMD_ADD_VOL;
-	}else if(strstr(infoText,"小声")||strstr(infoText,"太吵")){
+	}else if(strstr(infoText,"小声小")||strstr(infoText,"太吵")||strstr(infoText,"太大声")){
 		ret =CMD_SUB_VOL;
 	}
 	return ret;
@@ -74,7 +77,7 @@ int HandlerPlay_checkTextResult(int cmd,const char *playname,unsigned int playEv
 			ret =__AddLocalMp3ForPaly(playname,EXTERN_PLAY_EVENT);		
 			break;		
 		case CMD_WHO_NAME:
-			ret =PlaySystemAmrVoices(AMR_58_WHO_NAME,playEventNums);
+			//ret =PlaySystemAmrVoices(AMR_58_WHO_NAME,playEventNums);
 			break;
 		case CMD_ADD_VOL:
 			Setwm8960Vol(VOL_ADD,0);
@@ -102,7 +105,7 @@ int HandlerPlay_checkTextResult(int cmd,const char *playname,unsigned int playEv
 			free(PlayText);
 			break;
 		case CMD_AGE:
-			ret =PlayAgeVoices(playEventNums);
+			//ret =PlayAgeVoices(playEventNums);
 			break;
 	}
 	return ret;

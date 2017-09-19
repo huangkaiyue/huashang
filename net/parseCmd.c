@@ -30,8 +30,6 @@
 
 #define VOL_DATA(x) (x-90)*4
 
-unsigned char gpio_look=0;
-
 static int SendTo(int sockfd,char *data,int size,struct sockaddr_in *peer){
 	char *cachedata = (char *)calloc(1,size+16);
 	if(cachedata==NULL){
@@ -153,7 +151,23 @@ void ack_batteryCtr(int recvdata,int power){
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
-
+void sendDeviceState(void){
+	char stropenTime[10]={0};
+	char strcloseTime[10]={0};
+	char* szJSON = NULL;
+	cJSON* pItem = NULL;
+	pItem = cJSON_CreateObject();
+	cJSON_AddStringToObject(pItem, "handler", "sys");
+	cJSON_AddNumberToObject(pItem, "state",Get_batteryVaule());
+	//cJSON_AddNumberToObject(pItem, "state",75);
+	cJSON_AddNumberToObject(pItem, "power",get_dc_state());
+	cJSON_AddStringToObject(pItem, "status","ok");
+	szJSON = cJSON_Print(pItem);
+	DEBUG_TCP("ack_alluserCtr: %s\n",szJSON);
+	SendtoaliyunServices(szJSON,strlen(szJSON));	//发送给微信
+	cJSON_Delete(pItem);
+	free(szJSON);
+}
 /*
 @函数功能:	所有信息返回函数
 @参数:	recvdata 电池电量
@@ -166,11 +180,9 @@ void ack_alluserCtr(const int sockfd,int state,int power){
 	pItem = cJSON_CreateObject();
 	cJSON_AddStringToObject(pItem, "handler", "sys");
 	cJSON_AddNumberToObject(pItem, "state",state);
+	cJSON_AddStringToObject(pItem, "openTime","09:00");
+	cJSON_AddStringToObject(pItem, "closeTime","22:00");
 	cJSON_AddNumberToObject(pItem, "power",power);
-	Get_OpenCloseTime_formRouteTable(OPEN_TIME,stropenTime);
-	cJSON_AddStringToObject(pItem, "openTime",stropenTime);
-	Get_OpenCloseTime_formRouteTable(CLOSE_TIME,strcloseTime);
-	cJSON_AddStringToObject(pItem, "closeTime",strcloseTime);
 	cJSON_AddStringToObject(pItem, "status","ok");
 	szJSON = cJSON_Print(pItem);
 	DEBUG_TCP("ack_alluserCtr: %s\n",szJSON);
@@ -200,7 +212,7 @@ void ack_allplayerCtr(void *data,Player_t *player){
 	CreateState(pItem,player->playState);
 
 	cJSON_AddStringToObject(pItem, "url",player->playfilename);
-	cJSON_AddNumberToObject(pItem, "lock",gpio_look);
+	cJSON_AddNumberToObject(pItem, "lock",0);
 	cJSON_AddNumberToObject(pItem, "vol",VOL_DATA(player->vol));
 	cJSON_AddStringToObject(pItem, "name",player->musicname);
 	cJSON_AddNumberToObject(pItem, "time",(int)player->musicTime);
@@ -337,6 +349,16 @@ void ResetWeixinBindUserMessage(void){
 	cJSON_Delete(pItem);
 	free(szJSON);
 }
+void unlockWeixin(void){
+	char* szJSON = NULL;
+	cJSON* pItem = NULL;
+	pItem = cJSON_CreateObject();
+	cJSON_AddStringToObject(pItem, "handler", "unlockweixin");
+	szJSON = cJSON_Print(pItem);
+	SendtoaliyunServices(szJSON,strlen(szJSON));
+	cJSON_Delete(pItem);
+	free(szJSON);
+}
 void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer){
 	cJSON * pJson = cJSON_Parse(recvdata);
 	if(NULL == pJson){
@@ -369,20 +391,7 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 		}
 	}//end vol 音量大小
 	else if(!strcmp(pSub->valuestring,"lock")){
-		pSub = cJSON_GetObjectItem(pJson, "state");
-		if(NULL == pSub){
-			DEBUG_TCP("get vol failed\n");
-			goto exit;
-		}
-		if(pSub->valueint==0){
-			gpio_look=0;
-			enable_gpio();//----------->解锁
-			ack_gpioCtr(0);
-		}else if (pSub->valueint==1){
-			disable_gpio();//----------->上锁
-			gpio_look=1;
-			ack_gpioCtr(1);
-		}
+
 	}//end lock 按键锁
 	else if(!strcmp(pSub->valuestring,"mplayer")){
 		pSub = cJSON_GetObjectItem(pJson, "state");
@@ -404,7 +413,12 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 				musicname=cJSON_GetObjectItem(pJson, "name")->valuestring;
 			}
 			if(player){					//新增加json协议，用于同步界面 2016-10-11 14:00
-				snprintf(player->playfilename,128,"%s",cJSON_GetObjectItem(pJson, "url")->valuestring);
+				char *url =cJSON_GetObjectItem(pJson, "url")->valuestring;
+				if(strstr(url,"http")==NULL){			
+					CreateSystemPlay_ProtectMusic((const char *)AMR_NOT_MUSIC);
+					goto exit;
+				}
+				snprintf(player->playfilename,128,"%s",url);
 				if(musicname!=NULL){
 					snprintf(player->musicname,48,"%s",musicname);
 					player->musicTime = cJSON_GetObjectItem(pJson, "time")->valueint;
@@ -470,43 +484,18 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			recv_brocastCtr(sockfd,peer,recvdata);
 		}
 	}//  end brocast	
-#ifdef DOWN_IMAGE
-	else if(!strcmp(pSub->valuestring,"updateHost")){	//----------->由版本监测进程发送过来	
-		pSub = cJSON_GetObjectItem(pJson, "status");
-		if(!strcmp(pSub->valuestring,"newversion")){	//有新版本，需要更新
-		}else if(!strcmp(pSub->valuestring,"start")){	//正在下载固件
-		}else if(!strcmp(pSub->valuestring,"error")){	//下载固件错误
-		}else if(!strcmp(pSub->valuestring,"end")){ 	//下载固件结束
-		}else if(!strcmp(pSub->valuestring,"progress")){		//下载进度
-			pSub = cJSON_GetObjectItem(pJson, "value");
-			if(pSub->valueint==25){
-			}else if(pSub->valueint==50){
-			}else if(pSub->valueint==75){
-			}
-		}
-	}
-#endif	
-	//  end updateHost
 	else if(!strcmp(pSub->valuestring,"updateImage")){		
 		pSub = cJSON_GetObjectItem(pJson, "status");
-		if(!strcmp(pSub->valuestring,"start")){ 		//开始更新固件
-#ifdef DOWN_IMAGE		
-			Create_PlaySystemEventVoices(UPDATA_START_PLAY);
-		}else if(!strcmp(pSub->valuestring,"error")){	//更新固件错误
-			Create_PlaySystemEventVoices(UPDATA_ERROR_PLAY);
-#endif			
+		Unlock_EventQueue();
+		if(!strcmp(pSub->valuestring,"error")){ 			
+			CreateSystemPlay_ProtectMusic((const char *)AMR_DOWN_FAILED);		//down failed
+		}else if(!strcmp(pSub->valuestring,"failed")){
+			CreateSystemPlay_ProtectMusic((const char *)AMR_UPDATE_FAILED);	//update failed	
 		}else if(!strcmp(pSub->valuestring,"end")){ 	//更新固件结束
 			Create_PlaySystemEventVoices(CMD_90_UPDATE_OK);
 		}
 	}//  end updateImage                // end----------->由版本监测进程发送过来
-	else if(!strcmp(pSub->valuestring,"newImage")){	// app端确认还是取消更新操作
-		pSub = cJSON_GetObjectItem(pJson, "status");
-		if(!strcmp(pSub->valuestring,"ok")){		//app 确认更新
-			
-		}else if(!strcmp(pSub->valuestring,"miss")){//app 取消更新
-
-		}
-	}else if(!strcmp(pSub->valuestring,"ServerWifi")){
+	else if(!strcmp(pSub->valuestring,"ServerWifi")){
 		RecvNetWorkConnetState(cJSON_GetObjectItem(pJson, "event")->valueint);
 	}else if(!strcmp(pSub->valuestring,"TestNet")){
 		test_brocastCtr(sockfd,peer,recvdata);
@@ -521,13 +510,38 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			goto exit;
 		}
 #endif
+#ifdef XUNFEI_QTTS
 		CreateSystemPlay_ProtectMusic((const char *)AMR_WEIXIN_RECV_OK);
 		char *WeiXintxt =cJSON_GetObjectItem(pJson, "text")->valuestring;
 		AddWeiXinMessage_Text((const char *)WeiXintxt,strlen(WeiXintxt));
+#else
+		char *WeiXintxt =cJSON_GetObjectItem(pJson, "text")->valuestring;
+		int runLen = 128+strlen(WeiXintxt);
+		char *runQtts=(char *)calloc(1,runLen);
+		if(runQtts){
+			char token[64]={0};
+			char user_id[17]={0};
+			GetuserTokenValue(user_id,token);
+			sprintf(runQtts,"tulingtts %s %s %s &",user_id,token,WeiXintxt);
+			system(runQtts);
+			usleep(100000);
+			free(runQtts);
+		}
+#endif
 	}
 	else if (!strcmp(pSub->valuestring,"speek")){//微信对讲
 		CreateSystemPlay_ProtectMusic((const char *)AMR_WEIXIN_RECV_OK);
 		char *WeiXinFile =cJSON_GetObjectItem(pJson, "file")->valuestring;
+		AddWeiXinMessage_Voices((const char *)WeiXinFile,strlen(WeiXinFile));
+	}else if (!strcmp(pSub->valuestring,"tulingtts")){	
+		CreateSystemPlay_ProtectMusic((const char *)AMR_WEIXIN_RECV_OK);
+		char *WeiXinFile =cJSON_GetObjectItem(pJson, "tts")->valuestring;
+		pSub = cJSON_GetObjectItem(pJson, "userId");
+		if(pSub){
+			char *userId= pSub->valuestring;
+			char *token= cJSON_GetObjectItem(pJson, "token")->valuestring;
+			Load_useridAndToken((const char *) userId,(const char *) token);
+		}
 		AddWeiXinMessage_Voices((const char *)WeiXinFile,strlen(WeiXinFile));
 	}
 	else if (!strcmp(pSub->valuestring,"binddev")){
@@ -538,8 +552,6 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 			EnableBindDev();
 			Create_PlaySystemEventVoices(CMD_27_RECV_BIND);
 		}
-	}
-	else if (!strcmp(pSub->valuestring,"call")){		//微信界面发送过来的呼叫请求	
 	}
 	else if (!strcmp(pSub->valuestring,"uploadfile")){
 		pSub = cJSON_GetObjectItem(pJson, "status");
@@ -598,8 +610,25 @@ void handler_CtrlMsg(int sockfd,char *recvdata,int size,struct sockaddr_in *peer
 #endif	
 	else if(!strcmp(pSub->valuestring,"everyday")){
 		char *url= cJSON_GetObjectItem(pJson, "url")->valuestring;
+		if(strstr(url,"http")==NULL){
+			CreateSystemPlay_ProtectMusic((const char *)AMR_NOT_MUSIC);
+			goto exit;
+		}
 		CreateSystemPlay_ProtectMusic((const char *)AMR_WEIXIN_RECV_OK);
 		AddWeiXinpushMessage_Voices(url,strlen(url));
+	}else if(!strcmp(pSub->valuestring,"weixinUpdate")){
+		int id = cJSON_GetObjectItem(pJson, "id")->valueint;
+		char *url= cJSON_GetObjectItem(pJson, "url")->valuestring;
+		char *md5= cJSON_GetObjectItem(pJson, "md5")->valuestring;
+		cJSON * pj = cJSON_GetObjectItem(pJson, "mac");
+		char *mac=NULL;
+		if(pj==NULL){
+			goto exit;
+		}
+		mac=pj->valuestring;
+		int size = cJSON_GetObjectItem(pJson, "size")->valueint;
+		int versionCode = cJSON_GetObjectItem(pJson, "versionCode")->valueint;
+		runSystemUpdateVersion(mac,id,(const char *)url,(const char *)md5,size,versionCode);		
 	}
 exit:
 	cJSON_Delete(pJson);

@@ -131,7 +131,6 @@ int Setwm8960Vol(int dir,int vol){
 	//printf("Setwm8960Vol :vol = %d\n",I2S.tx_vol);
 	return ret;
 }
-
 int GetVol(void){
 	return (int)I2S.tx_vol;
 }

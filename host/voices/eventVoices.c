@@ -513,8 +513,9 @@ exit0:
 }
 //关机保存文件和清理工作
 void Close_Mtk76xxSystem(void){
+	char userId[17]={0};
 	char token[64]={0};
-	GetTokenValue(token);
+	GetuserTokenValue(userId,token);
 	Save_TulingToken_toRouteTable((const char *)token);
 	SaveVol_toRouteTable(GetVol());		//设置声音到路由表
 	CloseSystemSignToaliyun();			//发送关机信号给闹钟
@@ -525,7 +526,11 @@ void Close_Mtk76xxSystem(void){
 static void TaiwanToTulingError(unsigned int playEventNums){
 	char buf[32]={0};
 	char musictype[12]={0};
-	int i=(29+(int)(3*rand()/(RAND_MAX+1.0)));
+	struct timeval time_start;
+        gettimeofday(&time_start,0);
+        int time_ms = time_start.tv_sec +time_start.tv_usec;
+
+	int i=(time_ms%3)+29;
 	snprintf(buf,32,"qtts/%d.amr",i);
 	PlaySystemAmrVoices(buf,playEventNums);
 }
@@ -604,26 +609,10 @@ void ReSetSystem(void){
 }
 //串口事件回调函数
 void UartEventcallFuntion(int event){
-	
 	switch(event){
 		case UART_EVENT_CLOSE_SYSTEM:		//串口发送关机事件
 			printf("\n   uart close system v1.1 for fix no delay colse system \n");
 			updateCurrentEventNums();
-			return;
-			Mute_voices(MUTE);				//关闭功放
-			//Close_Mtk76xxSystem();			//关机处理和保存后台数据
-			disable_gpio();					//关闭gpio中断功能,防止关机过程再产生按键事件
-			cleanQuequeEvent();				//清理事件队列，保证能够播放语音
-			if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){
-				printf("Create Clean url event \n");
-				Create_CleanUrlEvent();
-			}
-			Create_PlaySystemEventVoices(CMD_26_BIND_PLAY);	
-			Lock_EventQueue();
-			showFacePicture(CLOSE_SYSTEM_PICTURE);	
-			Stop_light_500Hz();
-			close_sys_led();
-			led_lr_oc(closeled);
 			break;
 		case UART_EVENT_LOW_BASTERRY:		//电量低提醒
 			CreateSystemPlay_ProtectMusic(AMR_49_POWER_LOW);
@@ -633,14 +622,27 @@ void UartEventcallFuntion(int event){
 			CreateSystemPlay_ProtectMusic(AMR_50_POWER_OFF_1);
 			break;
 		case  AC_BATTERRY:	//正在充电
+			if(getLock_EventQueue()){
+				return;
+			}
+			disable_gpio();
+			//UartLog("UartEventcallFuntion is ac battery",1);
 			CreateSystemPlay_ProtectMusic(AMR_52_POWER_AC);	
+			usleep(300000);
+			enable_gpio();
 			break;
 		case POWER_FULL:
 			CreateSystemPlay_ProtectMusic(AMR_53_POWER_FULL);
 			break;			
-		case BATTERRY:		//电池供电
-			//Create_PlaySystemEventVoices(CMD_54_POWER_INTERRUPT);	
+		case BATTERRY:		//电池供电	
+			if(getLock_EventQueue()){	
+				return;
+			}
+			//UartLog("UartEventcallFuntion is  battery",2);
+			disable_gpio();
 			CreateSystemPlay_ProtectMusic(AMR_54_POWER_DISCONNET);
+			usleep(300000);
+			enable_gpio();
 			break;
 	}
 } 
@@ -906,8 +908,11 @@ void *updateHuashangFacePthread(void *arg){
 	if(eventNums==GetCurrentEventNums()){
 		showFacePicture(PLAY_MUSIC_NUM4);	
 	}
+	//sendDeviceState();
 	Link_NetworkOk();						//连接成功关灯，开灯，状态设置
 	enable_gpio();
+	sleep(3);
+	sendDeviceState();
 }
 //smartconfig not recv wifi message, restart network
 static void *RunTask_restartNetwork(void *arg){
@@ -1132,7 +1137,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 void CreatePlayWeixinVoicesSpeekEvent(const char *filename){
 	unsigned char mixMode =NORMAL_PLAY_PCM;
 	if(GetRecordeVoices_PthreadState() ==START_TAIK_MESSAGE||GetRecordeVoices_PthreadState() ==START_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==END_SPEEK_VOICES||GetRecordeVoices_PthreadState() ==SOUND_MIX_PLAY){
-		return;
+		return ;
 	}
 	else if(GetRecordeVoices_PthreadState() ==PLAY_MP3_MUSIC){
 		mixMode =MIX_PLAY_PCM;
@@ -1281,7 +1286,7 @@ void Handle_WeixinSpeekEvent(unsigned int gpioState,unsigned int playEventNums){
 		endtime=time(&t);
 		voicesTime = endtime - speek->Starttime;
 		start_event_play_wav();
-		if(voicesTime<1||voicesTime>20){//时间太短或太长
+		if(voicesTime<1||voicesTime>30){//时间太短或太长
 			shortVoicesClean();
 			//PlaySystemAmrVoices(AMR_WEIXIN_SEND_ERROR,playEventNums);
 			pause_record_audio();

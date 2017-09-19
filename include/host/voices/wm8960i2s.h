@@ -8,7 +8,7 @@
 #define WM8960_NODE_PATH	"/dev/i2s0"
 
 #define RECODE_RATE 			8000 			//录音采样率
-#define AUDIO_RX_VOICE 			108  			//录音大小
+#define AUDIO_RX_VOICE 			112  			//录音大小
 
 #define AUDIO_TX_VOICE 			115				//音乐播放音量大小
 #define PLAY_MODE				0 				//播放模式
@@ -16,14 +16,15 @@
 #define NONE_MODE				9				//普通模式
 #define	EXTERNAL_LBK2			14				//双工模式
 
-#define VOL_UP					125				//音量上限
+#define VOL_UP					127				//音量上限
 #define VOL_DWON				100				//音量下限
 #define VOL_NUM					3				//每次增加
 #define VOL_SET_DATA(x) 		(x/5)+VOL_DWON	//APP设置值算法
 
-#define	SYSTEM_DEFALUT_VOL		110				//设置开机默认初始值
+#define	SYSTEM_DEFALUT_VOL		113				//设置开机默认初始值
 #define PLAY_PASUSE_VOICES_VOL	40				//播放智能会话过渡音大小		
 
+#define SYSTEM_VOICES_VOL	113
 #define VOL_SUB 				0
 #define VOL_ADD 				1
 #define VOL_APP_SET 			2

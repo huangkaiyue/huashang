@@ -33,7 +33,7 @@
 
 #define DEBUG_VOICES_ERROR(fmt, args...) printf("Call voices: " fmt, ## args) 
 
-#define TIME_RECODE_S	8		
+#define TIME_RECODE_S	10		
 
 #define STD_RECODE_SIZE	((TIME_RECODE_S*RECODE_RATE*16*1/8)+WAV_HEAD)
 

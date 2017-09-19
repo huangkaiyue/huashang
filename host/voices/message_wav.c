@@ -79,8 +79,10 @@ void PlayStartPcm(const char *filename,int eventsNum){
 	char path[128]={0};
 	snprintf(path,128,"%s%s",sysMes.localVoicesPath,filename);
 	AmrToWav8k(path,(const char *)outfile);
+	//int vol = GetVol();
+	Setwm8960Vol(VOL_SET_VAULE,SYSTEM_VOICES_VOL);
 	PlayStartWavVoices(outfile,eventsNum);
-
+	//Setwm8960Vol(VOL_SET_VAULE,vol);
 }
 //播放单声道wav格式音频数据
 static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,unsigned int playEventNums,unsigned char showFace){
@@ -170,6 +172,13 @@ int __playResamplePlayPcmFile(const char *pcmFile,unsigned int playEventNums){
 }
 static int playResamplePlayAmrFile(const char *filename,unsigned int playEventNums){
 	char *outfile ="speek.wav";
+#ifdef SET_VOL
+	int vol =SYSTEM_VOICES_VOL;
+	if(strstr(filename,"/home/qtts/")!=NULL){
+		vol = GetVol();
+		Setwm8960Vol(VOL_SET_VAULE,SYSTEM_VOICES_VOL);
+	}
+#endif
 	int  ret =AmrToWav8k(filename,(const char *)outfile);
 	if(ret){
 		printf("AmrToWav8k failed \n");
@@ -177,12 +186,24 @@ static int playResamplePlayAmrFile(const char *filename,unsigned int playEventNu
 	}
 	ret = __playResamplePlayPcmFile(outfile,playEventNums);
 	remove(outfile);
+#ifdef SET_VOL
+	if(strstr(filename,"/home/qtts/")!=NULL){
+		Setwm8960Vol(VOL_SET_VAULE,vol);
+	}
+#endif
 	return ret ; 
 }
 
 //播放单声道amr格式音频数据
 static int __playAmrVoices(const char *filename,unsigned char playMode,unsigned int playEventNums,unsigned char showFace){
 	char *outfile ="speek.wav";
+#ifdef SET_VOL
+	int vol=0;
+	if(strstr(filename,"/home/qtts/")!=NULL){
+		vol = GetVol();
+		Setwm8960Vol(VOL_SET_VAULE,SYSTEM_VOICES_VOL);
+	}
+#endif
 	AmrToWav8k(filename,(const char *)outfile);
 	SetWm8960Rate(RECODE_RATE,(const char *)"__playAmrVoices set rate");
 	int ret = PlaySignleWavVoices((const char *)outfile,playMode,playEventNums,showFace);
@@ -190,6 +211,11 @@ static int __playAmrVoices(const char *filename,unsigned char playMode,unsigned 
 		pause_record_audio();
 	}
 	remove(outfile);
+#ifdef SET_VOL
+	if(strstr(filename,"/home/qtts/")!=NULL){
+		Setwm8960Vol(VOL_SET_VAULE,vol);
+	}
+#endif
 	return ret;
 }
 static int __playSystemAmrVoices(const char *filePath,unsigned char playMode,unsigned int playEventNums,unsigned char showFace){
@@ -204,6 +230,7 @@ static int __playSystemAmrVoices(const char *filePath,unsigned char playMode,uns
 *********************************************************/
 int PlayWeixin_SpeekAmrFileVoices(const char *filename,unsigned int playEventNums,unsigned char mixMode){
 	int ret =-1;
+	Write_playAmrFile(filename);	
 	if(mixMode==MIX_PLAY_PCM){
 		ret =playResamplePlayAmrFile(filename,playEventNums);
 	}else{

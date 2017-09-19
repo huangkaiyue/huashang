@@ -154,6 +154,11 @@
 #define AMR_100_AGE					"qtts/100.amr"			//100、我比你大一点
 #define AMR_101_AGE					"qtts/101.amr"			//101、我比你大一点
 
+#define AMR_NOT_MUSIC					"qtts/not_music.amr"
+#define AMR_LOW_UPFAILED				"qtts/low_battery_upfaile.amr"
+#define AMR_NEW_VERSION					"qtts/newversion.amr"
+#define AMR_DOWN_FAILED					"qtts/down_imgFailed.amr"
+#define AMR_UPDATE_FAILED				"qtts/update_failed.amr"
 
 #define AMR_WEIXIN_SEND_ERROR		"qtts/weixin_send_error.amr"	//消息弄丢了呜呜!
 #define AMR_UPDATE_OK				"qtts/update_ok_8K.amr"			//更新固件结束

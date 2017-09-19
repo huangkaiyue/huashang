@@ -224,3 +224,9 @@ void WriteRateTextLog(const char *funtion,const char *text,int rate,int newRate)
 #endif	
 
 }
+void Write_playAmrFile(const char *buf){
+	writeLog((const char * )"/log/playamrfile.txt",buf);
+}
+void WriteVersionMessage(const char *str1,const char *str2,int val){
+	__WriteLog_File((const char *)"/log/verion_weixin.txt",str1,str2,val);
+}

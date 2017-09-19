@@ -256,6 +256,7 @@ static void handle_uartMsg(int fd ,unsigned char buf,int size){
 						//if(data.data&0x85){	//power full
 						//	uartCtr->voicesEvent(POWER_FULL);
 						//}else{
+							UartLog("is ac battery",1);
 							uartCtr->voicesEvent(AC_BATTERRY);
 						//}
 						uartCtr->charge=1;
@@ -268,6 +269,7 @@ static void handle_uartMsg(int fd ,unsigned char buf,int size){
 						uartCtr->startSystem--;
 					}else{
 						if(uartCtr->charge==1){
+							UartLog("is battery",2);
 							uartCtr->voicesEvent(BATTERRY);
 							uartCtr->charge=0;
 						}
@@ -333,21 +335,21 @@ static void *uart_read_serial(void){
 				break;
 			default: 
 				if (FD_ISSET(serialFd[0], &rdfd)){
-					UartLog("start<---------->",1);
-					DEBUG_UART("start<---------->\n");
+					//UartLog("start<---------->",1);
+					//DEBUG_UART("start<---------->\n");
 					for(;r_size>0;){
 						r_size = read(serialFd[0],&buf,1);
 						if(r_size!=0){
 							DEBUG_UART("recv from uart msg buf =0x%x\n",buf);
-							UartLog("recv",buf);
+							//UartLog("recv",buf);
 							handle_uartMsg(serialFd[0],buf,r_size);
-							UartLog("handle<---------->",2);
+							//UartLog("handle<---------->",2);
 						}
 					}
 					r_size=1;
 					buf=0x0;
-					UartLog("end<---------->",3);
-					DEBUG_UART("end<---------->\n");
+					//UartLog("end<---------->",3);
+					//DEBUG_UART("end<---------->\n");
 				}
 		}
 	}

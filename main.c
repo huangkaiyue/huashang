@@ -131,7 +131,6 @@ static void Create_playContinueMusic(HandlerText_t *hand){
 //主线程添加网络歌曲到队列当中播放
 static void Main_Thread_AddplayUrlMusic(HandlerText_t *hand){
 	Player_t *play =(Player_t *)hand->data;
-	Show_musicPicture();
 	Mad_PlayMusic(play,hand->EventNums);
 	if(hand->EventNums!=GetCurrentEventNums()){
 		goto exit0;
@@ -150,7 +149,6 @@ exit0:
 //主线程添加本地到队列当中播放
 static void Main_Thread_AddPlayLocalSdcard_Music(HandlerText_t *hand){
 	Player_t * player =hand->data;
-	Show_musicPicture();
 	if(Mad_PlayMusic((const char *)hand->data,hand->EventNums)){
 		goto exit0;
 	}
@@ -179,7 +177,6 @@ static void Main_Thread_playTuLingMusic(HandlerText_t *hand){
 		goto exit1;
 	}
 	RequestTulingLog((const char *)"Main_Thread_playTuLingMusic startplay");
-	Show_musicPicture();
 	Mad_PlayMusic((Player_t *)hand->data,hand->EventNums);
 	if(hand->EventNums==GetCurrentEventNums()){
 		if(GetStreamPlayState()==MUSIC_SINGLE_LIST){	//单曲循环

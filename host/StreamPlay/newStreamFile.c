@@ -289,7 +289,7 @@ static int NetStreamDownFilePlay(Player_t *play,int EventNums){
 			break;
 		}
 		if(GetCurrentEventNums()!=EventNums){
-			quitDownFile();
+			//quitDownFile();	// fix bug interrupt network for main pthread loop ( meybe 2017-09-19-1:59  )
 			DecodeExit();
 			printf("\n-------------------------\n interrupt exit\n ------------------\n");
 			break;
@@ -445,12 +445,18 @@ int Mad_PlayMusic(Player_t *play,int EventNums){
 	printf("%s: play->playfilename =%s\n",__func__,play->playfilename);
 	if(!access(play->playfilename,F_OK)){
 		st->lockSetRate=1;
+		Show_musicPicture();
 		playLocalMp3(play->playfilename);
 		st->lockSetRate=0;
 	}else{
 		if(strstr(play->playfilename,"/media/mmcblk0p1/")){
 			goto exit0;
 		}
+		if(strstr(play->playfilename,"http")==NULL){
+			pause_record_audio();
+			goto exit0;
+		}
+		Show_musicPicture();
 		parse_url(play->playfilename, domain, &port, filename);
 		CopyUrlMessage(play,(Player_t *)&st->player);
 		snprintf(st->mp3name,128,"%s",filename);			

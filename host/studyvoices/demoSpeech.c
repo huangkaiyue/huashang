@@ -367,7 +367,8 @@ void updateTokenValue(const char *token){
 @ 获取token值，保存到路由表当中
 @ 
 */
-void GetTokenValue(char *token){
+void GetuserTokenValue(char *userId,char *token){
+	sprintf(userId,"%s",tulingUser->user_id);
 	sprintf(token,"%s",tulingUser->token);
 }
 /*

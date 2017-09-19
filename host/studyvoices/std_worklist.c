@@ -23,7 +23,7 @@ static unsigned int newEventNums=0;
 static unsigned char downState=0;
 static unsigned int cacheNetWorkPlaySize=0;
 static unsigned char playlistVoicesSate=0;
-static int event_lock=0;
+static unsigned char event_lock=0;
 
 void Lock_EventQueue(void){
 	event_lock=1;
@@ -32,7 +32,7 @@ void Unlock_EventQueue(void){
 	event_lock=0;
 }
 int getLock_EventQueue(void){
-	return event_lock;
+	return (int)event_lock;
 }
 /*
 @ 
@@ -460,6 +460,7 @@ static void *PlayVoicesPthread(void *arg){
 	int i=0,pcmSize=0,CleanendVoicesNums=0;
 	int CacheNums=0;//保存打断这次播放之后缓存队列nums 数
 	unsigned char isplay=0;
+	unsigned short ttsVol =SYSTEM_DEFALUT_VOL;
 	PlayList = initQueue();
 	char *data=NULL; 
 	while(1){
@@ -470,12 +471,15 @@ static void *PlayVoicesPthread(void *arg){
 					if(playNetwork_pos!=0){		//播放尾音
 						memset(play_buf+playNetwork_pos,0,I2S_PAGE_SIZE-playNetwork_pos);
 						playNetwork_pos=0;
+						isplay=0;
 						write_pcm(play_buf);
 					}
 #if defined(HUASHANG_JIAOYU)					
 					Close_tlak_Light();
-					led_lr_oc(openled);
 					usleep(100000);
+					showFacePicture(WAIT_CTRL_NUM4);
+					usleep(300000);
+					Setwm8960Vol(VOL_SET_VAULE,ttsVol);
 #endif
 					lock_pause_record_audio();
 					cacheNetWorkPlaySize=0;
@@ -491,20 +495,16 @@ static void *PlayVoicesPthread(void *arg){
 					if(isplay==1){
 						break;
 					}
-					if(cacheNetWorkPlaySize>24*KB){
-						//usleep(100000);
+					if(cacheNetWorkPlaySize>20*KB||downState==0){
+						usleep(100000);
+						Show_tlak_Light();	
+						usleep(100000);
 						showFacePicture(WAIT_CTRL_NUM3);
 						isplay=1;
+						ttsVol = GetVol();
+						//Setwm8960Vol(VOL_SET_VAULE,127);
+						Setwm8960Vol(VOL_SET_VAULE,ttsVol+8);
 						//printf("----------set face 1\n");
-						//led_lr_oc(closeled);
-						break;
-					}
-					if(downState==0){
-						//usleep(100000);
-						//Show_tlak_Light();
-						showFacePicture(WAIT_CTRL_NUM3);
-						isplay=1;
-						//printf(" %s: ------------down ok \n",__func__);
 						break;
 					}
 					usleep(10000);

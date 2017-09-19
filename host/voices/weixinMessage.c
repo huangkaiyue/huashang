@@ -7,6 +7,9 @@
 #include "StreamFile.h"
 #include "base/cJSON.h"
 
+#include "nvram.h"
+#include "uart/uart.h"
+
 #define WEIXIN_TEXT 	1
 #define WEIXIN_VOICES	2
 
@@ -221,6 +224,115 @@ int GetWeiXinMessageForPlay(void){
 		}
 	}
 	return 0;
+}
+static unsigned char RunState =0;
+typedef struct{
+	unsigned int versionCode;
+	unsigned int  id;
+	unsigned int size;	
+	char mac[32];
+	char url[128];
+	char md5[40];
+}UpdateMessage_t;
+static int checkNumStr(const char *nums){
+        int i=0;
+        int ret =0;
+        for(i = 0; nums[i] != 0; i++){
+                if(!isdigit(nums[i])){
+                        ret =-1;
+                        break;
+                }
+        }
+        return ret;
+}
+void setVersionState(const char *data){
+        char buf_s[128]={0};
+        sprintf(buf_s,"nvram_set 2860 sversion %s",data);
+        system(buf_s);
+}
+static void *runUpdateVersion(void *arg){
+	UpdateMessage_t *upMsg = (UpdateMessage_t *)arg;
+	char eepromVesion[8]={0};
+	int systemVersionCode=0;
+	char *runVersion=NULL;
+	char *sversion= nvram_bufget(RT2860_NVRAM, "sversion");
+	if(!strcmp(sversion,"")){
+		readVersion_Eeprom(eepromVesion);
+		if(!strcmp(eepromVesion,"")){
+			systemVersionCode = 0;
+		}else{
+			setVersionState((const char *)eepromVesion);
+			systemVersionCode = atoi(eepromVesion);
+		}
+	}else{
+		systemVersionCode = atoi(sversion);
+	}
+	if(upMsg->versionCode!=systemVersionCode){		//start update system
+		updateCurrentEventNums();	// interrupt current event
+		SocSendMenu(BATTYPE,NULL);	
+		sleep(1);
+#if 1		
+		int batVaule = Get_batteryVaule();
+		if(batVaule<50){
+			CreateSystemPlay_ProtectMusic((const char *)AMR_LOW_UPFAILED);
+			sleep(3);
+			unlockWeixin();
+			goto exit0;		
+		}
+#endif		
+		runVersion = (char *)calloc(1,1024);
+		if(runVersion==NULL){
+			unlockWeixin();
+			goto exit0;			
+		}
+		snprintf(runVersion,1024,"versionServer http %s %s  %s %d %d %d &",upMsg->mac,upMsg->url,upMsg->md5,upMsg->id,upMsg->size,upMsg->versionCode);
+		Unlock_EventQueue();
+		//WriteVersionMessage((const char *)upMsg->url,(const char *)upMsg->md5,batVaule);
+		CreateSystemPlay_ProtectMusic((const char *)AMR_55_NEW_VERSION);
+		usleep(1000);
+		Lock_EventQueue();
+		disable_gpio();
+		printf("%s : %s\n",__func__,runVersion);
+		system(runVersion);
+		sleep(2);
+		free(runVersion);
+	}else{				//current is news version Image
+		runVersion = (char *)calloc(1,1024);
+		if(runVersion==NULL){
+			unlockWeixin();
+			goto exit0;			
+		}
+		CreateSystemPlay_ProtectMusic((const char *)AMR_NEW_VERSION);
+		snprintf(runVersion,1024,"versionServer new %s %s  %s %d %d %d &",upMsg->mac,upMsg->url,upMsg->md5,upMsg->id,upMsg->size,upMsg->versionCode);
+		system(runVersion);
+		unlockWeixin();
+		sleep(2);
+		free(runVersion);
+	}
+
+exit0:
+	RunState=0;
+	free(upMsg);
+	return NULL;
+}
+void runSystemUpdateVersion(const char *mac,int id,const char *url,const char *md5,int size,int versionCode){
+	if(RunState){
+		//printf(" is run update version pthread");
+		return ;
+	}
+	RunState=1;		
+	UpdateMessage_t *upMsg = (UpdateMessage_t *)calloc(1,sizeof(UpdateMessage_t));
+	if(upMsg==NULL){
+		return;
+	}
+	snprintf(upMsg->mac,32,"%s",mac);
+	upMsg->id = id;
+	snprintf(upMsg->url,128,"%s",url);
+	snprintf(upMsg->md5,40,"%s",md5);
+	upMsg->size = size;
+	upMsg->versionCode = versionCode;
+	pthread_create_attr(runUpdateVersion,upMsg);
+	usleep(1000);
 }
 
 //初始化微信消息队列
