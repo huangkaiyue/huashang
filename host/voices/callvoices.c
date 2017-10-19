@@ -423,8 +423,9 @@ void InitRecord_VoicesPthread(void){
         exit(-1);
 	}
 #if 1	
+	sleep(1);
 	PlayStartPcm(AMR_11_START_SYSTEM_OK,0);
-	sleep(3);
+	sleep(2);
 #endif
 	
 	char playFile[24]={0};

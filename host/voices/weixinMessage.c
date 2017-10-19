@@ -259,7 +259,7 @@ static void *runUpdateVersion(void *arg){
 	if(!strcmp(sversion,"")){
 		readVersion_Eeprom(eepromVesion);
 		if(!strcmp(eepromVesion,"")){
-			systemVersionCode = 0;
+			systemVersionCode = 8;
 		}else{
 			setVersionState((const char *)eepromVesion);
 			systemVersionCode = atoi(eepromVesion);

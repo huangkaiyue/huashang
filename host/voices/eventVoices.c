@@ -455,6 +455,7 @@ void Handler_PlayQttsEvent(HandlerText_t *handText){
 参数: 无
 返回值: 无
 ********************************************************/
+#if 0
 void TulingKeyDownSingal(void){
 	updateCurrentEventNums();
 	printf("---updateCurrentEventNums start \n");
@@ -511,6 +512,76 @@ void TulingKeyDownSingal(void){
 exit0:
 	Unlock_EventQueue();
 }
+#else
+void TulingKeyDownSingal(void){
+	updateCurrentEventNums();
+	Write_Speekkeylog((const char *)"TulingKeyDownSingal",0);
+	//处于微信对讲状态，直接退出	
+	if(GetRecordeVoices_PthreadState()==START_SPEEK_VOICES||GetRecordeVoices_PthreadState()==END_SPEEK_VOICES||GetRecordeVoices_PthreadState()==SOUND_MIX_PLAY){		
+		Write_Speekkeylog((const char *)"START_SPEEK_VOICES",GetRecordeVoices_PthreadState());
+		return;
+	}	
+	Lock_EventQueue();
+	//printf("\n -----------------\nstart TulingKeyDownSingal\n---------------------- \n ");
+#if 0
+	Write_Speekkeylog((const char *)"PLAY_MP3_MUSIC",GetRecordeVoices_PthreadState());
+	if(PLAY_MP3_MUSIC==GetRecordeVoices_PthreadState()&&getLockNetwork()==0){	//is play localmusic ,filter error music vocies;
+		//Write_Speekkeylog((const char *)" change local PLAY_MP3_MUSIC",GetRecordeVoices_PthreadState());
+		usleep(200000);
+	}	
+#endif
+	while(GetLockRate()){
+		printf("%s: GetWm8960Rate =%d GetLockRate =%d \n",__func__,GetWm8960Rate(),GetLockRate());
+		usleep(100000);
+		if(GetWm8960Rate()==RECODE_RATE){
+			printf("error exit rate ......\n");
+			break;
+		}
+	}
+	//Write_Speekkeylog((const char *)"GetLockRate",GetLockRate());
+	int timeout=0;
+	while(1){
+		//printf("%s: getLockNetwork =%d \n",__func__,getLockNetwork());
+		if(++timeout>4){
+			break;
+		}
+		usleep(100000);
+		if(getLockNetwork()){
+			continue;
+		}else{
+			break;
+		}
+	}
+	//Write_Speekkeylog((const char *)"NetStreamExitFile",getLockNetwork());
+	Write_Speekkeylog((const char *)"NetStreamExitFile",timeout);
+	NetStreamExitFile();//退出歌曲播放,并切换采样率	
+	Write_Speekkeylog((const char *)"NetStreamExitFile end ",timeout);
+	if(SetWm8960Rate(RECODE_RATE,(const char *)"TulingKeyDownSingal set rate")){	//切换采样率失败，退出(防止多线程当中切换，资源冲突问题)
+		goto exit0;
+	}
+	//printf("---Unlock_EventQueue start \n");
+	Unlock_EventQueue();
+#ifdef TEST_FACTORY
+	if(!getFactoryTest()){
+		if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
+			return;
+		}
+	}
+#else
+	if (checkNetWorkLive(ENABLE_CHECK_VOICES_PLAY)){	//检查网络,没有网络直接退出播放
+		return;
+	}
+#endif
+	Write_Speekkeylog((const char *)"SetWm8960Rate end ",timeout);
+	Show_KeyDownPicture();
+	StartTuling_RecordeVoices();	
+	keyDown_AndSetGpioFor_play();
+	Write_Speekkeylog((const char *)"StartTuling_RecordeVoices",GetRecordeVoices_PthreadState());
+	return ;
+exit0:
+	Unlock_EventQueue();
+}
+#endif
 //关机保存文件和清理工作
 void Close_Mtk76xxSystem(void){
 	char userId[17]={0};

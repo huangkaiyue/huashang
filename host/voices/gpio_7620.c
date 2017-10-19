@@ -256,7 +256,7 @@ static void *mus_vol_mutiplekey_Thread(void *arg){
 			continue;
 		}
 		
-		if(time_ms >=1000){		//before is 500  2017.6.28 22:43
+		if(time_ms >=1500){		//before is 500  2017.6.28 22:43
 			keyUp_AndSetGpioFor_play();
 			printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
 			if(mutiplekey->key_state == KEYUP)
@@ -449,6 +449,7 @@ static void signal_handler(int signum){
 #endif
 				break;
 			case SPEEK_KEY:			//智能会话按键事件
+				printf("%s:-------------> stop tuling \n",__func__);
 				StopTuling_RecordeVoices();
 				break;
 			case ADDVOL_KEY:	//短按播放喜爱内容,下一曲

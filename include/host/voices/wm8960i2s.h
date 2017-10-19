@@ -21,10 +21,10 @@
 #define VOL_NUM					3				//每次增加
 #define VOL_SET_DATA(x) 		(x/5)+VOL_DWON	//APP设置值算法
 
-#define	SYSTEM_DEFALUT_VOL		113				//设置开机默认初始值
+#define	SYSTEM_DEFALUT_VOL		115				//设置开机默认初始值
 #define PLAY_PASUSE_VOICES_VOL	40				//播放智能会话过渡音大小		
 
-#define SYSTEM_VOICES_VOL	113
+#define SYSTEM_VOICES_VOL	115
 #define VOL_SUB 				0
 #define VOL_ADD 				1
 #define VOL_APP_SET 			2

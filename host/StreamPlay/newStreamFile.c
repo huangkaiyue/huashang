@@ -218,18 +218,22 @@ void NetStreamExitFile(void){
 	}
 #endif	
 
+	WriteEventlockLog("NetStreamExitFile",(int)st->player.playState);
 
 	printf("%s: ... v2 rate =%d\n",__func__,st->rate);
 	while(st->player.playState==MAD_PLAY||st->player.playState==MAD_PAUSE){	//退出播放
-		pthread_mutex_lock(&st->mutex);
+		if(st->lockNetwork==0&&st->lockLocalPlay==0){
+			break;
+		}
+		WriteEventlockLog("eventlock wait exit mp3 state",(int)st->player.playState);
+		//pthread_mutex_lock(&st->mutex);
 		st->player.progress=0;
 		st->player.musicTime=0;
 		st->player.proflag=0;
 		memset(st->player.musicname,0,64);
 		DecodeExit();
 		//quitDownFile();
-		pthread_mutex_unlock(&st->mutex);
-		WriteEventlockLog("eventlock wait exit mp3 state",(int)st->player.playState);
+		//pthread_mutex_unlock(&st->mutex);
 		printf("%s: while wait exit error_timeout_check=%d st->player.playState=%d\n",__func__,error_timeout_check,st->player.playState);
 		if(GetRecordeVoices_PthreadState()==RECODE_PAUSE){
 			WriteEventlockLog("error exit ,and set  ",(int)st->player.playState);
@@ -289,13 +293,15 @@ static int NetStreamDownFilePlay(Player_t *play,int EventNums){
 			break;
 		}
 		if(GetCurrentEventNums()!=EventNums){
-			//quitDownFile();	// fix bug interrupt network for main pthread loop ( meybe 2017-09-19-1:59  )
+			//quitDownFile();	// fix bug interrupt network for main pthread loop ( meybe fix problem 2017-09-19-1:59  )
 			DecodeExit();
 			printf("\n-------------------------\n interrupt exit\n ------------------\n");
 			break;
 		}
 	}
-	pause_record_audio();
+	if(GetCurrentEventNums()==EventNums){	// fix tuling interrupt change recoder voices (meybe fix problem  2017-09-19-03:33)
+		pause_record_audio();
+	}
 	st->lockNetwork=0;
 	//printf("NetStreamDownFilePlay end ...GetStreamPlayState()=%d\n",GetStreamPlayState());
 	return ret;
@@ -445,9 +451,11 @@ int Mad_PlayMusic(Player_t *play,int EventNums){
 	printf("%s: play->playfilename =%s\n",__func__,play->playfilename);
 	if(!access(play->playfilename,F_OK)){
 		st->lockSetRate=1;
+		st->lockLocalPlay=1;
 		Show_musicPicture();
 		playLocalMp3(play->playfilename);
 		st->lockSetRate=0;
+		st->lockLocalPlay=0;
 	}else{
 		if(strstr(play->playfilename,"/media/mmcblk0p1/")){
 			goto exit0;

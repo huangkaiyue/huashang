@@ -38,6 +38,7 @@ typedef struct{
 
 typedef struct{
 	unsigned char lockSetRate;
+	unsigned char lockLocalPlay;
 	unsigned char lockNetwork;
 	char channel;					//采样通道
 	unsigned char wait;
