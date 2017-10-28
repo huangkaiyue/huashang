@@ -146,9 +146,14 @@ int GetWeiXinMessageForPlay(void){
 	WeiXinMsg *msg = NULL;
 	char *Get=NULL;
 	int msgSize=0;
-	time_t t;	
+	time_t t;
+	int ret=-1;	
 	char bak_voices[256]={0};
 	static int ti=1;
+	if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
+		CreateSystemPlay_ProtectMusic((const char *)AMR_44_WEIXIN_WARN);
+		goto exit0;
+	}
 	if(!LoadSdcardEvenydayMsg(PushMsg)){
 		if(PushMsg->playstate==NOT_PLAY){
 			SetWeixinMessageFlag(WEIXIN_PUSH_MESSAGE);
@@ -224,6 +229,8 @@ int GetWeiXinMessageForPlay(void){
 		}
 	}
 	return 0;
+exit0:
+	return ret;
 }
 static unsigned char RunState =0;
 typedef struct{

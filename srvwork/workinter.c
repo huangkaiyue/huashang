@@ -28,7 +28,7 @@ void test_ConnetEvent(int event){
 void pasreInputCmd(const char *com){
 	char *p=NULL;
 	if (!strcmp(com, "1")){
-		Show_tlak_Light();
+		enable_i2s();
 		printf("Show_tlak_Light \n");
 	}else if(!strcmp(com, "2")){
 		Close_tlak_Light();

@@ -7,7 +7,7 @@
 //----------------------åŠŸèƒ½ç±»-----------------------------------
 
 #define MY_HTTP_REQ			//Ê¹ÓÃ×Ô¼ºĞ´µÄhttp ÇëÇó½Ó¿Ú
-#define TULING_FILE_LOG		//¿ªÆôÍ¼ÁéĞ´ÈëÈÕÖ¾ÎÄ¼ş
+//#define TULING_FILE_LOG		//¿ªÆôÍ¼ÁéĞ´ÈëÈÕÖ¾ÎÄ¼ş
 #define LOCAL_MP3			//MP3æœ¬åœ°æ’­æ”¾
 
 #define  HUASHANG_JIAOYU_PLAY_JSON_FILE		"huashang_play.json"

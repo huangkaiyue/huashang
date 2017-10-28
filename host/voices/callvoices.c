@@ -319,6 +319,10 @@ static void *PthreadRecordVoices(void *arg){
 	endtime=time(&t);
 	pause_record_audio();
 	while(GetRecordeVoices_PthreadState()!=RECODE_STOP){
+		if(getwm8960_state()){
+			sleep(1);
+			continue;
+		}
 		endtime=time(&t);
 		//printf("%s: time=%d  =GetRecordeVoices_PthreadState =%d\n",__func__,endtime-starttime,GetRecordeVoices_PthreadState());
 		if((endtime-starttime)>ERRORTIME){	//开机时候，没有获取网络时间，导致时间差过大

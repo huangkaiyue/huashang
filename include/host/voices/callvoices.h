@@ -188,8 +188,8 @@ typedef struct{
 	unsigned char enableSmartconfig;
 	unsigned char startCheckNetworkFlag;
 	unsigned char lockRestartNetwork;
-	unsigned char wifiState;
-	unsigned char netstate;				//板子连接外部网络状态
+	unsigned char wifiState;			//recoder wifi state (user recoder voice for close) 
+	unsigned char netstate;			//板子连接外部网络状态
 	char localVoicesPath[20];			//板子系统音存放路径
 }SysMessage;
 extern SysMessage sysMes;

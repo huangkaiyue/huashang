@@ -37,21 +37,22 @@ void WriteEventlockLog(const char *data,int lock){
 	__WriteLog_File("/log/eventlock.log",data,"",lock);
 }
 void udpLog(const char *data){
-	__WriteLog_File("/log/udp_log.log",data,"",0);
+	//__WriteLog_File("/log/udp_log.log",data,"",0);
 }
 void RecvTcp_dataLog(const char *data){
-	__WriteLog_File("/log/tcpdata.log",data,"",0);
+	//__WriteLog_File("/log/tcpdata.log",data,"",0);
 }
 void System_StateLog(const char *data){
 	__WriteLog_File("/log/system_state.log",data,"",0);
 }
 
 void UartLog(const char *data,unsigned char number){
-	__WriteLog_File("/log/uart.log",data,"",number);
+	//__WriteLog_File("/log/uart.log",data,"",number);
 }
 
 void RequestTulingLog(const char *data){
 #ifdef ENABLE_LOG	
+#if 0
 	FILE *fp = NULL;
 	char buf[128];
 	if(!strcmp(data,"tuling_start")){
@@ -68,6 +69,7 @@ void RequestTulingLog(const char *data){
   	fflush(fp);
 	fclose(fp);
 	return ;
+#endif	
 #endif
 }
 
@@ -192,6 +194,7 @@ void Write_tulingTextLog(const char *txt){
 }
 void Write_huashangTextLog(const char *text){
 #ifdef ENABLE_LOG	
+#if 0
 	FILE *fplog = NULL;
 	if(!strcmp(text,"start")){
 		fplog =fopen("/log/huashang_play.log","w+");
@@ -207,6 +210,7 @@ void Write_huashangTextLog(const char *text){
 		fclose(fplog);
 	}
 	return ;
+#endif
 #endif	
 }
 void WriteRateTextLog(const char *funtion,const char *text,int rate,int newRate){

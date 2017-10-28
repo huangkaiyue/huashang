@@ -84,12 +84,37 @@ void PlayStartPcm(const char *filename,int eventsNum){
 	PlayStartWavVoices(outfile,eventsNum);
 	//Setwm8960Vol(VOL_SET_VAULE,vol);
 }
+static int wm8960_state =0;
+int getwm8960_state(){
+	return wm8960_state;
+}
+void smartconfig_enable_i2s_miss_enable_othenkey(void){
+	printf("\n --------- test enable --------\n");
+	I2S.tx_rate=44100;
+	SetWm8960Rate(8000,(const char *)"test enable");
+}
+void smartconfig_enable_i2s_enablekey(void){
+	smartconfig_enable_i2s_miss_enable_othenkey();
+	wm8960_state=0;
+}
+void smartconfig_closeI2S_othenkey(void){
+	wm8960_state=1;
+	usleep(100000);
+	disable_i2s();
+}
+
+void smartconfig_othenState_enablekey(void){	//connetc wifi failed  ,for enable othen key 
+	wm8960_state=0;
+}
+
+
 //播放单声道wav格式音频数据
 static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,unsigned int playEventNums,unsigned char showFace){
 	int r_size=0,pos=0;
 	char readbuf[2]={0};
 	int ret=0;
 	FILE *fp= fopen(playfilename,"r");
+	printf("----------------start play 1----------------------\n");
 	if(fp==NULL){
 		printf("open sys failed \n");
 		return -1;
@@ -103,10 +128,12 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 		showFacePicture(WAIT_CTRL_NUM3);
 	}
 #endif
+	//int i=0;
+	//printf("----------------start play 2----------------------\n");
 	while(1){
 		if(playMode==PLAY_IS_INTERRUPT&&playEventNums!=GetCurrentEventNums()){
 			CleanI2S_PlayCachedata();//清理
-			StopplayI2s();			 //最后一片数据丢掉
+			//StopplayI2s();			 //最后一片数据丢掉
 			ret=-1;
 			Mute_voices(MUTE);
 			break;
@@ -116,6 +143,7 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 			if(pos>0){
 				memset(play_buf+pos,0,I2S_PAGE_SIZE-pos);		//清空上一次尾部杂音,并播放尾音
 				write_pcm(play_buf);
+				//printf("end --------- i=%d --------\n",i++);
 			}
 			CleanI2S_PlayCachedata();
 			break;
@@ -125,11 +153,13 @@ static int PlaySignleWavVoices(const char *playfilename,unsigned char playMode,u
 		memcpy(play_buf+pos,readbuf,2);
 		pos+=2;
 		if(pos==I2S_PAGE_SIZE){
+			//printf("--------- i=%d --------\n",i++);
 			write_pcm(play_buf);
 			pos=0;
 		}
-
+		
 	}
+	//printf("----------------start play 3----------------------\n");
 	fclose(fp);
 	memset(play_buf,0,I2S_PAGE_SIZE);
 #if defined(HUASHANG_JIAOYU)	

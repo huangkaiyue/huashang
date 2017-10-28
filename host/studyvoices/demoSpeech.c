@@ -19,7 +19,7 @@
 #include "aes.h"
 #endif
 
-#define DBG_SPEEK
+//#define DBG_SPEEK
 #ifdef  DBG_SPEEK
 #define DEBUG_SPEEK(fmt, args...) printf("%s: " fmt,__func__, ## args)
 #else

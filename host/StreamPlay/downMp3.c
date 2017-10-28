@@ -20,7 +20,8 @@ static void tulingStartDown(const char *filename,int streamLen){
 //获取到流数据
 static void  tulingGetStreamData(const char *data,int size){
 	if(playTulingEventNums!=GetCurrentEventNums()){
-		quitDownFile();
+		//quitDownFile();
+		RequestTulingLog("tuling interrupt exit ");
 		playRet=INTERRUPT_PLAY;
 		return;
 	}
@@ -39,7 +40,9 @@ int downTulingMp3_forPlay(HandlerText_t *handtext){
 	RequestTulingLog("downTulingMp3_forPlay start");
 	playTulingEventNums = handtext->EventNums;
 	enabledownNetworkVoiceState();
-	demoDownFile(handtext->data,10,tulingStartDown,tulingGetStreamData,tulingEndDown);
+	RequestTulingLog(handtext->data);
+	demoDownFile(handtext->data,8,tulingStartDown,tulingGetStreamData,tulingEndDown);
+	RequestTulingLog("end down load tuling file");
 	if(handtext->playLocalVoicesIndex==TULING_TEXT_MUSIC){	//表示播放图灵请求的故事和歌曲
 		RequestTulingLog((const char *)"downTulingMp3_forPlay wait play");
 		while(getPlayVoicesQueueNums()>0&&playTulingEventNums==GetCurrentEventNums()){	

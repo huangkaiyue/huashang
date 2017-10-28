@@ -42,12 +42,13 @@ static void *__Running_light_500Hz(void *arg){
 	return NULL;
 }
 void Running_light_500Hz(void){
+	return ;
 	if(gpio.lightRunState=LIGHT_500HZ_RUNING){
 		return;
 	}
 	led_lr_oc(closeled);
 	gpio.lightRunState=LIGHT_500HZ_RUNING;
-	pool_add_task(Running_light_500Hz,NULL);
+	pool_add_task(__Running_light_500Hz,NULL);
 }
 static void led_left_right(unsigned char type,unsigned char io){
 	switch(type){
@@ -348,13 +349,13 @@ static void *networkkey_mutiplekey_Thread(void *arg){
 		time_ms = 1000000*(mutiplekey->time_end.tv_sec - mutiplekey->time_start.tv_sec) + mutiplekey->time_end.tv_usec - mutiplekey->time_start.tv_usec;
 		time_ms /= 1000;
 
-		printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
+		//printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
 		
 		if(time_ms < 500){		//before is 500  2017.6.28 22:43
 			if(mutiplekey->key_state == KEYUP&&sysMes.enableSmartconfig==1)
 			{
 				//短按弹起处理，播放wifi
-				keyUp_AndSetGpioFor_play();
+				//keyUp_AndSetGpioFor_play();
 				if(access(SMART_CONFIG_FILE_LOCK,0)==0){
 					Create_InterruptSmartConfigFile();
 					break;
@@ -371,7 +372,7 @@ static void *networkkey_mutiplekey_Thread(void *arg){
 			updateCurrentEventNums();
 		}
 		if(time_ms >=3500&&sysMes.enableSmartconfig==1){		//before is 500  2017.8.24 14:19
-			keyUp_AndSetGpioFor_play();
+			//keyUp_AndSetGpioFor_play();
 			if(access(SMART_CONFIG_FILE_LOCK,0)==0){
 				Create_InterruptSmartConfigFile();
 				unlock_msgEv();
@@ -390,7 +391,7 @@ static void *networkkey_mutiplekey_Thread(void *arg){
 			break;
 			
 		}
-
+		//usleep(100 * 1000);
 	}
 exit0:	
 	mutiplekey->PthreadState = PthreadState_exit;
@@ -424,6 +425,9 @@ static void signal_handler(int signum){
 	if (ioctl(gpio.fd, TANG_GET_NUMBER,&gpio.mount) < 0){
 		perror("ioctl");
 		return ;
+	}
+	if(getwm8960_state()&&gpio.mount!=NETWORK_KEY){	//�����׶ιر�������������
+		return;
 	}
 	//printf("%s : signum = %d gpio.mount=%d\n",__func__,signum,gpio.mount);
 	if(check_lock_msgEv()&&gpio.mount!=RESET_KEY&&gpio.mount!=NETWORK_KEY){
@@ -720,7 +724,7 @@ void InitMtk76xx_gpio(void){
 	}
 	gpio.lightRunState=LIGHT_500HZ_STOP;
 	enableUart();
-	Running_light_500Hz();
+	//Running_light_500Hz();
 	enableResetgpio();	//使能恢复出厂设置按键 (防止开机出现死机现象，无法操作)
 	disable_gpio();
 }

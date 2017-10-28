@@ -105,10 +105,10 @@ static int GetSsidAndPasswd(char *smartData,char *ssid,char *passwd,int *random)
 	return -1;
 }
 //检查网络检查运行状态,异常状态启动，自动启动联网进程
-static void *CheckNetWork_taskRunState(void *arg){
+void *CheckNetWork_taskRunState(void *arg){
 	int timeOut=0;
 	while(1){
-		if(++timeOut>30){
+		if(++timeOut>40){
 			break;
 		}
 		CheckNetManger_PidRunState();
@@ -307,12 +307,15 @@ void RecvNetWorkConnetState(int event){
 		case CONNECT_OK:
 			//CreateSystemPlay_ProtectMusic((const char * )AMR_23_CHECK_NETWORk);
 			showFacePicture(CONNECT_WIFI_OK_PICTURE);	
+			smartconfig_othenState_enablekey();
+			sysMes.enableSmartconfig=1;
 			CreateSystemPlay_ProtectMusic(AMR_20_CONNET_OK);
 			currentNums=GetCurrentEventNums();
 			pool_add_task(updateHuashangFacePthread,&currentNums);
 			break;
 		case NOT_FIND_WIFI:
 			//Create_PlaySystemEventVoices(CMD_23_NOT_WIFI);
+			sysMes.enableSmartconfig=1;
 			CreateSystemPlay_ProtectMusic((const char * )AMR_23_CHECK_NETWORk);
 			break;
 		case NOT_NETWORK:

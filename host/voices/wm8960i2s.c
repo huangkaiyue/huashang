@@ -306,3 +306,8 @@ void DestoryWm8960Voices(void){
 	I2S.execute_mode = NONE_MODE;
 	close(I2S.i2s_fd);
 }
+void disable_i2s(void){
+	Mute_voices(MUTE);
+	set_tx_state(I2S.i2s_fd,0);
+	set_rx_state(I2S.i2s_fd,0);
+}

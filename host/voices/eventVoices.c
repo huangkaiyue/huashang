@@ -196,7 +196,7 @@ int LongNetKeyDown_ForConfigWifi(void){
 			pthread_create_attr(UnlockQuequePthread,NULL);
 			sysMes.lockRestartNetwork=RESTART_NETWORK_UNLOCK;
 			//startSmartConfig(Create_PlaySystemEventVoices,enable_gpio);	
-			system("smartconfig start &");
+			//system("smartconfig start &");  //must play voices end ,enable smartconfig
 			return 0;
 		//}else{
 			//CreateSystemPlay_ProtectMusic((const char *)AMR_19_CONNET_ING);
@@ -226,12 +226,17 @@ static void WarnIng_notRecvConetNetwork(void){
 	sleep(20);
 	unlockRecoderPthread_TimeoutCheck();
 }
+extern void *CheckNetWork_taskRunState(void *arg);
 static void NetWorkConnetIngPlayVoices(int playEventNums){
 	char file[64]={0};
+	sysMes.enableSmartconfig=0;	//close smartconfig funtion 
+	pthread_create_attr(CheckNetWork_taskRunState, NULL);
+	smartconfig_enable_i2s_miss_enable_othenkey();
+	sleep(3);
 	PlayImportVoices(AMR_16_CONNET_ING,playEventNums);
-	sleep(1);
+	//sleep(1);
 	PlayImportVoices(AMR_17_NETWORK_1,playEventNums);
-	sleep(1);
+	//sleep(1);
 	int i=(18+(int)(2.0*rand()/(RAND_MAX+1.0)));
 	snprintf(file,64,"qtts/%d.amr",i);
 	PlayImportVoices(file,playEventNums);
@@ -595,6 +600,7 @@ void Close_Mtk76xxSystem(void){
 }
 //请求图灵服务器失败，播放本地内容
 static void TaiwanToTulingError(unsigned int playEventNums){
+#if 0
 	char buf[32]={0};
 	char musictype[12]={0};
 	struct timeval time_start;
@@ -604,6 +610,9 @@ static void TaiwanToTulingError(unsigned int playEventNums){
 	int i=(time_ms%3)+29;
 	snprintf(buf,32,"qtts/%d.amr",i);
 	PlaySystemAmrVoices(buf,playEventNums);
+#else
+	PlaySystemAmrVoices(AMR_29_NETWORK_FAILED,playEventNums);
+#endif
 }
 /*
 @ 没有网络的时候，播放本地系统固定录好台本(按键触发播放)
@@ -976,9 +985,9 @@ void *updateHuashangFacePthread(void *arg){
 		}
 		sleep(1);
 	}
-	if(eventNums==GetCurrentEventNums()){
+	//if(eventNums==GetCurrentEventNums()){
 		showFacePicture(PLAY_MUSIC_NUM4);	
-	}
+	//}
 	//sendDeviceState();
 	Link_NetworkOk();						//连接成功关灯，开灯，状态设置
 	enable_gpio();
@@ -1010,10 +1019,12 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;
 		case CMD_12_NOT_NETWORK:				//12、小朋友你可以让爸爸妈妈帮我连接网络，我才会更聪明哦！
 			Handle_PlayTaiBenToNONetWork(playEventNums);
+			smartconfig_othenState_enablekey();
+			sysMes.enableSmartconfig=1;
 			enable_gpio();
 			break;
 		case CMD_15_START_CONFIG:				//15、开始配网，请发送wifi名以及密码！
-			Running_light_500Hz();
+			//Running_light_500Hz();
 			lockRecoderPthread_TimeoutCheck();
 			if(getNetWorkLive()==NETWORK_OK){
 				setNetWorkLive(NETWORK_RESTART);
@@ -1021,11 +1032,16 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 				setNetWorkLive(NETWORK_ER);
 			}
 			PlayImportVoices(AMR_15_START_CONFIG,playEventNums);
+			sleep(1);
+			smartconfig_closeI2S_othenkey();
+			system("smartconfig start &");
 			break;
 		case CMD_16_CONNET_ING:					//16、正在尝试连接网络，请稍等！
 			NetWorkConnetIngPlayVoices(playEventNums);
 			break;
 		case CMD_20_CONNET_OK:					//20、(8634代号)小培老师与总部课堂连接成功，我们来聊天吧！（每次连接成功的语音，包括唤醒）
+			smartconfig_othenState_enablekey();
+			sysMes.enableSmartconfig=1;	//enable smartconfig
 			pool_add_task(updateHuashangFacePthread,&playEventNums);	
 			showFacePicture(CONNECT_WIFI_OK_PICTURE);	
 			sleep(1);
@@ -1035,8 +1051,11 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			unlockRecoderPthread_TimeoutCheck();
 			PlaySystemAmrVoices(AMR_21_NOT_SCAN_WIFI,playEventNums);
 			enable_gpio();
+			smartconfig_othenState_enablekey();
+			sysMes.enableSmartconfig=1;
 			break;	
 		case CMD_22_NOT_RECV_WIFI:				//22、没有收到你发送的wifi,请重新发送一遍
+			smartconfig_enable_i2s_enablekey();
 			unlockRecoderPthread_TimeoutCheck();
 			PlaySystemAmrVoices(AMR_22_NOT_RECV_WIFI,playEventNums);
 			if(sysMes.lockRestartNetwork==RESTART_NETWORK_LOCK)
@@ -1177,6 +1196,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			ReSetSystem();
 			break;
 		case CMD_100_CANLE_WIFI:
+			smartconfig_enable_i2s_enablekey();
 			unlockRecoderPthread_TimeoutCheck();
 			PlaySystemAmrVoices(AMR_100_CANLE_WIFI,playEventNums);
 			if(sysMes.lockRestartNetwork==RESTART_NETWORK_LOCK)
@@ -1186,10 +1206,9 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 				pthread_create_attr(RunTask_restartNetwork,NULL);
 			}			
 			break;
-		case CMD_110_NOT_NETWORK:			
+		case CMD_110_NOT_NETWORK:		
 			enable_gpio();
 			Handle_PlayTaiBenToNONetWork(playEventNums);
-			sysMes.enableSmartconfig=1;	//open system ,and enable smartconfig
 			if(GetCurrentEventNums()==playEventNums){
 				PlaySystemAmrVoices(AMR_39_AI_STROY_4,playEventNums);
 			}
@@ -1451,6 +1470,7 @@ static void *waitLoadMusicList(void *arg){
 		//printf("\n------------------\nremove wifi file\n----------------------\n");
 		remove(INTEN_NETWORK_FILE_LOCK);// import enable open system not network allow config wifi , is maybe bug
 		//remove(INTEN_NETWORK_FILE_LOCK);// import enable open system not network allow config wifi , is maybe bug
+		sysMes.enableSmartconfig=1;	//open system ,and enable smartconfig
 		if(currentEvent==GetCurrentEventNums()){
 			Create_PlaySystemEventVoices(CMD_111_NOTWIFI_PLAYMUSIC);
 		}
