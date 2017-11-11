@@ -94,7 +94,9 @@ void smartconfig_enable_i2s_miss_enable_othenkey(void){
 	SetWm8960Rate(8000,(const char *)"test enable");
 }
 void smartconfig_enable_i2s_enablekey(void){
-	smartconfig_enable_i2s_miss_enable_othenkey();
+	if(wm8960_state==1){
+		smartconfig_enable_i2s_miss_enable_othenkey();
+	}
 	wm8960_state=0;
 }
 void smartconfig_closeI2S_othenkey(void){
@@ -104,6 +106,9 @@ void smartconfig_closeI2S_othenkey(void){
 }
 
 void smartconfig_othenState_enablekey(void){	//connetc wifi failed  ,for enable othen key 
+	if(wm8960_state==1){
+		smartconfig_enable_i2s_miss_enable_othenkey();
+	}
 	wm8960_state=0;
 }
 
@@ -278,14 +283,23 @@ int PlayWeixin_SpeekAmrFileVoices(const char *filename,unsigned int playEventNum
 @ 返回值: 无
 *********************************************************/
 int PlaySystemAmrVoices(const char *filePath,unsigned int playEventNums){
+	if(getwm8960_state())
+		return -1;
 	return __playSystemAmrVoices(filePath,PLAY_IS_INTERRUPT,playEventNums,SHOW_FACE);
 }
 //播放过渡音，不允许打断
 void PlayImportVoices(const char *filePath,unsigned int playEventNums){
+	if(getwm8960_state())
+		return ;
 	__playSystemAmrVoices(filePath,PLAY_IS_COMPLETE,playEventNums,SHOW_FACE);
 }
 
 void playVoicesNotFace(const char *filePath,unsigned int playEventNums){
+	if(getwm8960_state())
+		return ;
+	__playSystemAmrVoices(filePath,PLAY_IS_INTERRUPT,playEventNums,NOT_FACE);
+}
+void playSmartconfigVoice(const char *filePath,unsigned int playEventNums){
 	__playSystemAmrVoices(filePath,PLAY_IS_INTERRUPT,playEventNums,NOT_FACE);
 }
 

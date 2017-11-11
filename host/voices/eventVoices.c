@@ -227,6 +227,7 @@ static void WarnIng_notRecvConetNetwork(void){
 	unlockRecoderPthread_TimeoutCheck();
 }
 extern void *CheckNetWork_taskRunState(void *arg);
+#if 0
 static void NetWorkConnetIngPlayVoices(int playEventNums){
 	char file[64]={0};
 	sysMes.enableSmartconfig=0;	//close smartconfig funtion 
@@ -244,7 +245,25 @@ static void NetWorkConnetIngPlayVoices(int playEventNums){
 		pthread_create_attr(WarnIng_notRecvConetNetwork,NULL);
 	}
 }
-
+#else
+static void NetWorkConnetIngPlayVoices(int playEventNums){
+	char file[64]={0};
+	sysMes.enableSmartconfig=0;	//close smartconfig funtion 
+	pthread_create_attr(CheckNetWork_taskRunState, NULL);
+	smartconfig_enable_i2s_miss_enable_othenkey();
+	sleep(3);
+	playSmartconfigVoice(AMR_16_CONNET_ING,playEventNums);
+	//sleep(1);
+	playSmartconfigVoice(AMR_17_NETWORK_1,playEventNums);
+	//sleep(1);
+	int i=(18+(int)(2.0*rand()/(RAND_MAX+1.0)));
+	snprintf(file,64,"qtts/%d.amr",i);
+	playSmartconfigVoice(file,playEventNums);
+	if(getlockRecoderPthread_TimeoutCheck()==TIME_OUT_CHECK_LOCK){
+		pthread_create_attr(WarnIng_notRecvConetNetwork,NULL);
+	}
+}
+#endif
 //--------------end config network and set system network state---------------------------------------------------------
 /*******************************************************
 函数功能: 添加网络URL地址到队列当中进行播放
@@ -1018,8 +1037,8 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			PlayImportVoices(AMR_11_START_SYSTEM_OK,playEventNums);
 			break;
 		case CMD_12_NOT_NETWORK:				//12、小朋友你可以让爸爸妈妈帮我连接网络，我才会更聪明哦！
-			Handle_PlayTaiBenToNONetWork(playEventNums);
 			smartconfig_othenState_enablekey();
+			Handle_PlayTaiBenToNONetWork(playEventNums);
 			sysMes.enableSmartconfig=1;
 			enable_gpio();
 			break;
@@ -1035,6 +1054,7 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			sleep(1);
 			smartconfig_closeI2S_othenkey();
 			system("smartconfig start &");
+			sysMes.enableSmartconfig=1;	
 			break;
 		case CMD_16_CONNET_ING:					//16、正在尝试连接网络，请稍等！
 			NetWorkConnetIngPlayVoices(playEventNums);
@@ -1049,9 +1069,9 @@ void Handle_PlaySystemEventVoices(int sys_voices,unsigned int playEventNums){
 			break;
 		case CMD_21_NOT_SCAN_WIFI:				//21、无法扫描到您的wifi,请检查您的网络
 			unlockRecoderPthread_TimeoutCheck();
+			smartconfig_othenState_enablekey();
 			PlaySystemAmrVoices(AMR_21_NOT_SCAN_WIFI,playEventNums);
 			enable_gpio();
-			smartconfig_othenState_enablekey();
 			sysMes.enableSmartconfig=1;
 			break;	
 		case CMD_22_NOT_RECV_WIFI:				//22、没有收到你发送的wifi,请重新发送一遍

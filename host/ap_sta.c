@@ -317,6 +317,7 @@ void RecvNetWorkConnetState(int event){
 			//Create_PlaySystemEventVoices(CMD_23_NOT_WIFI);
 			sysMes.enableSmartconfig=1;
 			CreateSystemPlay_ProtectMusic((const char * )AMR_23_CHECK_NETWORk);
+			enable_gpio();
 			break;
 		case NOT_NETWORK:
 			Create_PlaySystemEventVoices(CMD_12_NOT_NETWORK);

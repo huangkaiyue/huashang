@@ -41,6 +41,9 @@ void SetMainQueueLock(unsigned char lock){
 }
 //退出清除资源
 void CleanSystemResources(void){
+#if 1
+	ReSetSystem();
+#else
 	disable_gpio();
 	int playEventNums =updateCurrentEventNums();
 	sleep(1);
@@ -54,6 +57,7 @@ void CleanSystemResources(void){
 	System_StateLog("pool_destroy ok ");
 	CleanWeixinMeesageList();
 	System_StateLog("clean resources finished");
+#endif
 }
 
 /*

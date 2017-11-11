@@ -350,7 +350,7 @@ static void *networkkey_mutiplekey_Thread(void *arg){
 		time_ms /= 1000;
 
 		//printf("[ %s ]:[ %s ] printf in line [ %d ]   time_ms = %d\n",__FILE__,__func__,__LINE__,time_ms);
-		
+#if 0		
 		if(time_ms < 500){		//before is 500  2017.6.28 22:43
 			if(mutiplekey->key_state == KEYUP&&sysMes.enableSmartconfig==1)
 			{
@@ -371,9 +371,13 @@ static void *networkkey_mutiplekey_Thread(void *arg){
 		if(time_ms>=1000&&time_ms<=1500){
 			updateCurrentEventNums();
 		}
-		if(time_ms >=3500&&sysMes.enableSmartconfig==1){		//before is 500  2017.8.24 14:19
+#else
+		updateCurrentEventNums();
+#endif
+		if(time_ms >=1500&&sysMes.enableSmartconfig==1){		//before is 500  2017.8.24 14:19
 			//keyUp_AndSetGpioFor_play();
-			if(access(SMART_CONFIG_FILE_LOCK,0)==0){
+			//if(access(SMART_CONFIG_FILE_LOCK,0)==0){
+			if(getwm8960_state()){
 				Create_InterruptSmartConfigFile();
 				unlock_msgEv();
 				break;
@@ -385,13 +389,14 @@ static void *networkkey_mutiplekey_Thread(void *arg){
 			}
 			if(!LongNetKeyDown_ForConfigWifi()){
 				lock_msgEv();// entry congfig network please lock key
+				sysMes.enableSmartconfig=0;
 				goto exit0;
 			}
 			unlock_msgEv();
 			break;
 			
 		}
-		//usleep(100 * 1000);
+		usleep(100 * 1000);
 	}
 exit0:	
 	mutiplekey->PthreadState = PthreadState_exit;
@@ -401,14 +406,15 @@ void PlayWakeUpVoices(void){
 	printf("%s: wake up system\n",__func__);
 	if (GetWeixinMessageFlag()==NOT_MESSAGE) {		
 		//Create_PlayImportVoices(CMD_20_CONNET_OK); 		//20、(8634代号)小培老师与总部课堂连接成功，我们来聊天吧！（每次连接成功的语音，包括唤醒）
-/*
+#if 1		//fix 2017-10-28 ,wake up check network state
 		if(checkNetWorkLive(DISABLE_CHECK_VOICES_PLAY)){
 			Handle_PlayTaiBenToNONetWork(GetCurrentEventNums());
 		}else{
 			PlayImportVoices(AMR_20_CONNET_OK, GetCurrentEventNums());	
 		}
-*/		
+#else		
 		PlayImportVoices(AMR_20_CONNET_OK, GetCurrentEventNums());
+#endif
 	}else if(GetWeixinMessageFlag()==WEIXIN_MESSAGE){
 		//Create_PlayImportVoices(CMD_24_WAKEUP_RECV_MSG); //24、你有新消息，请按信息键听取吧！（唤醒之后播放，播放网络成功之后）
 		PlayImportVoices(AMR_24_NEW_MESSAGE, GetCurrentEventNums());
